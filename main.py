@@ -13,7 +13,7 @@ import os
 
 def train(model,optimizer,loss_fn,true_func,par_gen):
     model.train()
-    batches = 1000
+    batches = 10000
     for batch in range(batches):
         pars = par_gen()
         truth = true_func(pars)
@@ -56,7 +56,7 @@ i = 0
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    train(model,optimizer,nn.MSEloss,generator.rtdist_lags,generator.par_gen)
+    train(model,optimizer,nn.PoissonNLLLoss,generator.rtdist_lags,generator.par_gen)
     test(model,nn.MSEloss,generator.rtdist_lags,generator.par_gen)
     
 print("Completed training")
