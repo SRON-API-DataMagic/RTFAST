@@ -74,7 +74,7 @@ def parameter_gen():
     Anorm = np.logspace(-12,10,num=10000)
     grid = np.asarray([height,spin,inc,rin,rout,z,Gamma,Dkpc,Afe,logNe,nH,boost,
                        mass,honr,b1,b2,fmin,fmax,phiAB,g,Anorm])
-    grid = np.meshgrid(grid)
+    grid = np.meshgrid(grid,indexing="ij")
     print(grid)
     return grid
 
