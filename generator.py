@@ -5,7 +5,6 @@ for generating sampels for training the emulator for rtdist.
 
 from reltrans import _models
 import numpy as np
-import pandas as pd
 import torch
 
 def rtdist_flux(pars,egrid):
