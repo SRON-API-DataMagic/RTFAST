@@ -72,9 +72,9 @@ def parameter_gen():
     phiAB = np.linspace(-6.283,6.283,int((6.283)*2/0.001))
     g = np.linspace(0,0.5,int(0.5/0.01))
     Anorm = np.logspace(-12,10,num=10000)
-    
-    grid = np.meshgrid(height,spin,inc,rin,rout,z,Gamma,Dkpc,Afe,logNe,nH,boost,
-                       mass,honr,b1,b2,fmin,fmax,phiAB,g,Anorm)
+    grid = np.asarray([height,spin,inc,rin,rout,z,Gamma,Dkpc,Afe,logNe,nH,boost,
+                       mass,honr,b1,b2,fmin,fmax,phiAB,g,Anorm])
+    grid = np.meshgrid(grid)
     print(grid)
     return grid
 
