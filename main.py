@@ -63,14 +63,11 @@ def save_data(data,pars):
 
 def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
     model.train()
-    batches = 10000
+    batches = len(dataloader)
     for batch, (D,P) in enumerate(dataloader):
         D = D.double()
         pred = model(P)
         loss = loss_fn(pred,D)
-        
-        print(loss.dtype)
-        
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
