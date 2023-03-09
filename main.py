@@ -44,9 +44,9 @@ def pregenerate_models(n,egrid):
         all_pars.append(pars)
     all_data = np.asarray(all_data)
     all_pars = np.asarray(all_pars)
-    with open("data.npy","ab") as f1:
+    with open("data.npy","wb") as f1:
         np.save(f1,all_data)
-    with open("pars.npy","ab") as f2:
+    with open("pars.npy","wb") as f2:
         np.save(f2,all_pars)
     f1.close()
     f2.close()
