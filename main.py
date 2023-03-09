@@ -157,18 +157,24 @@ model = network.NeuralNetwork(len(egrid))
 optimizer = Adam(model.parameters())
 max_iters = 10000
 i = 0
+imp = 0
 loss_fn = nn.MSELoss()
 loss = 100
-
+last_sig_best = 1e7
 tr_loss_arr = []
 te_loss_arr = []
 print("Beginning training")
-while i < max_iters:
+while i < max_iters and imp < 50:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
     te_loss_arr.append(loss)
     tr_loss_arr.append(train_loss)
+    if train_loss > (last_sig_best - 0.1*last_sig_best):
+        imp = 0
+        last_sig_best = train_loss
+    else:
+        imp += 1
     i+=1
     
 print("Completed training")
