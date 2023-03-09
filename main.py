@@ -24,13 +24,8 @@ class custom_data(Dataset):
         return self.par_list.shape[0]
     
     def __getitem__(self,idx):
-        print(self.data)
         datum = self.data[idx]
-        print(datum)
-        print(self.par_list)
         parameters = self.par_list[idx]
-        print(parameters)
-        
         return datum,parameters
 
 def pregenerate_models(n,egrid):
@@ -119,9 +114,6 @@ rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
 data,pars = pregenerate_models(20, egrid)
-
-print(pars)
-
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
@@ -130,14 +122,11 @@ with open("data.npy","rb") as f1:
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
-print("Loaded data:",pars)
 data = custom_data(pars,data)
 
 batch_size = 1
 training_dataloader = DataLoader(data,batch_size = batch_size)
 testing_dataloader = DataLoader(test_data,batch_size = batch_size)
-
-print(training_dataloader)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = 0
