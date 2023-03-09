@@ -127,7 +127,7 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
-data,pars = pregenerate_models(2000, egrid)
+data,pars = pregenerate_models(500, egrid)
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
