@@ -45,12 +45,12 @@ def save_data(data,pars):
     return
     
 
-def train(model,optimizer,loss_fn,true_func,par_gen):
+def train(model,optimizer,loss_fn,true_func,par_gen,egrid):
     model.train()
     batches = 10000
     for batch in range(batches):
         pars = par_gen()
-        truth = true_func(pars)
+        truth = true_func(pars,egrid)
         pred = ToTensor(model(pars))
         loss = loss_fn(pred,truth)
         
@@ -64,7 +64,7 @@ def train(model,optimizer,loss_fn,true_func,par_gen):
     
     return model, optimizer
 
-def test(model,loss_fn,true_func,par_gen):
+def test(model,loss_fn,true_func,par_gen,egrid):
     model.eval()
     test_loss = 0
     batches = 1000
@@ -108,8 +108,8 @@ i = 0
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    train(model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen)
-    test(model,nn.MSEloss,generator.rtdist_lags,generator.par_gen)
+    train(model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen,egrid)
+    test(model,nn.MSEloss,generator.rtdist_lags,generator.par_gen,egrid)
     
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
