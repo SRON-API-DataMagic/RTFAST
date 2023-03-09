@@ -9,6 +9,7 @@ from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torchvision.transforms import ToTensor
 from torch.optim import Adam
+import math.ceil as ceil
 
 from sherpa.astro.ui import unpack_rmf
 import os
@@ -93,7 +94,7 @@ def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
 def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     model.eval()
     test_loss = 0
-    batches = 1000
+    batches = len(dataloader)
     with torch.no_grad():
         for batch, (D,P) in enumerate(dataloader):
             pred = model(P)
