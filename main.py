@@ -93,7 +93,7 @@ def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
 
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.double)
 
 wrk_dir = os.getcwd()
 
