@@ -93,7 +93,7 @@ def train(dataloader,model,optimizer,loss_fn):
         if batch % 100 == 0:
             loss, current = loss.item(), (batch*batch_size + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr.append(loss.detach().numpy())
+        loss_arr.append(loss)
         batch += 1
     loss_arr = np.asarray(loss_arr)
     avg_loss = np.mean(loss_arr)
