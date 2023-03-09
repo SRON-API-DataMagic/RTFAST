@@ -104,6 +104,7 @@ def test(dataloader,model,loss_fn):
     print(f"Avg loss: {test_loss:>8f}")
     return test_loss
 
+create_blank_numpy_file()
 torch.set_default_dtype(torch.double)
 
 wrk_dir = os.getcwd()
