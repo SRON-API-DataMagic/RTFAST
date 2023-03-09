@@ -133,8 +133,10 @@ print(pars)
 data = custom_data(pars,data)
 
 batch_size = 1
-training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
-testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
+training_dataloader = DataLoader(data,batch_size = batch_size)
+testing_dataloader = DataLoader(test_data,batch_size = batch_size)
+
+print(training_dataloader)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = 0
