@@ -103,8 +103,6 @@ def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     print(f"Avg loss: {test_loss:>8f}")
     return test_loss
 
-create_blank_numpy_file()
-
 torch.set_default_dtype(torch.double)
 
 wrk_dir = os.getcwd()
@@ -128,7 +126,7 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
-data,pars = pregenerate_models(20, egrid)
+data,pars = pregenerate_models(200, egrid)
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
