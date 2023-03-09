@@ -127,7 +127,7 @@ with open("pars.npy","rb") as f2:
 
 data = custom_data(pars,data)
 
-batch_size = 12
+batch_size = 1
 training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
 testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
