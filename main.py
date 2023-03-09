@@ -65,7 +65,7 @@ def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
     batches = 10000
     batch = 0
     for D,P in dataloader:
-        print(P.size)
+        print(P.size())
         pred = ToTensor(model(P))
         loss = loss_fn(pred,D)
         
