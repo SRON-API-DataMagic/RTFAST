@@ -11,7 +11,7 @@ from torchvision.transforms import ToTensor
 from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
-import pandas as pd
+import tables
 
 class custom_data(Dataset):
     
@@ -42,17 +42,14 @@ def pregenerate_models(n,egrid):
         data = generator.rtdist_flux(pars, egrid)
         all_data.append(data)
         all_pars.append(pars)
-        pars = np.asarray(pars)
-        data = np.asarray(data)
-        with open("data.npy","ab") as f1:
-            np.save(f1,data)
-        with open("pars.npy","ab") as f2:
-            np.save(f2,pars)
-    
-    f1.close()
-    f2.close()
     all_data = np.asarray(all_data)
     all_pars = np.asarray(all_pars)
+    with open("data.npy","ab") as f1:
+        np.save(f1,all_data)
+    with open("pars.npy","ab") as f2:
+        np.save(f2,all_pars)
+    f1.close()
+    f2.close()
     return all_data,all_pars
 
 def save_data(data,pars):
