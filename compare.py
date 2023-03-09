@@ -62,10 +62,11 @@ testing_dataloader = DataLoader(data,batch_size = batch_size)
 for batch, (D,P) in enumerate(testing_dataloader):
     pred = model(P)
     plt.plot(egrid,torch.squeeze(D),c="r",label="Truth")
-    plt.plot(egrid,np.squeeze(pred.detach().numpy()),c="blue",label="NN model")
+    plt.plot(egrid,np.squeeze(pred.detach().numpy()),c="blue",label="NN model",ls="--")
     plt.legend()
     plt.xlabel("Energy in keV")
     plt.ylabel("Flux")
     plt.savefig(f"samples/com_{batch}.png")
+    plt.clf()
     if batch > 30:
         break
