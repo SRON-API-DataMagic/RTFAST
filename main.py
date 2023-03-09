@@ -24,8 +24,10 @@ class custom_data(Dataset):
         return self.par_list.shape[0]
     
     def __getitem__(self,idx):
+        print(self.data)
         datum = self.data[idx]
         print(datum)
+        print(self.par_list)
         parameters = self.par_list[idx]
         print(parameters)
         
