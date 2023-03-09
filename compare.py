@@ -60,7 +60,7 @@ data = custom_data(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
 for batch, (D,P) in enumerate(testing_dataloader):
-    pred = model(pars)
+    pred = model(P)
     plt.plot(egrid,D,c="r",label="Truth")
     plt.plot(egrid,pred,c="blue",label="NN model")
     plt.legend()
