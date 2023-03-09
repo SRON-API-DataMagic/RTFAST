@@ -23,7 +23,7 @@ class custom_data(Dataset):
     def __len__(self):
         return self.par_list.shape[0]
     
-    def __get_item__(self,idx):
+    def __getitem__(self,idx):
         datum = self.data[idx]
         parameters = self.par_list[idx]
         
