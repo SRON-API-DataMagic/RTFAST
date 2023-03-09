@@ -25,7 +25,9 @@ class custom_data(Dataset):
     
     def __getitem__(self,idx):
         datum = self.data[idx]
+        print(datum)
         parameters = self.par_list[idx]
+        print(parameters)
         
         return datum,parameters
 
