@@ -18,7 +18,10 @@ def create_blank_numpy_file():
     pars = [[6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,4e-5,
             20e-5,0.95,0,-0.8,0.3,2.2e-4,1,1.]]
     pars = np.asarray(pars)
-    print(pars)
+    data = [np.zeros(4096)]
+    data = np.asarray(data)
+    print(data)
+    np.save("data.npy",data)
     np.save("pars.npy",pars)
 
 class custom_data(Dataset):
