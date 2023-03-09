@@ -135,7 +135,9 @@ with open("data.npy","rb") as f1:
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
+print(np.all(data==0))
 data = custom_data(pars,data)
+
 
 batch_size = 12
 training_dataloader = DataLoader(data,batch_size = batch_size)
