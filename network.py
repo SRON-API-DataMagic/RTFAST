@@ -3,6 +3,7 @@ This program comprimises the neural network structure used as a base for the
 rtdist emulator.
 """
 from torch import nn
+import torch
 
 
 class NeuralNetwork(nn.Module):
@@ -12,13 +13,14 @@ class NeuralNetwork(nn.Module):
         self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
             nn.Linear(26,data_len),
-            nn.ReLU(),
-            nn.Linear(data_len,data_len)
+            nn.ReLU()
             ) 
         self.double()
+        self.mul = torch.Mul()
     
     def forward(self,pars):
         pars = self.flatten(pars)
         result = self.LinearStack(pars)
+        result = self.mul(result,-1)
         return result
 
