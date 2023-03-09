@@ -11,6 +11,7 @@ from torchvision.transforms import ToTensor
 from torch.optim import Adam
 import math
 import time
+import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 import os
@@ -79,6 +80,7 @@ def train(dataloader,model,optimizer,loss_fn):
     model.train()
     size = len(dataloader.dataset)
     batch_size = 12
+    loss_arr = []
     for batch, (D,P) in enumerate(dataloader):
         D[D<1e-10] = 1e-10
         D = torch.log10(D)
@@ -90,9 +92,11 @@ def train(dataloader,model,optimizer,loss_fn):
         optimizer.step()
         loss, current = loss.item(), (batch*batch_size + 1)
         print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        loss_arr.append(loss)
         batch += 1
-        
-    return model, optimizer
+    loss_arr = np.asarray(loss_arr)
+    avg_loss = np.mean(loss_arr)
+    return model, optimizer , avg_loss
 
 def test(dataloader,model,loss_fn):
     model.eval()
@@ -131,7 +135,7 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
-data,pars = pregenerate_models(500, egrid)
+data,pars = pregenerate_models(100, egrid)
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
@@ -156,13 +160,24 @@ i = 0
 loss_fn = nn.MSELoss()
 loss = 100
 
+tr_loss_arr = []
+te_loss_arr = []
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    model, optimizer = train(training_dataloader,model,optimizer,loss_fn)
+    model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
+    te_loss_arr.append(loss)
+    tr_loss_arr.append(train_loss)
     i+=1
     
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
 print("Saved PyTorch Model State to model.pth")
+
+plt.plot(tr_loss_arr,label="training loss")
+plt.plot(te_loss_arr,label="testing loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.legend()
+plt.savefig("loss_plot.png")
