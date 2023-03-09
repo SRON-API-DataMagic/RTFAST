@@ -6,12 +6,27 @@ import generator
 import network
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader,Dataset
 from torchvision.transforms import ToTensor
 from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
 import pandas as pd
+
+class custom_data(Dataset):
+    
+    def __init__(self,pars,data):
+        self.par_list = pars
+        self.data = data
+    
+    def __len__(self):
+        return self.par_list.shape[0]
+    
+    def __get_item__(self,idx):
+        datum = self.data[idx]
+        parameters = self.par_list[idx]
+        
+        return datum,parameters
 
 def pregenerate_models(n,egrid):
     all_data = []
@@ -45,14 +60,13 @@ def save_data(data,pars):
     return
     
 
-def train(model,optimizer,loss_fn,true_func,par_gen,egrid):
+def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
     model.train()
     batches = 10000
-    for batch in range(batches):
-        pars = par_gen()
-        truth = true_func(pars,egrid)
-        pred = ToTensor(model(pars))
-        loss = loss_fn(pred,truth)
+    batch = 0
+    for D,P in dataloader:
+        pred = ToTensor(model(P))
+        loss = loss_fn(pred,D)
         
         optimizer.zero_grad()
         loss.backward()
@@ -61,10 +75,11 @@ def train(model,optimizer,loss_fn,true_func,par_gen,egrid):
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{batches:>5d}]")
-    
+        batch += 1
+        
     return model, optimizer
 
-def test(model,loss_fn,true_func,par_gen,egrid):
+def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     model.eval()
     test_loss = 0
     batches = 1000
@@ -100,6 +115,20 @@ egrid = rmf.e_min
 
 data,pars = pregenerate_models(20, egrid)
 
+test_data = custom_data(pars, data)
+
+with ("data.npy","rb") as f1:
+    data = np.load(f1)
+
+with ("pars.npy","rb") as f2:
+    pars = np.load(f2)
+
+data = custom_data(pars,data)
+
+batch_size = 12
+training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
+
 model = network.NeuralNetwork(len(egrid))
 optimizer = 0
 max_iters = 10000
@@ -108,8 +137,8 @@ i = 0
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    train(model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen,egrid)
-    test(model,nn.MSEloss,generator.rtdist_lags,generator.par_gen,egrid)
+    model, optimizer = train(training_dataloader,model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen,egrid)
+    test(testing_dataloader,model,nn.MSEloss,generator.rtdist_lags,generator.par_gen,egrid)
     
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
