@@ -41,8 +41,8 @@ def pregenerate_models(n,egrid):
         all_pars.append(pars)
     all_data = np.asarray(all_data)
     all_pars = np.asarray(all_pars)
-    new_data = np.load("data.npy",allow_pickle=True)
-    new_pars = np.load("pars.npy",allow_pickle=True)
+    new_data = np.load("data.npy")
+    new_pars = np.load("pars.npy")
     with open("data.npy","wb") as f1:
         new_data = np.append(new_data,all_data)
         np.save(f1,new_data)
