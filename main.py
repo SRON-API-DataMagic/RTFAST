@@ -16,7 +16,7 @@ import pandas as pd
 class custom_data(Dataset):
     
     def __init__(self,pars,data):
-        super().init()
+        super().__init__()
         self.par_list = pars
         self.data = data
     
