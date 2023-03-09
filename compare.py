@@ -58,7 +58,7 @@ with open("pars.npy","rb") as f2:
 data = custom_data(pars,data)
 
 for i in range(n):
-    pars = data.pars[i]
+    pars = data.par_list[i]
     data = data.data[i]
     pred = model(pars)
     plt.plot(egrid,data,c="r",label="Truth")
