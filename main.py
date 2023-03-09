@@ -17,10 +17,13 @@ def pregenerate_models(n,egrid):
     all_data = []
     all_pars = []
     for i in range(n):
+        print(f"Generating model {i+1}")
         pars = generator.pregen()
         data = generator.rtdist_flux(pars, egrid)
         all_data.append(data)
         all_pars.append(pars)
+        pars = np.asarray(pars)
+        data = np.asarray(data)
         with open("data.npy","wb") as f1:
             np.save(f1,data)
         with open("pars.npy","wb") as f2:
@@ -81,7 +84,7 @@ egrid = rmf.e_min
 
 data,pars = pregenerate_models(20, egrid)
 
-model = network.NeuralNetwork()
+model = network.NeuralNetwork(len(egrid))
 optimizer = 0
 max_iters = 10000
 i = 0

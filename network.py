@@ -7,10 +7,10 @@ from torch import nn
 
 class NeuralNetwork(nn.Module):
     
-    def __init__(self):
+    def __init__(self,data_len):
         super().__init__()
         self.LinearStack = nn.Sequential(
-            nn.linear(25,4096),
+            nn.Linear(25,data_len),
             nn.Relu()
             ) 
     
