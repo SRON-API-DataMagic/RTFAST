@@ -119,6 +119,8 @@ egrid = rmf.e_min
 
 data,pars = pregenerate_models(20, egrid)
 
+print(pars)
+
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
