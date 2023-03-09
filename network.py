@@ -14,6 +14,7 @@ class NeuralNetwork(nn.Module):
             nn.Linear(26,data_len),
             nn.ReLU()
             ) 
+        self.double()
     
     def forward(self,pars):
         pars = self.flatten(pars)
