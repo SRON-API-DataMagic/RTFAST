@@ -45,10 +45,12 @@ def pregenerate_models(n,egrid):
     new_pars = np.load("pars.npy")
     with open("data.npy","wb") as f1:
         new_data = np.append(new_data,all_data)
+        print(new_data)
         np.save(f1,new_data)
     f1.close()
     with open("pars.npy","wb") as f2:
         new_pars = np.append(new_pars,all_pars)
+        print(new_pars)
         np.save(f2,new_pars)
     f2.close()
     return all_data,all_pars
