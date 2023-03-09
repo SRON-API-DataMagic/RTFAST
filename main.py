@@ -131,7 +131,7 @@ batch_size = 1
 training_dataloader = DataLoader(data,batch_size = batch_size)
 testing_dataloader = DataLoader(test_data,batch_size = batch_size)
 
-model = network.NeuralNetwork(pars.shape[1],len(egrid))
+model = network.NeuralNetwork(len(egrid))
 optimizer = 0
 max_iters = 10000
 i = 0
