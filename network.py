@@ -10,7 +10,7 @@ class NeuralNetwork(nn.Module):
     def __init__(self,data_len):
         super().__init__()
         self.LinearStack = nn.Sequential(
-            nn.Linear(None,data_len),
+            nn.Linear(1,data_len),
             nn.ReLU()
             ) 
     
