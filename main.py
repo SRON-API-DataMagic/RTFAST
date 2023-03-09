@@ -81,6 +81,7 @@ def train(dataloader,model,optimizer,loss_fn):
     batch_size = 12
     for batch, (D,P) in enumerate(dataloader):
         D[D==0] = -50
+        print(np.any(D==0))
         D = torch.log10(D)
         D = D.double()
         pred = model(P)
