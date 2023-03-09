@@ -58,10 +58,10 @@ def pregenerate_models(n,egrid):
 def save_data(data,pars):
     data = np.asarray(data)
     pars = np.asarray(pars)
-    with open("data.npy","wb") as f:
+    with open("data.npy","ab") as f:
         np.save(f,data)
     f.close()
-    with open("pars.npy","wb") as f:
+    with open("pars.npy","ab") as f:
         np.save(f,pars)
     f.close()
     return
