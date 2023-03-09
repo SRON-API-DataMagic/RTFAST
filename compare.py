@@ -54,18 +54,16 @@ with open("data.npy","rb") as f1:
 
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
-    print(pars.dtype)
 
+batch_size = 1
 data = custom_data(pars,data)
+testing_dataloader = DataLoader(data,batch_size = batch_size)
 
-for i in range(n):
-    pars = data.par_list[i]
-    print(pars)
-    data = data.data[i]
+for batch, (D,P) in enumerate(testing_dataloader):
     pred = model(pars)
-    plt.plot(egrid,data,c="r",label="Truth")
+    plt.plot(egrid,D,c="r",label="Truth")
     plt.plot(egrid,pred,c="blue",label="NN model")
     plt.legend()
     plt.xlabel("Energy in keV")
     plt.ylabel("Flux")
-    plt.savefig(f"com_{i}.png")
+    plt.savefig(f"/samples/com_{batch}.png")
