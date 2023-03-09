@@ -9,7 +9,7 @@ from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torchvision.transforms import ToTensor
 from torch.optim import Adam
-import math.ceil as ceil
+import math
 
 from sherpa.astro.ui import unpack_rmf
 import os
