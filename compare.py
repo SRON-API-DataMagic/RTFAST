@@ -66,6 +66,6 @@ for batch, (D,P) in enumerate(testing_dataloader):
     plt.legend()
     plt.xlabel("Energy in keV")
     plt.ylabel("Flux")
-    plt.savefig(f"/samples/com_{batch}.png")
+    plt.savefig(f"samples/com_{batch}.png")
     if batch > 30:
         break
