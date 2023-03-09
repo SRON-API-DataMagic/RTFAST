@@ -80,6 +80,7 @@ def train(dataloader,model,optimizer,loss_fn):
     size = len(dataloader.dataset)
     batch_size = 12
     for batch, (D,P) in enumerate(dataloader):
+        D = torch.log10(D)
         D = D.double()
         pred = model(P)
         loss = loss_fn(pred,D)
@@ -153,7 +154,7 @@ loss_fn = nn.MSELoss()
 loss = 100
 
 print("Beginning training")
-while i < max_iters and loss > 0.01:
+while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
