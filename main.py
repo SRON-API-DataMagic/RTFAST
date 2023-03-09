@@ -63,9 +63,7 @@ def save_data(data,pars):
 def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
     model.train()
     batches = 10000
-    batch = 0
-    for D,P in dataloader:
-        print(P.size())
+    for batch, (D,P) in enumerate(dataloader):
         pred = ToTensor(model(P))
         loss = loss_fn(pred,D)
         
@@ -85,11 +83,9 @@ def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     test_loss = 0
     batches = 1000
     with torch.no_grad():
-        for batch in range(batches):
-            pars = par_gen()
-            truth = true_func(pars)
-            pred = model(pars)
-            test_loss += loss_fn(pred, truth).item()
+        for batch, (D,P) in enumerate(dataloader):
+            pred = model(P)
+            test_loss += loss_fn(pred, D).item()
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
 
