@@ -63,7 +63,7 @@ def save_data(data,pars):
 
 def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
     model.train()
-    batches = len(dataloader)
+    size = len(dataloader.dataset)
     for batch, (D,P) in enumerate(dataloader):
         D = D.double()
         pred = model(P)
@@ -74,7 +74,7 @@ def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
         
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{batches:>5d}]")
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
         batch += 1
         
     return model, optimizer
