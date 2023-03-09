@@ -86,7 +86,7 @@ def train(dataloader,model,optimizer,loss_fn):
         D = torch.log10(D)
         D = D.double()
         pred = model(P)
-        loss = loss_fn(-pred,D)
+        loss = loss_fn(pred,D)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -107,7 +107,7 @@ def test(dataloader,model,loss_fn):
             D[D<1e-10] = 1e-10
             D = torch.log10(D)
             pred = model(P)
-            test_loss += loss_fn(-pred, D).item()
+            test_loss += loss_fn(pred, D).item()
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
     return test_loss

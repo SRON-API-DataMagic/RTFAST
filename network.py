@@ -11,7 +11,9 @@ class NeuralNetwork(nn.Module):
         super().__init__()
         self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
-            nn.Linear(26,data_len)
+            nn.Linear(26,data_len),
+            nn.ReLU(),
+            nn.Mul()
             ) 
         self.double()
     
