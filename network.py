@@ -11,7 +11,7 @@ class NeuralNetwork(nn.Module):
         super().__init__()
         self.LinearStack = nn.Sequential(
             nn.Linear(25,data_len),
-            nn.Relu()
+            nn.ReLU()
             ) 
     
     def forward(self,pars):
