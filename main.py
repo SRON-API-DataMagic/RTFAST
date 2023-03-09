@@ -129,6 +129,7 @@ with open("data.npy","rb") as f1:
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
+print(pars)
 data = custom_data(pars,data)
 
 batch_size = 1
