@@ -11,7 +11,7 @@ from torchvision.transforms import ToTensor
 from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
-import tables
+
 
 class custom_data(Dataset):
     
