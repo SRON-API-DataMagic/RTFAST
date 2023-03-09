@@ -7,7 +7,8 @@ import network
 import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
-from torchvision.transforms import from_numpy
+from torchvision.transforms import ToTensor
+
 from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
@@ -24,8 +25,8 @@ class custom_data(Dataset):
         return self.par_list.shape[0]
     
     def __getitem__(self,idx):
-        datum = from_numpy(self.data[idx])
-        parameters = from_numpy(self.par_list[idx])
+        datum = torch.from_numpy(self.data[idx])
+        parameters = torch.from_numpy(self.par_list[idx])
         return datum,parameters
 
 def pregenerate_models(n,egrid):
