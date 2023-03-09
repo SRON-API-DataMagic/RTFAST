@@ -16,11 +16,10 @@ class NeuralNetwork(nn.Module):
             nn.ReLU()
             ) 
         self.double()
-        self.mul = torch.mul()
     
     def forward(self,pars):
         pars = self.flatten(pars)
         result = self.LinearStack(pars)
-        result = self.mul(result,-1)
+        result = torch.mul(result,-1)
         return result
 
