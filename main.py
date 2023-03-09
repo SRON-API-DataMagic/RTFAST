@@ -46,6 +46,8 @@ def pregenerate_models(n,egrid):
     
     f1.close()
     f2.close()
+    all_data = np.asarray(all_data)
+    all_pars = np.asarray(all_pars)
     return all_data,all_pars
 
 def save_data(data,pars):
