@@ -14,6 +14,12 @@ from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
 
+def create_blank_numpy_file():
+    pars = [[6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,4e-5,
+            20e-5,0.95,0,-0.8,0.3,2.2e-4,1,1.]]
+    pars = np.asarray(pars)
+    print(pars)
+    np.save("pars.npy",pars)
 
 class custom_data(Dataset):
     
@@ -41,8 +47,9 @@ def pregenerate_models(n,egrid):
         all_pars.append(pars)
     all_data = np.asarray(all_data)
     all_pars = np.asarray(all_pars)
-    new_data = np.load("data.npy")
     new_pars = np.load("pars.npy")
+    print(new_pars)
+    new_data = np.load("data.npy")
     with open("data.npy","wb") as f1:
         new_data = np.append(new_data,all_data)
         print(new_data)
@@ -96,6 +103,8 @@ def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
     return test_loss
+
+create_blank_numpy_file()
 
 torch.set_default_dtype(torch.double)
 
