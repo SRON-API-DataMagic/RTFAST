@@ -10,14 +10,15 @@ from torch.utils.data import DataLoader,Dataset
 from torchvision.transforms import ToTensor
 from torch.optim import Adam
 import math
+import time
 
 from sherpa.astro.ui import unpack_rmf
 import os
 import numpy as np
 
 def create_blank_numpy_file():
-    pars = [[6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,4e-5,
-            20e-5,0.95,0,-0.8,0.3,2.2e-4,1,1.]]
+    pars = [[6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+            0,0.95,0,-0.8,0.3,2.2e-4,1,1.]]
     pars = np.asarray(pars)
     data = [np.zeros(4096)]
     data = np.asarray(data)
@@ -74,7 +75,7 @@ def save_data(data,pars):
     return
     
 
-def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
+def train(dataloader,model,optimizer,loss_fn):
     model.train()
     size = len(dataloader.dataset)
     batch_size = 12
@@ -91,7 +92,7 @@ def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
         
     return model, optimizer
 
-def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
+def test(dataloader,model,loss_fn):
     model.eval()
     test_loss = 0
     batches = len(dataloader)
@@ -136,6 +137,7 @@ with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
 print(np.all(data==0))
+time.sleep(1)
 data = custom_data(pars,data)
 
 
@@ -153,8 +155,8 @@ loss = 100
 print("Beginning training")
 while i < max_iters and loss > 0.01:
     print(f"Epoch {i+1} \n -----------------------")
-    model, optimizer = train(training_dataloader,model,optimizer,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
-    loss = test(testing_dataloader,model,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
+    model, optimizer = train(training_dataloader,model,optimizer)
+    loss = test(testing_dataloader,model,loss_fn)
     i+=1
     
 print("Completed training")
