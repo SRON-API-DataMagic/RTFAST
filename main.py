@@ -8,6 +8,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torchvision.transforms import ToTensor
+from torch.optim import Adam
 
 from sherpa.astro.ui import unpack_rmf
 import os
@@ -128,7 +129,7 @@ training_dataloader = DataLoader(data,batch_size = batch_size)
 testing_dataloader = DataLoader(test_data,batch_size = batch_size)
 
 model = network.NeuralNetwork(len(egrid))
-optimizer = 0
+optimizer = Adam(model.parameters())
 max_iters = 10000
 i = 0
 loss_fn = nn.MSELoss()
