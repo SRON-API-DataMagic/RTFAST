@@ -16,7 +16,7 @@ class NeuralNetwork(nn.Module):
             nn.ReLU()
             ) 
         self.double()
-        self.mul = torch.Mul()
+        self.mul = torch.mul()
     
     def forward(self,pars):
         pars = self.flatten(pars)
