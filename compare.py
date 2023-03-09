@@ -7,7 +7,24 @@ import network
 import os
 from sherpa.astro.ui import unpack_rmf
 import matplotlib.pyplot as plt
+import numpy as np
+from torch.utils.data import DataLoader,Dataset
 
+class custom_data(Dataset):
+    
+    def __init__(self,pars,data):
+        super().__init__()
+        self.par_list = pars
+        self.data = data
+    
+    def __len__(self):
+        return self.par_list.shape[0]
+    
+    def __getitem__(self,idx):
+        datum = torch.from_numpy(self.data[idx])
+        parameters = torch.from_numpy(self.par_list[idx])
+        return datum,parameters
+    
 wrk_dir = os.getcwd()
 
 #set envionmental variables required in xspec with simrtdist
@@ -32,9 +49,17 @@ model = network.NeuralNetwork(len(egrid))
 model.load_state_dict(torch.load("model.pth"))
 n = 10
 
+with open("data.npy","rb") as f1:
+    data = np.load(f1)
+
+with open("pars.npy","rb") as f2:
+    pars = np.load(f2)
+
+data = custom_data(pars,data)
+
 for i in range(n):
-    pars = generator.pregen()
-    data = generator.rtdist_flux(pars, egrid)
+    pars = data.pars[i]
+    data = data.data[i]
     pred = model(pars)
     plt.plot(egrid,data,c="r",label="Truth")
     plt.plot(egrid,pred,c="blue",label="NN model")
