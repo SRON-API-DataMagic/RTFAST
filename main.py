@@ -155,7 +155,7 @@ loss = 100
 print("Beginning training")
 while i < max_iters and loss > 0.01:
     print(f"Epoch {i+1} \n -----------------------")
-    model, optimizer = train(training_dataloader,model,optimizer)
+    model, optimizer = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
     i+=1
     
