@@ -72,7 +72,7 @@ def train(dataloader,model,optimizer,loss_fn,true_func,par_gen,egrid):
         loss.backward()
         optimizer.step()
         
-        if batch % 100 == 0:
+        if batch % 10 == 0:
             loss, current = loss.item(), (batch + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
         batch += 1
@@ -89,6 +89,7 @@ def test(dataloader,model,loss_fn,true_func,par_gen,egrid):
             test_loss += loss_fn(pred, D).item()
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
+    return test_loss
 
 torch.set_default_dtype(torch.double)
 
@@ -133,12 +134,13 @@ optimizer = Adam(model.parameters())
 max_iters = 10000
 i = 0
 loss_fn = nn.MSELoss()
+loss = 100
 
 print("Beginning training")
-while i < max_iters:
+while i < max_iters and loss > 0.01:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer = train(training_dataloader,model,optimizer,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
-    test(testing_dataloader,model,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
+    loss = test(testing_dataloader,model,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
     i+=1
     
 print("Completed training")
