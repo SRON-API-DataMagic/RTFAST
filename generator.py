@@ -80,3 +80,16 @@ def rtdist_lags(pars,egrid):
     dE = np.diff(egrid)
     output = y[:-1]/dE
     return output
+
+
+def pregen():
+    pars = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,4e-5,20e-5,0.95,0,
+            -0.8,0.3,2.2e-4,260000.,400,1,1.]
+    uni = np.random.uniform
+    a = uni(0.1,0.998)
+    mass = 10**uni(1,11)
+    
+    pars[1] = a
+    pars[13] = mass
+    
+    return pars

@@ -8,8 +8,39 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
-from sherpa.astro.ui import unpack_arf,unpack_rmf
+from sherpa.astro.ui import unpack_rmf
 import os
+import numpy as np
+import pandas as pd
+
+def pregenerate_models(n,egrid):
+    all_data = []
+    all_pars = []
+    for i in range(n):
+        pars = generator.pregen()
+        data = generator.rtdist_flux(pars, egrid)
+        all_data.append(data)
+        all_pars.append(pars)
+        with open("data.npy","wb") as f1:
+            np.save(f1,data)
+        with open("pars.npy","wb") as f2:
+            np.save(f2,pars)
+    
+    f1.close()
+    f2.close()
+    return all_data,all_pars
+
+def save_data(data,pars):
+    data = np.asarray(data)
+    pars = np.asarray(pars)
+    with open("data.npy","wb") as f:
+        np.save(f,data)
+    f.close()
+    with open("pars.npy","wb") as f:
+        np.save(f,pars)
+    f.close()
+    return
+    
 
 def train(model,optimizer,loss_fn,true_func,par_gen):
     model.train()
@@ -17,7 +48,7 @@ def train(model,optimizer,loss_fn,true_func,par_gen):
     for batch in range(batches):
         pars = par_gen()
         truth = true_func(pars)
-        pred = model(pars)
+        pred = ToTensor(model(pars))
         loss = loss_fn(pred,truth)
         
         optimizer.zero_grad()
@@ -48,6 +79,8 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
+data,pars = pregenerate_models(20, egrid)
+
 model = network.NeuralNetwork()
 optimizer = 0
 max_iters = 10000
@@ -56,7 +89,7 @@ i = 0
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    train(model,optimizer,nn.PoissonNLLLoss,generator.rtdist_lags,generator.par_gen)
+    train(model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen)
     test(model,nn.MSEloss,generator.rtdist_lags,generator.par_gen)
     
 print("Completed training")
