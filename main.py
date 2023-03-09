@@ -80,7 +80,7 @@ def train(dataloader,model,optimizer,loss_fn):
     model.train()
     size = len(dataloader.dataset)
     batch_size = 12
-    loss_arr = []
+    loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
         D[D<1e-10] = 1e-10
         D = torch.log10(D)
@@ -93,10 +93,9 @@ def train(dataloader,model,optimizer,loss_fn):
         if batch % 100 == 0:
             loss, current = loss.item(), (batch*batch_size + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr.append(loss.item())
+        loss_arr += loss
         batch += 1
-    loss_arr = np.asarray(loss_arr)
-    avg_loss = np.mean(loss_arr)
+    avg_loss = (loss_arr)/len(dataloader)
     return model, optimizer , avg_loss
 
 def test(dataloader,model,loss_fn):
