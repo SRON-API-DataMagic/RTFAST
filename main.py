@@ -117,10 +117,10 @@ data,pars = pregenerate_models(20, egrid)
 
 test_data = custom_data(pars, data)
 
-with ("data.npy","rb") as f1:
+with open("data.npy","rb") as f1:
     data = np.load(f1)
 
-with ("pars.npy","rb") as f2:
+with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
 data = custom_data(pars,data)
