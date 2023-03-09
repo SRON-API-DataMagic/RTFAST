@@ -9,12 +9,14 @@ class NeuralNetwork(nn.Module):
     
     def __init__(self,data_len):
         super().__init__()
+        self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
-            nn.Linear(1,data_len),
+            nn.Linear(26,data_len),
             nn.ReLU()
             ) 
     
     def forward(self,pars):
+        pars = self.flatten(pars)
         result = self.LinearStack(pars)
         return result
 
