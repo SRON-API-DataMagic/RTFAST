@@ -131,7 +131,7 @@ model = network.NeuralNetwork(len(egrid))
 optimizer = 0
 max_iters = 10000
 i = 0
-loss_fn = nn.MSELoss
+loss_fn = nn.MSELoss()
 
 print("Beginning training")
 while i < max_iters:
