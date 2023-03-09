@@ -20,7 +20,6 @@ def create_blank_numpy_file():
     pars = np.asarray(pars)
     data = [np.zeros(4096)]
     data = np.asarray(data)
-    print(data)
     np.save("data.npy",data)
     np.save("pars.npy",pars)
 
@@ -51,16 +50,13 @@ def pregenerate_models(n,egrid):
     all_data = np.asarray(all_data)
     all_pars = np.asarray(all_pars)
     new_pars = np.load("pars.npy")
-    print(new_pars)
     new_data = np.load("data.npy")
     with open("data.npy","wb") as f1:
-        new_data = np.append(new_data,all_data)
-        print(new_data)
+        new_data = np.append(new_data,all_data,axis=0)
         np.save(f1,new_data)
     f1.close()
     with open("pars.npy","wb") as f2:
-        new_pars = np.append(new_pars,all_pars)
-        print(new_pars)
+        new_pars = np.append(new_pars,all_pars,axis=0)
         np.save(f2,new_pars)
     f2.close()
     return all_data,all_pars
