@@ -99,6 +99,7 @@ def test(dataloader,model,loss_fn):
     batches = len(dataloader)
     with torch.no_grad():
         for batch, (D,P) in enumerate(dataloader):
+            D = torch.log10(D)
             pred = model(P)
             test_loss += loss_fn(pred, D).item()
     test_loss /= batches
