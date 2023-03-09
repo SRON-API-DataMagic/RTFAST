@@ -131,12 +131,13 @@ model = network.NeuralNetwork(len(egrid))
 optimizer = 0
 max_iters = 10000
 i = 0
+loss_fn = nn.MSELoss
 
 print("Beginning training")
 while i < max_iters:
     print(f"Epoch {i+1} \n -----------------------")
-    model, optimizer = train(training_dataloader,model,optimizer,nn.MSELoss,generator.rtdist_lags,generator.par_gen,egrid)
-    test(testing_dataloader,model,nn.MSEloss,generator.rtdist_lags,generator.par_gen,egrid)
+    model, optimizer = train(training_dataloader,model,optimizer,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
+    test(testing_dataloader,model,loss_fn,generator.rtdist_lags,generator.par_gen,egrid)
     
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
