@@ -150,8 +150,8 @@ data = custom_data(pars,data)
 
 
 batch_size = 12
-training_dataloader = DataLoader(data,batch_size = batch_size)
-testing_dataloader = DataLoader(test_data,batch_size = batch_size)
+training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = Adam(model.parameters())
