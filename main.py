@@ -171,7 +171,7 @@ while i < max_iters and imp < 50:
     loss = test(testing_dataloader,model,loss_fn)
     te_loss_arr.append(loss)
     tr_loss_arr.append(train_loss)
-    if train_loss > (last_sig_best - 0.1*last_sig_best):
+    if train_loss < (last_sig_best - 0.1*last_sig_best):
         imp = 0
         last_sig_best = train_loss
         print(f"New significant best: {train_loss}")
