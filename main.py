@@ -174,12 +174,13 @@ while i < max_iters and imp < 50:
         imp = 0
         last_sig_best = train_loss
         print(f"New significant best: {train_loss}")
+        torch.save(model.state_dict(), "best_model.pth")
     else:
         imp += 1
     i+=1
     
 print("Completed training")
-torch.save(model.state_dict(), "model.pth")
+torch.save(model.state_dict(), "final_model.pth")
 print("Saved PyTorch Model State to model.pth")
 
 plt.plot(tr_loss_arr,label="training loss")
