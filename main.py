@@ -91,8 +91,8 @@ def train(dataloader,model,optimizer,loss_fn):
         loss.backward()
         optimizer.step()
         if batch % 100 == 0:
-            loss, current = loss.detach().item(), (batch*batch_size + 1)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+            loss_b, current = loss.detach().item(), (batch*batch_size + 1)
+            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss.detach().item()
         batch += 1
     avg_loss = (loss_arr)/len(dataloader)
