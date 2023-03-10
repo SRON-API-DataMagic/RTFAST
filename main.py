@@ -168,8 +168,8 @@ while i < max_iters and imp < 50:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
-    te_loss_arr.append(loss)
-    tr_loss_arr.append(train_loss)
+    #te_loss_arr.append(loss)
+    #tr_loss_arr.append(train_loss)
     if train_loss > (last_sig_best - 0.1*last_sig_best):
         imp = 0
         last_sig_best = train_loss
@@ -180,10 +180,11 @@ while i < max_iters and imp < 50:
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
 print("Saved PyTorch Model State to model.pth")
-
+"""
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
 plt.savefig("loss_plot.png")
+"""
