@@ -96,6 +96,7 @@ def train(dataloader,model,optimizer,loss_fn):
         loss_arr += loss.detach().item()
         batch += 1
     avg_loss = (loss_arr)/len(dataloader)
+    print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
 def test(dataloader,model,loss_fn):
@@ -109,7 +110,7 @@ def test(dataloader,model,loss_fn):
             pred = model(P)
             test_loss += loss_fn(pred, D).detach().item()
     test_loss /= batches
-    print(f"Avg loss: {test_loss:>8f}")
+    print(f"Average testing loss: {test_loss:>8f}")
     return test_loss
 
 torch.set_default_dtype(torch.double)
@@ -173,6 +174,7 @@ while i < max_iters and imp < 50:
     if train_loss > (last_sig_best - 0.1*last_sig_best):
         imp = 0
         last_sig_best = train_loss
+        print(f"New significant best: {train_loss}")
     else:
         imp += 1
     i+=1
@@ -183,6 +185,7 @@ print("Saved PyTorch Model State to model.pth")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")
+plt.ylim(0,100)
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
