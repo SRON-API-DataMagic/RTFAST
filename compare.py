@@ -69,7 +69,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_ylabel("Flux")
-    axs[1].plot(egrid,(da-pred)/da,lw=0.5)
+    axs[1].scatter(egrid,(da-pred)/da,ms=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     plt.savefig(f"samples/com_{batch}.png")
