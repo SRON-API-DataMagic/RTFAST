@@ -56,6 +56,7 @@ with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
 batch_size = 1
+pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 

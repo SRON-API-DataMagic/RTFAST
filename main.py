@@ -155,7 +155,7 @@ testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = Adam(model.parameters(),lr = 0.01)
-max_iters = 10000
+max_iters = 500
 i = 0
 imp = 0
 loss_fn = nn.MSELoss()
