@@ -91,9 +91,9 @@ def train(dataloader,model,optimizer,loss_fn):
         loss.backward()
         optimizer.step()
         if batch % 100 == 0:
-            loss, current = loss.item(), (batch*batch_size + 1)
+            loss, current = loss.detach().item(), (batch*batch_size + 1)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr += loss
+        loss_arr += loss.detach().item()
         batch += 1
     avg_loss = (loss_arr)/len(dataloader)
     return model, optimizer , avg_loss
@@ -107,7 +107,7 @@ def test(dataloader,model,loss_fn):
             D[D<1e-10] = 1e-10
             D = torch.log10(D)
             pred = model(P)
-            test_loss += loss_fn(pred, D).item()
+            test_loss += loss_fn(pred, D).detach().item()
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
     return test_loss
@@ -168,8 +168,8 @@ while i < max_iters and imp < 50:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
-    #te_loss_arr.append(loss)
-    #tr_loss_arr.append(train_loss)
+    te_loss_arr.append(loss)
+    tr_loss_arr.append(train_loss)
     if train_loss > (last_sig_best - 0.1*last_sig_best):
         imp = 0
         last_sig_best = train_loss
@@ -180,11 +180,10 @@ while i < max_iters and imp < 50:
 print("Completed training")
 torch.save(model.state_dict(), "model.pth")
 print("Saved PyTorch Model State to model.pth")
-"""
+
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.legend()
 plt.savefig("loss_plot.png")
-"""
