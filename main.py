@@ -95,7 +95,7 @@ def train(dataloader,model,optimizer,loss_fn):
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss.detach().item()
         batch += 1
-    avg_loss = (loss_arr)/len(dataloader)
+    avg_loss = (loss_arr)/size
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
