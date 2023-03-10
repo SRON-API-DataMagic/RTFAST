@@ -85,8 +85,7 @@ def train(dataloader,model,optimizer,loss_fn):
         D[D<1e-10] = 1e-10
         D = torch.log10(D)
         D = D.double()
-        pars = P[1,13]
-        pred = model(pars)
+        pred = model(P)
         loss = loss_fn(pred,D)
         optimizer.zero_grad()
         loss.backward()
@@ -107,8 +106,7 @@ def test(dataloader,model,loss_fn):
         for batch, (D,P) in enumerate(dataloader):
             D[D<1e-10] = 1e-10
             D = torch.log10(D)
-            pars = P[1,13]
-            pred = model(pars)
+            pred = model(P)
             test_loss += loss_fn(pred, D).item()
     test_loss /= batches
     print(f"Avg loss: {test_loss:>8f}")
@@ -138,6 +136,7 @@ rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
 data,pars = pregenerate_models(100, egrid)
+pars = pars[:,[1,13]]
 test_data = custom_data(pars, data)
 
 with open("data.npy","rb") as f1:
@@ -146,8 +145,7 @@ with open("data.npy","rb") as f1:
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
-print(np.all(data==0))
-time.sleep(1)
+pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 
 
