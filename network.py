@@ -12,7 +12,9 @@ class NeuralNetwork(nn.Module):
         self.LinearStack = nn.Sequential(
             nn.Linear(2,256),
             nn.ReLU(),
+            nn.Dropout(),
             nn.Linear(256,512),
+            nn.Dropout(),
             nn.ReLU(),
             nn.Linear(512,data_len)
             ) 
