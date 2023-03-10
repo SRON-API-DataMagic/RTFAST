@@ -19,7 +19,6 @@ class NeuralNetwork(nn.Module):
         self.double()
     
     def forward(self,pars):
-        pars = self.flatten(pars)
         result = self.LinearStack(pars)
         return result
 
