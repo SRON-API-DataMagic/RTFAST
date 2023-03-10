@@ -90,12 +90,12 @@ def train(dataloader,model,optimizer,loss_fn):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        loss_b, current = loss.detach().item(), (batch*batch_size + 1)
         if batch % 100 == 0:
-            loss_b, current = loss.detach().item(), (batch*batch_size + 1)
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr += loss.detach().item()
+        loss_arr += loss_b
         batch += 1
-    avg_loss = (loss_arr)/size
+    avg_loss = loss_arr/len(dataloader)
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
@@ -160,7 +160,6 @@ max_iters = 500
 i = 0
 imp = 0
 loss_fn = nn.MSELoss()
-loss = 100
 last_sig_best = 1e7
 tr_loss_arr = []
 te_loss_arr = []
