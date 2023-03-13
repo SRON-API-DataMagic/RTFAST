@@ -148,5 +148,5 @@ for batch, (D,P) in enumerate(testing_dataloader):
 print("Finished creating random model comparison")
 mass, spin = [], []
 for batch, (D,P) in enumerate(testing_dataloader):
-    spin.append(P[0][0].item(),P[0][1].item())
-    mass.append(P[0][0].item(),P[0][1].item())
+    spin.append(P[0][0].item())
+    mass.append(P[0][1].item())
