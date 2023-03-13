@@ -42,7 +42,7 @@ for key in environ_vars:
 print("Environmental variables successfully set")
 rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
-egrid = rmf.e_min
+egrid = rmf.e_min[10:]
 
 
 model = network.NeuralNetwork(len(egrid))
@@ -63,13 +63,13 @@ testing_dataloader = DataLoader(data,batch_size = batch_size)
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
-    axs[0].plot(egrid,10**pred,c="blue",label="NN model")
-    axs[0].plot(egrid,10**da,c="r",label="Truth",lw=1.)
+    pred = 10**np.squeeze(pred.detach().numpy())[10:]
+    da = 10**torch.squeeze(torch.log10(D))[10:]
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_ylabel("Flux")
-    axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
+    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     plt.savefig(f"samples/{batch}_best_com.png")
@@ -80,8 +80,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
+    pred = np.squeeze(pred.detach().numpy())[10:]
+    da = torch.squeeze(torch.log10(D))[10:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -99,13 +99,13 @@ model.load_state_dict(torch.load("final_model.pth"))
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
-    axs[0].plot(egrid,10**pred,c="blue",label="NN model")
-    axs[0].plot(egrid,10**da,c="r",label="Truth",lw=1.)
+    pred = 10**np.squeeze(pred.detach().numpy())[10:]
+    da = 10**torch.squeeze(torch.log10(D))[10:]
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_ylabel("Flux")
-    axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
+    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     plt.savefig(f"samples/{batch}_final_com.png")
@@ -116,8 +116,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
+    pred = np.squeeze(pred.detach().numpy())[10:]
+    da = torch.squeeze(torch.log10(D))[10:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
