@@ -60,13 +60,13 @@ pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
-egrid = rmf.e_min[10:]
+egrid = rmf.e_min[100:]
 
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = 10**np.squeeze(pred.detach().numpy())[10:]
-    da = 10**torch.squeeze(torch.log10(D))[10:]
+    pred = 10**np.squeeze(pred.detach().numpy())[100:]
+    da = 10**torch.squeeze(torch.log10(D))[100:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -82,8 +82,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())[10:]
-    da = torch.squeeze(torch.log10(D))[10:]
+    pred = np.squeeze(pred.detach().numpy())[100:]
+    da = torch.squeeze(torch.log10(D))[100:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -101,8 +101,8 @@ model.load_state_dict(torch.load("final_model.pth"))
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = 10**np.squeeze(pred.detach().numpy())[10:]
-    da = 10**torch.squeeze(torch.log10(D))[10:]
+    pred = 10**np.squeeze(pred.detach().numpy())[100:]
+    da = 10**torch.squeeze(torch.log10(D))[100:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -118,8 +118,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())[10:]
-    da = torch.squeeze(torch.log10(D))[10:]
+    pred = np.squeeze(pred.detach().numpy())[100:]
+    da = torch.squeeze(torch.log10(D))[100:]
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
