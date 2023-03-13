@@ -136,10 +136,6 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min
 
-data,pars = pregenerate_models(100, egrid)
-pars = pars[:,[1,13]]
-test_data = custom_data(pars, data)
-
 with open("data.npy","rb") as f1:
     data = np.load(f1)
 
@@ -149,6 +145,9 @@ with open("pars.npy","rb") as f2:
 pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 
+data,pars = pregenerate_models(100, egrid)
+pars = pars[:,[1,13]]
+test_data = custom_data(pars, data)
 
 batch_size = 12
 training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
