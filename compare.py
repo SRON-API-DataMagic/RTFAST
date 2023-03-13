@@ -60,16 +60,17 @@ pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
-egrid = rmf.e_min[100:]
+egrid = rmf.e_min
 
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = 10**np.squeeze(pred.detach().numpy())[100:]
-    da = 10**torch.squeeze(torch.log10(D))[100:]
+    pred = 10**np.squeeze(pred.detach().numpy())
+    da = 10**torch.squeeze(torch.log10(D))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
+    axs[0].text(0.75,0.75,f"Spin, Mass: {P}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -82,11 +83,12 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())[100:]
-    da = torch.squeeze(torch.log10(D))[100:]
+    pred = np.squeeze(pred.detach().numpy())
+    da = torch.squeeze(torch.log10(D))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
+    axs[0].text(0.75,0.75,f"Spin, Mass: {P}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -101,11 +103,12 @@ model.load_state_dict(torch.load("final_model.pth"))
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = 10**np.squeeze(pred.detach().numpy())[100:]
-    da = 10**torch.squeeze(torch.log10(D))[100:]
+    pred = 10**np.squeeze(pred.detach().numpy())
+    da = 10**torch.squeeze(torch.log10(D))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
+    axs[0].text(0.75,0.75,f"Spin, Mass: {P}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -118,11 +121,12 @@ for batch, (D,P) in enumerate(testing_dataloader):
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
-    pred = np.squeeze(pred.detach().numpy())[100:]
-    da = torch.squeeze(torch.log10(D))[100:]
+    pred = np.squeeze(pred.detach().numpy())
+    da = torch.squeeze(torch.log10(D))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
+    axs[0].text(0.75,0.75,f"Spin, Mass: {P}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -131,3 +135,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
     plt.close()
     if batch > 30:
         break
+
+mass, spin = [], []
+for batch, (D,P) in enumerate(testing_dataloader):
+    spin.append(P[0])
+    mass.append(P[1])
