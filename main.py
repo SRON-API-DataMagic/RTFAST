@@ -201,6 +201,12 @@ print("Completed training")
 torch.save(model.state_dict(), "final_model.pth")
 print("Saved PyTorch Model State to model.pth")
 
+tr_loss_arr = np.asarray(tr_loss_arr)
+te_loss_arr = np.asarray(te_loss_arr)
+
+np.save("te_loss.npy",te_loss_arr)
+np.save("tr_loss.npy",tr_loss_arr)
+
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
 plt.xlabel("Epoch")
