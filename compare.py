@@ -46,7 +46,7 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load("model.pth"))
+model.load_state_dict(torch.load("best_model.pth"))
 n = 10
 
 with open("data.npy","rb") as f1:
@@ -72,7 +72,60 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
-    plt.savefig(f"samples/com_{batch}.png")
+    plt.savefig(f"samples/best_com_{batch}.png")
+    plt.clf()
+    if batch > 30:
+        break
+
+for batch, (D,P) in enumerate(testing_dataloader):
+    fig, axs = plt.subplots(2,1,sharex=True)
+    pred = model(P)
+    pred = np.squeeze(pred.detach().numpy())
+    da = torch.squeeze(torch.log10(D))
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
+    axs[0].legend()
+    axs[0].set_ylabel("Flux")
+    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
+    axs[1].set_ylabel("Residuals")
+    axs[1].set_xlabel("Energy in keV")
+    plt.savefig(f"samples/log_best_com_{batch}.png")
+    plt.clf()
+    if batch > 30:
+        break
+
+model.load_state_dict(torch.load("final_model.pth"))
+
+for batch, (D,P) in enumerate(testing_dataloader):
+    fig, axs = plt.subplots(2,1,sharex=True)
+    pred = model(P)
+    pred = np.squeeze(pred.detach().numpy())
+    da = torch.squeeze(torch.log10(D))
+    axs[0].plot(egrid,10**pred,c="blue",label="NN model")
+    axs[0].plot(egrid,10**da,c="r",label="Truth",lw=1.)
+    axs[0].legend()
+    axs[0].set_ylabel("Flux")
+    axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
+    axs[1].set_ylabel("Residuals")
+    axs[1].set_xlabel("Energy in keV")
+    plt.savefig(f"samples/final_com_{batch}.png")
+    plt.clf()
+    if batch > 30:
+        break
+
+for batch, (D,P) in enumerate(testing_dataloader):
+    fig, axs = plt.subplots(2,1,sharex=True)
+    pred = model(P)
+    pred = np.squeeze(pred.detach().numpy())
+    da = torch.squeeze(torch.log10(D))
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
+    axs[0].legend()
+    axs[0].set_ylabel("Flux")
+    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
+    axs[1].set_ylabel("Residuals")
+    axs[1].set_xlabel("Energy in keV")
+    plt.savefig(f"samples/log_final_com_{batch}.png")
     plt.clf()
     if batch > 30:
         break
