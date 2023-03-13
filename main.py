@@ -145,12 +145,12 @@ with open("pars.npy","rb") as f2:
 pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 
+batch_size = 12
+training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+
 data,pars = pregenerate_models(100, egrid)
 pars = pars[:,[1,13]]
 test_data = custom_data(pars, data)
-
-batch_size = 12
-training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
 testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
 model = network.NeuralNetwork(len(egrid))
