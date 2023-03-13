@@ -155,7 +155,7 @@ testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = Adam(model.parameters(),lr = 0.01)
-max_iters = 1000
+max_iters = 10000
 i = 0
 imp_tr = 0
 imp_te = 0
@@ -165,14 +165,14 @@ last_sig_best_te = 1e7
 tr_loss_arr = []
 te_loss_arr = []
 print("Beginning training")
-while i < max_iters and (imp_tr < 50 or imp_te < 50):
+while i < max_iters and (imp_tr < 100 or imp_te < 100):
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
     te_loss_arr.append(loss)
     tr_loss_arr.append(train_loss)
-    tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
-    te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
+    tr_bet = (last_sig_best_tr - 0.05*last_sig_best_tr) - train_loss
+    te_bet = (last_sig_best_te - 0.05*last_sig_best_te) - loss
     if tr_bet > 0 and te_bet > 0:
         imp_tr = 0
         imp_te = 0
