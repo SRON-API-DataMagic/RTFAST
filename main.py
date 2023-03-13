@@ -166,7 +166,7 @@ last_sig_best_te = 1e7
 tr_loss_arr = []
 te_loss_arr = []
 print("Beginning training")
-while i < max_iters and imp_tr < 50 and imp_te < 50:
+while i < max_iters and (imp_tr < 50 or imp_te < 50):
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
