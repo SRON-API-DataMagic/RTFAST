@@ -72,6 +72,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].text(0.75,0.75,f"Spin, Mass: {P[0][0],P[0][1]}")
+    print(f"Spin, Mass: {P[0][0],P[0][1]}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -143,5 +144,5 @@ for batch, (D,P) in enumerate(testing_dataloader):
 print("Finished creating random model comparison")
 mass, spin = [], []
 for batch, (D,P) in enumerate(testing_dataloader):
-    spin.append(P[0][0],P[0][1][0])
-    mass.append(P[0][0],P[0][1][1])
+    spin.append(P[0][0],P[0][1])
+    mass.append(P[0][0],P[0][1])
