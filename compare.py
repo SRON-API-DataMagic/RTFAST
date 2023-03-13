@@ -63,6 +63,7 @@ testing_dataloader = DataLoader(data,batch_size = batch_size)
 egrid = rmf.e_min
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    D[D<1e-30] = 1e-30
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
@@ -81,6 +82,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
         break
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    D[D<1e-30] = 1e-30
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
@@ -101,6 +103,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
 model.load_state_dict(torch.load("final_model.pth"))
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    D[D<1e-30] = 1e-30
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
@@ -119,6 +122,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
         break
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    D[D<1e-30] = 1e-30
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
@@ -136,6 +140,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     if batch > 30:
         break
 
+print("Finished creating random model comparison")
 mass, spin = [], []
 for batch, (D,P) in enumerate(testing_dataloader):
     spin.append(P[0][0])
