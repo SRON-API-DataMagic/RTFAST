@@ -71,7 +71,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
-    axs[0].text(0.5,0.75,f"Spin, Mass: {P[0][0].item(),P[0][1].item()}",
+    axs[0].text(0.5,0.75,f"Spin, Mass: {[P[0][0].item(),P[0][1].item()]:>5f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
@@ -91,7 +91,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
-    axs[0].text(0.5,0.75,f"Spin, Mass: {P[0][0].item(),P[0][1].item()}",
+    axs[0].text(0.5,0.75,f"Spin, Mass: {[P[0][0].item(),P[0][1].item()]:>5f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
@@ -113,7 +113,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
-    axs[0].text(0.5,0.75,f"Spin, Mass: {P[0][0].item(),P[0][1].item()}",
+    axs[0].text(0.5,0.75,f"Spin, Mass: {[P[0][0].item(),P[0][1].item()]:>5f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
@@ -133,7 +133,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
-    axs[0].text(0.5,0.75,f"Spin, Mass: {P[0][0].item(),P[0][1].item()}",
+    axs[0].text(0.5,0.75,f"Spin, Mass: {[P[0][0].item(),P[0][1].item()]:>5f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
