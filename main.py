@@ -174,7 +174,7 @@ while i < max_iters and imp_tr < 50 and imp_te < 50:
     tr_loss_arr.append(train_loss)
     tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
     te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
-    if tr_bet < 0 and te_bet < 0:
+    if tr_bet > 0 and te_bet > 0:
         imp_tr = 0
         imp_te = 0
         last_sig_best_tr = train_loss
@@ -182,12 +182,12 @@ while i < max_iters and imp_tr < 50 and imp_te < 50:
         print(f"New best training loss: {train_loss}")
         print(f"New best testing loss: {loss}")
         torch.save(model.state_dict(), "best_model.pth")
-    elif tr_bet < 0:
+    elif tr_bet > 0:
         imp_tr = 0
         last_sig_best_tr = train_loss
         print(f"New best training loss: {train_loss}")
         imp_te += 1
-    elif te_bet < 0:
+    elif te_bet > 0:
         imp_te = 0
         last_sig_best_te = loss
         print(f"New best testing loss: {loss}")
