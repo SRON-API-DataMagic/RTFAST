@@ -70,6 +70,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
+    print(P)
     axs[0].text(0.75,0.75,f"Spin, Mass: {P}")
     axs[0].set_ylabel("Flux")
     axs[1].scatter(egrid,(da-pred),s=0.5)
