@@ -156,27 +156,46 @@ testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
 
 model = network.NeuralNetwork(len(egrid))
 optimizer = Adam(model.parameters(),lr = 0.01)
-max_iters = 500
+max_iters = 1000
 i = 0
-imp = 0
+imp_tr = 0
+imp_te = 0
 loss_fn = nn.MSELoss()
-last_sig_best = 1e7
+last_sig_best_tr = 1e7
+last_sig_best_te = 1e7
 tr_loss_arr = []
 te_loss_arr = []
 print("Beginning training")
-while i < max_iters and imp < 50:
+while i < max_iters and imp_tr < 50 and imp_te < 50:
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
     loss = test(testing_dataloader,model,loss_fn)
     te_loss_arr.append(loss)
     tr_loss_arr.append(train_loss)
-    if train_loss < (last_sig_best - 0.1*last_sig_best):
-        imp = 0
-        last_sig_best = train_loss
-        print(f"New significant best: {train_loss}")
+    tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
+    te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
+    if tr_bet < 0 and te_bet < 0:
+        imp_tr = 0
+        imp_te = 0
+        last_sig_best_tr = train_loss
+        last_sig_best_te = loss
+        print(f"New best training loss: {train_loss}")
+        print(f"New best testing loss: {loss}")
         torch.save(model.state_dict(), "best_model.pth")
+    elif tr_bet < 0:
+        imp_tr = 0
+        last_sig_best_tr = train_loss
+        print(f"New best training loss: {train_loss}")
+        imp_te += 1
+    elif te_bet < 0:
+        imp_te = 0
+        last_sig_best_te = loss
+        print(f"New best testing loss: {loss}")
+        torch.save(model.state_dict(), "best_model.pth")
+        imp_tr += 1
     else:
-        imp += 1
+        imp_tr += 1
+        imp_te += 1
     i+=1
     
 print("Completed training")
