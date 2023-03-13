@@ -72,7 +72,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
-    plt.savefig(f"samples/best_com_{batch}.png")
+    plt.savefig(f"samples/{batch}_best_com.png")
     plt.close()
     if batch > 30:
         break
@@ -89,7 +89,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
-    plt.savefig(f"samples/log_best_com_{batch}.png")
+    plt.savefig(f"samples/{batch}_log_best_com.png")
     plt.close()
     if batch > 30:
         break
@@ -108,7 +108,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,((10**da)-(10**pred))/(10**da),s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
-    plt.savefig(f"samples/final_com_{batch}.png")
+    plt.savefig(f"samples/{batch}_final_com.png")
     plt.close()
     if batch > 30:
         break
@@ -125,7 +125,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
-    plt.savefig(f"samples/log_final_com_{batch}.png")
+    plt.savefig(f"samples/{batch}_log_final_com.png")
     plt.close()
     if batch > 30:
         break
