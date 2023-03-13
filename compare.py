@@ -42,7 +42,7 @@ for key in environ_vars:
 print("Environmental variables successfully set")
 rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
-egrid = rmf.e_min[10:]
+egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
@@ -59,6 +59,8 @@ batch_size = 1
 pars = pars[:,[1,13]]
 data = custom_data(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
+
+egrid = rmf.e_min[10:]
 
 for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
