@@ -215,7 +215,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
 residuals = np.asarray(residuals)
 obj_residuals = []
 for res in residuals:
-    obj_residuals(Residual(res))
+    obj_residuals.append(Residual(res))
 
 dataframe = pd.Dataframe({"Spin":spin,"Mass":mass,"Residuals":residuals})
 
