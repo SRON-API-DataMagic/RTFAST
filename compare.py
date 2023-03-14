@@ -251,22 +251,26 @@ for p in percents:
     mass_ticklabel.append(f"{masses[int(len(masses)*p)]:.2E}")
     
     spin_tick.append(int(len(spins)*p))
-    spin_ticklabel.append(f"{spins[int(len(spins)*p)]:.2E}")
+    spin_ticklabel.append(f"{spins[int(len(spins)*p)]:.2f}")
 
 mass_tick.append(int(len(masses)-1))
 mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
 
 spin_tick.append(int(len(spins))-1)
-spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2E}")
+spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
 
 ax = sns.heatmap(mass_res,cmap="vlag")
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
+ax.set_xlabel("Energy in keV")
+ax.set_ylabel("Mass")
 plt.savefig("mass_hm.png")
 plt.close()
 
 ax = sns.heatmap(spin_res,cmap="vlag")
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
+ax.set_xlabel("Energy in keV")
+ax.set_ylabel("Spin")
 plt.savefig("spin_hm.png")
 plt.close()
