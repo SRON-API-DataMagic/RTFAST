@@ -27,7 +27,7 @@ class custom_data(Dataset):
         return datum,parameters
     
 wrk_dir = os.getcwd()
-
+"""
 tr_loss_arr = np.load("tr_loss.npy")
 te_loss_arr = np.load("te_loss.npy")
 
@@ -40,7 +40,7 @@ plt.ylim(top = 400)
 plt.legend()
 plt.savefig("loss_plot.png")
 plt.close()
-
+"""
 #set envionmental variables required in xspec with simrtdist
 environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
                 "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
