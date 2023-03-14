@@ -210,7 +210,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = 10**np.squeeze(pred.detach().numpy())
     da = 10**torch.squeeze(torch.log10(D))
     resid = (da-pred)/da
-    residuals.append(resid)
+    residuals.append(np.asarray(resid))
     
 residuals = np.asarray(residuals)
 obj_residuals = []
