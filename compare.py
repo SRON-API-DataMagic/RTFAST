@@ -220,11 +220,24 @@ for res in residuals:
 dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
 
 dataframe.sort_values(by="Spin",inplace=True)
+print(dataframe)
 
-ax = sns.heatmap(dataframe.loc[:,["Mass","Residuals"]],annot=True)
+spins = np.zeros((len(dataframe)))
+resids = np.zeros((len(dataframe),4096))
+masses = np.zeros((len(dataframe)))
+
+for i,row in enumerate(dataframe.rows):
+    spins[i] = row["Spin"]
+    resids[i] = row["Residuals"].data
+    masses[i] = row["Mass"]
+
+spin_res = pd.DataFrame(resids,index=spins)
+mass_res = pd.DataFrame(resids,index=masses)
+
+ax = sns.heatmap(mass_res,annot=True)
 plt.savefig("mass_hm.png")
 plt.close()
 
-ax = sns.heatmap(dataframe.loc[:,["Spin","Residuals"]],annot=True)
+ax = sns.heatmap(spin_res,annot=True)
 plt.savefig("spin_hm.png")
 plt.close()
