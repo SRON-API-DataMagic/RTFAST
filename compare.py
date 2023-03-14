@@ -9,6 +9,7 @@ from sherpa.astro.ui import unpack_rmf
 import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader,Dataset
+import pandas as pd
 
 class custom_data(Dataset):
     
@@ -163,6 +164,16 @@ for batch, (D,P) in enumerate(testing_dataloader):
 
 print("Finished creating random model comparison")
 mass, spin = [], []
+residuals = []
 for batch, (D,P) in enumerate(testing_dataloader):
     spin.append(P[0][0].item())
     mass.append(P[0][1].item())
+    pred = model(P)
+    pred = 10**np.squeeze(pred.detach().numpy())
+    da = 10**torch.squeeze(torch.log10(D))
+    resid = (da-pred)/da
+    residuals.append(resid)
+    
+residuals = np.asarray(residuals)
+
+    
