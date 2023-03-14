@@ -219,7 +219,7 @@ for res in residuals:
     obj_residuals.append(Residual(res))
 
 dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
-
+print(dataframe)
 dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
 print(dataframe)
 
@@ -261,6 +261,7 @@ mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
 spin_tick.append(int(len(spins))-1)
 spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
 
+fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(mass_res,cmap="vlag")
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
