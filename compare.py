@@ -229,15 +229,20 @@ masses = np.zeros((len(dataframe)))
 for i,row in dataframe.iterrows():
     spins[i] = row["Spin"]
     resids[i] = row["Residuals"].data
-    masses[i] = row["Mass"]
 
 spin_res = pd.DataFrame(resids,index=spins)
+
+dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
+for i,row in dataframe.iterrows():
+    resids[i] = row["Residuals"].data
+    masses[i] = row["Mass"]
 mass_res = pd.DataFrame(resids,index=masses)
 
-ax = sns.heatmap(mass_res,annot=True)
+print("Building heatmaps")
+ax = sns.heatmap(mass_res)
 plt.savefig("mass_hm.png")
 plt.close()
 
-ax = sns.heatmap(spin_res,annot=True)
+ax = sns.heatmap(spin_res)
 plt.savefig("spin_hm.png")
 plt.close()
