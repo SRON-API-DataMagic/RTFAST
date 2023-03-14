@@ -87,7 +87,7 @@ pars[13] = 1e6
 
 truth = generator.rtdist_flux(pars, egrid)
 truth = np.log10(truth)
-pred = model([0.5,1e6])
+pred = model(torch.tensor([0.5,1e6]))
 fig, axs = plt.subplots(2,1,sharex=True)
 axs[0].plot(egrid,pred,c="blue",label="NN model")
 axs[0].plot(egrid,truth,c="r",label="Truth",lw=1.)
