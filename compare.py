@@ -217,7 +217,7 @@ obj_residuals = []
 for res in residuals:
     obj_residuals.append(Residual(res))
 
-dataframe = pd.Dataframe({"Spin":spin,"Mass":mass,"Residuals":residuals})
+dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":residuals})
 
 dataframe.sort_values(by="Spin",inplace=True)
 
