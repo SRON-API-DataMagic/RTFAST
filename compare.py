@@ -146,7 +146,6 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
-    axs[0].set_ylim(-7,5)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
