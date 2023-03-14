@@ -69,6 +69,10 @@ with open("data.npy","rb") as f1:
 with open("pars.npy","rb") as f2:
     pars = np.load(f2)
 
+print(data.shape)
+print(pars.shape)
+
+
 batch_size = 1
 pars = pars[:,[1,13]]
 data = custom_data(pars,data)
