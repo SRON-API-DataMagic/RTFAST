@@ -136,10 +136,6 @@ for batch, (D,P) in enumerate(testing_dataloader):
     plt.close()
     if batch > 30:
         break
-
-for batch, (D,P) in enumerate(testing_dataloader):
-    D[D<1e-30] = 1e-30
-    spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
@@ -181,10 +177,6 @@ for batch, (D,P) in enumerate(testing_dataloader):
     plt.close()
     if batch > 30:
         break
-
-for batch, (D,P) in enumerate(testing_dataloader):
-    D[D<1e-30] = 1e-30
-    spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
