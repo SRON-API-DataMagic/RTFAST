@@ -164,7 +164,9 @@ last_sig_best_tr = 1e7
 last_sig_best_te = 1e7
 tr_loss_arr = []
 te_loss_arr = []
+
 print("Beginning training")
+
 while i < max_iters and (imp_tr < 100 or imp_te < 100):
     print(f"Epoch {i+1} \n -----------------------")
     model, optimizer, train_loss = train(training_dataloader,model,optimizer,loss_fn)
@@ -198,6 +200,8 @@ while i < max_iters and (imp_tr < 100 or imp_te < 100):
     i+=1
     
 print("Completed training")
+print("Final best training loss:", last_sig_best_tr)
+print("Final best testing loss:", last_sig_best_te)
 torch.save(model.state_dict(), "final_model.pth")
 print("Saved PyTorch Model State to model.pth")
 
@@ -206,12 +210,3 @@ te_loss_arr = np.asarray(te_loss_arr)
 
 np.save("te_loss.npy",te_loss_arr)
 np.save("tr_loss.npy",tr_loss_arr)
-
-plt.plot(tr_loss_arr,label="training loss")
-plt.plot(te_loss_arr,label="testing loss")  
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.yscale("log")
-plt.ylim(top = 2)
-plt.legend()
-plt.savefig("loss_plot.png")
