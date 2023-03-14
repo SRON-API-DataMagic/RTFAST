@@ -251,7 +251,7 @@ for p in percents:
     mass_ticklabel.append(round(masses[int(len(masses)*p)],2))
     
     spin_tick.append(int(len(spins)*p))
-    spin_ticklabel.append(round(spins[int(len(spins)*p)]),2)
+    spin_ticklabel.append(round(spins[int(len(spins)*p)],2))
 
 mass_tick.append(int(len(masses)-1))
 mass_ticklabel.append(round(masses[int(len(masses)-1)],2))
