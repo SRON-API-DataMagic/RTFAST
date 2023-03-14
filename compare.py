@@ -239,6 +239,9 @@ for i,row in dataframe.iterrows():
     resids[i] = row["Residuals"].data
     masses[i] = row["Mass"]
 mass_res = pd.DataFrame(resids,index=masses)
+print(mass_res["Residusals"].equals(spin_res["Residuals"]))
+print(mass_res)
+print(spin_res)
 
 print("Building heatmaps")
 
@@ -254,7 +257,7 @@ for p in percents:
     
     spin_tick.append(int(len(spins)*p))
     spin_ticklabel.append(f"{spins[int(len(spins)*p)]:.2f}")
-
+    
 mass_tick.append(int(len(masses)-1))
 mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
 
