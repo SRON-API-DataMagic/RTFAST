@@ -239,7 +239,7 @@ for i,row in dataframe.iterrows():
     resids[i] = row["Residuals"].data
     masses[i] = row["Mass"]
 mass_res = pd.DataFrame(resids,index=masses)
-print(mass_res["Residusals"].equals(spin_res["Residuals"]))
+print(mass_res["Residuals"].equals(spin_res["Residuals"]))
 print(mass_res)
 print(spin_res)
 
