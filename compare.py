@@ -240,12 +240,27 @@ mass_res = pd.DataFrame(resids,index=masses)
 
 print("Building heatmaps")
 
+percents = [0,0.25,0.5,0.75,1.0]
+mass_tick = []
+mass_ticklabel = []
+spin_tick = []
+spin_ticklabel = []
+
+for p in percents:
+    mass_tick.append(int(len(masses)*p))
+    mass_ticklabel.append(masses[int(len(masses)*p)])
+    
+    spin_tick.append(int(len(spins)*p))
+    spin_ticklabel.append(spins[int(len(spins)*p)])
+
 ax = sns.heatmap(mass_res)
+ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 plt.savefig("mass_hm.png")
 plt.close()
 
 ax = sns.heatmap(spin_res)
+ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 plt.savefig("spin_hm.png")
 plt.close()
