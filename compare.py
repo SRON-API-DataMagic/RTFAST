@@ -219,14 +219,14 @@ for res in residuals:
 
 dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
 
-dataframe.sort_values(by="Spin",inplace=True)
+dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
 print(dataframe)
 
 spins = np.zeros((len(dataframe)))
 resids = np.zeros((len(dataframe),4096))
 masses = np.zeros((len(dataframe)))
 
-for i,row in enumerate(dataframe.rows):
+for i,row in dataframe.iterrows():
     spins[i] = row["Spin"]
     resids[i] = row["Residuals"].data
     masses[i] = row["Mass"]
