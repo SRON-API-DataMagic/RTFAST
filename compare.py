@@ -201,6 +201,7 @@ class Residual():
 
 
 print("Finished creating random model comparison")
+model.load_state_dict(torch.load("best_model.pth"))
 mass, spin = [], []
 residuals = []
 for batch, (D,P) in enumerate(testing_dataloader):
@@ -266,6 +267,7 @@ ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
 plt.savefig("mass_hm.png")
 plt.close()
+
 
 ax = sns.heatmap(spin_res,cmap="vlag")
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
