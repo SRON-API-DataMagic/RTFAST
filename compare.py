@@ -270,7 +270,7 @@ ax.set_ylabel("Mass")
 plt.savefig("mass_hm.png")
 plt.close()
 
-
+fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(spin_res,cmap="vlag")
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
