@@ -234,6 +234,7 @@ for i,row in dataframe.iterrows():
 spin_res = pd.DataFrame(resids,index=spins)
 
 dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
+print(dataframe)
 for i,row in dataframe.iterrows():
     resids[i] = row["Residuals"].data
     masses[i] = row["Mass"]
