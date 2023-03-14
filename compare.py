@@ -248,16 +248,16 @@ spin_ticklabel = []
 
 for p in percents:
     mass_tick.append(int(len(masses)*p))
-    mass_ticklabel.append(masses[int(len(masses)*p)])
+    mass_ticklabel.append(round(masses[int(len(masses)*p)],2))
     
     spin_tick.append(int(len(spins)*p))
-    spin_ticklabel.append(spins[int(len(spins)*p)])
+    spin_ticklabel.append(round(spins[int(len(spins)*p)]),2)
 
 mass_tick.append(int(len(masses)-1))
-mass_ticklabel.append(masses[int(len(masses)-1)])
+mass_ticklabel.append(round(masses[int(len(masses)-1)],2))
 
 spin_tick.append(int(len(spins)*p))
-spin_ticklabel.append(spins[int(len(spins)-1)])
+spin_ticklabel.append(round(spins[int(len(spins)-1)],2))
 
 ax = sns.heatmap(mass_res)
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
@@ -266,7 +266,7 @@ plt.savefig("mass_hm.png")
 plt.close()
 
 ax = sns.heatmap(spin_res)
-ax.set_yticks(mass_tick,labels=mass_ticklabel)
+ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 plt.savefig("spin_hm.png")
 plt.close()
