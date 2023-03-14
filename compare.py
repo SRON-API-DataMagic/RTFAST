@@ -219,29 +219,26 @@ for res in residuals:
     obj_residuals.append(Residual(res))
 
 dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
-print(dataframe)
 dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
-print(dataframe)
 
 spins = np.zeros((len(dataframe)))
-resids = np.zeros((len(dataframe),4096))
+resids_spin = np.zeros((len(dataframe),4096))
 masses = np.zeros((len(dataframe)))
 
 for i,row in dataframe.iterrows():
     spins[i] = row["Spin"]
-    resids[i] = row["Residuals"].data
+    resids_spin[i] = row["Residuals"].data
 
-spin_res = pd.DataFrame(resids,index=spins)
+spin_res = pd.DataFrame(resids_spin,index=spins)
 
+resids_mass = np.zeros((len(dataframe),4096))
 dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
-print(dataframe)
+
 for i,row in dataframe.iterrows():
-    resids[i] = row["Residuals"].data
+    resids_mass[i] = row["Residuals"].data
     masses[i] = row["Mass"]
-mass_res = pd.DataFrame(resids,index=masses)
-print(mass_res.equals(spin_res))
-print(mass_res)
-print(spin_res)
+mass_res = pd.DataFrame(resids_mass,index=masses)
+
 
 print("Building heatmaps")
 
