@@ -241,11 +241,11 @@ mass_res = pd.DataFrame(resids,index=masses)
 print("Building heatmaps")
 
 ax = sns.heatmap(mass_res)
-ax.set_xticks(np.arange(0,20,5),labels=np.arange(0,20,5))
+ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 plt.savefig("mass_hm.png")
 plt.close()
 
 ax = sns.heatmap(spin_res)
-ax.set_xticks(np.arange(0,20,5),labels=np.arange(0,20,5))
+ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 plt.savefig("spin_hm.png")
 plt.close()
