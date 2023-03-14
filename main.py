@@ -26,6 +26,18 @@ def create_blank_numpy_file():
     np.save("data.npy",data)
     np.save("pars.npy",pars)
 
+class CustomLoss(nn.Module):
+    def __init__(self):
+        super(CustomLoss, self).__init__()
+
+    def forward(self, output, target):
+        
+        loss = torch.mean((output-target)**2)
+        return loss
+    
+    def sanitize(data):
+        lower = torch.fmin(data)
+
 class custom_data(Dataset):
     
     def __init__(self,pars,data):

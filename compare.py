@@ -211,7 +211,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = 10**np.squeeze(pred.detach().numpy())
     da = 10**torch.squeeze(torch.log10(D))
     resid = (da-pred)/da
-    residuals.append(np.asarray(resid))
+    residuals.append(np.absolute(np.asarray(resid)))
     
 residuals = np.asarray(residuals)
 obj_residuals = []
@@ -263,7 +263,7 @@ spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
 
 fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(mass_res,cmap="vlag")
-ax.set_yticks(mass_tick,labels=mass_ticklabel)
+ax.set_yticks(mass_tick,labels=mass_ticklabel,center = 0.01)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
@@ -271,7 +271,7 @@ plt.savefig("mass_hm.png")
 plt.close()
 
 fig = plt.figure(figsize=(10,10))
-ax = sns.heatmap(spin_res,cmap="vlag")
+ax = sns.heatmap(spin_res,cmap="vlag",center = 0.01)
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
