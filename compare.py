@@ -2,7 +2,6 @@
 This program serves to visualise a neural network's outputs vs the true values.
 """
 import torch
-import generator
 import network
 import os
 from sherpa.astro.ui import unpack_rmf
@@ -10,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader,Dataset
 import pandas as pd
+import seaborn as sns
 
 class custom_data(Dataset):
     
@@ -110,6 +110,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
                 transform=axs[0].transAxes)
     axs[0].set_ylabel("Flux")
+    axs[0].ylim(-7,5)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
@@ -162,6 +163,12 @@ for batch, (D,P) in enumerate(testing_dataloader):
     if batch > 30:
         break
 
+class Residual():
+    
+    def __init__(self,residuals):
+        self.data = residuals
+
+
 print("Finished creating random model comparison")
 mass, spin = [], []
 residuals = []
@@ -175,5 +182,12 @@ for batch, (D,P) in enumerate(testing_dataloader):
     residuals.append(resid)
     
 residuals = np.asarray(residuals)
+obj_residuals = []
+for res in residuals:
+    obj_residuals(Residual(res))
 
-    
+dataframe = pd.Dataframe({"Spin":spin,"Mass":mass,"Residuals":residuals})
+
+dataframe.sort_values(by="Spin",inplace=True)
+
+ax = sns.heatmap(dataframe[:,["Mass","Residuals"]],annot=True)
