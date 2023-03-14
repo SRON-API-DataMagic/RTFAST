@@ -221,4 +221,10 @@ dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":residuals})
 
 dataframe.sort_values(by="Spin",inplace=True)
 
-ax = sns.heatmap(dataframe[:,["Mass","Residuals"]],annot=True)
+ax = sns.heatmap(dataframe.loc[:,["Mass","Residuals"]],annot=True)
+plt.savefig("mass_hm.png")
+plt.close()
+
+ax = sns.heatmap(dataframe.loc[:,["Spin","Residuals"]],annot=True)
+plt.savefig("spin_hm.png")
+plt.close()
