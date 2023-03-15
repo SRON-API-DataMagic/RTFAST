@@ -29,8 +29,8 @@ class custom_data(Dataset):
     
 wrk_dir = os.getcwd()
 """
-tr_loss_arr = np.load("tr_loss.npy")
-te_loss_arr = np.load("te_loss.npy")
+tr_loss_arr = np.load("tr_loss.txt")
+te_loss_arr = np.load("te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
@@ -64,10 +64,10 @@ model = network.NeuralNetwork(len(egrid))
 model.load_state_dict(torch.load("best_model.pth"))
 n = 10
 
-with open("data.npy","rb") as f1:
+with open("data.txt","rb") as f1:
     data = np.load(f1)
 
-with open("pars.npy","rb") as f2:
+with open("pars.txt","rb") as f2:
     pars = np.load(f2)
 
 print(data.shape)

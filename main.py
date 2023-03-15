@@ -12,6 +12,12 @@ from torch.optim import Adam
 
 import generator
 import network
+
+def create_blank_npy_text():
+    pars = np.array([])
+    data = np.array([])
+    np.savetxt("pars.txt",pars)
+    np.savetxt("data.txt",data)
     
 class CustomData(Dataset):
     """
@@ -102,17 +108,19 @@ def save_data(data,pars):
     None.
 
     """
-    new_pars = np.load("pars.npy")
-    new_data = np.load("data.npy")
+    new_pars = np.loadtxt("pars.txt")
+    new_data = np.loadtxt("data.txt")
     data = np.asarray(data)
     pars = np.asarray(pars)
-    with open("data.npy","w") as f:
+    with open("data.txt","w") as f:
         new_data = np.append(new_data,data,axis=0)
-        np.save(f,new_data)
+        new_data = new_data[1:]
+        np.savetxt(f,new_data)
     f.close()
-    with open("pars.npy","w") as f:
+    with open("pars.txt","w") as f:
         new_pars = np.append(new_pars,pars,axis=0)
-        np.save(f,new_pars)
+        new_pars = new_pars[1:]
+        np.savetxt(f,new_pars)
     f.close()
     return
     
@@ -218,11 +226,13 @@ def main():
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    with open("data.npy","rb") as f1:
-        data = np.load(f1)
+    create_blank_npy_text()
     
-    with open("pars.npy","rb") as f2:
-        pars = np.load(f2)
+    with open("data.txt","r") as f1:
+        data = np.loadtxt(f1)
+    
+    with open("pars.txt","r") as f2:
+        pars = np.loadtxt(f2)
     
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
@@ -295,8 +305,8 @@ def main():
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.save("te_loss.npy",te_loss_arr)
-    np.save("tr_loss.npy",tr_loss_arr)
+    np.savetxt("te_loss.txt",te_loss_arr)
+    np.savetxt("tr_loss.txt",tr_loss_arr)
 
 if __name__ == "__main__":
     main()
