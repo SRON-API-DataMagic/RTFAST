@@ -221,12 +221,9 @@ def main():
     
     print("Environmental variables successfully set")
     
-    
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    
-    create_blank_npy_text()
     
     with open("data.txt","r") as f1:
         data = np.loadtxt(f1)
@@ -234,13 +231,13 @@ def main():
     with open("pars.txt","r") as f2:
         pars = np.loadtxt(f2)
     
-    #pars = pars[:,[1,13]] #retrieve spin and mass
-    #pars = torch.tensor(pars)
-    #data = torch.tensor(data)
-    #data = CustomData(pars,data)
+    pars = pars[:,[1,13]] #retrieve spin and mass
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
+    data = CustomData(pars,data)
     
     batch_size = 12
-    #training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+    training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
     
     data,pars = pregenerate_models(10000, egrid)
     pars = pars[:,[1,13]] #retrieve spin and mass
