@@ -42,7 +42,7 @@ class CustomData(Dataset):
     
     def standardize(self):
         D = self.data
-        D[D==0] = torch.min(D[D!=0])
+        D[D<1e-40] = 1e-40
         D = torch.log10(D)
         D = D.double()
         self.data = D
@@ -227,6 +227,8 @@ def main():
         pars = np.loadtxt(f2)
     
     pars = pars[:,[1,13]] #retrieve spin and mass
+    print(pars.shape)
+    print(data.shape)
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     data = CustomData(pars,data)
@@ -234,7 +236,7 @@ def main():
     batch_size = 12
     training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
     
-    data,pars = pregenerate_models(10000, egrid)
+    data,pars = pregenerate_models(1000, egrid)
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
     data = torch.tensor(data)
