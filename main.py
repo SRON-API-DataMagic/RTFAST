@@ -36,8 +36,8 @@ class CustomData(Dataset):
         return self.par_list.shape[0]
     
     def __getitem__(self,idx):
-        datum = torch.from_numpy(self.data[idx])
-        parameters = torch.from_numpy(self.par_list[idx])
+        datum = self.data[idx]
+        parameters = self.par_list[idx]
         return datum,parameters
     
     def standardize(self):
