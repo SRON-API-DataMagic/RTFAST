@@ -225,6 +225,8 @@ def main():
         pars = np.load(f2)
     
     pars = pars[:,[1,13]] #retrieve spin and mass
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
     data = CustomData(pars,data)
     
     batch_size = 12
@@ -232,6 +234,8 @@ def main():
     
     data,pars = pregenerate_models(10000, egrid)
     pars = pars[:,[1,13]] #retrieve spin and mass
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
     test_data = CustomData(pars, data)
     testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
     
