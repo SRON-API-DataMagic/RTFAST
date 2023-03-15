@@ -1,49 +1,17 @@
 """
 This is the main program that trains the neural network.
 """
+import numpy as np
+import os
 
-import generator
-import network
+from sherpa.astro.ui import unpack_rmf
 import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
-from torchvision.transforms import ToTensor
 from torch.optim import Adam
-import math
-import time
-import matplotlib.pyplot as plt
 
-from sherpa.astro.ui import unpack_rmf
-import os
-import numpy as np
-
-class CustomLoss(nn.Module):
-    """
-    A custom loss class that inherits from torch.nn.Module. Takes any NaN and
-    sets them to be the smallest non NaN value in the data so as to be as close
-    to neglible flux in the non-log space as possible.
-    
-    Methods
-    -------
-    forward(output,target):
-        returns a mean square error loss
-    sanitize(data):
-        returns the inputted data with NaN values replaced with the smallest 
-        value.
-    """
-    def __init__(self):
-        super(CustomLoss, self).__init__()
-
-    def forward(self, output, target):
-        target = self.sanitize(target)
-        loss = torch.mean((output-target)**2)
-        return loss
-
-    def sanitize(data):
-        filtered = data[~torch.any(data.isnan())]
-        lower = torch.min(filtered)
-        corrected = data[torch.isnan(data), lower, data]
-        return corrected
+import generator
+import network
     
 class CustomData(Dataset):
     """
@@ -157,20 +125,20 @@ def train(dataloader,model,optimizer,loss_fn):
     dataloader : torch.nn.utils.data.DataLoader
         provides iterable shuffled form of the training dataset.
     model : network.NeuralNetwork
-        DESCRIPTION.
-    optimizer : TYPE
-        DESCRIPTION.
-    loss_fn : TYPE
-        DESCRIPTION.
+        the neural network model to be trained.
+    optimizer : torch.optim
+        optimizer used for training the network.
+    loss_fn : torch.nn loss function
+        loss function used to train the network.
 
     Returns
     -------
-    model : TYPE
-        DESCRIPTION.
-    optimizer : TYPE
-        DESCRIPTION.
-    avg_loss : TYPE
-        DESCRIPTION.
+    model : network.NeuralNetwork
+        the neural network model to be trained.
+    optimizer : Ttorch.optim
+        optimizer used for training the network.
+    avg_loss : float
+        used as to record and determine how many iterations should be trained.
 
     """
     
@@ -196,6 +164,24 @@ def train(dataloader,model,optimizer,loss_fn):
     return model, optimizer , avg_loss
 
 def test(dataloader,model,loss_fn):
+    """
+    
+
+    Parameters
+    ----------
+    dataloader : torch.nn.utils.data.DataLoader
+        provides iterable shuffled form of the testing dataset.
+    model : network.NeuralNetwork
+        the neural network model to be tested.
+    loss_fn : torch.nn loss function
+        loss function used to train the network.
+
+    Returns
+    -------
+    test_loss : float
+        used as to record and determine how many iterations should be trained.
+
+    """
     model.eval()
     test_loss = 0
     batches = len(dataloader)
@@ -230,7 +216,7 @@ def main():
     
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
     with open("data.npy","rb") as f1:
         data = np.load(f1)
@@ -244,20 +230,21 @@ def main():
     batch_size = 12
     training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
     
-    data,pars = pregenerate_models(100, egrid)
-    pars = pars[:,[1,13]]
+    data,pars = pregenerate_models(10000, egrid)
+    pars = pars[:,[1,13]] #retrieve spin and mass
     test_data = CustomData(pars, data)
     testing_dataloader = DataLoader(test_data,batch_size = batch_size,shuffle=True)
     
     model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
-    max_iters = 10000
-    i = 0
+    loss_fn = nn.MSELoss()
+    
+    max_iters = 10000 #maximum iterations
+    i = 0 #current iteration
     imp_tr = 0
     imp_te = 0
-    loss_fn = nn.MSELoss()
-    last_sig_best_tr = 1e7
-    last_sig_best_te = 1e7
+    last_sig_best_tr = 1e7 #last significant best training loss
+    last_sig_best_te = 1e7 #last significant best testing loss
     tr_loss_arr = []
     te_loss_arr = []
     
