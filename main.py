@@ -239,8 +239,8 @@ def main():
     #data = torch.tensor(data)
     #data = CustomData(pars,data)
     
-    batch_size = 12
-    training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+    #batch_size = 12
+    #training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
     
     data,pars = pregenerate_models(10000, egrid)
     pars = pars[:,[1,13]] #retrieve spin and mass
