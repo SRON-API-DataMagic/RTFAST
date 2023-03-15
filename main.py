@@ -12,12 +12,6 @@ from torch.optim import Adam
 
 import generator
 import network
-
-def create_blank_npy_text():
-    pars = np.array([])
-    data = np.array([])
-    np.savetxt("pars.txt",pars)
-    np.savetxt("data.txt",data)
     
 class CustomData(Dataset):
     """
@@ -108,19 +102,19 @@ def save_data(data,pars):
     None.
 
     """
-    #new_pars = np.loadtxt("pars.txt")
-    #new_data = np.loadtxt("data.txt")
+    new_pars = np.loadtxt("pars.txt")
+    new_data = np.loadtxt("data.txt")
     data = np.asarray(data)
     pars = np.asarray(pars)
     with open("data.txt","w") as f:
-        #new_data = np.append(new_data,data,axis=0)
-        #new_data = new_data[1:]
-        np.savetxt(f,data)
+        new_data = np.append(new_data,data,axis=0)
+        new_data = new_data[1:]
+        np.savetxt(f,new_data)
     f.close()
     with open("pars.txt","w") as f:
-        #new_pars = np.append(new_pars,pars,axis=0)
-        #new_pars = new_pars[1:]
-        np.savetxt(f,pars)
+        new_pars = np.append(new_pars,pars,axis=0)
+        new_pars = new_pars[1:]
+        np.savetxt(f,new_pars)
     f.close()
     return
     
@@ -226,23 +220,21 @@ def main():
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    create_blank_npy_text()
-    
     with open("data.txt","r") as f1:
         data = np.loadtxt(f1)
     
     with open("pars.txt","r") as f2:
         pars = np.loadtxt(f2)
     
-    #pars = pars[:,[1,13]] #retrieve spin and mass
-    #pars = torch.tensor(pars)
-    #data = torch.tensor(data)
-    #data = CustomData(pars,data)
+    pars = pars[:,[1,13]] #retrieve spin and mass
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
+    data = CustomData(pars,data)
     
-    #batch_size = 12
-    #training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
+    batch_size = 12
+    training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
     
-    data,pars = pregenerate_models(10, egrid)
+    data,pars = pregenerate_models(10000, egrid)
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
     data = torch.tensor(data)
