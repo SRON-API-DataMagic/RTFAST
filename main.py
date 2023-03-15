@@ -213,7 +213,6 @@ def main():
     
     print("Environmental variables successfully set")
     
-    
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -225,8 +224,6 @@ def main():
         pars = np.loadtxt(f2)
     
     pars = pars[:,[1,13]] #retrieve spin and mass
-    print(pars.shape)
-    print(data.shape)
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     data = CustomData(pars,data)
