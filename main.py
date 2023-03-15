@@ -42,7 +42,7 @@ class CustomData(Dataset):
     
     def standardize(self):
         D = self.data
-        D[D==0] = np.min(D[D!=0])
+        D[D==0] = torch.min(D[D!=0])
         D = torch.log10(D)
         D = D.double()
         self.data = D
