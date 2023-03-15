@@ -234,10 +234,10 @@ def main():
     with open("pars.txt","r") as f2:
         pars = np.loadtxt(f2)
     
-    pars = pars[:,[1,13]] #retrieve spin and mass
-    pars = torch.tensor(pars)
-    data = torch.tensor(data)
-    data = CustomData(pars,data)
+    #pars = pars[:,[1,13]] #retrieve spin and mass
+    #pars = torch.tensor(pars)
+    #data = torch.tensor(data)
+    #data = CustomData(pars,data)
     
     batch_size = 12
     training_dataloader = DataLoader(data,batch_size = batch_size,shuffle=True)
