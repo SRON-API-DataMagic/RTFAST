@@ -108,12 +108,10 @@ def save_data(data,pars):
     pars = np.asarray(pars)
     with open("data.txt","w") as f:
         new_data = np.append(new_data,data,axis=0)
-        new_data = new_data[1:]
         np.savetxt(f,new_data)
     f.close()
     with open("pars.txt","w") as f:
         new_pars = np.append(new_pars,pars,axis=0)
-        new_pars = new_pars[1:]
         np.savetxt(f,new_pars)
     f.close()
     return
