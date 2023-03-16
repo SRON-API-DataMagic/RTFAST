@@ -81,16 +81,12 @@ egrid = rmf.e_min
 
 model = network.NeuralNetwork(len(egrid))
 model.load_state_dict(torch.load("best_model.pth"))
-n = 10
 
-with open("data.txt","rb") as f1:
+with open("data.txt","r") as f1:
     data = np.loadtxt(f1)
 
-with open("pars.txt","rb") as f2:
+with open("pars.txt","r") as f2:
     pars = np.loadtxt(f2)
-
-print(data.shape)
-print(pars.shape)
 
 batch_size = 1
 pars = pars[:,[1,13]]
@@ -107,7 +103,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
-    da = 10**torch.squeeze(torch.log10(D))
+    da = 10**torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -124,7 +120,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
+    da = torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -146,7 +142,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
-    da = 10**torch.squeeze(torch.log10(D))
+    da = 10**torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -163,7 +159,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
-    da = torch.squeeze(torch.log10(D))
+    da = torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
@@ -193,7 +189,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     mass.append(P[0][1].item())
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
-    da = 10**torch.squeeze(torch.log10(D))
+    da = 10**torch.squeeze(D)
     resid = (da-pred)/da
     residuals.append(np.absolute(np.asarray(resid)))
     
