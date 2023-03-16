@@ -48,8 +48,8 @@ class CustomData(Dataset):
     
 wrk_dir = os.getcwd()
 
-tr_loss_arr = np.load("tr_loss.txt",allow_pickle=True)
-te_loss_arr = np.load("te_loss.txt",allow_pickle=True)
+tr_loss_arr = np.load("tr_loss.txt")
+te_loss_arr = np.load("te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
