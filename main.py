@@ -49,7 +49,6 @@ class CustomData(Dataset):
         """
         D = self.data
         D_np = D.numpy()
-        print(D_np)
         D_np = self.scale(D_np)
         D = torch.from_numpy(D_np)
         D = D.double()
