@@ -205,22 +205,34 @@ dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
 
 spins = np.zeros((len(dataframe)))
 resids_spin = np.zeros((len(dataframe),4096))
+resids_spin_flat = np.zeros((len(dataframe),4096))
 masses = np.zeros((len(dataframe)))
 
 for i,row in dataframe.iterrows():
     spins[i] = row["Spin"]
     resids_spin[i] = row["Residuals"].data
+    if row["Residuals"].data >= 0.01:
+        resids_spin_flat[i] == 0.01
+    else:
+        resids_spin_flat[i] == 0.
 
 spin_res = pd.DataFrame(resids_spin,index=spins)
+spin_res_flat = pd.DataFrame(resids_spin_flat,index=spins)
 
 resids_mass = np.zeros((len(dataframe),4096))
+resids_mass_flat = np.zeros((len(dataframe),4096))
 dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
 
 for i,row in dataframe.iterrows():
     resids_mass[i] = row["Residuals"].data
     masses[i] = row["Mass"]
+    if row["Residuals"].data >= 0.01:
+        resids_mass_flat[i] == 0.01
+    else:
+        resids_mass_flat[i] == 0.
+    
 mass_res = pd.DataFrame(resids_mass,index=masses)
-
+mass_res_flat = pd.DataFrame(resids_mass_flat,index=masses)
 
 print("Building heatmaps")
 
@@ -243,6 +255,8 @@ mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
 spin_tick.append(int(len(spins))-1)
 spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
 
+cmap_flat = sns.color_palette("hls", 2)
+
 fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(mass_res,cmap="vlag", vmin = 0, vmax = 0.2, center = 0.01)
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
@@ -253,10 +267,28 @@ plt.savefig("mass_hm.png")
 plt.close()
 
 fig = plt.figure(figsize=(10,10))
+ax = sns.heatmap(mass_res_flat,cmap=cmap_flat)
+ax.set_yticks(mass_tick,labels=mass_ticklabel)
+ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+ax.set_xlabel("Energy in keV")
+ax.set_ylabel("Mass")
+plt.savefig("flat_mass_hm.png")
+plt.close()
+
+fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(spin_res,cmap="vlag", vmin = 0, vmax = 0.2, center = 0.01)
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Spin")
 plt.savefig("spin_hm.png")
+plt.close()
+
+fig = plt.figure(figsize=(10,10))
+ax = sns.heatmap(spin_res_flat,cmap=cmap_flat)
+ax.set_yticks(spin_tick,labels=spin_ticklabel)
+ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
+ax.set_xlabel("Energy in keV")
+ax.set_ylabel("Spin")
+plt.savefig("flat_spin_hm.png")
 plt.close()
