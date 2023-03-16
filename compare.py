@@ -84,10 +84,10 @@ model.load_state_dict(torch.load("best_model.pth"))
 n = 10
 
 with open("data.txt","rb") as f1:
-    data = np.load(f1)
+    data = np.loadtxt(f1)
 
 with open("pars.txt","rb") as f2:
-    pars = np.load(f2)
+    pars = np.loadtxt(f2)
 
 print(data.shape)
 print(pars.shape)
