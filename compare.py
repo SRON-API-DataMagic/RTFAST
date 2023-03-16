@@ -80,7 +80,7 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load("best_model.pth"))
+
 
 with open("data.txt","r") as f1:
     data = np.loadtxt(f1)
@@ -99,6 +99,7 @@ testing_dataloader = DataLoader(data,batch_size = batch_size)
 egrid = rmf.e_min
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    model.load_state_dict(torch.load("best_model.pth"))
     spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
@@ -113,10 +114,10 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
+    axs[1].set_ylim(-0.5,0.5)
     plt.savefig(f"samples/{batch}_best_com.png")
     plt.close()
-    if batch > 30:
-        break
+    
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
@@ -130,15 +131,12 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
+    axs[1].set_ylim(-0.5,0.5)
     plt.savefig(f"samples/{batch}_log_best_com.png")
     plt.close()
-    if batch > 30:
-        break
+    
+    model.load_state_dict(torch.load("final_model.pth"))
 
-model.load_state_dict(torch.load("final_model.pth"))
-
-for batch, (D,P) in enumerate(testing_dataloader):
-    spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = 10**np.squeeze(pred.detach().numpy())
@@ -152,10 +150,10 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
+    axs[1].set_ylim(-0.5,0.5)
     plt.savefig(f"samples/{batch}_final_com.png")
     plt.close()
-    if batch > 30:
-        break
+    
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P)
     pred = np.squeeze(pred.detach().numpy())
@@ -169,6 +167,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
+    axs[1].set_ylim(-0.5,0.5)
     plt.savefig(f"samples/{batch}_log_final_com.png")
     plt.close()
     if batch > 30:
