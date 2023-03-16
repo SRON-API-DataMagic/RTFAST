@@ -9,6 +9,8 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
+from sklearn.preprocessing import StandardScaler
+from joblib import dump, load
 
 import generator
 import network
@@ -41,13 +43,38 @@ class CustomData(Dataset):
         return datum,parameters
     
     def standardize(self):
+        """
+        Filters 0 flux and converts to smallest non-zero value. Then standard
+        scales the energy bins.
+        """
         D = self.data
-        D[D<1e-40] = 1e-40
-        D = torch.log10(D)
+        D_np = D.numpy()
+        D_np = self.scale(D_np)
+        D = torch.from_numpy(D_np)
         D = D.double()
         self.data = D
-    
+        
+    def scale(data):
+        """
+        Standard scales the logarithm spaced data by energy bin and saves the
+        standard scaler for future use.
 
+        Parameters
+        ----------
+        data : np.ndarray
+            Array of spectra in the logspace.
+
+        Returns
+        -------
+        scaled_data : np.ndarray
+            Scaled array of spectra in the logspace.
+
+        """
+        scaler = StandardScaler()
+        scaled_data = scaler.fit_transform(data)
+        dump(scaler, 'std_scaler.bin', compress=True)
+        return scaled_data
+        
 def pregenerate_models(n,egrid):
     """
     This function serves to produce test data for validation. It also saves
