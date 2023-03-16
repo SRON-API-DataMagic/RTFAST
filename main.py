@@ -55,7 +55,7 @@ class CustomData(Dataset):
         D = D.double()
         self.data = D
         
-    def scale(data):
+    def scale(self,data):
         """
         Standard scales the logarithm spaced data by energy bin and saves the
         standard scaler for future use.
