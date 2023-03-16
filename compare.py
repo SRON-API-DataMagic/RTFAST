@@ -211,10 +211,7 @@ masses = np.zeros((len(dataframe)))
 for i,row in dataframe.iterrows():
     spins[i] = row["Spin"]
     resids_spin[i] = row["Residuals"].data
-    if row["Residuals"].data >= 0.01:
-        resids_spin_flat[i] == 0.01
-    else:
-        resids_spin_flat[i] == 0.
+    resids_spin_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
 
 spin_res = pd.DataFrame(resids_spin,index=spins)
 spin_res_flat = pd.DataFrame(resids_spin_flat,index=spins)
@@ -226,10 +223,7 @@ dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
 for i,row in dataframe.iterrows():
     resids_mass[i] = row["Residuals"].data
     masses[i] = row["Mass"]
-    if row["Residuals"].data >= 0.01:
-        resids_mass_flat[i] == 0.01
-    else:
-        resids_mass_flat[i] == 0.
+    resids_mass_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
     
 mass_res = pd.DataFrame(resids_mass,index=masses)
 mass_res_flat = pd.DataFrame(resids_mass_flat,index=masses)
