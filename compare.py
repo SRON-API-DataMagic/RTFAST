@@ -92,48 +92,15 @@ with open("pars.txt","rb") as f2:
 print(data.shape)
 print(pars.shape)
 
-
 batch_size = 1
 pars = pars[:,[1,13]]
+pars = torch.tensor(pars)
+data = torch.tensor(data)
+
 data = CustomData(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
 egrid = rmf.e_min
-
-pars = generator.pregen()
-pars[1] = 0.5
-pars[13] = 1e6
-
-truth = generator.rtdist_flux(pars, egrid)
-truth = np.log10(truth)
-par = torch.tensor([0.5,1e6]).double()
-pred = np.squeeze(model(par).detach().numpy())
-fig, axs = plt.subplots(2,1,sharex=True)
-axs[0].plot(egrid,pred,c="blue",label="NN model")
-axs[0].plot(egrid,truth,c="r",label="Truth",lw=1.)
-axs[0].legend()
-axs[0].text(0.3,0.5,"Spin, Mass: 0.5 1e6",
-            transform=axs[0].transAxes)
-axs[0].set_ylabel("Flux")
-axs[1].scatter(egrid,(truth-pred)/truth,s=0.5)
-axs[1].set_ylabel("Residuals")
-axs[1].set_xlabel("Energy in keV")
-plt.savefig("log_test.png")
-plt.close()
-
-fig, axs = plt.subplots(2,1,sharex=True)
-axs[0].plot(egrid,10**pred,c="blue",label="NN model")
-axs[0].plot(egrid,10**truth,c="r",label="Truth",lw=1.)
-axs[0].legend()
-axs[0].text(0.3,0.5,"Spin, Mass: 0.5 1e6",
-            transform=axs[0].transAxes)
-axs[0].set_ylabel("Flux")
-axs[1].scatter(egrid,(10**truth-10**pred)/10**truth,s=0.5)
-axs[1].set_ylabel("Residuals")
-axs[1].set_xlabel("Energy in keV")
-plt.savefig("test.png")
-plt.close()
-
 
 for batch, (D,P) in enumerate(testing_dataloader):
     spin, mass = P[0][0].item(),P[0][1].item()
