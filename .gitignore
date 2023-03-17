@@ -1,3 +1,4 @@
 samples/
 *.png
 .DS_Store
+heatmaps/
