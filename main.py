@@ -77,8 +77,9 @@ class CustomData(Dataset):
         else:
             scaler = load('std_scaler.bin')
             scaled_data = scaler.inverse_transform(data)
-            print(scaler.mean_)
-            print(scaler.var_)
+            print(scaled_data.data_min_)
+            print(scaled_data.data_max_)
+            print(scaled_data.data_range_)
         return scaled_data
         
 def pregenerate_models(n,egrid):
