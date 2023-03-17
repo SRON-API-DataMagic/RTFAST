@@ -20,13 +20,14 @@ class NeuralNetwork(nn.Module):
     
     def __init__(self,data_len):
         super().__init__()
+        self.p = 0.25
         self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
             nn.Linear(2,256),
             nn.Softplus(),
-            nn.Dropout(),
+            nn.Dropout(p=self.p),
             nn.Linear(256,512),
-            nn.Dropout(),
+            nn.Dropout(p=self.p),
             nn.Softplus(),
             nn.Linear(512,data_len)
             ) 
