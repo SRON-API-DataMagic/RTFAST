@@ -277,7 +277,7 @@ def main():
     training_dataloader = DataLoader(data, batch_size = batch_size, 
                                      shuffle=True)
     
-    data,pars = pregenerate_models(1000, egrid)
+    data,pars = pregenerate_models(500, egrid)
     pars[:,13] = np.log10(pars[:,13]) 
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
