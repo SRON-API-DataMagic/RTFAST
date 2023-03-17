@@ -19,7 +19,7 @@ from main import CustomData
 
 class LoadCustomData(CustomData):
     def __init__(self,pars,data):
-        super().__init__()
+        super().__init__(pars,data)
         self.par_list = pars
         self.data = data
 
