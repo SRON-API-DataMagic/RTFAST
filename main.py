@@ -182,7 +182,7 @@ def train(dataloader,model,optimizer,loss_fn):
     size = len(dataloader.dataset)
     batch_size = 12
     loss_arr = 0
-    
+    big_loss = 0
     for batch, (D,P) in enumerate(dataloader):
         pred = model(P)
         loss = loss_fn(pred,D)
@@ -194,10 +194,13 @@ def train(dataloader,model,optimizer,loss_fn):
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
             print(f"Extremely large batch loss of {loss_b:.2E}")
+            big_loss += 1
         loss_arr += loss_b
     
     avg_loss = loss_arr/len(dataloader)
     print(f"Average training loss: {avg_loss:>8f}")
+    if big_loss != 0:
+        print(f"There were {big_loss} batches with very large loss.")
     return model, optimizer , avg_loss
 
 def test(dataloader,model,loss_fn):
