@@ -50,6 +50,8 @@ class CustomData(Dataset):
         """
         D = self.data
         D = torch.log10(D)
+        #Change NaNs to minimum non flux (essentially neglible)
+        D = torch.nan_to_num(D,nan=torch.amin(torch.nan_to_num(D)))        
         D_np = D.numpy()
         D_np = self.scale(D_np,training)
         D = torch.from_numpy(D_np)
