@@ -32,8 +32,9 @@ class CustomData(Dataset):
         super().__init__()
         self.par_list = pars
         self.data = data
-        self.standardize(training)
         self.scaler = scaler
+        
+        self.standardize(training)
     
     def __len__(self):
         return self.par_list.shape[0]
