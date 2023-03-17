@@ -33,7 +33,6 @@ class CustomData(Dataset):
         self.par_list = pars
         self.data = data
         self.scaler = scaler
-        
         self.standardize(training)
     
     def __len__(self):
@@ -79,9 +78,6 @@ class CustomData(Dataset):
         if training == True:
             scaled_data = scaler.fit_transform(data)
             dump(scaler, 'std_scaler.bin', compress=True)
-            print(scaler.data_min_)
-            print(scaler.data_max_)
-            print(scaler.data_range_)
         else:
             scaler = load('std_scaler.bin')
             scaled_data = scaler.inverse_transform(data)
