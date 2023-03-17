@@ -264,6 +264,7 @@ def main():
         pars = np.loadtxt(f2)
     
     pars = pars[:,[1,13]] #retrieve spin and mass
+    pars[:,13] = np.log10(pars[:,13])
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     
