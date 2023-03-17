@@ -54,7 +54,6 @@ class CustomData(Dataset):
         #Change NaNs to minimum non flux (essentially neglible)
         D_np = D.numpy()
         D_np = self.scale(D_np,training)
-        print(D_np)
         D = torch.from_numpy(D_np)
         D = D.double()
         self.data = D
@@ -195,8 +194,6 @@ def train(dataloader,model,optimizer,loss_fn):
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
             print(f"Extremely large batch loss of {loss_b:.2E}")
-            print("Parameters:",P)
-            print("Data",D)
         loss_arr += loss_b
     
     avg_loss = loss_arr/len(dataloader)
