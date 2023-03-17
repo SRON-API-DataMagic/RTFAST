@@ -87,7 +87,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     model.load_state_dict(torch.load("best_model.pth"))
     spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
-    pred = model(P).numpy()
+    pred = model(P).detach().numpy()
     pred = inverse(scaler,pred)
     da = torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
@@ -106,7 +106,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     model.load_state_dict(torch.load("final_model.pth"))
 
     fig, axs = plt.subplots(2,1,sharex=True)
-    pred = model(P).numpy()
+    pred = model(P).detach().numpy()
     pred = inverse(scaler,pred)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -137,7 +137,7 @@ residuals = []
 for batch, (D,P) in enumerate(testing_dataloader):
     spin.append(P[0][0].item())
     mass.append(P[0][1].item())
-    pred = model(P).numpy()
+    pred = model(P).detach().numpy()
     pred = inverse(scaler,pred)
     resid = (da-pred)/da
     residuals.append(np.absolute(np.asarray(resid)))
