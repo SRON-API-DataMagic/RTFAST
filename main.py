@@ -81,7 +81,7 @@ class CustomData(Dataset):
             dump(scaler, 'std_scaler.bin', compress=True)
         else:
             scaler = load('std_scaler.bin')
-            scaled_data = scaler.inverse_transform(data)
+            scaled_data = scaler.transform(data)
         return scaled_data
         
 def pregenerate_models(n,egrid):
