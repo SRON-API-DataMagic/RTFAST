@@ -273,7 +273,7 @@ def main():
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
     data = torch.tensor(data)
-    test_data = CustomData(pars, data, training=False)
+    test_data = CustomData(pars, data, scaler, training=False)
     testing_dataloader = DataLoader(test_data, batch_size = batch_size, 
                                     shuffle=True)
     
