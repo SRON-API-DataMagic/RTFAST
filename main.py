@@ -263,8 +263,10 @@ def main():
     with open("pars.txt","r") as f2:
         pars = np.loadtxt(f2)
     
+    #make mass log spaced to improve numeric stability in training
+    pars[:,13] = np.log10(pars[:,13]) 
     pars = pars[:,[1,13]] #retrieve spin and mass
-    pars[:,13] = np.log10(pars[:,13])
+    
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     
