@@ -76,7 +76,7 @@ pars = pars[:,[1,13]]
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
-data = CustomData(pars,data)
+data = LoadCustomData(pars,data)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
 egrid = rmf.e_min
