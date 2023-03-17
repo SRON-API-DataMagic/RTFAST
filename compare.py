@@ -8,7 +8,7 @@ from sherpa.astro.ui import unpack_rmf
 import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from joblib import load
 
 import pandas as pd
@@ -29,6 +29,7 @@ def inverse(scaler,data):
 
 wrk_dir = os.getcwd()
 scaler = StandardScaler()
+scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
 tr_loss_arr = np.loadtxt("tr_loss.txt")
@@ -68,8 +69,12 @@ model = network.NeuralNetwork(len(egrid))
 with open("data.txt","r") as f1:
     data = np.loadtxt(f1)
 
+f1.close()
+
 with open("pars.txt","r") as f2:
     pars = np.loadtxt(f2)
+
+f2.close()
 
 batch_size = 1
 pars = pars[:,[1,13]]
@@ -88,7 +93,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P).detach().numpy()
-    pred = np.squeeze(inverse(scaler,pred))
+    pred = 10**np.squeeze(inverse(scaler,pred))
     da = torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -107,7 +112,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
 
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P).detach().numpy()
-    pred = np.squeeze(inverse(scaler,pred))
+    pred = 10**np.squeeze(inverse(scaler,pred))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
