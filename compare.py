@@ -88,7 +88,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     spin, mass = P[0][0].item(),P[0][1].item()
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P).detach().numpy()
-    pred = inverse(scaler,pred)
+    pred = np.squeeze(inverse(scaler,pred))
     da = torch.squeeze(D)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -107,7 +107,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
 
     fig, axs = plt.subplots(2,1,sharex=True)
     pred = model(P).detach().numpy()
-    pred = inverse(scaler,pred)
+    pred = np.squeeze(inverse(scaler,pred))
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
