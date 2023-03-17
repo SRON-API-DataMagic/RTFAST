@@ -278,6 +278,7 @@ def main():
                                      shuffle=True)
     
     data,pars = pregenerate_models(1000, egrid)
+    pars[:,13] = np.log10(pars[:,13]) 
     pars = pars[:,[1,13]] #retrieve spin and mass
     pars = torch.tensor(pars)
     data = torch.tensor(data)
