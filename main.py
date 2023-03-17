@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from joblib import dump, load
 
 import generator
@@ -70,7 +70,7 @@ class CustomData(Dataset):
             Scaled array of spectra in the logspace.
 
         """
-        scaler = StandardScaler()
+        scaler = MinMaxScaler()
         if training == True:
             scaled_data = scaler.fit_transform(data)
             dump(scaler, 'std_scaler.bin', compress=True)
