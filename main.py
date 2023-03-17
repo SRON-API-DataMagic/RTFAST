@@ -49,10 +49,11 @@ class CustomData(Dataset):
         scales the energy bins.
         """
         D = self.data
+        print(torch.amin(D))
+        D[D==0] = torch.amin(D[D>0])
+        print(torch.amin(D))
         D = torch.log10(D)
         #Change NaNs to minimum non flux (essentially neglible)
-        print(torch.amin(torch.nan_to_num(D)))
-        D = torch.nan_to_num(D,nan=torch.amin(torch.nan_to_num(D)))        
         D_np = D.numpy()
         D_np = self.scale(D_np,training)
         D = torch.from_numpy(D_np)
