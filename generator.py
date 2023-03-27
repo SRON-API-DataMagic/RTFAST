@@ -71,6 +71,16 @@ def pregen():
     return pars
 
 def lhs_range_gen():
+    """
+    Generates valid ranges of parameters to be trained on
+
+    Returns
+    -------
+    range_all : list
+        gives parameter ranges for each of the given parameters listed. Used 
+        in the latin hypercube sampling
+
+    """
     height_range = [np.log10(1.3),np.log10(1e4)]
     spin_range = [0.1,0.998]
     inclination_range = [1,80]
