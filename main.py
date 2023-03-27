@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from joblib import dump, load
+import scipy.stats
 
 import generator
 import network
@@ -274,26 +275,12 @@ def main():
     data = CustomData(pars, data, scaler, training=True)
     
     batch_size = 12
-    training_dataloader = DataLoader(data, batch_size = batch_size, 
-                                     shuffle=True)
-    
-    data,pars = pregenerate_models(500, egrid)
-    pars[:,13] = np.log10(pars[:,13]) 
-    pars = pars[:,[1,13]] #retrieve spin and mass
-    pars = torch.tensor(pars)
-    data = torch.tensor(data)
-    test_data = CustomData(pars, data, scaler, training=False)
-    testing_dataloader = DataLoader(test_data, batch_size = batch_size, 
-                                    shuffle=True)
     
     model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
     
-    max_iters = 10000 #maximum iterations
     i = 0 #current iteration
-    imp_tr = 0
-    imp_te = 0
     last_sig_best_tr = 1e7 #last significant best training loss
     last_sig_best_te = 1e7 #last significant best testing loss
     tr_loss_arr = []
@@ -301,38 +288,104 @@ def main():
     
     print("Beginning training")
     
-    while i < max_iters and (imp_tr < 100 or imp_te < 100):
-        print(f"Epoch {i+1} \n -----------------------")
-        model, optimizer, train_loss = train(training_dataloader,model,
-                                             optimizer,loss_fn)
-        loss = test(testing_dataloader,model,loss_fn)
-        te_loss_arr.append(loss)
-        tr_loss_arr.append(train_loss)
-        tr_bet = (last_sig_best_tr - 0.05*last_sig_best_tr) - train_loss
-        te_bet = (last_sig_best_te - 0.05*last_sig_best_te) - loss
-        if tr_bet > 0 and te_bet > 0:
-            imp_tr = 0
-            imp_te = 0
-            last_sig_best_tr = train_loss
-            last_sig_best_te = loss
-            print(f"New best training loss: {train_loss}")
-            print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "best_model.pth")
-        elif tr_bet > 0:
-            imp_tr = 0
-            last_sig_best_tr = train_loss
-            print(f"New best training loss: {train_loss}")
-            imp_te += 1
-        elif te_bet > 0:
-            imp_te = 0
-            last_sig_best_te = loss
-            print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "best_model.pth")
-            imp_tr += 1
-        else:
-            imp_tr += 1
-            imp_te += 1
-        i+=1
+    active_loops = 20
+    epochs = 100
+    range_all = np.asarray(generator.lhs_range_gen())
+    n_samples = 5000
+    n_samples_large = 10000 # number of parameter sets to draw 
+    
+    
+    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
+    sample = sampler.random(n=1000000)
+    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    
+    theta_init = theta_lhs
+    lhs_idx = theta_init.shape[0]
+    
+    data_init = np.array([generator.rtdist_flux(t,egrid) for t in generator.pars_conversion(theta_init)])
+    
+    for j in range(active_loops):
+        print(f"I am in active learning loop {i+1}")
+        # randomly generate points in parameter space
+        print("Generating random samples of theta")
+        theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
+        
+        print("computing neural network predictions with dropout for each theta")
+        # compute 100 neural network predictions with dropout
+        pred_query_all = []
+        for j in range(100):
+            pred_query = model(torch.DoubleTensor(theta_query_large))
+            pred_query_all.append(pred_query.detach().numpy())
+
+        pred_query_all = np.array(pred_query_all)
+        
+        print("Finding top uncertain thetas")
+        # sort these data sets from largest uncertainty (as measured by 
+        # relative variance) to smallest
+        dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
+        var_query = np.var(dvar, axis=0)
+        mean_var_query = np.mean(var_query, axis=1)
+        query_idx = np.argsort(mean_var_query)[::-1]
+        
+        print("Generating data for these samples")
+        # get out the top `nsamples` values of theta_query
+        theta_query = theta_query_large[query_idx[:n_samples]]
+        # add thetas to the rest of the training data
+        theta_init = np.vstack([theta_init, theta_query])
+        
+        # compute the physical model for these thetas
+        data_query = np.array([generator.rtdist_flux(t,egrid) for t in generator.pars_conversion(theta_query)])
+        # add corresponding models to the rest of the training data
+        data_init = np.vstack([data_init, data_query])
+        
+        # add rejected parameter sets back to original array for potential 
+        # future use:
+        theta_lhs = np.vstack([theta_lhs, theta_query[n_samples:]])
+    
+        print(f"size of theta_init: {theta_init.shape}")
+        print(f"size of data_init: {data_init.shape}")
+        
+        # increment the index for reading parameters from theta_lhs
+        lhs_idx += (n_samples_large)
+        
+        # shuffle indices for neural network training
+        idx_shuffle = np.arange(0, len(theta_init), dtype=int)
+        np.random.shuffle(idx_shuffle)
+    
+        idx_query = idx_shuffle[:len(idx_shuffle)-10000]
+        idx_test = idx_shuffle[-10000:]
+
+        print("Setting up modeling")
+        Xquery = CustomData(theta_init[idx_query], data_init[idx_query],scaler, 
+                            training = True)
+        query_dataloader = DataLoader(Xquery, batch_size=batch_size, shuffle=True)
+    
+        Xtest = CustomData(theta_init[idx_test], data_init[idx_test],scaler,
+                           training = False)
+        test_dataloader = DataLoader(Xtest, batch_size=batch_size, shuffle=True)
+        
+        for i in range(epochs):
+            print(f"Epoch {i+1} \n -----------------------")
+            model, optimizer, train_loss = train(query_dataloader,model,
+                                                 optimizer,loss_fn)
+            loss = test(test_dataloader,model,loss_fn)
+            te_loss_arr.append(loss)
+            tr_loss_arr.append(train_loss)
+            tr_bet = (last_sig_best_tr - 0.05*last_sig_best_tr) - train_loss
+            te_bet = (last_sig_best_te - 0.05*last_sig_best_te) - loss
+            if tr_bet > 0 and te_bet > 0:
+                last_sig_best_tr = train_loss
+                last_sig_best_te = loss
+                print(f"New best training loss: {train_loss}")
+                print(f"New best testing loss: {loss}")
+                torch.save(model.state_dict(), "best_model.pth")
+            elif tr_bet > 0:
+                last_sig_best_tr = train_loss
+                print(f"New best training loss: {train_loss}")
+            elif te_bet > 0:
+                last_sig_best_te = loss
+                print(f"New best testing loss: {loss}")
+                torch.save(model.state_dict(), "best_model.pth")
         
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)

@@ -2,3 +2,5 @@ samples/
 *.png
 .DS_Store
 heatmaps/
+Active Learning for Emulators.ipynb
+.ipynb_checkpoints/
