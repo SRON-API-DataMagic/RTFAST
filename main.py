@@ -262,7 +262,7 @@ def main():
     epochs = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 500
-    n_samples_large = 75000 # number of parameter sets to draw 
+    n_samples_large = 10000 # number of parameter sets to draw 
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
