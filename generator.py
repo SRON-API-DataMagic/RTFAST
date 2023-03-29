@@ -139,6 +139,8 @@ def pars_conversion(pars):
     pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
                  0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
     pars_base = np.tile(pars_base,(1,pars.shape[0]))
+    print(pars_base)
+    print(pars)
     pars_base[:,1] = pars[:,0]
     pars_base[:,13] = 10**pars[:,1]
     return pars_base
