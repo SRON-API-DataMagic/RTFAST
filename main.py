@@ -51,7 +51,6 @@ class CustomData(Dataset):
         scales the energy bins.
         """
         D = self.data
-        print(D)
         D[D<=0] = torch.amin(D[D>0],0)
         D = torch.log10(D)
         #Change NaNs to minimum non flux (essentially neglible)
@@ -371,6 +370,7 @@ def main():
     
         idx_query = idx_shuffle[:len(idx_shuffle)-10000]
         idx_test = idx_shuffle[-10000:]
+        print(idx_query)
 
         print("Setting up modeling")
         Xquery = CustomData(theta_init[idx_query], data_init[idx_query],scaler, 
