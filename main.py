@@ -368,8 +368,8 @@ def main():
         idx_shuffle = np.arange(0, len(theta_init), dtype=int)
         np.random.shuffle(idx_shuffle)
     
-        idx_query = idx_shuffle[:len(idx_shuffle)-10000]
-        idx_test = idx_shuffle[-10000:]
+        idx_query = idx_shuffle[:len(idx_shuffle)-1000]
+        idx_test = idx_shuffle[-1000:]
         print(idx_query)
 
         print("Setting up modeling")
