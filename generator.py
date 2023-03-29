@@ -140,7 +140,7 @@ def pars_conversion(pars):
                  0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
     new_pars = []
     for i in range(pars.shape[0]):
-        new_pars.append([pars_base])
+        new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
     print(pars)
     print(new_pars)
