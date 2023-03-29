@@ -261,8 +261,6 @@ def main():
     active_loops = 20
     epochs = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
-    print(range_all.shape)
-    print(range_all)
     n_samples = 500
     n_samples_large = 75000 # number of parameter sets to draw 
     
@@ -277,7 +275,10 @@ def main():
         #generating a random set of parameters and corresponding data
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (500,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
-        data_init = np.array([generator.rtdist_flux(pars, egrid) for pars in pars_init])
+        data_init = []
+        for pars in pars_init:
+            data_init.append(generator.rtdist_flux(pars, egrid))
+        data_init = np.array(data_init)
         #save data for the first time in text files
         np.savetxt("data.txt",data_init)
         np.savetxt("pars.txt",pars_init)
