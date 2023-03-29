@@ -261,6 +261,7 @@ def main():
     active_loops = 20
     epochs = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
+    print(range_all.shape)
     n_samples = 500
     n_samples_large = 75000 # number of parameter sets to draw 
     
