@@ -139,17 +139,13 @@ def save_data(data,pars):
     None.
 
     """
-    new_pars = np.loadtxt("pars.txt")
-    new_data = np.loadtxt("data.txt")
     data = np.asarray(data)
     pars = np.asarray(pars)
     with open("data.txt","w") as f:
-        new_data = np.append(new_data,data,axis=0)
-        np.savetxt(f,new_data)
+        np.savetxt(f,data)
     f.close()
     with open("pars.txt","w") as f:
-        new_pars = np.append(new_pars,pars,axis=0)
-        np.savetxt(f,new_pars)
+        np.savetxt(f,pars)
     f.close()
     return
     
@@ -354,6 +350,9 @@ def main():
         data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
+        
+        # save new data and parameters to disk
+        save_data(data_init, generator.pars_conversion(theta_init))
         
         # add rejected parameter sets back to original array for potential 
         # future use:
