@@ -324,7 +324,8 @@ def main():
         # compute 100 neural network predictions with dropout
         pred_query_all = []
         for i in range(100):
-            print(f"Computing theta {i+1}")
+            if i % 10 == 0:
+                print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
             pred_query_all.append(pred_query.detach().numpy())
 
@@ -348,7 +349,8 @@ def main():
         data_query = []
         theta_query_iterate = generator.pars_conversion(theta_query)
         for i,pars in enumerate(theta_query_iterate):
-            print(f"Generating model {i+1}/{500}")
+            if i % 100 == 0:
+                print(f"Generating model {i+1}/{500}")
             data_query.append(generator.rtdist_flux(pars, egrid))
         data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
