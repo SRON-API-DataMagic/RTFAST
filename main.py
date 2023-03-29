@@ -262,7 +262,7 @@ def main():
     epochs = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 500
-    n_samples_large = 1000 # number of parameter sets to draw 
+    n_samples_large = 5000 # number of parameter sets to draw 
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -348,7 +348,7 @@ def main():
         data_query = []
         for i,pars in enumerate(theta_query):
             print(f"Generating model {i+1}/{500}")
-            data_query.append(generator.rtdist_flux(generator.pars_conversion(theta_query), egrid))
+            data_query.append(generator.rtdist_flux(generator.pars_conversion(pars), egrid))
         data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
