@@ -31,10 +31,11 @@ class CustomData(Dataset):
     
     def __init__(self,pars,data,scaler,scaling =True):
         super().__init__()
-        self.par_list = pars
-        self.data = data
+        self.par_list = torch.Tensor(pars)
+        self.data = torch.Tensor(data)
         self.scaler = scaler
-        self.standardize(scaling)
+        self.scaling = scaling
+        self.standardize()
     
     def __len__(self):
         return self.par_list.shape[0]
@@ -44,7 +45,7 @@ class CustomData(Dataset):
         parameters = self.par_list[idx]
         return datum,parameters
     
-    def standardize(self,scaling):
+    def standardize(self):
         """
         Filters 0 flux and converts to smallest non-zero value. Then standard
         scales the energy bins.
@@ -54,12 +55,12 @@ class CustomData(Dataset):
         D = torch.log10(D)
         #Change NaNs to minimum non flux (essentially neglible)
         D_np = D.numpy()
-        D_np = self.scale(D_np,scaling)
+        D_np = self.scale(D_np)
         D = torch.from_numpy(D_np)
         D = D.double()
         self.data = D
         
-    def scale(self,data,scaling):
+    def scale(self,data):
         """
         Standard scales the logarithm spaced data by energy bin and saves the
         standard scaler for future use.
@@ -76,7 +77,7 @@ class CustomData(Dataset):
 
         """
         scaler = self.scaler
-        if scaling == True:
+        if self.scaling == True:
             scaled_data = scaler.fit_transform(data)
             dump(scaler, 'std_scaler.bin', compress=True)
         else:
