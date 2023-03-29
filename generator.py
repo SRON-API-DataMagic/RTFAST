@@ -110,6 +110,14 @@ def lhs_range_gen():
     
     return range_all
 
+def lhs_trimmed_gen():
+    spin_range = [0.1,0.998]
+    mass_range = [np.log10(1),np.log10(1e11)]
+    
+    range_all = [spin_range,mass_range]
+    
+    return range_all
+
 def pars_conversion(pars):
     """
     Converts sampled parameters for neural network training into correct
@@ -128,20 +136,11 @@ def pars_conversion(pars):
         parsing into external model.
 
     """
-    #convert all log spaced parameters into their linear form
-    pars[:,0] = 10**pars[:,0]
-    pars[:,4] = 10**pars[:,4]
-    pars[:,7] = 10**pars[:,7]
-    pars[:,9:13] = 10**pars[:,9:13]
-    pars[:,18] = 10**pars[:,18]
-    #add fixed parameters
-    pars = np.insert(pars,17,0,axis=1) #fmin
-    pars = np.insert(pars,18,0,axis=1) #fmax
-    pars = np.insert(pars,19,1,axis=1) #ReIm
-    pars = np.insert(pars,20,0,axis=1) #phiA
-    pars = np.insert(pars,24,1,axis=1) #RESP
-    pars = np.insert(pars,25,0,axis=1) #xspec norm
-    
-    return pars
+    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+                 0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
+    pars_base = np.tile(pars_base,(1,pars.shape[0]))
+    pars_base[:,1] = pars[:,0]
+    pars_base[:,13] = 10**pars[:,1]
+    return pars_base
     
     

@@ -18,8 +18,8 @@ import network
 from main import CustomData
 
 class LoadCustomData(CustomData):
-    def __init__(self,pars,data):
-        super().__init__(pars,data)
+    def __init__(self,pars,data,scaler):
+        super().__init__(pars,data,scaler)
         self.par_list = pars
         self.data = data
 
@@ -81,7 +81,7 @@ pars = pars[:,[1,13]]
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
-data = LoadCustomData(pars,data)
+data = LoadCustomData(pars,data,scaler)
 testing_dataloader = DataLoader(data,batch_size = batch_size)
 
 egrid = rmf.e_min
