@@ -269,7 +269,7 @@ def main():
     sample = sampler.random(n=1000000)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
-    first = True #if the first time running this code, make this true
+    first = False #if the first time running this code, make this true
     
     if first == True: 
         #generating a random set of parameters and corresponding data
@@ -324,6 +324,7 @@ def main():
         # compute 100 neural network predictions with dropout
         pred_query_all = []
         for i in range(100):
+            print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
             pred_query_all.append(pred_query.detach().numpy())
 
@@ -344,7 +345,11 @@ def main():
         theta_init = np.vstack([theta_init, theta_query])
         
         # compute the physical model for these thetas
-        data_query = np.array([generator.rtdist_flux(t,egrid) for t in generator.pars_conversion(theta_query)])
+        data_query = []
+        for i,pars in enumerate(theta_query):
+            print(f"Generating model {i+1}/{500}")
+            data_query.append(generator.rtdist_flux(generator.pars_conversion(theta_query), egrid))
+        data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
         
