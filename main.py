@@ -276,7 +276,8 @@ def main():
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (500,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
-        for pars in pars_init:
+        for i,pars in enumerate(pars_init):
+            print(f"Generating model {i+1}/{500}")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         #save data for the first time in text files
