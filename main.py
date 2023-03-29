@@ -346,9 +346,10 @@ def main():
         
         # compute the physical model for these thetas
         data_query = []
-        for i,pars in enumerate(theta_query):
+        theta_query_iterate = generator.pars_conversion(theta_query)
+        for i,pars in enumerate(theta_query_iterate):
             print(f"Generating model {i+1}/{500}")
-            data_query.append(generator.rtdist_flux(generator.pars_conversion(pars), egrid))
+            data_query.append(generator.rtdist_flux(pars, egrid))
         data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
