@@ -295,6 +295,9 @@ def main():
         theta_init = pars
     
     scaler = StandardScaler()
+    #create initial dataset object to create scaler (and then delete object)
+    data_init_dataset = CustomData(theta_init, data_init, scaler)
+    del data_init_dataset
     
     batch_size = 12
     
@@ -351,6 +354,7 @@ def main():
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
         
+        print("Saving new data to disk")
         # save new data and parameters to disk
         save_data(data_init, generator.pars_conversion(theta_init))
         
@@ -370,7 +374,6 @@ def main():
     
         idx_query = idx_shuffle[:len(idx_shuffle)-1000]
         idx_test = idx_shuffle[-1000:]
-        print(idx_query)
 
         print("Setting up modeling")
         Xquery = CustomData(theta_init[idx_query], data_init[idx_query],scaler, 
