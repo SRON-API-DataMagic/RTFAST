@@ -142,10 +142,8 @@ def pars_conversion(pars):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    print(pars)
-    print(new_pars)
     new_pars[:,1] = pars[:,0]
     new_pars[:,13] = 10**pars[:,1]
-    return pars_base
+    return new_pars
     
     
