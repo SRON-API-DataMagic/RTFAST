@@ -273,7 +273,7 @@ def main():
     
     if first == True: 
         #generating a random set of parameters and corresponding data
-        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (500,len(range_all)))
+        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (500,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         data_init = np.array([generator.rtdist_flux(pars, egrid) for pars in pars_init])
         #save data for the first time in text files
