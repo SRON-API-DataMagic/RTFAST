@@ -54,10 +54,12 @@ class CustomData(Dataset):
         D = self.data
         D[D<=1e-44] = 1e-44
         D = torch.log10(D)
+        print(torch.any(torch.isnan(D)))
         #Change NaNs to minimum non flux (essentially neglible)
         D_np = D.numpy()
         D_np = self.scale(D_np)
         D = torch.from_numpy(D_np)
+        print(torch.any(torch.isnan(D)))
         D = D.double()
         self.data = D
         
@@ -189,12 +191,6 @@ def train(dataloader,model,optimizer,loss_fn):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*batch_size + 1)
-        if np.isnan(loss_b) == True:
-            print(torch.any(torch.isnan(D)))
-            print(torch.any(torch.isnan(pred)))
-            print(torch.any(torch.isinf(D)))
-            print(torch.any(torch.isinf(pred)))
-            sys.exit("loss is NaN")
         if batch % 100 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
