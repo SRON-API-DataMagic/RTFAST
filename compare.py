@@ -123,9 +123,20 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = model(P).detach().numpy()
     pred = np.squeeze(inverse(scaler,pred))
     
+    da_log = np.log10(da)
+    
     fname = "{batch}_res_log"
 
-    residual_plots(egrid, pred, da, spin, mass, fname)
+    residual_plots(egrid, pred, da_log, spin, mass, fname)
+    
+    pred = model(P).detach().numpy()
+    pred = np.squeeze(pred)
+    
+    fname = "{batch}_res_log"
+    
+    da_log_scal = scaler.transform(da_log) 
+
+    residual_plots(egrid, pred, da_log_scal, spin, mass, fname)
     
     if batch > 30:
         break
