@@ -52,16 +52,12 @@ class CustomData(Dataset):
         scales the energy bins.
         """
         D = self.data
-        print(torch.amin(D))
         D[D<=1e-30] = 1e-30
-        print(torch.amin(D))
         D = torch.log10(D)
-        print(torch.any(torch.isnan(D)))
         #Change NaNs to minimum non flux (essentially neglible)
         D_np = D.numpy()
         D_np = self.scale(D_np)
         D = torch.from_numpy(D_np)
-        print(torch.any(torch.isnan(D)))
         D = D.double()
         self.data = D
         
@@ -297,6 +293,9 @@ def main():
         pars = pars[:,[1,13]] #retrieve spin and mass
         
         data_init = data
+        for spec in data:
+            if np.any(np.isnan(spec)) == True:
+                print(spec)
         theta_init = pars
     
     scaler = MinMaxScaler()
