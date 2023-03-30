@@ -27,6 +27,25 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
+def residual_plots(egrid,pred,da,spin,mass,fname,log = False):
+    fig, axs = plt.subplots(2,1,sharex=True)
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
+    axs[0].legend()
+    axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
+                transform=axs[0].transAxes)
+    if log == True:
+        axs[0].set_ylabel("Log(Flux)")
+    else:
+        axs[0].set_ylabel("Flux")
+    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
+    axs[1].set_ylabel("Residuals")
+    axs[1].set_xlabel("Energy in keV")
+    axs[1].set_ylim(residuals_ylim)
+    plt.savefig(f"samples/{fname}.png")
+    plt.close()
+    
+
 wrk_dir = os.getcwd()
 scaler = StandardScaler()
 scaler = load('std_scaler.bin')
@@ -88,42 +107,27 @@ egrid = rmf.e_min
 residuals_ylim = (-0.2,0.2)
 
 for batch, (D,P) in enumerate(testing_dataloader):
+    #retrieve relevant data and parameters
     model.load_state_dict(torch.load("best_model.pth"))
     spin, mass = P[0][0].item(),P[0][1].item()
-    fig, axs = plt.subplots(2,1,sharex=True)
+    da = torch.squeeze(D)
+    
+    #generate neural network prediction and rescale to linear space
     pred = model(P).detach().numpy()
     pred = 10**np.squeeze(inverse(scaler,pred))
-    da = torch.squeeze(D)
-    axs[0].plot(egrid,pred,c="blue",label="NN model")
-    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
-    axs[0].legend()
-    axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
-                transform=axs[0].transAxes)
-    axs[0].set_ylabel("Flux")
-    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
-    axs[1].set_ylabel("Residuals")
-    axs[1].set_xlabel("Energy in keV")
-    axs[1].set_ylim(residuals_ylim)
-    plt.savefig(f"samples/{batch}_best_com.png")
-    plt.close()
+    
+    fname = "{batch}_res"
+    
+    residual_plots(egrid, pred, da, spin, mass, fname)
     
     model.load_state_dict(torch.load("final_model.pth"))
-
-    fig, axs = plt.subplots(2,1,sharex=True)
+    
     pred = model(P).detach().numpy()
     pred = 10**np.squeeze(inverse(scaler,pred))
-    axs[0].plot(egrid,pred,c="blue",label="NN model")
-    axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
-    axs[0].legend()
-    axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
-                transform=axs[0].transAxes)
-    axs[0].set_ylabel("Flux")
-    axs[1].scatter(egrid,(da-pred)/da,s=0.5)
-    axs[1].set_ylabel("Residuals")
-    axs[1].set_xlabel("Energy in keV")
-    axs[1].set_ylim(residuals_ylim)
-    plt.savefig(f"samples/{batch}_final_com.png")
-    plt.close()
+    
+    fname = "{batch}_res_log"
+
+    residual_plots(egrid, pred, da, spin, mass, fname)
     
     if batch > 30:
         break
