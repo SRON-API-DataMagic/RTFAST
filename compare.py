@@ -29,7 +29,6 @@ def inverse(scaler,data):
 
 wrk_dir = os.getcwd()
 scaler = StandardScaler()
-scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
 tr_loss_arr = np.loadtxt("tr_loss.txt")
@@ -143,7 +142,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     spin.append(P[0][0].item())
     mass.append(P[0][1].item())
     pred = model(P).detach().numpy()
-    pred = inverse(scaler,pred)
+    pred = 10**(inverse(scaler,pred))
     resid = (da-pred)/da
     residuals.append(np.absolute(np.asarray(resid)))
     
