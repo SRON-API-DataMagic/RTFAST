@@ -82,6 +82,7 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
+model.load_state_dict(torch.load("best_model.pth"))
 
 
 with open("data.txt","r") as f1:
@@ -108,7 +109,6 @@ residuals_ylim = (-0.2,0.2)
 
 for batch, (D,P) in enumerate(testing_dataloader):
     #retrieve relevant data and parameters
-    model.load_state_dict(torch.load("best_model.pth"))
     spin, mass = P[0][0].item(),P[0][1].item()
     da = torch.squeeze(D)
     
@@ -120,10 +120,8 @@ for batch, (D,P) in enumerate(testing_dataloader):
     
     residual_plots(egrid, pred, da, spin, mass, fname)
     
-    model.load_state_dict(torch.load("final_model.pth"))
-    
     pred = model(P).detach().numpy()
-    pred = 10**np.squeeze(inverse(scaler,pred))
+    pred = np.squeeze(inverse(scaler,pred))
     
     fname = "{batch}_res_log"
 
@@ -139,7 +137,6 @@ class Residual():
 
 
 print("Finished creating random model comparison")
-model.load_state_dict(torch.load("best_model.pth"))
 mass, spin = [], []
 residuals = []
 for batch, (D,P) in enumerate(testing_dataloader):
