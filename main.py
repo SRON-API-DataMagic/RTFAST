@@ -3,6 +3,7 @@ This is the main program that trains the neural network.
 """
 import numpy as np
 import os
+import sys
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -188,6 +189,12 @@ def train(dataloader,model,optimizer,loss_fn):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*batch_size + 1)
+        if np.isnan(loss_b) == True:
+            print(torch.any(torch.isnan(D)))
+            print(torch.any(torch.isnan(pred)))
+            print(torch.any(torch.isinf(D)))
+            print(torch.any(torch.isinf(pred)))
+            sys.exit("loss is NaN")
         if batch % 100 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
