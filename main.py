@@ -292,10 +292,13 @@ def main():
         pars[:,13] = np.log10(pars[:,13]) 
         pars = pars[:,[1,13]] #retrieve spin and mass
         
-        data_init = data
-        for spec in data:
+        bad_spec = []
+        for i,spec in enumerate(data):
             if np.any(np.isnan(spec)) == True:
-                print(spec)
+                print(i)
+        data = np.delete(data,bad_spec,0)
+        pars = np.delete(pars,bad_spec,0)
+        data_init = data
         theta_init = pars
     
     scaler = MinMaxScaler()
