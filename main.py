@@ -267,11 +267,13 @@ def main():
     sample = sampler.random(n=1000000)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
-    first = False #if the first time running this code, make this true
+    #if the first time running this code or you want to refresh the dataset, 
+    #make this true
+    first = True 
     
     if first == True: 
         #generating a random set of parameters and corresponding data
-        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (500,range_all.shape[0]))
+        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (5000,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
         for i,pars in enumerate(pars_init):
@@ -292,12 +294,6 @@ def main():
         pars[:,13] = np.log10(pars[:,13]) 
         pars = pars[:,[1,13]] #retrieve spin and mass
         
-        bad_spec = []
-        for i,spec in enumerate(data):
-            if np.any(np.isnan(spec)) == True:
-                print(i)
-        data = np.delete(data,bad_spec,0)
-        pars = np.delete(pars,bad_spec,0)
         data_init = data
         theta_init = pars
     
