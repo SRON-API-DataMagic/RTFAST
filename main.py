@@ -52,7 +52,7 @@ class CustomData(Dataset):
         scales the energy bins.
         """
         D = self.data
-        D[D<=1e-44] = 1e-44
+        D[D<=1e-30] = 1e-30
         D = torch.log10(D)
         print(torch.any(torch.isnan(D)))
         #Change NaNs to minimum non flux (essentially neglible)
