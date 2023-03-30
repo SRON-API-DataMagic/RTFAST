@@ -188,9 +188,6 @@ def train(dataloader,model,optimizer,loss_fn):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*batch_size + 1)
-        if torch.isnan(loss_b) == True:
-            print("The loss has become NaN")
-            print("Data contains NaN:",torch.any(torch.isnan(D)))
         if batch % 100 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
