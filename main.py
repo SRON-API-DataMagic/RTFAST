@@ -264,7 +264,7 @@ def main():
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=1000000)
+    sample = sampler.random(n=100000)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
     #if the first time running this code or you want to refresh the dataset, 
