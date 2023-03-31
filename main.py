@@ -329,13 +329,13 @@ def main():
         
         print("computing neural network predictions with dropout for each theta")
         # compute 100 neural network predictions with dropout
-        pred_query_all = np.zeros((100*n_samples_large,len(egrid)))
+        pred_query_all = np.zeros((100,n_samples_large,len(egrid)))
         model.train()
         for i in range(100):
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
-            pred_query_all[i*n_samples_large:(i+1)*n_samples_large] = pred_query.detach().numpy()
+            pred_query_all[i] = pred_query.detach().numpy()
         
         print("Successfully finished generating thetas")
         
