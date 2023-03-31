@@ -325,6 +325,7 @@ def main():
         
         print("computing neural network predictions with dropout for each theta")
         # compute 100 neural network predictions with dropout
+        model.train()
         pred_query_all = []
         for i in range(100):
             if i % 10 == 0:
@@ -334,6 +335,7 @@ def main():
 
         pred_query_all = np.array(pred_query_all)
         
+        model.eval()
         print("Finding top uncertain thetas")
         # sort these data sets from largest uncertainty (as measured by 
         # relative variance) to smallest
