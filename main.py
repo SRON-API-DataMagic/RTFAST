@@ -329,16 +329,15 @@ def main():
         
         print("computing neural network predictions with dropout for each theta")
         # compute 100 neural network predictions with dropout
-        pred_query_all = []
+        pred_query_all = np.zeros((500,len(egrid)))
         for i in range(500):
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
-            pred_query_all.append(pred_query.detach().numpy())
+            pred_query_all[i] = pred_query
             print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
         
         print("Successfully finished generating thetas")
-        pred_query_all = np.array(pred_query_all)
         
         print("Finding top uncertain thetas")
         # sort these data sets from largest uncertainty (as measured by 
