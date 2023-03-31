@@ -58,7 +58,6 @@ plt.plot(te_loss_arr,label="testing loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.yscale("log")
-plt.ylim(top = 400)
 plt.legend()
 plt.savefig("loss_plot.png")
 plt.close()
@@ -134,7 +133,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     
     fname = "{batch}_res_log"
     
-    da_log_scal = scaler.transform(da_log.reshape(1, -1)).T
+    da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
 
     residual_plots(egrid, pred, da_log_scal, spin, mass, fname)
     
