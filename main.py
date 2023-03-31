@@ -330,7 +330,7 @@ def main():
         # compute 100 neural network predictions with dropout
         model.train()
         pred_query_all = []
-        for i in range(1000):
+        for i in range(500):
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
