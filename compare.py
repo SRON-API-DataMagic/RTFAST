@@ -124,14 +124,14 @@ for batch, (D,P) in enumerate(testing_dataloader):
     
     da_log = np.log10(da)
     
-    fname = "{batch}_res_log"
+    fname = f"{batch}_res_log"
 
     residual_plots(egrid, pred, da_log, spin, mass, fname)
     
     pred = model(P).detach().numpy()
     pred = np.squeeze(pred)
     
-    fname = "{batch}_res_log"
+    fname = f"{batch}_res_log"
     
     da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
 
