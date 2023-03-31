@@ -297,6 +297,8 @@ def main():
         data_init = data
         theta_init = pars
     
+    del data
+    del pars
     scaler = MinMaxScaler()
     #create initial dataset object to create scaler (and then delete object)
     data_init_dataset = CustomData(theta_init, data_init, scaler)
@@ -334,7 +336,8 @@ def main():
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
             pred_query_all.append(pred_query.detach().numpy())
-
+        
+        print("Successfully finished generating thetas")
         pred_query_all = np.array(pred_query_all)
         
         print("Finding top uncertain thetas")
