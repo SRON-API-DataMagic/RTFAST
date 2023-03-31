@@ -115,7 +115,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = model(P).detach().numpy()
     pred = 10**np.squeeze(inverse(scaler,pred))
     
-    fname = "{batch}_res"
+    fname = "f{batch}_res"
     
     residual_plots(egrid, pred, da, spin, mass, fname)
     
