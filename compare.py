@@ -131,7 +131,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = model(P).detach().numpy()
     pred = np.squeeze(pred)
     
-    fname = f"{batch}_res_log"
+    fname = f"{batch}_res_scal"
     
     da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
 
