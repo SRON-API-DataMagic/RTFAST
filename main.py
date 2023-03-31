@@ -314,11 +314,14 @@ def main():
     last_sig_best_te = 1e7 #last significant best testing loss
     tr_loss_arr = []
     te_loss_arr = []
+    imp_te = 0
+    
+    active_loop_num = 0
     
     print("Beginning training")
     
-    for j in range(active_loops):
-        print(f"I am in active learning loop {j+1}")
+    while active_loop_num < active_loops and imp_te < 50:
+        print(f"I am in active learning loop {active_loop_num+1}")
         # randomly generate points in parameter space
         print("Generating random samples of theta")
         theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
@@ -327,7 +330,7 @@ def main():
         # compute 100 neural network predictions with dropout
         model.train()
         pred_query_all = []
-        for i in range(100):
+        for i in range(1000):
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
@@ -398,18 +401,21 @@ def main():
             loss = test(test_dataloader,model,loss_fn)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
-            tr_bet = (last_sig_best_tr - 0.05*last_sig_best_tr) - train_loss
-            te_bet = (last_sig_best_te - 0.05*last_sig_best_te) - loss
+            tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
+            te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
             if tr_bet > 0 and te_bet > 0:
                 last_sig_best_tr = train_loss
                 last_sig_best_te = loss
+                imp_te = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
                 torch.save(model.state_dict(), "best_model.pth")
             elif tr_bet > 0:
+                imp_te += 1
                 last_sig_best_tr = train_loss
                 print(f"New best training loss: {train_loss}")
             elif te_bet > 0:
+                imp_te += 1
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
                 torch.save(model.state_dict(), "best_model.pth")
