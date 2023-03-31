@@ -27,13 +27,14 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
-def residual_plots(egrid,pred,da,spin,mass,fname,log = False):
+def residual_plots(egrid,pred,da,spin,mass,fname,title,log = False):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].text(0.3,0.5,f"Spin, Mass: {spin:>2f} {mass:>2f}",
                 transform=axs[0].transAxes)
+    axs[0].set_title(title)
     if log == True:
         axs[0].set_ylabel("Log(Flux)")
     else:
@@ -116,8 +117,9 @@ for batch, (D,P) in enumerate(testing_dataloader):
     pred = 10**np.squeeze(inverse(scaler,pred))
     
     fname = f"{batch}_res"
+    title = "Standard output"
     
-    residual_plots(egrid, pred, da, spin, mass, fname)
+    residual_plots(egrid, pred, da, spin, mass, fname, title)
     
     pred = model(P).detach().numpy()
     pred = np.squeeze(inverse(scaler,pred))
@@ -125,17 +127,19 @@ for batch, (D,P) in enumerate(testing_dataloader):
     da_log = np.log10(da)
     
     fname = f"{batch}_res_log"
+    title = "Log scaled output"
 
-    residual_plots(egrid, pred, da_log, spin, mass, fname)
+    residual_plots(egrid, pred, da_log, spin, mass, fname, title)
     
     pred = model(P).detach().numpy()
     pred = np.squeeze(pred)
     
     fname = f"{batch}_res_scal"
+    title = "Neural network normalised output"
     
     da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
 
-    residual_plots(egrid, pred, da_log_scal, spin, mass, fname)
+    residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title)
     
     if batch > 30:
         break
