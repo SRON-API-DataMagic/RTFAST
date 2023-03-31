@@ -277,7 +277,7 @@ def main():
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
         for i,pars in enumerate(pars_init):
-            print(f"Generating model {i+1}/{500}")
+            print(f"Generating model {i+1}/{5000}")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         #save data for the first time in text files

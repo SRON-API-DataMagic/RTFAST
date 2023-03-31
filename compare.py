@@ -134,7 +134,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     
     fname = "{batch}_res_log"
     
-    da_log_scal = scaler.transform(da_log) 
+    da_log_scal = scaler.transform(da_log.reshape(1, -1)) 
 
     residual_plots(egrid, pred, da_log_scal, spin, mass, fname)
     
