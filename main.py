@@ -2,7 +2,7 @@
 This is the main program that trains the neural network.
 """
 import numpy as np
-import os
+import os, psutil
 import sys
 
 from sherpa.astro.ui import unpack_rmf
@@ -335,6 +335,7 @@ def main():
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
             pred_query_all.append(pred_query.detach().numpy())
+            print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
         
         print("Successfully finished generating thetas")
         pred_query_all = np.array(pred_query_all)
