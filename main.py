@@ -334,7 +334,7 @@ def main():
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
-            pred_query_all[i] = pred_query
+            pred_query_all[i] = pred_query.detach().numpy()
             print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
         
         print("Successfully finished generating thetas")
