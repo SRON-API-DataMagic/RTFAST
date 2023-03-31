@@ -296,9 +296,8 @@ def main():
         
         data_init = data
         theta_init = pars
-    
-    del data
-    del pars
+        del data
+        del pars
     scaler = MinMaxScaler()
     #create initial dataset object to create scaler (and then delete object)
     data_init_dataset = CustomData(theta_init, data_init, scaler)
