@@ -25,9 +25,9 @@ class NeuralNetwork(nn.Module):
         self.LinearStack = nn.Sequential(
             nn.Linear(2,256),
             nn.Softplus(),
-            #nn.Dropout(p=self.p),
+            nn.Dropout(p=self.p),
             nn.Linear(256,512),
-            #nn.Dropout(p=self.p),
+            nn.Dropout(p=self.p),
             nn.Softplus(),
             nn.Linear(512,data_len)
             ) 
