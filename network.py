@@ -24,11 +24,11 @@ class NeuralNetwork(nn.Module):
         self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
             nn.Linear(2,256),
-            nn.Softplus(),
+            nn.ReLU(),
             nn.Dropout(p=self.p),
             nn.Linear(256,512),
+            nn.ReLU(),
             nn.Dropout(p=self.p),
-            nn.Softplus(),
             nn.Linear(512,data_len)
             ) 
         self.double()
