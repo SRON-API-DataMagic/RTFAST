@@ -300,6 +300,7 @@ def main():
     
     while active_loop_num < active_loops and imp_te < 50:
         print(f"I am in active learning loop {active_loop_num+1}")
+        active_loop_num += 1
         # randomly generate points in parameter space
         print("Generating random samples of theta")
         theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
