@@ -195,6 +195,20 @@ def test(dataloader,model,loss_fn):
     print(f"Average testing loss: {test_loss:>8f}")
     return test_loss
 
+def NaN_checker(data,pars):
+    index = []
+    for i,spec in enumerate(data):
+        if np.any(np.isnan(spec)) == True:
+            index.append(i)
+    
+    if index != []:
+        print("Found bad models, printing parameters...")
+        for indice in index:
+            print(f"{indice}: {pars[indice]}")
+        data = np.delete(data,index)
+        pars = np.deleta(pars,index)
+    return data, pars
+
 def main():
     torch.set_default_dtype(torch.double)
     
@@ -242,6 +256,7 @@ def main():
             print(f"Generating model {i+1}/{5000}")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
+        data_init, pars_init = NaN_checker(data_init, pars_init)
         #save data for the first time in text files
         np.savetxt("data.txt",data_init)
         np.savetxt("pars.txt",pars_init)
@@ -258,6 +273,7 @@ def main():
         
         data_init = data
         theta_init = pars
+        data_init, pars_init = NaN_checker(data_init, theta_init)
         del data
         del pars
     scaler = MinMaxScaler()
@@ -325,6 +341,9 @@ def main():
         data_query = np.asarray(data_query)
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
+        
+        #Eliminate any broken models
+        data_init, theta_init = NaN_checker(data_init, theta_init)
         
         print("Saving new data to disk")
         # save new data and parameters to disk
