@@ -204,8 +204,8 @@ def NaN_checker(data,pars):
         print("Found bad models, printing parameters...")
         for indice in index:
             print(f"{indice}: {pars[indice]}")
-        data = np.delete(data,index)
-        pars = np.delete(pars,index)
+        data = np.delete(data,index, axis=0)
+        pars = np.delete(pars,index, axis=0)
     return data, pars
 
 def main():
@@ -244,7 +244,7 @@ def main():
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     if first == True: 
         #generating a random set of parameters and corresponding data
