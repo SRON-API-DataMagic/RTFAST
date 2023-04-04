@@ -200,13 +200,12 @@ def NaN_checker(data,pars):
     for i,spec in enumerate(data):
         if np.any(np.isnan(spec)) == True:
             index.append(i)
-    print(index)
     if index != []:
         print("Found bad models, printing parameters...")
         for indice in index:
             print(f"{indice}: {pars[indice]}")
         data = np.delete(data,index)
-        pars = np.deleta(pars,index)
+        pars = np.delete(pars,index)
     return data, pars
 
 def main():
