@@ -244,7 +244,7 @@ def main():
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     if first == True: 
         #generating a random set of parameters and corresponding data
