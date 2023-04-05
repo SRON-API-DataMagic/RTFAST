@@ -334,7 +334,7 @@ def main():
         theta_query_iterate = generator.pars_conversion(theta_query)
         for i,pars in enumerate(theta_query_iterate):
             if i % 100 == 0:
-                print(f"Generating model {i+1}/{500}")
+                print(f"Generating model {i+1}/{n_samples}")
             data_query.append(generator.rtdist_flux(pars, egrid))
         data_query = np.asarray(data_query)
         
