@@ -98,7 +98,7 @@ f2.close()
 
 batch_size = 1
 pars = pars[:,[1,13]]
-pars[:,13] = np.log10(pars[:,1])
+pars[:,1] = np.log10(pars[:,1])
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
