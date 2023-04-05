@@ -168,6 +168,7 @@ obj_residuals = []
 for res in residuals:
     obj_residuals.append(Residual(res))
 
+
 dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
 dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
 
@@ -219,6 +220,8 @@ mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
 spin_tick.append(int(len(spins))-1)
 spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
 
+cmap_flat = sns.color_palette("hls", 2)
+
 fig = plt.figure(figsize=(10,10))
 ax = sns.heatmap(mass_res,cmap="vlag", vmin = 0, vmax = 0.2, center = 0.01)
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
@@ -230,14 +233,15 @@ plt.close()
 print("Continuous mass hm plotted")
 
 fig = plt.figure(figsize=(10,10))
-ax = sns.heatmap(mass_res_flat,cmap="tab10")
+ax = sns.heatmap(mass_res_flat,cmap=cmap_flat,cbar_kws = {})
 ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
 colorbar = ax.collections[0].colorbar
-colorbar.set_ticks([0.025,0.075])
-colorbar.set_ticklabels(['< 1% error','> 1% error'])
+M=mass_res_flat["Residuals"].max()
+colorbar.set_ticks([1/8*M,3/8*M,6/8*M])
+colorbar.set_ticklabels(['low','med','high'])
 
 plt.savefig("heatmaps/flat_mass_hm.png")
 plt.close()
@@ -254,14 +258,14 @@ plt.close()
 print("Continuous spin hm plotted")
 
 fig = plt.figure(figsize=(10,10))
-ax = sns.heatmap(spin_res_flat,cmap="tab10")
+ax = sns.heatmap(spin_res_flat,cmap=cmap_flat)
 ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Spin")
 colorbar = ax.collections[0].colorbar
-colorbar.set_ticks([0.025,0.075])
-colorbar.set_ticklabels(['< 1% error','> 1% error'])
+M=spin_res_flat["Residuals"].max()
+colorbar.set_ticks([1/8*M,3/8*M,6/8*M])
 plt.savefig("heatmaps/flat_spin_hm.png")
 plt.close()
 print("Flat spin hm plotted")
