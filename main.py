@@ -360,10 +360,6 @@ def main():
         data_init, theta_init = NaN_checker(data_init, theta_init)
         data_test, theta_test = NaN_checker(data_test, theta_test)
         
-        print("Saving new data to disk")
-        # save new data and parameters to disk
-        save_data(data_init, generator.pars_conversion(theta_init))
-        
         # add rejected parameter sets back to original array for potential 
         # future use:
         theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
@@ -388,6 +384,10 @@ def main():
         data_init = np.vstack([data_init, data_test])
         # add corresponding thetas thetas to the rest of the training data
         theta_init = np.vstack([theta_init, theta_test])
+        
+        print("Saving new data to disk")
+        # save new data and parameters to disk
+        save_data(data_init, generator.pars_conversion(theta_init))
         
         for i in range(epochs):
             print(f"Epoch {i+1} \n -----------------------")
