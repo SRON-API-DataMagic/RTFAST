@@ -307,9 +307,9 @@ def main():
         
         print("computing neural network predictions with dropout for each theta")
         # compute 100 neural network predictions with dropout
-        pred_query_all = np.zeros((100,n_samples_large,len(egrid)))
+        pred_query_all = np.zeros((50,n_samples_large,len(egrid)))
         model.train()
-        for i in range(100):
+        for i in range(50):
             if i % 10 == 0:
                 print(f"Computing theta {i+1}")
             pred_query = model(torch.DoubleTensor(theta_query_large))
@@ -336,8 +336,7 @@ def main():
             if i % 100 == 0:
                 print(f"Generating model {i+1}/{n_samples}")
             data_query[i] = generator.rtdist_flux(pars, egrid)
-        data_query = np.asarray(data_query)
-        
+            
         # shuffle indices for neural network training
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
         np.random.shuffle(idx_shuffle)
