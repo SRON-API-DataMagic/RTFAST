@@ -111,7 +111,7 @@ residuals_ylim = (-0.2,0.2)
 
 for batch, (D,P) in enumerate(testing_dataloader):
     #retrieve relevant data and parameters
-    spin, mass = P[0][0].item(),P[0][1].item()
+    spin, mass = P[0][0].item(),10**P[0][1].item()
     da = torch.squeeze(D)
     
     #generate neural network prediction and rescale to linear space
@@ -157,7 +157,7 @@ mass, spin = [], []
 residuals = []
 for batch, (D,P) in enumerate(testing_dataloader):
     spin.append(P[0][0].item())
-    mass.append(P[0][1].item())
+    mass.append(10**P[0][1].item())
     pred = model(P).detach().numpy()
     pred = 10**(inverse(scaler,pred))
     resid = (da-pred)/da

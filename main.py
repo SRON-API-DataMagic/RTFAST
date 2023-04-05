@@ -232,7 +232,7 @@ def main():
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
     active_loops = 20
-    epochs = 100
+    epochs = 50
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 1000
     n_samples_large = 2500 # number of parameter sets to draw 
