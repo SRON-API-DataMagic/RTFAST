@@ -285,6 +285,7 @@ def main():
     lhs_idx = theta_init.shape[0]
     
     model = network.NeuralNetwork(len(egrid))
+    model.load_state_dict(torch.load("best_model.pth"))
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
     
