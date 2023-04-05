@@ -330,12 +330,12 @@ def main():
         theta_query = theta_query_large[query_idx[:n_samples]]
         
         # compute the physical model for these thetas
-        data_query = []
+        data_query = np.zeros((theta_query.shape[0],len(egrid)))
         theta_query_iterate = generator.pars_conversion(theta_query)
         for i,pars in enumerate(theta_query_iterate):
             if i % 100 == 0:
                 print(f"Generating model {i+1}/{n_samples}")
-            data_query.append(generator.rtdist_flux(pars, egrid))
+            data_query[i] = generator.rtdist_flux(pars, egrid)
         data_query = np.asarray(data_query)
         
         # shuffle indices for neural network training
