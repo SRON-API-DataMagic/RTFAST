@@ -293,6 +293,7 @@ def main():
     tr_loss_arr = []
     te_loss_arr = []
     imp_te = 0
+    imp_tr = 0
     
     active_loop_num = 0
     
@@ -402,20 +403,24 @@ def main():
                 last_sig_best_tr = train_loss
                 last_sig_best_te = loss
                 imp_te = 0
+                imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
                 torch.save(model.state_dict(), "best_model.pth")
             elif tr_bet > 0:
+                imp_tr = 0
                 imp_te += 1
                 last_sig_best_tr = train_loss
                 print(f"New best training loss: {train_loss}")
             elif te_bet > 0:
+                imp_tr += 1
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
                 torch.save(model.state_dict(), "best_model.pth")
             else:
                 imp_te += 1
+                imp_tr += 1
         
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
