@@ -234,8 +234,8 @@ def main():
     active_loops = 20
     epochs = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
-    n_samples = 500
-    n_samples_large = 2000 # number of parameter sets to draw 
+    n_samples = 1000
+    n_samples_large = 2500 # number of parameter sets to draw 
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -342,8 +342,8 @@ def main():
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
         np.random.shuffle(idx_shuffle)
     
-        idx_query = idx_shuffle[:len(idx_shuffle)-500]
-        idx_test = idx_shuffle[-500:]
+        idx_query = idx_shuffle[:len(idx_shuffle)-250]
+        idx_test = idx_shuffle[-250:]
         
         #Split data and thetas into test and training data
         data_test = data_query[idx_test]
