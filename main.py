@@ -328,8 +328,6 @@ def main():
         print("Generating data for these samples")
         # get out the top `nsamples` values of theta_query
         theta_query = theta_query_large[query_idx[:n_samples]]
-        # add thetas to the rest of the training data
-        theta_init = np.vstack([theta_init, theta_query])
         
         # compute the physical model for these thetas
         data_query = []
@@ -339,11 +337,29 @@ def main():
                 print(f"Generating model {i+1}/{500}")
             data_query.append(generator.rtdist_flux(pars, egrid))
         data_query = np.asarray(data_query)
+        
+        # shuffle indices for neural network training
+        idx_shuffle = np.arange(0, len(theta_query), dtype=int)
+        np.random.shuffle(idx_shuffle)
+    
+        idx_query = idx_shuffle[:len(idx_shuffle)-500]
+        idx_test = idx_shuffle[-500:]
+        
+        #Split data and thetas into test and training data
+        data_test = data_query[idx_test]
+        theta_test  = theta_query[idx_test]
+        
+        data_query = data_query[idx_query]
+        theta_query = theta_query[idx_query]
+        
         # add corresponding models to the rest of the training data
         data_init = np.vstack([data_init, data_query])
+        # add thetas to the rest of the training data
+        theta_init = np.vstack([theta_init, theta_query])
         
         #Eliminate any broken models
         data_init, theta_init = NaN_checker(data_init, theta_init)
+        data_test, theta_test = NaN_checker(data_test, theta_test)
         
         print("Saving new data to disk")
         # save new data and parameters to disk
@@ -351,29 +367,28 @@ def main():
         
         # add rejected parameter sets back to original array for potential 
         # future use:
-        theta_lhs = np.vstack([theta_lhs, theta_query[n_samples:]])
+        theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
     
         print(f"size of theta_init: {theta_init.shape}")
         print(f"size of data_init: {data_init.shape}")
         
         # increment the index for reading parameters from theta_lhs
         lhs_idx += (n_samples_large)
-        
-        # shuffle indices for neural network training
-        idx_shuffle = np.arange(0, len(theta_init), dtype=int)
-        np.random.shuffle(idx_shuffle)
-    
-        idx_query = idx_shuffle[:len(idx_shuffle)-1000]
-        idx_test = idx_shuffle[-1000:]
 
         print("Setting up modeling")
-        Xquery = CustomData(theta_init[idx_query], data_init[idx_query],scaler, 
+        Xquery = CustomData(theta_init, data_init, scaler, 
                             scaling=False)
         query_dataloader = DataLoader(Xquery, batch_size=batch_size, shuffle=True)
     
-        Xtest = CustomData(theta_init[idx_test], data_init[idx_test],scaler,
+        Xtest = CustomData(theta_test, data_test, scaler,
                            scaling=False)
         test_dataloader = DataLoader(Xtest, batch_size=batch_size, shuffle=True)
+        
+        # add test models to the rest of the training data for use in training
+        #in the future
+        data_init = np.vstack([data_init, data_test])
+        # add corresponding thetas thetas to the rest of the training data
+        theta_init = np.vstack([theta_init, theta_test])
         
         for i in range(epochs):
             print(f"Epoch {i+1} \n -----------------------")
