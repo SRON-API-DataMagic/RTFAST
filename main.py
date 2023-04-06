@@ -231,11 +231,11 @@ def main():
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 20
-    epochs = 50
+    active_loops = 50
+    epochs = 20
     range_all = np.asarray(generator.lhs_trimmed_gen())
-    n_samples = 1000
-    n_samples_large = 2500 # number of parameter sets to draw 
+    n_samples = 5000
+    n_samples_large = 10000 # number of parameter sets to draw 
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -285,7 +285,6 @@ def main():
     lhs_idx = theta_init.shape[0]
     
     model = network.NeuralNetwork(len(egrid))
-    model.load_state_dict(torch.load("best_model.pth"))
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
     
@@ -300,7 +299,7 @@ def main():
     
     print("Beginning training")
     
-    while active_loop_num < active_loops and imp_te < 50:
+    while active_loop_num < active_loops and (imp_te < 50 or imp_tr < 50):
         print(f"I am in active learning loop {active_loop_num+1}")
         active_loop_num += 1
         # randomly generate points in parameter space

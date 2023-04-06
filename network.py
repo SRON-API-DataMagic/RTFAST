@@ -21,7 +21,6 @@ class NeuralNetwork(nn.Module):
     def __init__(self,data_len):
         super().__init__()
         self.p = 0.2
-        self.flatten = nn.Flatten()
         self.LinearStack = nn.Sequential(
             nn.Linear(2,256),
             nn.ReLU(),
