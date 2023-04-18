@@ -236,6 +236,8 @@ def main():
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
+    divider = 10
+    n_samples_small = n_samples_large/divider
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -299,7 +301,7 @@ def main():
     
     print("Beginning training")
     
-    while active_loop_num < active_loops and (imp_te < 50 or imp_tr < 50):
+    while active_loop_num < active_loops:
         print(f"I am in active learning loop {active_loop_num+1}")
         active_loop_num += 1
         # randomly generate points in parameter space
@@ -308,22 +310,29 @@ def main():
         
         print("computing neural network predictions with dropout for each theta")
         # compute 100 neural network predictions with dropout
-        pred_query_all = np.zeros((50,n_samples_large,len(egrid)))
+        pred_query_all = np.zeros((100,n_samples_small,len(egrid)))
         model.train()
-        for i in range(50):
-            if i % 10 == 0:
-                print(f"Computing theta {i+1}")
-            pred_query = model(torch.DoubleTensor(theta_query_large))
-            pred_query_all[i] = pred_query.detach().numpy()
+        query_idx = []
+        
+        for j in range(divider):
+            theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
+            for i in range(100):
+                if i % 10 == 0:
+                    print(f"Computing theta {i+1}")
+                pred_query = model(torch.DoubleTensor(theta_query_small))
+                pred_query_all[i] = pred_query.detach().numpy()
+                # find uncertainty (as measured by relative variance)
+                dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
+                var_query = np.var(dvar, axis=0)
+                mean_var_query = np.mean(var_query, axis=1)
+                # add to uncertainties per theta to list
+                query_idx.append(mean_var_query)
         
         print("Successfully finished generating thetas")
         
         print("Finding top uncertain thetas")
-        # sort these data sets from largest uncertainty (as measured by 
+        # sort these thetas from largest uncertainty (as measured by 
         # relative variance) to smallest
-        dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
-        var_query = np.var(dvar, axis=0)
-        mean_var_query = np.mean(var_query, axis=1)
         query_idx = np.argsort(mean_var_query)[::-1]
         
         print("Generating data for these samples")
@@ -390,7 +399,7 @@ def main():
         # save new data and parameters to disk
         save_data(data_init, generator.pars_conversion(theta_init))
         
-        for i in range(epochs):
+        while (imp_te < 10 or imp_tr < 10):
             print(f"Epoch {i+1} \n -----------------------")
             model, optimizer, train_loss = train(query_dataloader,model,
                                                  optimizer,loss_fn)
