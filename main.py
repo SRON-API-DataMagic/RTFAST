@@ -237,7 +237,7 @@ def main():
     n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
     divider = 10
-    n_samples_small = n_samples_large/divider
+    n_samples_small = int(n_samples_large/divider)
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
