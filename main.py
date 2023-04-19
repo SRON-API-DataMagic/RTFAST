@@ -327,7 +327,6 @@ def main():
             mean_var_query = np.mean(var_query, axis=1)
             # add to uncertainties per theta to list
             query_idx.append(mean_var_query)
-            print(f"Sample loop:{j}/{divider}")
         
         print("Successfully finished generating thetas")
         
