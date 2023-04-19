@@ -325,7 +325,6 @@ def main():
             dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
             var_query = np.var(dvar, axis=0)
             mean_var_query = np.mean(var_query, axis=1)
-            print(mean_var_query.shape)
             # add to uncertainties per theta to list
             query_idx.append(mean_var_query.tolist())
         
@@ -335,7 +334,6 @@ def main():
         # sort these thetas from largest uncertainty (as measured by 
         # relative variance) to smallest
         query_idx = np.asarray(query_idx)
-        print(query_idx.shape)
         query_idx = np.argsort(mean_var_query)[::-1]
         
         print("Generating data for these samples")
