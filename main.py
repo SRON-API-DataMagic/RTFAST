@@ -315,6 +315,7 @@ def main():
         query_idx = []
         
         for j in range(divider):
+            print(f"Sample dropout loop:{j+1}/{divider}")
             theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
             for i in range(100):
                 if i % 10 == 0:
@@ -327,6 +328,7 @@ def main():
             mean_var_query = np.mean(var_query, axis=1)
             # add to uncertainties per theta to list
             query_idx.append(mean_var_query)
+            print(f"Sample loop:{j}/{divider}")
         
         print("Successfully finished generating thetas")
         
