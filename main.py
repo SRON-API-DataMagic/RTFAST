@@ -293,14 +293,14 @@ def main():
     last_sig_best_te = 1e7 #last significant best testing loss
     tr_loss_arr = []
     te_loss_arr = []
-    imp_te = 0
-    imp_tr = 0
     
     active_loop_num = 0
     
     print("Beginning training")
     
     while active_loop_num < active_loops:
+        imp_te = 0
+        imp_tr = 0
         print(f"I am in active learning loop {active_loop_num+1}")
         active_loop_num += 1
         # randomly generate points in parameter space
