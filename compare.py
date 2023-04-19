@@ -48,7 +48,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,log = False):
     
 
 wrk_dir = os.getcwd()
-scaler = StandardScaler()
+scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
 tr_loss_arr = np.loadtxt("tr_loss.txt")
@@ -99,6 +99,19 @@ f2.close()
 batch_size = 1
 pars = pars[:,[1,13]]
 pars[:,1] = np.log10(pars[:,1])
+
+plt.hist(pars[:,0],bins=100)
+plt.xlabel("Spin")
+plt.ylabel("Number of samples")
+plt.savefig("sample_dist/spin_sample_dist.png")
+plt.close()
+
+plt.hist(pars[:,1],bins=100)
+plt.xlabel("Log(Mass)")
+plt.ylabel("Number of samples")
+plt.savefig("sample_dist/mass_sample_dist.png")
+plt.close()
+
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
