@@ -340,6 +340,7 @@ def main():
         print("Generating data for these samples")
         # get out the top `nsamples` values of theta_query
         theta_query = theta_query_large[query_idx[:n_samples]]
+        print(theta_query.shape)
         
         # compute the physical model for these thetas
         data_query = np.zeros((theta_query.shape[0],len(egrid)))
