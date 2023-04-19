@@ -245,7 +245,7 @@ def main():
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     if first == True: 
         #generating a random set of parameters and corresponding data
@@ -334,13 +334,11 @@ def main():
         # sort these thetas from largest uncertainty (as measured by 
         # relative variance) to smallest
         query_idx = np.asarray(query_idx).flatten()
-        query_idx = np.argsort(mean_var_query)[::-1]
-        print(query_idx.shape)
+        query_idx = np.argsort(query_idx)[::-1]
         
         print("Generating data for these samples")
         # get out the top `nsamples` values of theta_query
         theta_query = theta_query_large[query_idx[:n_samples]]
-        print(theta_query.shape)
         
         # compute the physical model for these thetas
         data_query = np.zeros((theta_query.shape[0],len(egrid)))
