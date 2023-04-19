@@ -232,7 +232,6 @@ def main():
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
     active_loops = 50
-    epochs = 20
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
@@ -402,8 +401,9 @@ def main():
         # save new data and parameters to disk
         save_data(data_init, generator.pars_conversion(theta_init))
         
+        epoch = 0
         while (imp_te < 10 or imp_tr < 10):
-            print(f"Epoch {i+1} \n -----------------------")
+            print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(query_dataloader,model,
                                                  optimizer,loss_fn)
             loss = test(test_dataloader,model,loss_fn)
@@ -433,6 +433,7 @@ def main():
             else:
                 imp_te += 1
                 imp_tr += 1
+            epoch += 1
         
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
