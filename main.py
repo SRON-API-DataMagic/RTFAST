@@ -333,6 +333,7 @@ def main():
         print("Finding top uncertain thetas")
         # sort these thetas from largest uncertainty (as measured by 
         # relative variance) to smallest
+        query_idx = np.asarray(query_idx)
         query_idx = np.argsort(mean_var_query)[::-1]
         
         print("Generating data for these samples")
