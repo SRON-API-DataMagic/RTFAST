@@ -449,7 +449,7 @@ def grid(wrk_dir):
         data_init = []
         for i,pars in enumerate(pars_init):
             if i%100 == 0:
-                print(f"Generating model {i+1}/{theta_init.shape[0]} ({i+1/theta_init.shape[0]}%")
+                print(f"Generating model {i+1}/{theta_init.shape[0]} ({i+1/theta_init.shape[0]:.2f}%")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
