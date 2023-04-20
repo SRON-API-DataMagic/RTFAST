@@ -94,7 +94,7 @@ def lhs_range_gen():
     kte_range = [np.log10(5),np.log10(500)]
     nH_range = [np.log10(1e-22),np.log10(1e6)]
     boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(1),np.log10(1e11)]
+    mass_range = [np.log10(3),np.log10(1e11)]
     honr_range = [0,0.176]
     b1_range = [0,2]
     b2_range = [-4,4]
@@ -112,7 +112,7 @@ def lhs_range_gen():
 
 def lhs_trimmed_gen():
     spin_range = [0.1,0.998]
-    mass_range = [np.log10(1),np.log10(1e11)]
+    mass_range = [np.log10(3),np.log10(1e11)]
     
     range_all = [spin_range,mass_range]
     
