@@ -443,7 +443,13 @@ def grid(wrk_dir):
         
         print(spin)
         print(mass)
-        theta_init = np.array([spin,mass])
+        theta_init = []
+        for a in spin:
+            for m in mass:
+                theta_init.append([a,m])
+        theta_init = np.asarray(theta_init)
+        print(theta_init)
+        print(theta_init.shape)
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
         for i,pars in enumerate(pars_init):
