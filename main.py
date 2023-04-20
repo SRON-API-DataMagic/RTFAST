@@ -240,7 +240,7 @@ def main():
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=100000)
+    sample = sampler.random(n=1000000)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
     #if the first time running this code or you want to refresh the dataset, 
@@ -290,8 +290,8 @@ def main():
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
     
-    last_sig_best_tr = 1e7 #last significant best training loss
-    last_sig_best_te = 1e7 #last significant best testing loss
+    last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
+    last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
     tr_loss_arr = []
     te_loss_arr = []
     
