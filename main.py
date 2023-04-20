@@ -477,7 +477,7 @@ def grid(wrk_dir):
     
     batch_size = 12
     
-    idxs = np.shuffle(np.linspace(0,data_init.shape[0]))
+    idxs = np.random.shuffle(np.linspace(0,data_init.shape[0]))
     tra_idx = idxs[:len(idxs)-200]
     tes_idx = idxs[-200:]
     
