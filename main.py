@@ -4,6 +4,7 @@ This is the main program that trains the neural network.
 import numpy as np
 import os, psutil
 import sys
+from tdqm import tdqm
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -447,9 +448,7 @@ def grid(wrk_dir):
         theta_init = np.asarray(theta_init)
         pars_init = generator.pars_conversion(theta_init)
         data_init = np.zeros((theta_init.shape[0],len(egrid)))
-        for i,pars in enumerate(pars_init):
-            if i%100 == 0:
-                print(f"Generating model {i+1}/{theta_init.shape[0]} ({(i+1)/theta_init.shape[0]:.3f}%)")
+        for i,pars in enumerate(tdqm(pars_init)):
             data_init[i] = generator.rtdist_flux(pars, egrid)
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
