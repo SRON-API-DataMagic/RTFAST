@@ -114,6 +114,10 @@ plt.close()
 
 print("Sample distributions plotted")
 
+#take every 10th entry to reduce memory usage
+pars = pars[::10]
+data = data[::10]
+
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
