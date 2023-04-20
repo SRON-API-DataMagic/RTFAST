@@ -434,8 +434,124 @@ def grid(wrk_dir):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
+    first = True
     
-
+    if first == True:
+        nspin, nmass = (1000,1000)
+        spin = np.linspace(0.1,1.0,nspin)
+        mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
+        
+        theta_init = np.array([spin,mass])
+        pars_init = generator.pars_conversion(theta_init)
+        data_init = []
+        for i,pars in enumerate(pars_init):
+            if i%100 == 0:
+                print(f"Generating model {i+1}/{5000}")
+            data_init.append(generator.rtdist_flux(pars, egrid))
+        data_init = np.array(data_init)
+        data_init, pars_init = NaN_checker(data_init, pars_init)
+        #save data for the first time in text files
+        np.savetxt("grid_data.txt",data_init)
+        np.savetxt("grid_pars.txt",pars_init)
+    else: #load previously generated data as initial data and parameter set
+        with open("grid_data.txt","r") as f1:
+            data = np.loadtxt(f1)
+        
+        with open("grid_pars.txt","r") as f2:
+            pars = np.loadtxt(f2)
+        
+        #make mass log spaced to improve numeric stability in training
+        pars[:,13] = np.log10(pars[:,13]) 
+        pars = pars[:,[1,13]] #retrieve spin and mass
+        
+        data_init = data
+        theta_init = pars
+        data_init, pars_init = NaN_checker(data_init, theta_init)
+        del data
+        del pars
+        
+    scaler = MinMaxScaler()
+    #create initial dataset object to create scaler (and then delete object)
+    data_init_dataset = CustomData(theta_init, data_init, scaler)
+    del data_init_dataset
+    
+    batch_size = 12
+    
+    idxs = np.shuffle(np.linspace(0,data_init.shape[0]))
+    tra_idx = idxs[:len(idxs)-200]
+    tes_idx = idxs[-200:]
+    
+    train_data = data[tra_idx]
+    train_pars = pars[tra_idx]
+    test_data = data[tes_idx]
+    test_pars = pars[tes_idx]
+    
+    training_dataset = CustomData(train_pars, train_data, scaler, scaling = False)
+    testing_dataset = CustomData(test_pars, test_data, scaler, scaling = False)
+    
+    training_dataloader = DataLoader(training_dataset, batch_size=batch_size, 
+                                     shuffle=True)
+    test_dataloader = DataLoader(testing_dataset, batch_size=batch_size, 
+                                 shuffle=True)
+    
+    model = network.NeuralNetwork(len(egrid))
+    optimizer = Adam(model.parameters(),lr = 0.001)
+    loss_fn = nn.MSELoss()
+    
+    last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
+    last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
+    tr_loss_arr = []
+    te_loss_arr = []
+    
+    epoch = 0
+    imp_te = 0
+    imp_tr = 0
+    
+    while (imp_te < 10 or imp_tr < 10):
+        print(f"Epoch {epoch+1} \n -----------------------")
+        model, optimizer, train_loss = train(training_dataloader,model,
+                                             optimizer,loss_fn)
+        loss = test(test_dataloader,model,loss_fn)
+        te_loss_arr.append(loss)
+        tr_loss_arr.append(train_loss)
+        tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
+        te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
+        if tr_bet > 0 and te_bet > 0:
+            last_sig_best_tr = train_loss
+            last_sig_best_te = loss
+            imp_te = 0
+            imp_tr = 0
+            print(f"New best training loss: {train_loss}")
+            print(f"New best testing loss: {loss}")
+            torch.save(model.state_dict(), "grid_best_model.pth")
+        elif tr_bet > 0:
+            imp_tr = 0
+            imp_te += 1
+            last_sig_best_tr = train_loss
+            print(f"New best training loss: {train_loss}")
+        elif te_bet > 0:
+            imp_tr += 1
+            imp_te = 0
+            last_sig_best_te = loss
+            print(f"New best testing loss: {loss}")
+            torch.save(model.state_dict(), "grid_best_model.pth")
+        else:
+            imp_te += 1
+            imp_tr += 1
+        epoch += 1
+    
+    print("Completed training")
+    print("Final best training loss:", last_sig_best_tr)
+    print("Final best testing loss:", last_sig_best_te)
+    torch.save(model.state_dict(), "final_model.pth")
+    print("Saved PyTorch Model State to model.pth")
+    
+    tr_loss_arr = np.asarray(tr_loss_arr)
+    te_loss_arr = np.asarray(te_loss_arr)
+    
+    np.savetxt("grid_te_loss.txt",te_loss_arr)
+    np.savetxt("grid_tr_loss.txt",tr_loss_arr)
+    
 def main():
     torch.set_default_dtype(torch.double)
     
