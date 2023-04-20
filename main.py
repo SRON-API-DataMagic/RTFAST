@@ -208,25 +208,7 @@ def NaN_checker(data,pars):
         pars = np.delete(pars,index, axis=0)
     return data, pars
 
-def main():
-    torch.set_default_dtype(torch.double)
-    
-    wrk_dir = os.getcwd()
-    
-    #set envionmental variables required in xspec with simrtdist
-    environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
-                    "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
-                    "EMAX_REF2":"10", "SEED_SIM":"-2851043",
-                    "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
-                    "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
-                    "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
-                    "BACKSCL":"1.0"}
-    
-    for key in environ_vars:
-        os.environ[key] = environ_vars[key]
-    
-    print("Environmental variables successfully set")
-    
+def query_by_dropout(wrk_dir):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -446,6 +428,35 @@ def main():
     
     np.savetxt("te_loss.txt",te_loss_arr)
     np.savetxt("tr_loss.txt",tr_loss_arr)
+
+def grid(wrk_dir):
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    
+    
+
+def main():
+    torch.set_default_dtype(torch.double)
+    
+    wrk_dir = os.getcwd()
+    
+    #set envionmental variables required in xspec with simrtdist
+    environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
+                    "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
+                    "EMAX_REF2":"10", "SEED_SIM":"-2851043",
+                    "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
+                    "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
+                    "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
+                    "BACKSCL":"1.0"}
+    
+    for key in environ_vars:
+        os.environ[key] = environ_vars[key]
+    
+    print("Environmental variables successfully set")
+    
+    query_by_dropout(wrk_dir)
+    
 
 if __name__ == "__main__":
     main()
