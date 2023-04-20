@@ -482,10 +482,10 @@ def grid(wrk_dir):
     tra_idx = idxs[:len(idxs)-200]
     tes_idx = idxs[-200:]
     
-    train_data = data[tra_idx]
-    train_pars = pars[tra_idx]
-    test_data = data[tes_idx]
-    test_pars = pars[tes_idx]
+    train_data = data_init[tra_idx]
+    train_pars = theta_init[tra_idx]
+    test_data = data_init[tes_idx]
+    test_pars = theta_init[tes_idx]
     
     training_dataset = CustomData(train_pars, train_data, scaler, scaling = False)
     testing_dataset = CustomData(test_pars, test_data, scaler, scaling = False)
