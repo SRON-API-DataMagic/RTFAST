@@ -437,7 +437,7 @@ def grid(wrk_dir):
     first = True
     
     if first == True:
-        nspin, nmass = (1000,1000)
+        nspin, nmass = (500,500)
         spin = np.linspace(0.1,1.0,nspin)
         mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
         theta_init = []
