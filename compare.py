@@ -112,6 +112,8 @@ plt.ylabel("Number of samples")
 plt.savefig("sample_dist/mass_sample_dist.png")
 plt.close()
 
+print("Sample distributions plotted")
+
 pars = torch.tensor(pars)
 data = torch.tensor(data)
 
