@@ -449,7 +449,7 @@ def grid(wrk_dir):
         data_init = []
         for i,pars in enumerate(pars_init):
             if i%100 == 0:
-                print(f"Generating model {i+1}/{theta_init.shape[0]} ({(i+1)/theta_init.shape[0]:.2f}%)")
+                print(f"Generating model {i+1}/{theta_init.shape[0]} ({(i+1)/theta_init.shape[0]:.3f}%)")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
@@ -482,8 +482,8 @@ def grid(wrk_dir):
     
     idxs = np.arange(0,data_init.shape[0])
     np.random.shuffle(idxs)
-    tra_idx = idxs[:len(idxs)-200]
-    tes_idx = idxs[-200:]
+    tra_idx = idxs[:len(idxs)-100000]
+    tes_idx = idxs[-100000:]
     
     train_data = data_init[tra_idx]
     train_pars = theta_init[tra_idx]
