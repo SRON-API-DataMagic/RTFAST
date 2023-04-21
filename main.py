@@ -40,7 +40,7 @@ class CustomData(Dataset):
         self.standardize()
     
     def __len__(self):
-        return self.par_list.shape[0]
+        return self.data.size[0]
     
     def __getitem__(self,idx):
         datum = self.data[idx]
@@ -268,7 +268,7 @@ def query_by_dropout(wrk_dir):
         
         data_init = data
         theta_init = pars
-        data_init, pars_init = NaN_checker(data_init, theta_init)
+        data_init, theta_init = NaN_checker(data_init, theta_init)
         del data
         del pars
     scaler = MinMaxScaler()
