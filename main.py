@@ -40,7 +40,7 @@ class CustomData(Dataset):
         self.standardize()
     
     def __len__(self):
-        return self.data.size[0]
+        return self.data.size()[0]
     
     def __getitem__(self,idx):
         datum = self.data[idx]
