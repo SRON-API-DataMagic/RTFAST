@@ -204,6 +204,7 @@ for i,row in dataframe.iterrows():
     resids_spin_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
 
 spin_res = pd.DataFrame(resids_spin,index=spins)
+print(spin_res.max())
 spin_res_flat = pd.DataFrame(resids_spin_flat,index=spins)
 
 resids_mass = np.zeros((len(dataframe),4096))
@@ -216,6 +217,7 @@ for i,row in dataframe.iterrows():
     resids_mass_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
     
 mass_res = pd.DataFrame(resids_mass,index=masses)
+print(mass_res.max())
 mass_res_flat = pd.DataFrame(resids_mass_flat,index=masses)
 
 print("Building heatmaps")
