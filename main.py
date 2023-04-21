@@ -298,7 +298,7 @@ def query_by_dropout(wrk_dir):
         
         if (active_loop_num % 5) == 0:
             save_data(data_init, generator.pars_conversion(theta_init),
-                      fname = "loop_{active_loop_num}_")
+                      fname = f"loop_{active_loop_num}_")
             torch.save(model.state_dict(), f"{active_loop_num}_model.pth")
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
