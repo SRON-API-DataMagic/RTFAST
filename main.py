@@ -442,6 +442,8 @@ def query_by_dropout(wrk_dir):
         else:
             loop_epochs.append(epoch)
         
+        active_loop_num += 1
+        
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
     print("Final best testing loss:", last_sig_best_te)
