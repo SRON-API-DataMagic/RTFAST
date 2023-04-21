@@ -310,7 +310,6 @@ def query_by_dropout(wrk_dir):
         imp_te = 0
         imp_tr = 0
         print(f"I am in active learning loop {active_loop_num+1}")
-        active_loop_num += 1
         # randomly generate points in parameter space
         print("Generating random samples of theta")
         theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
@@ -441,7 +440,6 @@ def query_by_dropout(wrk_dir):
             loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
         else:
             loop_epochs.append(epoch)
-        
         active_loop_num += 1
         
     print("Completed training")
