@@ -242,13 +242,15 @@ def query_by_dropout(wrk_dir):
     first = True
     
     if first == True: 
+        init_data_size = 5000
         #generating a random set of parameters and corresponding data
-        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],size = (5000,range_all.shape[0]))
+        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
+                                       size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
         for i,pars in enumerate(pars_init):
             if i%100 == 0:
-                print(f"Generating model {i+1}/{5000}")
+                print(f"Generating model {i+1}/{init_data_size}")
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
@@ -464,7 +466,7 @@ def grid(wrk_dir):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    first = True
+    first = False
     
     if first == True:
         nspin, nmass = (500,500)
@@ -603,8 +605,8 @@ def main():
     
     print("Environmental variables successfully set")
     
-    #query_by_dropout(wrk_dir)
-    grid(wrk_dir)
+    query_by_dropout(wrk_dir)
+    #grid(wrk_dir)
 
 if __name__ == "__main__":
     main()
