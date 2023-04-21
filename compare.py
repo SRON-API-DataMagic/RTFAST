@@ -43,7 +43,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,log = False):
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     #axs[1].set_ylim(residuals_ylim)
-    plt.savefig(f"samples/{fname}.png")
+    plt.savefig(f"grid_samples/{fname}.png")
     plt.close()
     
 
@@ -51,8 +51,8 @@ wrk_dir = os.getcwd()
 scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
-tr_loss_arr = np.loadtxt("tr_loss.txt")
-te_loss_arr = np.loadtxt("te_loss.txt")
+tr_loss_arr = np.loadtxt("grid_tr_loss.txt")
+te_loss_arr = np.loadtxt("grid_te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
@@ -82,7 +82,7 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load("best_model.pth"))
+model.load_state_dict(torch.load("grid_best_model.pth"))
 model.eval()
 
 
@@ -247,7 +247,7 @@ ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
-plt.savefig("heatmaps/mass_hm.png")
+plt.savefig("heatmaps/grid_mass_hm.png")
 plt.close()
 print("Continuous mass hm plotted")
 
@@ -261,7 +261,7 @@ colorbar = ax.collections[0].colorbar
 M=mass_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/flat_mass_hm.png")
+plt.savefig("heatmaps/grid_flat_mass_hm.png")
 plt.close()
 print("Flat mass hm plotted")
 
@@ -271,7 +271,7 @@ ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Spin")
-plt.savefig("heatmaps/spin_hm.png")
+plt.savefig("heatmaps/grid_spin_hm.png")
 plt.close()
 print("Continuous spin hm plotted")
 
@@ -285,6 +285,6 @@ colorbar = ax.collections[0].colorbar
 M=spin_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/flat_spin_hm.png")
+plt.savefig("heatmaps/grid_flat_spin_hm.png")
 plt.close()
 print("Flat spin hm plotted")
