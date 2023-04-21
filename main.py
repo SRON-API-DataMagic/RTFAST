@@ -320,8 +320,7 @@ def query_by_dropout(wrk_dir):
         model.train()
         query_idx = []
         
-        for j in range(divider):
-            print(f"Sample dropout loop:{j+1}/{divider}")
+        for j in tqdm(range(divider),desc="Sample dropout loops"):
             theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
             for i in range(100):
                 pred_query = model(torch.DoubleTensor(theta_query_small))
