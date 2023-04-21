@@ -51,10 +51,10 @@ wrk_dir = os.getcwd()
 scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
-gr = ""
+gr = "grid_"
 
-tr_loss_arr = np.loadtxt("{gr}tr_loss.txt")
-te_loss_arr = np.loadtxt("{gr}te_loss.txt")
+tr_loss_arr = np.loadtxt(f"{gr}tr_loss.txt")
+te_loss_arr = np.loadtxt(f"{gr}te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
@@ -62,8 +62,10 @@ plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.yscale("log")
 plt.legend()
-plt.savefig("{gr}loss_plot.png")
+plt.savefig(f"{gr}loss_plot.png")
 plt.close()
+
+gr = ""
 
 #set envionmental variables required in xspec with simrtdist
 environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
@@ -84,16 +86,16 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load("{gr}best_model.pth"))
+model.load_state_dict(torch.load(f"{gr}best_model.pth"))
 model.eval()
 
 
-with open("data.txt","r") as f1:
+with open(f"{gr}data.txt","r") as f1:
     data = np.loadtxt(f1)
 
 f1.close()
 
-with open("pars.txt","r") as f2:
+with open(f"{gr}pars.txt","r") as f2:
     pars = np.loadtxt(f2)
 
 f2.close()
@@ -251,7 +253,7 @@ ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
-plt.savefig("heatmaps/{gr}mass_hm.png")
+plt.savefig(f"heatmaps/{gr}mass_hm.png")
 plt.close()
 print("Continuous mass hm plotted")
 
@@ -265,7 +267,7 @@ colorbar = ax.collections[0].colorbar
 M=mass_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/{gr}flat_mass_hm.png")
+plt.savefig(f"heatmaps/{gr}flat_mass_hm.png")
 plt.close()
 print("Flat mass hm plotted")
 
@@ -275,7 +277,7 @@ ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Spin")
-plt.savefig("heatmaps/{gr}spin_hm.png")
+plt.savefig(f"heatmaps/{gr}spin_hm.png")
 plt.close()
 print("Continuous spin hm plotted")
 
@@ -289,6 +291,6 @@ colorbar = ax.collections[0].colorbar
 M=spin_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/{gr}flat_spin_hm.png")
+plt.savefig(f"heatmaps/{gr}flat_spin_hm.png")
 plt.close()
 print("Flat spin hm plotted")
