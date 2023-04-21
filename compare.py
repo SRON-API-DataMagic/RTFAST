@@ -27,7 +27,7 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
-def residual_plots(egrid,pred,da,spin,mass,fname,title,log = False):
+def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -43,7 +43,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,log = False):
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     #axs[1].set_ylim(residuals_ylim)
-    plt.savefig(f"grid_samples/{fname}.png")
+    plt.savefig(f"{gr}samples/{fname}.png")
     plt.close()
     
 
@@ -51,8 +51,10 @@ wrk_dir = os.getcwd()
 scaler = MinMaxScaler()
 scaler = load('std_scaler.bin')
 
-tr_loss_arr = np.loadtxt("grid_tr_loss.txt")
-te_loss_arr = np.loadtxt("grid_te_loss.txt")
+gr = ""
+
+tr_loss_arr = np.loadtxt("{gr}tr_loss.txt")
+te_loss_arr = np.loadtxt("{gr}te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
@@ -60,7 +62,7 @@ plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.yscale("log")
 plt.legend()
-plt.savefig("loss_plot.png")
+plt.savefig("{gr}loss_plot.png")
 plt.close()
 
 #set envionmental variables required in xspec with simrtdist
@@ -82,7 +84,7 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load("grid_best_model.pth"))
+model.load_state_dict(torch.load("{gr}best_model.pth"))
 model.eval()
 
 
@@ -140,7 +142,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fname = f"{batch}_res"
     title = "Standard output"
     
-    residual_plots(egrid, pred, da, spin, mass, fname, title)
+    residual_plots(egrid, pred, da, spin, mass, fname, title, gr)
     
     pred = model(P).detach().numpy()
     pred = np.squeeze(inverse(scaler,pred))
@@ -150,7 +152,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     fname = f"{batch}_res_log"
     title = "Log scaled output"
 
-    residual_plots(egrid, pred, da_log, spin, mass, fname, title)
+    residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
     
     pred = model(P).detach().numpy()
     pred = np.squeeze(pred)
@@ -160,7 +162,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     
     da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
 
-    residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title)
+    residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
     
     if batch > 30:
         break
@@ -249,7 +251,7 @@ ax.set_yticks(mass_tick,labels=mass_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Mass")
-plt.savefig("heatmaps/grid_mass_hm.png")
+plt.savefig("heatmaps/{gr}mass_hm.png")
 plt.close()
 print("Continuous mass hm plotted")
 
@@ -263,7 +265,7 @@ colorbar = ax.collections[0].colorbar
 M=mass_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/grid_flat_mass_hm.png")
+plt.savefig("heatmaps/{gr}flat_mass_hm.png")
 plt.close()
 print("Flat mass hm plotted")
 
@@ -273,7 +275,7 @@ ax.set_yticks(spin_tick,labels=spin_ticklabel)
 ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
 ax.set_xlabel("Energy in keV")
 ax.set_ylabel("Spin")
-plt.savefig("heatmaps/grid_spin_hm.png")
+plt.savefig("heatmaps/{gr}spin_hm.png")
 plt.close()
 print("Continuous spin hm plotted")
 
@@ -287,6 +289,6 @@ colorbar = ax.collections[0].colorbar
 M=spin_res_flat.max().max()
 colorbar.set_ticks([1/4*M,3/4*M])
 colorbar.set_ticklabels(['< 1% error','> 1% error'])
-plt.savefig("heatmaps/grid_flat_spin_hm.png")
+plt.savefig("heatmaps/{gr}flat_spin_hm.png")
 plt.close()
 print("Flat spin hm plotted")
