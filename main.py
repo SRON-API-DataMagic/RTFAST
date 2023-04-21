@@ -87,7 +87,7 @@ class CustomData(Dataset):
             scaled_data = scaler.transform(data)
         return scaled_data
 
-def save_data(data,pars,fname = ""):
+def saveData(data,pars,fname = ""):
     """
     Saves the data and parameters to disk.
 
@@ -207,7 +207,7 @@ def test(dataloader,model,loss_fn):
     print(f"Average testing loss: {test_loss:>8f}")
     return test_loss
 
-def NaN_checker(data,pars):
+def nanChecker(data,pars):
     index = []
     for i,spec in enumerate(data):
         if np.any(np.isnan(spec)) == True:
@@ -220,7 +220,7 @@ def NaN_checker(data,pars):
         pars = np.delete(pars,index, axis=0)
     return data, pars
 
-def query_by_dropout(wrk_dir):
+def queryByDropout(wrk_dir):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -251,7 +251,7 @@ def query_by_dropout(wrk_dir):
         for i,pars in enumerate(tqdm(pars_init)):
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
-        data_init, pars_init = NaN_checker(data_init, pars_init)
+        data_init, pars_init = nanChecker(data_init, pars_init)
         #save data for the first time in text files
         np.savetxt("data/data.txt",data_init)
         np.savetxt("data/pars.txt",pars_init)
@@ -268,7 +268,7 @@ def query_by_dropout(wrk_dir):
         
         data_init = data
         theta_init = pars
-        data_init, theta_init = NaN_checker(data_init, theta_init)
+        data_init, theta_init = nanChecker(data_init, theta_init)
         del data
         del pars
     scaler = MinMaxScaler()
@@ -297,7 +297,7 @@ def query_by_dropout(wrk_dir):
     while active_loop_num < active_loops:
         
         if (active_loop_num % 5) == 0:
-            save_data(data_init, generator.pars_conversion(theta_init),
+            saveData(data_init, generator.pars_conversion(theta_init),
                       fname = f"loop_{active_loop_num}_")
             torch.save(model.state_dict(), f"{active_loop_num}_model.pth")
             temp_te = np.asarray(te_loss_arr)
@@ -370,8 +370,8 @@ def query_by_dropout(wrk_dir):
         theta_init = np.vstack([theta_init, theta_query])
         
         #Eliminate any broken models
-        data_init, theta_init = NaN_checker(data_init, theta_init)
-        data_test, theta_test = NaN_checker(data_test, theta_test)
+        data_init, theta_init = nanChecker(data_init, theta_init)
+        data_test, theta_test = nanChecker(data_test, theta_test)
         
         # add rejected parameter sets back to original array for potential 
         # future use:
@@ -400,7 +400,7 @@ def query_by_dropout(wrk_dir):
         
         print("Saving new data to disk")
         # save new data and parameters to disk
-        save_data(data_init, generator.pars_conversion(theta_init))
+        saveData(data_init, generator.pars_conversion(theta_init))
         
         epoch = 0
         while (imp_te < 10 or imp_tr < 10):
@@ -475,7 +475,7 @@ def grid(wrk_dir):
         for i,pars in enumerate(tqdm(pars_init)):
             data_init[i] = generator.rtdist_flux(pars, egrid)
         data_init = np.array(data_init)
-        data_init, pars_init = NaN_checker(data_init, pars_init)
+        data_init, pars_init = nanChecker(data_init, pars_init)
         #save data for the first time in text files
         np.savetxt("data/grid_data.txt",data_init)
         np.savetxt("data/grid_pars.txt",pars_init)
@@ -492,7 +492,7 @@ def grid(wrk_dir):
         
         data_init = data
         theta_init = pars
-        data_init, pars_init = NaN_checker(data_init, theta_init)
+        data_init, pars_init = nanChecker(data_init, theta_init)
         del data
         del pars
         
@@ -598,7 +598,7 @@ def main():
     
     print("Environmental variables successfully set")
     
-    query_by_dropout(wrk_dir)
+    queryByDropout(wrk_dir)
     #grid(wrk_dir)
 
 if __name__ == "__main__":
