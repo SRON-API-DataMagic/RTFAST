@@ -87,7 +87,7 @@ class CustomData(Dataset):
             scaled_data = scaler.transform(data)
         return scaled_data
 
-def save_data(data,pars):
+def save_data(data,pars,fname = ""):
     """
     Saves the data and parameters to disk.
 
@@ -103,15 +103,26 @@ def save_data(data,pars):
     None.
 
     """
-    data = np.asarray(data)
-    pars = np.asarray(pars)
-    with open("data.txt","w") as f:
-        np.savetxt(f,data)
-    f.close()
-    with open("pars.txt","w") as f:
-        np.savetxt(f,pars)
-    f.close()
-    return
+    if fname == "":
+        data = np.asarray(data)
+        pars = np.asarray(pars)
+        with open("data/data.txt","w") as f:
+            np.savetxt(f,data)
+        f.close()
+        with open("data/pars.txt","w") as f:
+            np.savetxt(f,pars)
+        f.close()
+        return
+    else:
+        data = np.asarray(data)
+        pars = np.asarray(pars)
+        with open(f"data/{fname}data.txt","w") as f:
+            np.savetxt(f,data)
+        f.close()
+        with open(f"data/{fname}pars.txt","w") as f:
+            np.savetxt(f,pars)
+        f.close()
+        return
     
 def train(dataloader,model,optimizer,loss_fn):
     """
@@ -228,7 +239,7 @@ def query_by_dropout(wrk_dir):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     if first == True: 
         #generating a random set of parameters and corresponding data
@@ -242,13 +253,13 @@ def query_by_dropout(wrk_dir):
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
         #save data for the first time in text files
-        np.savetxt("data.txt",data_init)
-        np.savetxt("pars.txt",pars_init)
+        np.savetxt("data/data.txt",data_init)
+        np.savetxt("data/pars.txt",pars_init)
     else: #load previously generated data as initial data and parameter set
-        with open("data.txt","r") as f1:
+        with open("data/data.txt","r") as f1:
             data = np.loadtxt(f1)
         
-        with open("pars.txt","r") as f2:
+        with open("data/pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         
         #make mass log spaced to improve numeric stability in training
@@ -277,12 +288,25 @@ def query_by_dropout(wrk_dir):
     last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
     tr_loss_arr = []
     te_loss_arr = []
+    loop_epochs = []
     
     active_loop_num = 0
     
     print("Beginning training")
     
     while active_loop_num < active_loops:
+        
+        if (active_loop_num % 5) == 0:
+            save_data(data_init, generator.pars_conversion(theta_init),
+                      fname = "loop_{active_loop_num}_")
+            torch.save(model.state_dict(), f"{active_loop_num}_model.pth")
+            temp_te = np.asarray(te_loss_arr)
+            temp_tr = np.asarray(tr_loss_arr)
+            temp_epochs = np.asarray(loop_epochs)
+            np.savetxt(f"loss/{active_loop_num}_te_loss.txt",temp_te)
+            np.savetxt(f"loss/{active_loop_num}_tr_loss.txt",temp_tr)
+            np.savetxt(f"loss/{active_loop_num}_epochs.txt",temp_epochs)
+        
         imp_te = 0
         imp_tr = 0
         print(f"I am in active learning loop {active_loop_num+1}")
@@ -401,7 +425,7 @@ def query_by_dropout(wrk_dir):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), "best_model.pth")
+                torch.save(model.state_dict(), "models/best_model.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -412,23 +436,28 @@ def query_by_dropout(wrk_dir):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), "best_model.pth")
+                torch.save(model.state_dict(), "models/best_model.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
             epoch += 1
+        if active_loop_num != 0:
+            loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
+        else:
+            loop_epochs.append(epoch)
         
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
     print("Final best testing loss:", last_sig_best_te)
-    torch.save(model.state_dict(), "final_model.pth")
-    print("Saved PyTorch Model State to model.pth")
+    torch.save(model.state_dict(), "models/final_model.pth")
+    print("Saved PyTorch Model State to models/final_model.pth")
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.savetxt("te_loss.txt",te_loss_arr)
-    np.savetxt("tr_loss.txt",tr_loss_arr)
+    np.savetxt("loss/te_loss.txt",te_loss_arr)
+    np.savetxt("loss/tr_loss.txt",tr_loss_arr)
+    np.savetxt("loss/epochs.txt",loop_epochs)
 
 def grid(wrk_dir):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
@@ -453,13 +482,13 @@ def grid(wrk_dir):
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
         #save data for the first time in text files
-        np.savetxt("grid_data.txt",data_init)
-        np.savetxt("grid_pars.txt",pars_init)
+        np.savetxt("data/grid_data.txt",data_init)
+        np.savetxt("data/grid_pars.txt",pars_init)
     else: #load previously generated data as initial data and parameter set
-        with open("grid_data.txt","r") as f1:
+        with open("data/grid_data.txt","r") as f1:
             data = np.loadtxt(f1)
         
-        with open("grid_pars.txt","r") as f2:
+        with open("data/grid_pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         
         #make mass log spaced to improve numeric stability in training
@@ -526,7 +555,7 @@ def grid(wrk_dir):
             imp_tr = 0
             print(f"New best training loss: {train_loss}")
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "grid_best_model.pth")
+            torch.save(model.state_dict(), "models/grid_best_model.pth")
         elif tr_bet > 0:
             imp_tr = 0
             imp_te += 1
@@ -537,7 +566,7 @@ def grid(wrk_dir):
             imp_te = 0
             last_sig_best_te = loss
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "grid_best_model.pth")
+            torch.save(model.state_dict(), "models/grid_best_model.pth")
         else:
             imp_te += 1
             imp_tr += 1
@@ -546,14 +575,14 @@ def grid(wrk_dir):
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
     print("Final best testing loss:", last_sig_best_te)
-    torch.save(model.state_dict(), "grid_final_model.pth")
-    print("Saved PyTorch Model State to model.pth")
+    torch.save(model.state_dict(), "models/grid_final_model.pth")
+    print("Saved PyTorch Model State to grid_final_model.pth")
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.savetxt("grid_te_loss.txt",te_loss_arr)
-    np.savetxt("grid_tr_loss.txt",tr_loss_arr)
+    np.savetxt("loss/grid_te_loss.txt",te_loss_arr)
+    np.savetxt("loss/grid_tr_loss.txt",tr_loss_arr)
     
 def main():
     torch.set_default_dtype(torch.double)

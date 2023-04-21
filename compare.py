@@ -53,8 +53,8 @@ scaler = load('std_scaler.bin')
 
 gr = "grid_"
 
-tr_loss_arr = np.loadtxt(f"{gr}tr_loss.txt")
-te_loss_arr = np.loadtxt(f"{gr}te_loss.txt")
+tr_loss_arr = np.loadtxt(f"loss/{gr}tr_loss.txt")
+te_loss_arr = np.loadtxt(f"loss/{gr}te_loss.txt")
 
 plt.plot(tr_loss_arr,label="training loss")
 plt.plot(te_loss_arr,label="testing loss")  
@@ -62,7 +62,7 @@ plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.yscale("log")
 plt.legend()
-plt.savefig(f"{gr}loss_plot.png")
+plt.savefig(f"loss/{gr}loss_plot.png")
 plt.close()
 
 gr = ""
@@ -86,16 +86,16 @@ egrid = rmf.e_min
 
 
 model = network.NeuralNetwork(len(egrid))
-model.load_state_dict(torch.load(f"{gr}best_model.pth"))
+model.load_state_dict(torch.load(f"models/{gr}best_model.pth"))
 model.eval()
 
 
-with open(f"{gr}data.txt","r") as f1:
+with open(f"data/{gr}data.txt","r") as f1:
     data = np.loadtxt(f1)
 
 f1.close()
 
-with open(f"{gr}pars.txt","r") as f2:
+with open(f"data/{gr}pars.txt","r") as f2:
     pars = np.loadtxt(f2)
 
 f2.close()
