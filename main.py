@@ -248,9 +248,7 @@ def query_by_dropout(wrk_dir):
                                        size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         data_init = []
-        for i,pars in enumerate(pars_init):
-            if i%100 == 0:
-                print(f"Generating model {i+1}/{init_data_size}")
+        for i,pars in enumerate(tqdm(pars_init)):
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
         data_init, pars_init = NaN_checker(data_init, pars_init)
@@ -326,9 +324,7 @@ def query_by_dropout(wrk_dir):
         for j in range(divider):
             print(f"Sample dropout loop:{j+1}/{divider}")
             theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
-            for i in range(100):
-                if i % 10 == 0:
-                    print(f"Computing theta {i+1}")
+            for i in tqdm(range(100),desc = "Computing dropout model variations"):
                 pred_query = model(torch.DoubleTensor(theta_query_small))
                 pred_query_all[i] = pred_query.detach().numpy()
             # find uncertainty (as measured by relative variance)
@@ -353,9 +349,7 @@ def query_by_dropout(wrk_dir):
         # compute the physical model for these thetas
         data_query = np.zeros((theta_query.shape[0],len(egrid)))
         theta_query_iterate = generator.pars_conversion(theta_query)
-        for i,pars in enumerate(theta_query_iterate):
-            if i % 100 == 0:
-                print(f"Generating model {i+1}/{n_samples}")
+        for i,pars in enumerate(tqdm(theta_query_iterate,desc="Generating models")):
             data_query[i] = generator.rtdist_flux(pars, egrid)
             
         # shuffle indices for neural network training
