@@ -179,7 +179,7 @@ for batch, (D,P) in enumerate(testing_dataloader):
     mass.append(10**P[0][1].item())
     pred = model(P).detach().numpy()
     pred = 10**(inverse(scaler,pred))
-    resid = (da-pred)/da
+    resid = (D-pred)/D
     residuals.append(np.absolute(np.asarray(resid)))
     
 residuals = np.asarray(residuals)
