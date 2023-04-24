@@ -423,7 +423,7 @@ def queryByDropout(wrk_dir):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), "models/best_model.pth")
+                torch.save(model.state_dict(), "models/active_best.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -434,7 +434,7 @@ def queryByDropout(wrk_dir):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), "models/best_model.pth")
+                torch.save(model.state_dict(), "models/active_best.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
