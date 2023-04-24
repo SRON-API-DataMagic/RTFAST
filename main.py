@@ -463,10 +463,12 @@ def grid(wrk_dir):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
+    fname = "200000"
+    
     first = False
     
     if first == True:
-        nspin, nmass = (500,500)
+        nspin, nmass = (450,450)
         spin = np.linspace(0.1,1.0,nspin)
         mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
         theta_init = []
@@ -481,13 +483,13 @@ def grid(wrk_dir):
         data_init = np.array(data_init)
         data_init, pars_init = nanChecker(data_init, pars_init)
         #save data for the first time in text files
-        np.savetxt("data/grid_data.txt",data_init)
-        np.savetxt("data/grid_pars.txt",pars_init)
+        np.savetxt(f"data/grid_{fname}_data.txt",data_init)
+        np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
     else: #load previously generated data as initial data and parameter set
-        with open("data/grid_data.txt","r") as f1:
+        with open(f"data/grid_{fname}_data.txt","r") as f1:
             data = np.loadtxt(f1)
         
-        with open("data/grid_pars.txt","r") as f2:
+        with open(f"data/grid_{fname}_pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         
         #make mass log spaced to improve numeric stability in training
@@ -554,7 +556,7 @@ def grid(wrk_dir):
             imp_tr = 0
             print(f"New best training loss: {train_loss}")
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "models/grid_best_model.pth")
+            torch.save(model.state_dict(), f"models/grid_{fname}.pth")
         elif tr_bet > 0:
             imp_tr = 0
             imp_te += 1
@@ -565,7 +567,7 @@ def grid(wrk_dir):
             imp_te = 0
             last_sig_best_te = loss
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), "models/grid_best_model.pth")
+            torch.save(model.state_dict(), f"models/grid_{fname}.pth")
         else:
             imp_te += 1
             imp_tr += 1
@@ -574,14 +576,14 @@ def grid(wrk_dir):
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
     print("Final best testing loss:", last_sig_best_te)
-    torch.save(model.state_dict(), "models/grid_final_model.pth")
+    torch.save(model.state_dict(), f"models/grid_{fname}_final.pth")
     print("Saved PyTorch Model State to grid_final_model.pth")
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.savetxt("loss/grid_te_loss.txt",te_loss_arr)
-    np.savetxt("loss/grid_tr_loss.txt",tr_loss_arr)
+    np.savetxt(f"loss/grid_{fname}_te_loss.txt",te_loss_arr)
+    np.savetxt(f"loss/grid_{fname}_tr_loss.txt",tr_loss_arr)
     
 def main():
     torch.set_default_dtype(torch.double)
