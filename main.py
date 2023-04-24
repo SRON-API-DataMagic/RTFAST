@@ -131,6 +131,7 @@ def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
     np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
     np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
     np.savetxt(f"loss/{num}_epochs.txt",epochs)
+    return
     
 def train(dataloader,model,optimizer,loss_fn):
     """
