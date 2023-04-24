@@ -123,6 +123,14 @@ def saveData(data,pars,fname = ""):
             np.savetxt(f,pars)
         f.close()
         return
+
+def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
+    saveData(data, generator.pars_conversion(pars),
+              fname = f"loop_{num}_")
+    torch.save(model.state_dict(), f"models/{num}_model.pth")
+    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_epochs.txt",epochs)
     
 def train(dataloader,model,optimizer,loss_fn):
     """
@@ -297,15 +305,11 @@ def queryByDropout(wrk_dir):
     while active_loop_num < active_loops:
         
         if (active_loop_num % 5) == 0:
-            saveData(data_init, generator.pars_conversion(theta_init),
-                      fname = f"loop_{active_loop_num}_")
-            torch.save(model.state_dict(), f"{active_loop_num}_model.pth")
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
-            np.savetxt(f"loss/{active_loop_num}_te_loss.txt",temp_te)
-            np.savetxt(f"loss/{active_loop_num}_tr_loss.txt",temp_tr)
-            np.savetxt(f"loss/{active_loop_num}_epochs.txt",temp_epochs)
+            saveLoop(model, data_init, theta_init, temp_te, temp_tr, 
+                     active_loop_num, temp_epochs)
         
         imp_te = 0
         imp_tr = 0
