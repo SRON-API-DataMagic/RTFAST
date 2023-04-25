@@ -291,11 +291,11 @@ def queryByDropout(wrk_dir):
     else: #load previously generated data as initial data and parameter set
         active_loop_num = 40
         print("Loading previous data")
-        with open("data/loop_{active_loop_num}_data.txt","r") as f1:
+        with open(f"data/loop_{active_loop_num}_data.txt","r") as f1:
             data = np.loadtxt(f1)
         f1.close()
         
-        with open("data/loop_{active_loop_num}_pars.txt","r") as f2:
+        with open(f"data/loop_{active_loop_num}_pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         f2.close()
         
@@ -310,15 +310,15 @@ def queryByDropout(wrk_dir):
         del pars
         
         
-        with open("loss/{active_loop_num}_tr_loss.txt","r") as f3:
+        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f3:
             tr_loss_arr = np.loadtxt(f3)
         f3.close
         
-        with open("loss/{active_loop_num}_te_loss.txt","r") as f4:
+        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f4:
             te_loss_arr = np.loadtxt(f4)
         f4.close
         
-        with open("loss/{active_loop_num}_epochs.txt","r") as f5:
+        with open(f"loss/{active_loop_num}_epochs.txt","r") as f5:
             loop_epochs = np.loadtxt(f5)
         f5.close
         
@@ -329,7 +329,7 @@ def queryByDropout(wrk_dir):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        model.load_state_dict(torch.load("models/{active_loop_num}_model.pth"))
+        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
         scaler = load('std_scaler.bin')
     
     batch_size = 12
