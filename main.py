@@ -250,6 +250,10 @@ def queryByDropout(wrk_dir):
     #make this true
     first = True
     
+    model = network.NeuralNetwork(len(egrid))
+    optimizer = Adam(model.parameters(),lr = 0.001)
+    loss_fn = nn.MSELoss()
+    
     if first == True: 
         init_data_size = 5000
         #generating a random set of parameters and corresponding data
@@ -264,12 +268,23 @@ def queryByDropout(wrk_dir):
         #save data for the first time in text files
         np.savetxt("data/data.txt",data_init)
         np.savetxt("data/pars.txt",pars_init)
-    else: #load previously generated data as initial data and parameter set
-        with open("data/data.txt","r") as f1:
-            data = np.loadtxt(f1)
         
-        with open("data/pars.txt","r") as f2:
+        last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
+        last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
+        tr_loss_arr = []
+        te_loss_arr = []
+        loop_epochs = []
+        
+        active_loop_num = 0
+        
+    else: #load previously generated data as initial data and parameter set
+        with open("data/loop_45_data.txt","r") as f1:
+            data = np.loadtxt(f1)
+        f1.close()
+        
+        with open("data/loop_45_pars.txt","r") as f2:
             pars = np.loadtxt(f2)
+        f2.close()
         
         #make mass log spaced to improve numeric stability in training
         pars[:,13] = np.log10(pars[:,13]) 
@@ -280,6 +295,27 @@ def queryByDropout(wrk_dir):
         data_init, theta_init = nanChecker(data_init, theta_init)
         del data
         del pars
+        
+        
+        with open("loss/45_tr_loss.txt","r") as f3:
+            tr_loss_arr = np.loadtxt(f3)
+        f3.close
+        
+        with open("loss/45_te_loss.txt","r") as f4:
+            te_loss_arr = np.loadtxt(f4)
+        f4.close
+        
+        with open("loss/45_epochs.txt","r") as f5:
+            loop_epochs = np.loadtxt(f5)
+        f5.close
+        
+        last_sig_best_tr = np.min(tr_loss_arr) #last significant best training loss (set large initially)
+        last_sig_best_te = np.min(te_loss_arr) #last significant best testing loss (set large initially)
+        
+        active_loop_num = 45
+        
+        model.load_state_dict(torch.load("models/best_model.pth"))
+        
     scaler = MinMaxScaler()
     #create initial dataset object to create scaler (and then delete object)
     data_init_dataset = CustomData(theta_init, data_init, scaler)
@@ -288,18 +324,6 @@ def queryByDropout(wrk_dir):
     batch_size = 12
     
     lhs_idx = theta_init.shape[0]
-    
-    model = network.NeuralNetwork(len(egrid))
-    optimizer = Adam(model.parameters(),lr = 0.001)
-    loss_fn = nn.MSELoss()
-    
-    last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-    last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-    tr_loss_arr = []
-    te_loss_arr = []
-    loop_epochs = []
-    
-    active_loop_num = 0
     
     print("Beginning training")
     
