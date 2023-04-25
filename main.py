@@ -321,12 +321,16 @@ def queryByDropout(wrk_dir):
             loop_epochs = np.loadtxt(f5)
         f5.close
         
-        last_sig_best_tr = np.min(tr_loss_arr) #last significant best training loss (set large initially)
-        last_sig_best_te = np.min(te_loss_arr) #last significant best testing loss (set large initially)
+        last_sig_best_tr = np.min(tr_loss_arr) #last significant best training loss 
+        last_sig_best_te = np.min(te_loss_arr) #last significant best testing loss
+        
+        tr_loss_arr = tr_loss_arr.tolist()
+        te_loss_arr = te_loss_arr.tolist()
+        loop_epochs = loop_epochs.tolist()
         
         active_loop_num = 45
         
-        model.load_state_dict(torch.load("models/best_model.pth"))
+        model.load_state_dict(torch.load("models/45_model.pth"))
         scaler = load('std_scaler.bin')
     
     batch_size = 12
