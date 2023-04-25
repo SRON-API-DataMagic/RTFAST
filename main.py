@@ -125,12 +125,16 @@ def saveData(data,pars,fname = ""):
         return
 
 def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
+    print("Saving loop")
     saveData(data, generator.pars_conversion(pars),
               fname = f"loop_{num}_")
+    print("Saved data")
     torch.save(model.state_dict(), f"models/{num}_model.pth")
+    print("Saved model")
     np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
     np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
     np.savetxt(f"loss/{num}_epochs.txt",epochs)
+    print("Saved losses")
     return
     
 def train(dataloader,model,optimizer,loss_fn):
