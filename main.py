@@ -230,6 +230,7 @@ def nanChecker(data,pars):
     return data, pars
 
 def queryByDropout(wrk_dir):
+    print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -255,6 +256,7 @@ def queryByDropout(wrk_dir):
     loss_fn = nn.MSELoss()
     
     if first == True: 
+        print("Generating first time dataset")
         init_data_size = 5000
         #generating a random set of parameters and corresponding data
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
@@ -278,6 +280,7 @@ def queryByDropout(wrk_dir):
         active_loop_num = 0
         
     else: #load previously generated data as initial data and parameter set
+        print("Loading previous data")
         with open("data/loop_45_data.txt","r") as f1:
             data = np.loadtxt(f1)
         f1.close()
@@ -484,6 +487,7 @@ def queryByDropout(wrk_dir):
     np.savetxt("loss/epochs.txt",loop_epochs)
 
 def grid(wrk_dir):
+    print("Training using grid")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -493,6 +497,7 @@ def grid(wrk_dir):
     first = False
     
     if first == True:
+        print("Generating first time dataset")
         nspin, nmass = (450,450)
         spin = np.linspace(0.1,1.0,nspin)
         mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
@@ -511,6 +516,7 @@ def grid(wrk_dir):
         np.savetxt(f"data/grid_{fname}_data.txt",data_init)
         np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
     else: #load previously generated data as initial data and parameter set
+        print("Loading previously generated dataset")
         with open(f"data/grid_{fname}_data.txt","r") as f1:
             data = np.loadtxt(f1)
         
