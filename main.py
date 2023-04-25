@@ -439,8 +439,8 @@ def queryByDropout(wrk_dir):
             loss = test(test_dataloader,model,loss_fn)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
-            tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
-            te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
+            tr_bet = (0.9*last_sig_best_tr) - train_loss
+            te_bet = (0.9*last_sig_best_te) - loss
             if tr_bet > 0 and te_bet > 0:
                 last_sig_best_tr = train_loss
                 last_sig_best_te = loss
@@ -572,8 +572,8 @@ def grid(wrk_dir):
         loss = test(test_dataloader,model,loss_fn)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
-        tr_bet = (last_sig_best_tr - 0.1*last_sig_best_tr) - train_loss
-        te_bet = (last_sig_best_te - 0.1*last_sig_best_te) - loss
+        tr_bet = (0.9*last_sig_best_tr) - train_loss
+        te_bet = (0.9*last_sig_best_te) - loss
         if tr_bet > 0 and te_bet > 0:
             last_sig_best_tr = train_loss
             last_sig_best_te = loss
