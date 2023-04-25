@@ -254,6 +254,7 @@ def queryByDropout(wrk_dir):
     model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
+    scaler = MinMaxScaler()
     
     if first == True: 
         print("Generating first time dataset")
@@ -278,6 +279,10 @@ def queryByDropout(wrk_dir):
         loop_epochs = []
         
         active_loop_num = 0
+        
+        #create initial dataset object to create scaler (and then delete object)
+        data_init_dataset = CustomData(theta_init, data_init, scaler)
+        del data_init_dataset
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
@@ -318,11 +323,7 @@ def queryByDropout(wrk_dir):
         active_loop_num = 45
         
         model.load_state_dict(torch.load("models/best_model.pth"))
-        
-    scaler = MinMaxScaler()
-    #create initial dataset object to create scaler (and then delete object)
-    data_init_dataset = CustomData(theta_init, data_init, scaler)
-    del data_init_dataset
+        scaler = load('std_scaler.bin')
     
     batch_size = 12
     
