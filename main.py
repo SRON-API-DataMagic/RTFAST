@@ -248,7 +248,7 @@ def queryByDropout(wrk_dir):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
