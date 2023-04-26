@@ -636,7 +636,7 @@ def grid(wrk_dir):
         print("Final best training loss:", last_sig_best_tr)
         print("Final best testing loss:", last_sig_best_te)
         torch.save(model.state_dict(), f"models/grid_{fname}_final.pth")
-        print("Saved PyTorch Model State to grid_final_model.pth")
+        print(f"Saved PyTorch Model State to grid_{fname}_final.pth")
         
         tr_loss_arr = np.asarray(tr_loss_arr)
         te_loss_arr = np.asarray(te_loss_arr)
