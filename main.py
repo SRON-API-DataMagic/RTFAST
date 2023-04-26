@@ -520,7 +520,7 @@ def grid_data_gen(size,fname,egrid):
     theta_init = np.asarray(theta_init)
     pars_init = generator.pars_conversion(theta_init)
     data_init = np.zeros((theta_init.shape[0],len(egrid)))
-    for i,pars in enumerate(tqdm(pars_init)):
+    for i,pars in enumerate(tqdm(pars_init,desc="Generating models")):
         data_init[i] = generator.rtdist_flux(pars, egrid)
     data_init = np.array(data_init)
     data_init, pars_init = nanChecker(data_init, pars_init)
@@ -540,8 +540,10 @@ def grid(wrk_dir):
     for i, size in enumerate(grid_sizes):
     
         fname = str(size)
+        print(f"Starting {size} x {size} grid loop")
         
         data_init, theta_init = grid_data_gen(size, fname, egrid)
+        print("Grid generated")
             
         scaler = MinMaxScaler()
         if i == 0:
@@ -553,25 +555,29 @@ def grid(wrk_dir):
         
         batch_size = 12
         
+        #split dataset indexes randomly into 90% training, 10% test
         idxs = np.arange(0,data_init.shape[0])
         np.random.shuffle(idxs)
-        tra_idx = idxs[:len(idxs)-100000]
-        tes_idx = idxs[-100000:]
+        tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
+        tes_idx = idxs[int(-0.1*len(idxs)):]
         
+        #Splitting data and parameters into training and testing datasets
         train_data = data_init[tra_idx]
         train_pars = theta_init[tra_idx]
         test_data = data_init[tes_idx]
         test_pars = theta_init[tes_idx]
         
+        
         training_dataset = CustomData(train_pars, train_data, scaler, 
                                       scaling = False, scaler_name="grid_scaler")
         testing_dataset = CustomData(test_pars, test_data, scaler, 
                                      scaling = False, scaler_name="grid_scaler")
-        
+        print("Datasets created")
         training_dataloader = DataLoader(training_dataset, batch_size=batch_size, 
                                          shuffle=True)
         test_dataloader = DataLoader(testing_dataset, batch_size=batch_size, 
                                      shuffle=True)
+        print("Dataloaders created")
         
         model = network.NeuralNetwork(len(egrid))
         optimizer = Adam(model.parameters(),lr = 0.001)
@@ -586,6 +592,7 @@ def grid(wrk_dir):
         imp_te = 0
         imp_tr = 0
         
+        print("Beginning training")
         while (imp_te < 10 or imp_tr < 10):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
