@@ -333,7 +333,6 @@ def queryByDropout(wrk_dir):
         loop_epochs = loop_epochs.tolist()
         
         model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
-        scaler = load('std_scaler.bin')
     
     batch_size = 12
     
@@ -343,6 +342,7 @@ def queryByDropout(wrk_dir):
     
     while active_loop_num < active_loops:
         
+        #save state of models and data if loop is a multiple of 5
         if (active_loop_num % 5) == 0 and active_loop_num != 40:
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
@@ -375,6 +375,9 @@ def queryByDropout(wrk_dir):
             # add to uncertainties per theta to list
             query_idx.append(mean_var_query.tolist())
         
+        #Performing manual memory cleanup
+        del pred_query, pred_query_all, dvar, var_query, mean_var_query
+        del theta_query_small
         print("Successfully finished generating thetas")
         
         print("Finding top uncertain thetas")
@@ -392,7 +395,8 @@ def queryByDropout(wrk_dir):
         theta_query_iterate = generator.pars_conversion(theta_query)
         for i,pars in enumerate(tqdm(theta_query_iterate,desc="Generating models")):
             data_query[i] = generator.rtdist_flux(pars, egrid)
-            
+        
+        del theta_query_iterate
         # shuffle indices for neural network training
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
         np.random.shuffle(idx_shuffle)
@@ -412,6 +416,8 @@ def queryByDropout(wrk_dir):
         # add thetas to the rest of the training data
         theta_init = np.vstack([theta_init, theta_query])
         
+        del data_query, theta_query
+        
         #Eliminate any broken models
         data_init, theta_init = nanChecker(data_init, theta_init)
         data_test, theta_test = nanChecker(data_test, theta_test)
@@ -429,11 +435,15 @@ def queryByDropout(wrk_dir):
         print("Setting up modeling")
         Xquery = CustomData(theta_init, data_init, scaler, 
                             scaling=False)
+        print("Query data set created")
         query_dataloader = DataLoader(Xquery, batch_size=batch_size, shuffle=True)
+        print("Query data loader created")
     
         Xtest = CustomData(theta_test, data_test, scaler,
                            scaling=False)
+        print("Test data set created")
         test_dataloader = DataLoader(Xtest, batch_size=batch_size, shuffle=True)
+        print("Test data loader created")
         
         # add test models to the rest of the training data for use in training
         #in the future
