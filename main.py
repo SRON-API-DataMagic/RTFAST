@@ -657,8 +657,8 @@ def main():
     
     print("Environmental variables successfully set")
     
-    queryByDropout(wrk_dir)
-    #grid(wrk_dir)
+    #queryByDropout(wrk_dir)
+    grid(wrk_dir)
 
 if __name__ == "__main__":
     main()
