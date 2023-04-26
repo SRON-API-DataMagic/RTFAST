@@ -509,21 +509,27 @@ def queryByDropout(wrk_dir):
     np.savetxt("loss/epochs.txt",loop_epochs)
 
 def grid_data_gen(size,fname,egrid):
-    print("Generating first time dataset")
     nspin, nmass = (size,size)
+    
     spin = np.linspace(0.1,1.0,nspin)
     mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
+    
+    #create parameter grid
     theta_init = []
     for a in spin:
         for m in mass:
             theta_init.append([a,m])
     theta_init = np.asarray(theta_init)
+    #convert to rtdist model compatible parameters
     pars_init = generator.pars_conversion(theta_init)
+    
+    #generate rtdist models for the correlated grid
     data_init = np.zeros((theta_init.shape[0],len(egrid)))
     for i,pars in enumerate(tqdm(pars_init,desc="Generating models")):
         data_init[i] = generator.rtdist_flux(pars, egrid)
     data_init = np.array(data_init)
     data_init, pars_init = nanChecker(data_init, pars_init)
+    
     #save data for the first time in text files
     np.savetxt(f"data/grid_{fname}_data.txt",data_init)
     np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
