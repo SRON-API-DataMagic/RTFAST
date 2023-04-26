@@ -530,6 +530,7 @@ def grid_data_gen(size,fname,egrid):
     data_init = np.array(data_init)
     data_init, pars_init = nanChecker(data_init, pars_init)
     
+    print("Saving to disk")
     #save data for the first time in text files
     np.savetxt(f"data/grid_{fname}_data.txt",data_init)
     np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
