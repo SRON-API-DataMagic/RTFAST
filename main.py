@@ -504,9 +504,9 @@ def queryByDropout(wrk_dir):
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.savetxt("loss/te_loss.txt",te_loss_arr)
-    np.savetxt("loss/tr_loss.txt",tr_loss_arr)
-    np.savetxt("loss/epochs.txt",loop_epochs)
+    np.savetxt("loss/active_te_loss.txt",te_loss_arr)
+    np.savetxt("loss/active_tr_loss.txt",tr_loss_arr)
+    np.savetxt("loss/active_epochs.txt",loop_epochs)
 
 def grid_data_gen(size,fname,egrid):
     nspin, nmass = (size,size)
@@ -664,8 +664,8 @@ def main():
     
     print("Environmental variables successfully set")
     
-    #queryByDropout(wrk_dir)
-    grid(wrk_dir)
+    queryByDropout(wrk_dir)
+    #grid(wrk_dir)
 
 if __name__ == "__main__":
     main()
