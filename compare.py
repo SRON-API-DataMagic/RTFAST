@@ -239,7 +239,7 @@ def generate_test_set(size,egrid):
     for i,pars in enumerate(tqdm(theta_lhs_iterate,desc="Generating models")):
         data_lhs[i] = rtdist_flux(pars, egrid)
     
-    return theta_lhs, data_lhs
+    return data_lhs, theta_lhs
     
 def residual_computation(testing_dataloader,model,scaler):
     mass, spin = [], []
@@ -381,7 +381,7 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     
     #load test set not seen by any models
-    pars, data = data_load("test_")
+    data, pars = data_load("test_")
     print("Test data generated")
     
     #convert test set to pytorch tensors
