@@ -378,7 +378,7 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
-    size = 100000
+    size = 10000
     
     #generate totally unique test set not seen by any models
     pars, data = generate_test_set(size, egrid)
