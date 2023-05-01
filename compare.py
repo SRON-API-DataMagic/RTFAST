@@ -226,10 +226,12 @@ def generate_test_set(size,egrid):
     for name in grid_data_names:
         training_pars = pars_load(name)
         theta_lhs = pars_comparison(training_pars, theta_lhs)
+    print(f"After comparing to grid data set, test data set is {theta_lhs.shape[0]} samples large.")
     
-    for name in loop_data_names:
-        training_pars = pars_load(name)
-        theta_lhs = pars_comparison(training_pars, theta_lhs)
+    #Compare to final loop dataset to see if duplicated
+    training_pars = pars_load(loop_data_names[-1])
+    theta_lhs = pars_comparison(training_pars, theta_lhs)
+    print(f"After comparing to active learning data set, test data set is {theta_lhs.shape[0]} samples large.")
     
     #generate physical models of test set
     data_lhs = np.zeros((theta_lhs.shape[0],len(egrid)))
