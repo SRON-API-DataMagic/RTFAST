@@ -254,7 +254,7 @@ def queryByDropout(wrk_dir):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
@@ -339,15 +339,7 @@ def queryByDropout(wrk_dir):
     print("Beginning training")
     
     while active_loop_num < active_loops:
-        
-        #save state of models and data if loop is a multiple of 5
-        if (active_loop_num % 5) == 0 and active_loop_num != 40:
-            temp_te = np.asarray(te_loss_arr)
-            temp_tr = np.asarray(tr_loss_arr)
-            temp_epochs = np.asarray(loop_epochs)
-            saveLoop(model, data_init, theta_init, temp_te, temp_tr, 
-                     active_loop_num, temp_epochs)
-        
+        #set improvements counters to 0
         imp_te = 0
         imp_tr = 0
         print(f"I am in active learning loop {active_loop_num+1}")
@@ -490,6 +482,15 @@ def queryByDropout(wrk_dir):
             loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
         else:
             loop_epochs.append(epoch)
+        
+        #save state of models and data if loop is a multiple of 5
+        if (active_loop_num % 5) == 0:
+            temp_te = np.asarray(te_loss_arr)
+            temp_tr = np.asarray(tr_loss_arr)
+            temp_epochs = np.asarray(loop_epochs)
+            saveLoop(model, data_init, theta_init, temp_te, temp_tr, 
+                     active_loop_num, temp_epochs)
+        #iterate loop number by 1
         active_loop_num += 1
         
     print("Completed training")
