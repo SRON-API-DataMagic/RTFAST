@@ -104,7 +104,7 @@ def data_load(data_name):
 def main():
     wrk_dir = os.getcwd()
     scaler = MinMaxScaler()
-    scaler = load('std_scaler.bin')
+    scaler = load('scaler/std_scaler.bin')
     
     gr = "grid_"
     

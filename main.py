@@ -85,9 +85,9 @@ class CustomData(Dataset):
         scaler = self.scaler
         if self.scaling == True:
             scaled_data = scaler.fit_transform(data)
-            dump(scaler, f'{self.scaler_name}.bin', compress=True)
+            dump(scaler, f'scalers/{self.scaler_name}.bin', compress=True)
         else:
-            scaler = load(f'{self.scaler_name}.bin')
+            scaler = load(f'scalers/{self.scaler_name}.bin')
             scaled_data = scaler.transform(data)
         return scaled_data
 
