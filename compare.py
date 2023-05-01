@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
-from main import CustomData
+from main import CustomData, saveData
 
 class LoadCustomData(CustomData):
     def __init__(self,pars,data,scaler):
@@ -384,6 +384,8 @@ def main():
     pars, data = generate_test_set(size, egrid)
     print("Test data generated")
     
+    saveData(data, pars, "test_")
+    
     #convert test set to pytorch tensors
     pars = torch.tensor(pars)
     data = torch.tensor(data)
@@ -395,10 +397,10 @@ def main():
     
     model_base_loc = wrk_dir+"/models/"
     
-    active_model_names = [0,5,10,15,20,25,30,35,40,45,50]
+    active_model_names = np.array([0,5,10,15,20,25,30,35,40,45,50])
     active_sample_nums = (active_model_names+1)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
-    grid_model_names = [70,100,120,140,225,275,320,400,450]
+    grid_model_names = np.array([70,100,120,140,225,275,320,400,450])
     grid_sample_nums = grid_model_names**2
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
