@@ -371,9 +371,9 @@ def main():
     
     #retrieve scalers
     active_scaler = MinMaxScaler()
-    active_scaler = load('scaler/active_scaler.bin')
+    active_scaler = load('scalers/active_scaler.bin')
     grid_scaler = MinMaxScaler()
-    grid_scaler = load('scaler/grid_scaler.bin')
+    grid_scaler = load('scalers/grid_scaler.bin')
     
     set_envir_vars(wrk_dir)
     
