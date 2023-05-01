@@ -38,9 +38,7 @@ class CustomData(Dataset):
         self.scaler = scaler
         self.scaling = scaling
         self.scaler_name = scaler_name
-        print("Scaling data")
         self.standardize()
-        print("Data scaled")
     
     def __len__(self):
         return self.data.size()[0]
@@ -60,7 +58,6 @@ class CustomData(Dataset):
         D = torch.log10(D)
         #Change NaNs to minimum non flux (essentially neglible)
         D_np = D.numpy()
-        print("Converted data to numpy format and performing scaling")
         D_np = self.scale(D_np)
         D = torch.from_numpy(D_np)
         D = D.double()
