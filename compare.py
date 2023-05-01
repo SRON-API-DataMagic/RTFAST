@@ -14,9 +14,10 @@ import scipy.stats
 
 import pandas as pd
 import seaborn as sns
+import tqdm
 
 import network
-from generator import lhs_trimmed_gen
+from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
 from main import CustomData
 
 class LoadCustomData(CustomData):
@@ -175,12 +176,68 @@ def data_load(data_name):
     
     return data, pars
 
-def generate_test_set(size):
+def pars_load(data_name):
+    with open(f"data/{data_name}pars.txt","r") as f2:
+        pars = np.loadtxt(f2)
+    f2.close()
+    
+    pars = pars[:,[1,13]]
+    pars[:,1] = np.log10(pars[:,1])
+    
+    return pars
+    
+def pars_comparison(previous_set,new_set):
+    #redefine parameter lists as complex numbers
+    complex_pre = previous_set[:,0] + previous_set[:,1]*1j
+    complex_new = new_set[:,0] + new_set[:,1]*1j
+    #find all matches
+    mask = np.in1d(complex_new,complex_pre)
+    #remove all data from new set already present in training data
+    new_set = new_set[~mask]
+    return new_set
+    
+def generate_test_set(size,egrid):
+    """
+    
+
+    Parameters
+    ----------
+    size : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     range_all = np.asarray(lhs_trimmed_gen())
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    
+    #training dataset names
+    grid_data_names = [70,100,120,140,225,275,320,400,450,500]
+    grid_data_names = ["grid_"+str(i)+"_" for i in grid_data_names]
+    loop_data_names = [0,5,10,15,20,25,30,35,40,45,50]
+    loop_data_names = ["loop_"+str(i)+"_" for i in loop_data_names]
+    
+    #checks to see if generated test data set is duplicated in training dataset
+    for name in grid_data_names:
+        training_pars = pars_load(name)
+        theta_lhs = pars_comparison(training_pars, theta_lhs)
+    
+    for name in loop_data_names:
+        training_pars = pars_load(name)
+        theta_lhs = pars_comparison(training_pars, theta_lhs)
+    
+    #generate physical models of test set
+    data_lhs = np.zeros((theta_lhs.shape[0],len(egrid)))
+    theta_lhs_iterate = pars_conversion(theta_lhs)
+    for i,pars in enumerate(tqdm(theta_lhs_iterate,desc="Generating models")):
+        data_lhs[i] = rtdist_flux(pars, egrid)
+    
+    return theta_lhs, data_lhs
     
 def residual_computation(testing_dataloader,model,scaler):
     mass, spin = [], []
@@ -292,53 +349,90 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         if batch > 30:
             break
 
+def calculate_loss(testing_dataloader,model,scaler):
+    loss_tot = []
+    loss_std = []
+    for batch, (D,P) in enumerate(testing_dataloader):
+        pred = model(P).detach().numpy()
+        pred = 10**(inverse(scaler,pred))
+        resid = (D-pred)/D
+        mean = np.mean(resid)
+        std = np.std(resid)
+        loss_tot.append(mean)
+        loss_std.append(std)
+    loss_mean = sum(loss_tot)/len(loss_tot)
+    loss_mean_std = sum(loss_std)/len(loss_std)
+    return loss_mean,loss_mean_std
+
 def main():
     wrk_dir = os.getcwd()
-    scaler = MinMaxScaler()
-    scaler = load('scaler/std_scaler.bin')
     
-    gr = "grid_"
-    
-    loss_plots(gr)
-    
-    gr = ""
+    #retrieve scalers
+    active_scaler = MinMaxScaler()
+    active_scaler = load('scaler/active_scaler.bin')
+    grid_scaler = MinMaxScaler()
+    grid_scaler = load('scaler/grid_scaler.bin')
     
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
+    size = 100000
     
-    model_loc = wrk_dir+"/models/active_best"
+    #generate totally unique test set not seen by any models
+    pars, data = generate_test_set(size, egrid)
+    print("Test data generated")
     
-    model = model_load(model_loc, egrid)
-
-    data_name = ""
-    data, pars = data_load(data_name)
-    
-    sample_dist_plots(pars)
-    
-    print("Sample distributions plotted")
-    
-    #take every 10th entry to reduce memory usage
-    pars = pars[::10]
-    data = data[::10]
-    
+    #convert test set to pytorch tensors
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     
+    #put test set into dataloader format
     batch_size = 1
-    data = LoadCustomData(pars,data,scaler)
-    testing_dataloader = DataLoader(data,batch_size = batch_size)
+    test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
+    testing_dataloader = DataLoader(test_data,batch_size = batch_size)
     
-    model_samples(testing_dataloader,scaler,model,egrid,gr)
-    print("Finished creating random model comparison")
+    model_base_loc = wrk_dir+"/models/"
     
-    mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick,mass_ticklabel,spin_ticklabel,spin_tick = residual_computation(testing_dataloader, model, scaler)
+    active_model_names = [0,5,10,15,20,25,30,35,40,45,50]
+    active_sample_nums = (active_model_names+1)*5000
+    active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
+    grid_model_names = [70,100,120,140,225,275,320,400,450]
+    grid_sample_nums = grid_model_names**2
+    grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
-    print("Building heatmaps")
+    active_loss = []
+    active_loss_std = []
+    grid_loss = []
+    grid_loss_std = []
     
-    heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                      mass_ticklabel,spin_ticklabel,
-                      spin_tick,gr)
+    print("Calculating loss for active learning")
+    for model_loc in active_model_names:
+        model = model_load(model_loc, egrid)
+        loss,loss_std = calculate_loss(testing_dataloader, model, active_scaler)
+        active_loss.append(loss)
+        active_loss_std.append(loss_std)
+    
+    active_loss = np.asarray(active_loss)
+    active_loss_std = np.asarray(active_loss_std)
+    
+    print("Calculating loss for grid learning")
+    for model_loc in grid_model_names:
+        model = model_load(model_loc, egrid)
+        loss,loss_std = calculate_loss(testing_dataloader, model, grid_scaler)
+        grid_loss.append(loss)
+        grid_loss_std.append(loss_std)
+    
+    grid_loss = np.asarray(grid_loss)
+    grid_loss_std = np.asarray(grid_loss_std)
+    
+    print("Plotting loss by sample size")
+    
+    plt.errorbar(active_sample_nums,active_loss,yerr=active_loss_std,label="Active learning")
+    plt.errorbar(grid_sample_nums,grid_loss,yerr=grid_loss_std,label="Grid")
+    plt.xlabel("Number of samples used in training")
+    plt.ylabel("Average percentage error difference from true model across test dataset")
+    plt.legend()
+    plt.savefig("loss/loss_by_sample_size.png")
     
 if __name__ == "__main__":
     main()
