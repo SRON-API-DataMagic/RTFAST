@@ -358,6 +358,7 @@ def calculate_loss(testing_dataloader,model,scaler):
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
+        resid = np.absolute(np.asarray(resid))
         mean = np.mean(resid)
         std = np.std(resid)
         loss_tot.append(mean)
@@ -384,7 +385,7 @@ def main():
     pars, data = generate_test_set(size, egrid)
     print("Test data generated")
     
-    saveData(data, pars, "test_")
+    saveData(data, pars_conversion(pars), "test_")
     
     #convert test set to pytorch tensors
     pars = torch.tensor(pars)
