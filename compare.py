@@ -14,7 +14,7 @@ import scipy.stats
 
 import pandas as pd
 import seaborn as sns
-import tqdm
+from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
