@@ -379,13 +379,10 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
-    size = 10000
     
-    #generate totally unique test set not seen by any models
-    pars, data = generate_test_set(size, egrid)
+    #load test set not seen by any models
+    pars, data = data_load("test_")
     print("Test data generated")
-    
-    saveData(data, pars_conversion(pars), "test_")
     
     #convert test set to pytorch tensors
     pars = torch.tensor(pars)
@@ -434,8 +431,9 @@ def main():
     
     plt.errorbar(active_sample_nums,active_loss,yerr=active_loss_std,label="Active learning")
     plt.errorbar(grid_sample_nums,grid_loss,yerr=grid_loss_std,label="Grid")
+    plt.yscale("log")
     plt.xlabel("Number of samples used in training")
-    plt.ylabel("Average percentage error difference from true model across test dataset")
+    plt.ylabel("Average percentage error")
     plt.legend()
     plt.savefig("loss/loss_by_sample_size.png")
     
