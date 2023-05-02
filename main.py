@@ -391,8 +391,8 @@ def queryByDropout(wrk_dir):
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
         np.random.shuffle(idx_shuffle)
     
-        idx_query = idx_shuffle[:len(idx_shuffle)-250]
-        idx_test = idx_shuffle[-250:]
+        idx_query = idx_shuffle[:len(idx_shuffle)-500]
+        idx_test = idx_shuffle[-500:]
         
         #Split data and thetas into test and training data
         data_test = data_query[idx_test]
