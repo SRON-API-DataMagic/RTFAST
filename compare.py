@@ -439,6 +439,7 @@ def main():
     plt.xlabel("Number of samples used in training")
     plt.ylabel("Average percentage error")
     plt.legend()
+    plt.ylim(10e-3)
     plt.savefig("loss/loss_by_sample_size.png")
     
 if __name__ == "__main__":
