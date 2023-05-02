@@ -430,11 +430,11 @@ def main():
     print("Plotting loss by sample size")
     
     plt.fill_between(grid_sample_nums, grid_loss+grid_loss_std, 
-                     grid_loss-grid_loss_std, alpha = 0.5,color = "b")
-    plt.plot(grid_sample_nums,grid_loss,label="Grid",color = "b")
+                     grid_loss-grid_loss_std, alpha = 0.5,color = "orange")
+    plt.plot(grid_sample_nums,grid_loss,label="Grid",color = "orange")
     plt.fill_between(active_sample_nums, active_loss+active_loss_std, 
-                     active_loss-active_loss_std, alpha = 0.5,color = "orange")
-    plt.plot(active_sample_nums,active_loss,label="Active learning",color = "orange")
+                     active_loss-active_loss_std, alpha = 0.5,color = "blue")
+    plt.plot(active_sample_nums,active_loss,label="Active learning",color = "blue")
     plt.axhline(y=1, ls = "--",label="1% error")
     plt.yscale("log")
     plt.xlabel("Number of samples used in training")
