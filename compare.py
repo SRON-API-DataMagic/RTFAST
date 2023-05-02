@@ -398,7 +398,7 @@ def main():
     active_model_names = np.array([0,5,10,15,20,25,30,35,40,45,50])
     active_sample_nums = (active_model_names+1)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
-    grid_model_names = np.array([70,100,120,140,225,275,320,400,450])
+    grid_model_names = np.array([70,100,120,140,225,275,320,400,450,500])
     grid_sample_nums = grid_model_names**2
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
@@ -429,8 +429,12 @@ def main():
     
     print("Plotting loss by sample size")
     
-    plt.errorbar(active_sample_nums,active_loss,yerr=active_loss_std,label="Active learning")
-    plt.errorbar(grid_sample_nums,grid_loss,yerr=grid_loss_std,label="Grid")
+    plt.fill_between(active_sample_nums, active_loss+active_loss_std, 
+                     active_loss-active_loss_std, alpha = 0.5)
+    plt.plot(active_sample_nums,active_loss,label="Active learning")
+    plt.fill_between(grid_sample_nums, grid_loss+grid_loss_std, 
+                     grid_loss-grid_loss_std, alpha = 0.5)
+    plt.plot(grid_sample_nums,grid_loss,label="Grid")
     plt.yscale("log")
     plt.xlabel("Number of samples used in training")
     plt.ylabel("Average percentage error")
