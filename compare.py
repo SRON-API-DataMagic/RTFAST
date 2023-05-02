@@ -367,32 +367,7 @@ def calculate_loss(testing_dataloader,model,scaler):
     loss_mean_std = sum(loss_std)/len(loss_std)
     return loss_mean,loss_mean_std
 
-def main():
-    wrk_dir = os.getcwd()
-    
-    #retrieve scalers
-    active_scaler = MinMaxScaler()
-    active_scaler = load('scalers/active_scaler.bin')
-    grid_scaler = MinMaxScaler()
-    grid_scaler = load('scalers/grid_scaler.bin')
-    
-    set_envir_vars(wrk_dir)
-    
-    egrid = retrieve_egrid(wrk_dir)
-    
-    #load test set not seen by any models
-    data, pars = data_load("test_")
-    print("Test data generated")
-    
-    #convert test set to pytorch tensors
-    pars = torch.tensor(pars)
-    data = torch.tensor(data)
-    
-    #put test set into dataloader format
-    batch_size = 1
-    test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
-    testing_dataloader = DataLoader(test_data,batch_size = batch_size)
-    
+def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/"
     
     active_name = [0,5,10,15,20,25,30,35,40,45,50]
@@ -462,6 +437,35 @@ def main():
     plt.legend()
     plt.ylim(bottom = 1e-3)
     plt.savefig("loss/loss_by_sample_size.png")
+    plt.close()
+
+def main():
+    wrk_dir = os.getcwd()
+    
+    set_envir_vars(wrk_dir)
+    
+    #retrieve scalers
+    active_scaler = MinMaxScaler()
+    active_scaler = load('scalers/active_scaler.bin')
+    grid_scaler = MinMaxScaler()
+    grid_scaler = load('scalers/grid_scaler.bin')
+    
+    egrid = retrieve_egrid(wrk_dir)
+    
+    #load test set not seen by any models
+    data, pars = data_load("test_")
+    print("Test data generated")
+    
+    #convert test set to pytorch tensors
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
+    
+    #put test set into dataloader format
+    batch_size = 1
+    test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
+    testing_dataloader = DataLoader(test_data,batch_size = batch_size)
+    
+    active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)
     
 if __name__ == "__main__":
     main()
