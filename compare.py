@@ -395,9 +395,11 @@ def main():
     
     model_base_loc = wrk_dir+"/models/"
     
+    active_name = [0,5,10,15,20,25,30,35,40,45,50]
     active_model_names = np.array([0,5,10,15,20,25,30,35,40,45,50])
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
+    grid_name = [70,100,120,140,225,275,320,400,450,500]
     grid_model_names = np.array([70,100,120,140,225,275,320,400,450,500])
     grid_sample_nums = grid_model_names**2
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
@@ -408,21 +410,35 @@ def main():
     grid_loss_std = []
     
     print("Calculating loss for active learning")
-    for model_loc in active_model_names:
+    for (model_loc,gr) in zip(active_model_names,active_name):
+        print(gr)
         model = model_load(model_loc, egrid)
         loss,loss_std = calculate_loss(testing_dataloader, model, active_scaler)
         active_loss.append(loss)
         active_loss_std.append(loss_std)
+        (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
+                          mass_ticklabel,spin_ticklabel,
+                          spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
+        heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
+                          mass_ticklabel,spin_ticklabel,
+                          spin_tick,gr)
     
     active_loss = np.asarray(active_loss)
     active_loss_std = np.asarray(active_loss_std)
     
     print("Calculating loss for grid learning")
-    for model_loc in grid_model_names:
+    for (model_loc,gr) in zip(grid_model_names,grid_name):
+        print(gr)
         model = model_load(model_loc, egrid)
         loss,loss_std = calculate_loss(testing_dataloader, model, grid_scaler)
         grid_loss.append(loss)
         grid_loss_std.append(loss_std)
+        (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
+                          mass_ticklabel,spin_ticklabel,
+                          spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
+        heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
+                          mass_ticklabel,spin_ticklabel,
+                          spin_tick,gr)
     
     grid_loss = np.asarray(grid_loss)
     grid_loss_std = np.asarray(grid_loss_std)
@@ -439,7 +455,7 @@ def main():
                      zorder=2)
     plt.plot(active_sample_nums,active_loss,label="Active learning",
              color = "blue",zorder=2)
-    plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=3)
+    plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
     plt.yscale("log")
     plt.xlabel("Number of samples used in training")
     plt.ylabel("Average percentage error")
