@@ -353,18 +353,16 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
 
 def calculate_loss(testing_dataloader,model,scaler):
     loss_tot = []
-    loss_std = []
     for batch, (D,P) in enumerate(testing_dataloader):
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
         resid = np.absolute(np.asarray(resid))
         mean = np.mean(resid)
-        std = np.std(resid)
         loss_tot.append(mean)
-        loss_std.append(std)
-    loss_mean = sum(loss_tot)/len(loss_tot)
-    loss_mean_std = sum(loss_std)/len(loss_std)
+    loss_tot = np.asarray(loss_tot)
+    loss_mean = np.mean(loss_tot)
+    loss_mean_std = np.std(loss_tot)
     return loss_mean,loss_mean_std
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
