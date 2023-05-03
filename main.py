@@ -521,7 +521,7 @@ def queryByDropout(wrk_dir):
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
-            best_model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
+            best_model.load_state_dict(torch.load(f"models/active_best.pth"))
             saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
                      active_loop_num, temp_epochs)
         #iterate loop number by 1
