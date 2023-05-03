@@ -50,6 +50,8 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False):
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
+    axs[1].axhline(y=0.01,ls="--",color="orange")
+    axs[1].axhline(y=-0.01,ls="--",color="orange")
     #axs[1].set_ylim(residuals_ylim)
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
