@@ -12,3 +12,4 @@ output.out
 std_scaler.bin
 __pycache__/
 scalers/
+*.out
