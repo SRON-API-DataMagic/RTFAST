@@ -35,7 +35,7 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
-def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False):
+def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = False):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -53,7 +53,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False):
     axs[1].axhline(y=0.01,ls="--",color="orange")
     axs[1].axhline(y=-0.01,ls="--",color="orange")
     max_res = np.max(np.absolute((da-pred)/da))
-    if max_res > 1:
+    if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
@@ -328,7 +328,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         fname = f"{batch}_res"
         title = "Standard output"
         
-        residual_plots(egrid, pred, da, spin, mass, fname, title, gr)
+        residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
         
         pred = model(P).detach().numpy()
         pred = np.squeeze(inverse(scaler,pred))
