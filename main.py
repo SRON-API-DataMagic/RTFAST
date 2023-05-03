@@ -600,7 +600,7 @@ def grid(wrk_dir):
         imp_tr = 0
         
         print("Beginning training")
-        while (imp_te < 10 or imp_tr < 10):
+        while (imp_te < 5 or imp_tr < 5):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn)
