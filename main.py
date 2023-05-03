@@ -359,6 +359,9 @@ def queryByDropout(wrk_dir):
         test_pars = np.loadtxt(f1)
     f1.close()
     
+    test_pars[:,13] = np.log10(test_pars[:,13]) 
+    test_pars = test_pars[:,[1,13]] #retrieve spin and mass
+    
     test_set = CustomData(test_pars, test_data, scaler, 
                         scaling=False)
     print("Query data set created")
