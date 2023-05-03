@@ -51,7 +51,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False):
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
     #axs[1].set_ylim(residuals_ylim)
-    plt.savefig(f"{gr}samples/{fname}.png")
+    plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
 
 def loss_plots(gr):
@@ -274,7 +274,6 @@ def residual_computation(testing_dataloader,model,scaler):
         resids_spin_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
     
     spin_res = pd.DataFrame(resids_spin,index=spins)
-    print(spin_res.max())
     spin_res_flat = pd.DataFrame(resids_spin_flat,index=spins)
     
     resids_mass = np.zeros((len(dataframe),4096))
@@ -287,7 +286,6 @@ def residual_computation(testing_dataloader,model,scaler):
         resids_mass_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
         
     mass_res = pd.DataFrame(resids_mass,index=masses)
-    print(mass_res.max())
     mass_res_flat = pd.DataFrame(resids_mass_flat,index=masses)
     
     percents = [0,0.25,0.5,0.75]
@@ -348,7 +346,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
     
         residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
         
-        if batch > 30:
+        if batch > 5:
             break
 
 def calculate_loss(testing_dataloader,model,scaler):
@@ -390,12 +388,15 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         loss,loss_std = calculate_loss(testing_dataloader, model, active_scaler)
         active_loss.append(loss)
         active_loss_std.append(loss_std)
+        model_samples(testing_dataloader,active_scaler,model,egrid,gr)
+        """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
                           spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
         heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
                           spin_tick,gr)
+        """
     
     active_loss = np.asarray(active_loss)
     active_loss_std = np.asarray(active_loss_std)
@@ -408,12 +409,15 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         loss,loss_std = calculate_loss(testing_dataloader, model, grid_scaler)
         grid_loss.append(loss)
         grid_loss_std.append(loss_std)
+        model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
+        """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
                           spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
         heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
                           spin_tick,gr)
+        """
     
     grid_loss = np.asarray(grid_loss)
     grid_loss_std = np.asarray(grid_loss_std)
