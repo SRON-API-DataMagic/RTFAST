@@ -52,7 +52,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = Fa
     axs[1].set_xlabel("Energy in keV")
     axs[1].axhline(y=0.01,ls="--",color="orange")
     axs[1].axhline(y=-0.01,ls="--",color="orange")
-    max_res = np.max(np.absolute((da-pred)/da))
+    max_res = np.absolute((da-pred)/da).max()
     if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
     plt.savefig(f"samples/{gr}_{fname}.png")
