@@ -257,6 +257,7 @@ def queryByDropout(wrk_dir):
     first = True
     
     model = network.NeuralNetwork(len(egrid))
+    best_model = network.NeuralNetwork(len(egrid))
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = nn.MSELoss()
     scaler = MinMaxScaler()
@@ -484,11 +485,12 @@ def queryByDropout(wrk_dir):
             loop_epochs.append(epoch)
         
         #save state of models and data if loop is a multiple of 5
-        if (active_loop_num % 5) == 0:
+        if (active_loop_num % 5) == 0 or active_loop_num < 5:
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
-            saveLoop(model, data_init, theta_init, temp_te, temp_tr, 
+            best_model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
+            saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
                      active_loop_num, temp_epochs)
         #iterate loop number by 1
         active_loop_num += 1
