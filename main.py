@@ -286,7 +286,8 @@ def queryByDropout(wrk_dir):
         for i,pars in enumerate(tqdm(pars_init)):
             data_init.append(generator.rtdist_flux(pars, egrid))
         data_init = np.array(data_init)
-        data_init, pars_init = nanChecker(data_init, pars_init)
+        data_init, theta_init = nanChecker(data_init, theta_init)
+        pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
         np.savetxt("data/data.txt",data_init)
         np.savetxt("data/pars.txt",pars_init)
