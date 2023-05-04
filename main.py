@@ -355,7 +355,7 @@ def queryByDropout(wrk_dir):
         test_data = np.loadtxt(f1)
     f1.close()
     
-    with open(f"data/loop_{active_loop_num}_data.txt","r") as f1:
+    with open(f"data/test_pars.txt","r") as f1:
         test_pars = np.loadtxt(f1)
     f1.close()
     
