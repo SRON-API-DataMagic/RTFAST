@@ -354,18 +354,17 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
             break
 
 def calculate_loss(testing_dataloader,model,scaler):
-    loss_tot = []
+    residuals = []
     for batch, (D,P) in enumerate(testing_dataloader):
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
-        resid = np.absolute(np.asarray(resid))
-        mean = np.mean(resid)
-        loss_tot.append(mean)
-    loss_tot = np.asarray(loss_tot)
-    loss_mean = np.mean(loss_tot)
-    loss_mean_std = np.std(loss_tot)
-    return loss_mean,loss_mean_std
+        residuals.append(np.absolute(np.asarray(resid)))
+    
+    residuals = np.asarray(residuals)
+    median = np.median(residuals)
+    low_q, high_q = np.quantile(residuals,[0.25,0.75])
+    return median,low_q,high_q
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/"
@@ -379,19 +378,22 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     grid_sample_nums = grid_model_names**2
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
-    active_loss = []
-    active_loss_std = []
-    grid_loss = []
-    grid_loss_std = []
+    active_median_loss = []
+    active_loss_low_q = []
+    active_loss_high_q = []
+    grid_median_loss = []
+    grid_loss_low_q = []
+    grid_loss_high_q = []
     
     print("Calculating loss for active learning")
     for (model_loc,gr) in zip(active_model_names,active_name):
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
-        loss,loss_std = calculate_loss(testing_dataloader, model, active_scaler)
-        active_loss.append(loss)
-        active_loss_std.append(loss_std)
+        median,low_q,high_q = calculate_loss(testing_dataloader, model, active_scaler)
+        active_median_loss.append(median)
+        active_loss_low_q.append(low_q)
+        active_loss_high_q.append(high_q)
         model_samples(testing_dataloader,active_scaler,model,egrid,gr)
         """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
@@ -402,17 +404,19 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           spin_tick,gr)
         """
     
-    active_loss = np.asarray(active_loss)
-    active_loss_std = np.asarray(active_loss_std)
+    active_median_loss = np.asarray(active_median_loss)
+    active_loss_low_q = np.asarray(active_loss_low_q)
+    active_loss_high_q = np.asarray(active_loss_high_q)
     
     print("Calculating loss for grid learning")
     for (model_loc,gr) in zip(grid_model_names,grid_name):
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
-        loss,loss_std = calculate_loss(testing_dataloader, model, grid_scaler)
-        grid_loss.append(loss)
-        grid_loss_std.append(loss_std)
+        median,low_q,high_q = calculate_loss(testing_dataloader, model, grid_scaler)
+        grid_median_loss.append(median)
+        grid_loss_low_q.append(low_q)
+        grid_loss_high_q.append(high_q)
         model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
         """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
@@ -423,20 +427,21 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           spin_tick,gr)
         """
     
-    grid_loss = np.asarray(grid_loss)
-    grid_loss_std = np.asarray(grid_loss_std)
+    grid_median_loss = np.asarray(grid_median_loss)
+    grid_loss_low_q = np.asarray(grid_loss_low_q)
+    grid_loss_high_q = np.asarray(grid_loss_high_q)
     
     print("Plotting loss by sample size")
     
-    plt.fill_between(grid_sample_nums, grid_loss+grid_loss_std, 
-                     grid_loss-grid_loss_std, alpha = 0.5,color = "orange",
+    plt.fill_between(grid_sample_nums, grid_median_loss+active_loss_high_q, 
+                     grid_median_loss-active_loss_low_q, alpha = 0.5,color = "orange",
                      zorder=1)
-    plt.plot(grid_sample_nums,grid_loss,label="Grid",color = "orange",
+    plt.plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
              zorder=1)
-    plt.fill_between(active_sample_nums, active_loss+active_loss_std, 
-                     active_loss-active_loss_std, alpha = 0.5,color = "blue",
+    plt.fill_between(active_sample_nums, active_median_loss+active_loss_high_q, 
+                     active_median_loss-active_loss_low_q, alpha = 0.5,color = "blue",
                      zorder=2)
-    plt.plot(active_sample_nums,active_loss,label="Active learning",
+    plt.plot(active_sample_nums,active_median_loss,label="Active learning",
              color = "blue",zorder=2)
     plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
     plt.yscale("log")
