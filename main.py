@@ -259,13 +259,13 @@ def maskedMSELoss(pred,data,mask):
     result = loss(pred,data)
     return result
 
-def queryByDropout(wrk_dir):
+def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 50
+    active_loops = 20
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
@@ -282,9 +282,11 @@ def queryByDropout(wrk_dir):
     first = True
     
     model = network.NeuralNetwork(len(egrid))
+    model.to(device)
     best_model = network.NeuralNetwork(len(egrid))
+    best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
-    loss_fn = nn.MSELoss()
+    loss_fn = maskedMSELoss()
     scaler = MinMaxScaler()
     
     if first == True: 
@@ -363,7 +365,8 @@ def queryByDropout(wrk_dir):
         
         model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
     
-    batch_size = 12
+    batch_size = 1024
+    num_workers = 4
     
     lhs_idx = theta_init.shape[0]
     
@@ -381,7 +384,8 @@ def queryByDropout(wrk_dir):
     test_set = CustomData(test_pars, test_data, scaler, 
                         scaling=False)
     print("Query data set created")
-    improvement_dataloader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+    improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
+                                        num_workers = num_workers, shuffle=True)
     
     print("Beginning training")
     
@@ -473,13 +477,15 @@ def queryByDropout(wrk_dir):
         Xquery = CustomData(theta_init, data_init, scaler, 
                             scaling=False)
         print("Query data set created")
-        query_dataloader = DataLoader(Xquery, batch_size=batch_size, shuffle=True)
+        query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
+                                      num_workers = num_workers, shuffle=True)
         print("Query data loader created")
     
         Xtest = CustomData(theta_test, data_test, scaler,
                            scaling=False)
         print("Test data set created")
-        test_dataloader = DataLoader(Xtest, batch_size=batch_size, shuffle=True)
+        test_dataloader = DataLoader(Xtest, batch_size=batch_size,
+                                     num_workers = num_workers, shuffle=True)
         print("Test data loader created")
         
         # add test models to the rest of the training data for use in training
@@ -497,7 +503,8 @@ def queryByDropout(wrk_dir):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(query_dataloader,model,
                                                  optimizer,loss_fn)
-            loss,improv_loss = test(test_dataloader,model,loss_fn,improvement_dataloader)
+            loss,improv_loss = test(test_dataloader,model,loss_fn,
+                                    improvement_dataloader)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
             tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -533,8 +540,10 @@ def queryByDropout(wrk_dir):
         else:
             loop_epochs.append(epoch)
         
-        #save state of models and data if loop is a multiple of 5
-        if (active_loop_num % 5) == 0 or active_loop_num < 5:
+        #save state of models and data if loop is a multiple of 5, first 5
+        #loops or the final loop.
+        if ((active_loop_num % 5) == 0 or active_loop_num < 5 
+            or active_loop_num == (active_loops - 1)):
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
@@ -718,7 +727,10 @@ def main():
     
     print("Environmental variables successfully set")
     
-    queryByDropout(wrk_dir)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
+    
+    queryByDropout(wrk_dir,device)
     #grid(wrk_dir)
 
 if __name__ == "__main__":
