@@ -113,8 +113,11 @@ def lhs_range_gen():
 def lhs_trimmed_gen():
     spin_range = [0.1,0.998]
     mass_range = [np.log10(3),np.log10(1e11)]
+    inclination_range = [1,80]
+    r_inner_range = [-400,-1]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
     
-    range_all = [spin_range,mass_range]
+    range_all = [spin_range,mass_range,inclination_range,r_inner_range,r_outer_range]
     
     return range_all
 
@@ -144,6 +147,10 @@ def pars_conversion(pars):
     new_pars = np.asarray(new_pars)
     new_pars[:,1] = pars[:,0]
     new_pars[:,13] = 10**pars[:,1]
+    new_pars[:,2] = pars[:,2]
+    new_pars[:,3] = pars[:,3]
+    new_pars[:,4] = 10**pars[:,4]
+    
     return new_pars
     
     

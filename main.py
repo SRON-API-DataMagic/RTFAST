@@ -46,7 +46,11 @@ class CustomData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         parameters = self.par_list[idx]
-        return datum,parameters
+        if self.mask != None:
+            mask = self.mask[idx]
+            return datum, parameters, mask
+        else:
+            return datum, parameters
     
     def standardize(self):
         """
@@ -54,6 +58,7 @@ class CustomData(Dataset):
         scales the energy bins.
         """
         D = self.data
+        self.mask = np.where(self.data <= 1e-38, 0, 1)
         D[D<=1e-38] = 1e-38
         D = torch.log10(D)
         #Change NaNs to minimum non flux (essentially neglible)
@@ -170,9 +175,9 @@ def train(dataloader,model,optimizer,loss_fn):
     batch_size = 12
     loss_arr = 0
     big_loss = 0
-    for batch, (D,P) in enumerate(dataloader):
+    for batch, (D,P,M) in enumerate(dataloader):
         pred = model(P)
-        loss = loss_fn(pred,D)
+        loss = loss_fn(pred,D,M)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -214,18 +219,18 @@ def test(dataloader,model,loss_fn,improvement_set = []):
     batches = len(dataloader)
     
     with torch.no_grad():
-        for batch, (D,P) in enumerate(dataloader):
+        for batch, (D,P,M) in enumerate(dataloader):
             pred = model(P)
-            test_loss += loss_fn(pred, D).detach().item()
+            test_loss += loss_fn(pred, D, M).detach().item()
     test_loss /= batches
     
     if improvement_set != []:
         improvement_loss = 0
         imp_batches = len(improvement_set)
         with torch.no_grad():
-            for batch, (D,P) in enumerate(improvement_set):
+            for batch, (D, P, M) in enumerate(improvement_set):
                 pred = model(P)
-                improvement_loss += loss_fn(pred, D).detach().item()
+                improvement_loss += loss_fn(pred, D, M).detach().item()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
         print(f"Average improvement loss: {improvement_loss:>8f}")
@@ -246,6 +251,13 @@ def nanChecker(data,pars):
         data = np.delete(data,index, axis=0)
         pars = np.delete(pars,index, axis=0)
     return data, pars
+
+def maskedMSELoss(pred,data,mask):
+    data = torch.mul(data,mask)
+    pred = torch.mul(pred,mask)
+    loss = nn.MSELoss()
+    result = loss(pred,data)
+    return result
 
 def queryByDropout(wrk_dir):
     print("Training using query by dropout committee")
@@ -318,7 +330,10 @@ def queryByDropout(wrk_dir):
         
         #make mass log spaced to improve numeric stability in training
         pars[:,13] = np.log10(pars[:,13]) 
-        pars = pars[:,[1,13]] #retrieve spin and mass
+        pars[:,2] = pars[:,2]
+        pars[:,3] = pars[:,3]
+        pars[:,4] = 10**pars[:,4]
+        pars = pars[:,[1,13,2,3,4]] #retrieve spin and mass
         
         data_init = data
         theta_init = pars
@@ -543,16 +558,21 @@ def queryByDropout(wrk_dir):
     np.savetxt("loss/active_epochs.txt",loop_epochs)
 
 def grid_data_gen(size,fname,egrid):
-    nspin, nmass = (size,size)
     
-    spin = np.linspace(0.1,1.0,nspin)
-    mass = np.linspace(np.log10(3.3),np.log10(1e11),nmass)
+    spin = np.linspace(0.1,1.0,size)
+    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
+    inc = np.linspace(1,80,size)
+    r_in = np.linspace(-400,-1,size)
+    r_out = np.linspace(np.log10(400),np.log10(1e5),size)
     
     #create parameter grid
     theta_init = []
     for a in spin:
         for m in mass:
-            theta_init.append([a,m])
+            for i in inc:
+                for r_i in r_in:
+                    for r_o in r_out:
+                        theta_init.append([a,m,i,r_i,r_o])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     pars_init = generator.pars_conversion(theta_init)

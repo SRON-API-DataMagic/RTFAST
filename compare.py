@@ -219,24 +219,7 @@ def generate_test_set(size,egrid):
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-    
-    #training dataset names
-    grid_data_names = [70,100,120,140,225,275,320,400,450,500]
-    grid_data_names = ["grid_"+str(i)+"_" for i in grid_data_names]
-    loop_data_names = [0,5,10,15,20,25,30,35,40,45,50]
-    loop_data_names = ["loop_"+str(i)+"_" for i in loop_data_names]
-    
-    #checks to see if generated test data set is duplicated in training dataset
-    for name in grid_data_names:
-        training_pars = pars_load(name)
-        theta_lhs = pars_comparison(training_pars, theta_lhs)
-    print(f"After comparing to grid data set, test data set is {theta_lhs.shape[0]} samples large.")
-    
-    #Compare to final loop dataset to see if duplicated
-    training_pars = pars_load(loop_data_names[-1])
-    theta_lhs = pars_comparison(training_pars, theta_lhs)
-    print(f"After comparing to active learning data set, test data set is {theta_lhs.shape[0]} samples large.")
-    
+
     #generate physical models of test set
     data_lhs = np.zeros((theta_lhs.shape[0],len(egrid)))
     theta_lhs_iterate = pars_conversion(theta_lhs)
@@ -466,9 +449,13 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     
     #load test set not seen by any models
-    data, pars = data_load("test_")
+    data, pars = generate_test_set(1000,egrid)
     print("Test data generated")
     
+    np.savetxt("data/test_data.txt", data)
+    np.savetxt("data/test_pars.txt", pars)
+    
+    """
     #convert test set to pytorch tensors
     pars = torch.tensor(pars)
     data = torch.tensor(data)
@@ -479,6 +466,7 @@ def main():
     testing_dataloader = DataLoader(test_data,batch_size = batch_size)
     
     active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)
+    """
     
 if __name__ == "__main__":
     main()
