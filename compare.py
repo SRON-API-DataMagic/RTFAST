@@ -433,8 +433,8 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     print("Plotting loss by sample size")
     
-    plt.fill_between(grid_sample_nums, grid_median_loss+active_loss_high_q, 
-                     grid_median_loss-active_loss_low_q, alpha = 0.5,color = "orange",
+    plt.fill_between(grid_sample_nums, grid_median_loss+grid_loss_high_q, 
+                     grid_median_loss-grid_loss_low_q, alpha = 0.5,color = "orange",
                      zorder=1)
     plt.plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
              zorder=1)
