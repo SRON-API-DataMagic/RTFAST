@@ -369,8 +369,8 @@ def calculate_loss(testing_dataloader,model,scaler):
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/"
     
-    active_name = [0,5,10,15,20,25,30,35,40,45,50]
-    active_model_names = np.array([0,5,10,15,20,25,30,35,40,45,50])
+    active_name = [0,1,2,3,4,5,10,15,20,25,30,35,40,45,50]
+    active_model_names = np.array([0,1,2,3,4,5,10,15,20,25,30,35,40,45,50])
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [70,100,120,140,225,275,320,400,450,500]
