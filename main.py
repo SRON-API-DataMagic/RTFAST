@@ -281,9 +281,9 @@ def queryByDropout(wrk_dir, device = None):
     #make this true
     first = True
     
-    model = network.NeuralNetwork(len(egrid))
+    model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
-    best_model = network.NeuralNetwork(len(egrid))
+    best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
     loss_fn = maskedMSELoss()
@@ -649,7 +649,7 @@ def grid(wrk_dir):
                                      shuffle=True)
         print("Dataloaders created")
         
-        model = network.NeuralNetwork(len(egrid))
+        model = network.NeuralNetwork(5,len(egrid))
         optimizer = Adam(model.parameters(),lr = 0.001)
         loss_fn = nn.MSELoss()
         

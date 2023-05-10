@@ -18,11 +18,11 @@ class NeuralNetwork(nn.Module):
         converts all parameters to doubles rather than float
     """
     
-    def __init__(self,data_len):
+    def __init__(self,num_pars,data_len):
         super().__init__()
         self.p = 0.2
         self.LinearStack = nn.Sequential(
-            nn.Linear(2,256),
+            nn.Linear(num_pars,256),
             nn.ReLU(),
             nn.Dropout(p=self.p),
             nn.Linear(256,512),
