@@ -221,7 +221,7 @@ def test(dataloader,model,loss_fn,improvement_set = []):
     with torch.no_grad():
         for batch, (D,P,M) in enumerate(dataloader):
             pred = model(P)
-            test_loss += loss_fn(pred, D, M).detach().item()
+            test_loss += loss_fn(pred, D, M).detach().item().cpu()
     test_loss /= batches
     
     if improvement_set != []:
@@ -230,7 +230,7 @@ def test(dataloader,model,loss_fn,improvement_set = []):
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
                 pred = model(P)
-                improvement_loss += loss_fn(pred, D, M).detach().item()
+                improvement_loss += loss_fn(pred, D, M).detach().item().cpu()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
         print(f"Average improvement loss: {improvement_loss:>8f}")
@@ -411,7 +411,7 @@ def queryByDropout(wrk_dir, device = None):
             theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
             for i in range(100):
                 pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
-                pred_query_all[i] = pred_query.detach().numpy().cpu()
+                pred_query_all[i] = pred_query.detach().cpu().numpy()
             # find uncertainty (as measured by relative variance)
             dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
             var_query = np.var(dvar, axis=0)
