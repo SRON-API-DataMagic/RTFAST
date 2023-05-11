@@ -286,7 +286,7 @@ def queryByDropout(wrk_dir, device = None):
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
-    loss_fn = maskedMSELoss()
+    loss_fn = maskedMSELoss
     scaler = MinMaxScaler()
     
     if first == True: 
