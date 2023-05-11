@@ -410,8 +410,8 @@ def queryByDropout(wrk_dir, device = None):
         for j in tqdm(range(divider),desc="Sample dropout loops"):
             theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
             for i in range(100):
-                pred_query = model(torch.DoubleTensor(theta_query_small))
-                pred_query_all[i] = pred_query.detach().numpy()
+                pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
+                pred_query_all[i] = pred_query.detach().numpy().cpu()
             # find uncertainty (as measured by relative variance)
             dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
             var_query = np.var(dvar, axis=0)
