@@ -455,6 +455,8 @@ def main():
     data, pars = generate_test_set(1000,egrid)
     print("Test data generated")
     
+    pars = pars_conversion(pars)
+    
     np.savetxt("data/test_data.txt", data)
     np.savetxt("data/test_pars.txt", pars)
     
