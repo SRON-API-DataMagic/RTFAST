@@ -1,10 +1,11 @@
 """
 This program serves to visualise a neural network's outputs vs the true values.
 """
+from sherpa.astro.ui import unpack_rmf
 import torch
 import os
 
-from sherpa.astro.ui import unpack_rmf
+
 import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader
