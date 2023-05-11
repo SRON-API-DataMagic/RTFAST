@@ -442,10 +442,12 @@ def main():
     set_envir_vars(wrk_dir)
     
     #retrieve scalers
+    """
     active_scaler = MinMaxScaler()
     active_scaler = load('scalers/active_scaler.bin')
     grid_scaler = MinMaxScaler()
     grid_scaler = load('scalers/grid_scaler.bin')
+    """
     
     egrid = retrieve_egrid(wrk_dir)
     
