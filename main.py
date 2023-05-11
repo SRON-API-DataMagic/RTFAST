@@ -46,7 +46,7 @@ class CustomData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         parameters = self.par_list[idx]
-        if self.mask != None:
+        if self.mask is not None:
             mask = self.mask[idx]
             return datum, parameters, mask
         else:
