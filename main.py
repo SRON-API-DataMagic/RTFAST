@@ -5,6 +5,7 @@ import numpy as np
 import os, psutil
 import sys
 from tqdm import tqdm
+import time
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -12,7 +13,7 @@ from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
-from joblib import dump, load
+from joblib import dump, load, Parallel
 import scipy.stats
 
 import generator
@@ -253,11 +254,13 @@ def nanChecker(data,pars):
     return data, pars
 
 def maskedMSELoss(pred,data,mask):
-    print(mask)
+    print("Prediciton")
+    print(pred)
+    print("Data")
+    print(data)
+    print("Mask")
     data = torch.mul(data,mask)
     pred = torch.mul(pred,mask)
-    print(pred)
-    print(data)
     loss = nn.MSELoss()
     result = loss(pred,data)
     return result
@@ -302,6 +305,11 @@ def queryByDropout(wrk_dir, device = None):
         data_init = []
         for i,pars in enumerate(tqdm(pars_init)):
             data_init.append(generator.rtdist_flux(pars, egrid))
+        print("Parallelized model generation")
+        start_t = time.time()
+        data_init =  Parallel(n_jobs=8)(generator.rtdist_flux(pars, egrid)
+                                        for pars in pars_init)
+        print(time.time()-start_t)
         data_init = np.array(data_init)
         data_init, theta_init = nanChecker(data_init, theta_init)
         pars_init = generator.pars_conversion(theta_init)
