@@ -181,7 +181,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        loss_b, current = loss.detach().item().cpu(), (batch*batch_size + 1)
+        loss_b, current = loss.detach().item(), (batch*batch_size + 1)
         if batch % 100 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
@@ -221,7 +221,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
     with torch.no_grad():
         for batch, (D,P,M) in enumerate(dataloader):
             pred = model(P.to(device))
-            test_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item().cpu()
+            test_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item()
     test_loss /= batches
     
     if improvement_set != []:
@@ -230,7 +230,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
                 pred = model(P.to(device))
-                improvement_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item().cpu()
+                improvement_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
         print(f"Average improvement loss: {improvement_loss:>8f}")
