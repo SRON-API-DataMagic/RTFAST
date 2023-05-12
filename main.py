@@ -13,7 +13,7 @@ from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
-from joblib import dump, load, Parallel
+from joblib import dump, load, Parallel, delayed
 import scipy.stats
 
 import generator
@@ -307,7 +307,7 @@ def queryByDropout(wrk_dir, device = None):
             data_init.append(generator.rtdist_flux(pars, egrid))
         print("Parallelized model generation")
         start_t = time.time()
-        data_init =  Parallel(n_jobs=8)(generator.rtdist_flux(pars, egrid)
+        data_init =  Parallel(n_jobs=8)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
         print(time.time()-start_t)
         data_init = np.array(data_init)
@@ -443,7 +443,7 @@ def queryByDropout(wrk_dir, device = None):
         
         print("Parallelized model generation")
         start_t = time.time()
-        data_query =  Parallel(n_jobs=8)(generator.rtdist_flux(pars, egrid)
+        data_query =  Parallel(n_jobs=8)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in theta_query_iterate)
         print(time.time()-start_t)
         data_query = np.asarray(data_query())
