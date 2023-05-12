@@ -302,14 +302,9 @@ def queryByDropout(wrk_dir, device = None):
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
                                        size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
-        data_init = []
-        for i,pars in enumerate(tqdm(pars_init)):
-            data_init.append(generator.rtdist_flux(pars, egrid))
         print("Parallelized model generation")
-        start_t = time.time()
         data_init =  Parallel(n_jobs=8)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
-        print(time.time()-start_t)
         data_init = np.array(data_init)
         data_init, theta_init = nanChecker(data_init, theta_init)
         pars_init = generator.pars_conversion(theta_init)
@@ -438,15 +433,10 @@ def queryByDropout(wrk_dir, device = None):
         # compute the physical model for these thetas
         data_query = np.zeros((theta_query.shape[0],len(egrid)))
         theta_query_iterate = generator.pars_conversion(theta_query)
-        for i,pars in enumerate(tqdm(theta_query_iterate,desc="Generating models")):
-            data_query[i] = generator.rtdist_flux(pars, egrid)
-        
         print("Parallelized model generation")
-        start_t = time.time()
         data_query =  Parallel(n_jobs=8)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in theta_query_iterate)
-        print(time.time()-start_t)
-        data_query = np.asarray(data_query())
+        data_query = np.asarray(data_query)
         del theta_query_iterate
         # shuffle indices for neural network training
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
