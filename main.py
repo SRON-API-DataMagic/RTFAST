@@ -281,7 +281,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -335,7 +335,7 @@ def queryByDropout(wrk_dir, device = None):
         pars[:,13] = np.log10(pars[:,13]) 
         pars[:,2] = pars[:,2]
         pars[:,3] = pars[:,3]
-        pars[:,4] = 10**pars[:,4]
+        pars[:,4] = np.log10(pars[:,4])
         pars = pars[:,[1,13,2,3,4]] #retrieve spin and mass
         
         data_init = data
