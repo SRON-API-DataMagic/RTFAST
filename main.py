@@ -387,6 +387,7 @@ def queryByDropout(wrk_dir, device = None):
         #set improvements counters to 0
         imp_te = 0
         imp_tr = 0
+        imp_imp = 0
         print(f"I am in active learning loop {active_loop_num+1}")
         # randomly generate points in parameter space
         print("Generating random samples of theta")
@@ -494,7 +495,7 @@ def queryByDropout(wrk_dir, device = None):
         saveData(data_init, generator.pars_conversion(theta_init))
         
         epoch = 0
-        while (imp_te < 5 or imp_tr < 5):
+        while (imp_te < 5 or imp_tr < 5 or imp_imp < 5):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(query_dataloader,model,
                                                  optimizer,loss_fn,device)
@@ -526,6 +527,7 @@ def queryByDropout(wrk_dir, device = None):
                 imp_te += 1
                 imp_tr += 1
             if imp_bet > 0:
+                imp_imp = 0
                 last_sig_best_imp = improv_loss
                 print("Current best performer on true test set, saving...")
                 torch.save(model.state_dict(), "models/active_best.pth")
