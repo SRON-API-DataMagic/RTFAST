@@ -176,7 +176,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
-        pred = model(P.to(device))
+        pred = model(P.to(device)).detach().item().cpu()
         loss = loss_fn(pred,D,M)
         optimizer.zero_grad()
         loss.backward()
@@ -220,7 +220,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
     
     with torch.no_grad():
         for batch, (D,P,M) in enumerate(dataloader):
-            pred = model(P.to(device))
+            pred = model(P.to(device)).detach().item().cpu()
             test_loss += loss_fn(pred, D, M).detach().item().cpu()
     test_loss /= batches
     
@@ -229,7 +229,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
         imp_batches = len(improvement_set)
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
-                pred = model(P.to(device))
+                pred = model(P.to(device)).detach().item().cpu()
                 improvement_loss += loss_fn(pred, D, M).detach().item().cpu()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
