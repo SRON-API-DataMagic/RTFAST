@@ -255,6 +255,8 @@ def nanChecker(data,pars):
 def maskedMSELoss(pred,data,mask):
     data = torch.mul(data,mask)
     pred = torch.mul(pred,mask)
+    print(pred)
+    print(data)
     loss = nn.MSELoss()
     result = loss(pred,data)
     return result
@@ -540,7 +542,10 @@ def queryByDropout(wrk_dir, device = None):
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
-            best_model.load_state_dict(torch.load(f"models/active_best.pth"))
+            try:
+                best_model.load_state_dict(torch.load("models/active_best.pth"))
+            except:
+                best_model.load_state_dict(model.state_dict())
             saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
                      active_loop_num, temp_epochs)
         #iterate loop number by 1
