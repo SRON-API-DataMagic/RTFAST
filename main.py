@@ -229,7 +229,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
         imp_batches = len(improvement_set)
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
-                pred = model(P.to(device)).detach().item().cpu()
+                pred = model(P.to(device))
                 improvement_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item().cpu()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
