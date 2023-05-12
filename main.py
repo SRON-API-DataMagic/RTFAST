@@ -441,6 +441,12 @@ def queryByDropout(wrk_dir, device = None):
         for i,pars in enumerate(tqdm(theta_query_iterate,desc="Generating models")):
             data_query[i] = generator.rtdist_flux(pars, egrid)
         
+        print("Parallelized model generation")
+        start_t = time.time()
+        data_query =  Parallel(n_jobs=8)(generator.rtdist_flux(pars, egrid)
+                                        for pars in theta_query_iterate)
+        print(time.time()-start_t)
+        data_query = np.asarray(data_query())
         del theta_query_iterate
         # shuffle indices for neural network training
         idx_shuffle = np.arange(0, len(theta_query), dtype=int)
