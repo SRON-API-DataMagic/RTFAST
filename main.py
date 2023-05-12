@@ -172,7 +172,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
     model.train()
     
     size = len(dataloader.dataset)
-    batch_size = 12
+    batch_size = 1024
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
