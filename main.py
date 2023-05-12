@@ -253,6 +253,7 @@ def nanChecker(data,pars):
     return data, pars
 
 def maskedMSELoss(pred,data,mask):
+    print(mask)
     data = torch.mul(data,mask)
     pred = torch.mul(pred,mask)
     print(pred)
