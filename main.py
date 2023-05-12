@@ -373,7 +373,7 @@ def queryByDropout(wrk_dir, device = None):
     test_pars[:,13] = np.log10(test_pars[:,13]) 
     test_pars[:,2] = test_pars[:,2]
     test_pars[:,3] = test_pars[:,3]
-    test_pars[:,4] = 10**test_pars[:,4]
+    test_pars[:,4] = np.log10(test_pars[:,4])
     test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
     
     test_set = CustomData(test_pars, test_data, scaler, 
