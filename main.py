@@ -298,7 +298,7 @@ def queryByDropout(wrk_dir, device = None):
                                        size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         print("Parallelized model generation")
-        data_init =  Parallel(n_jobs=8,verbose=10)(delayed(generator.rtdist_flux)(pars, egrid)
+        data_init =  Parallel(n_jobs=8,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
         data_init = np.array(data_init)
         data_init, theta_init = nanChecker(data_init, theta_init)
@@ -429,7 +429,7 @@ def queryByDropout(wrk_dir, device = None):
         data_query = np.zeros((theta_query.shape[0],len(egrid)))
         theta_query_iterate = generator.pars_conversion(theta_query)
         print("Parallelized model generation")
-        data_query =  Parallel(n_jobs=8,verbose=10)(delayed(generator.rtdist_flux)(pars, egrid)
+        data_query =  Parallel(n_jobs=8,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in theta_query_iterate)
         data_query = np.asarray(data_query)
         del theta_query_iterate
