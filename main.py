@@ -268,7 +268,7 @@ def queryByDropout(wrk_dir, device = None):
     
     active_loops = 20
     range_all = np.asarray(generator.lhs_trimmed_gen())
-    n_samples = 1000
+    n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
     divider = 10
     n_samples_small = int(n_samples_large/divider)
