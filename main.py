@@ -279,7 +279,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -320,13 +320,12 @@ def queryByDropout(wrk_dir, device = None):
         del data_init_dataset
         
     else: #load previously generated data as initial data and parameter set
-        active_loop_num = 40
         print("Loading previous data")
-        with open(f"data/loop_{active_loop_num}_data.txt","r") as f1:
+        with open(f"data/data.txt","r") as f1:
             data = np.loadtxt(f1)
         f1.close()
         
-        with open(f"data/loop_{active_loop_num}_pars.txt","r") as f2:
+        with open(f"data/pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         f2.close()
         
@@ -343,28 +342,19 @@ def queryByDropout(wrk_dir, device = None):
         del data
         del pars
         
+        last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
+        last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
+        last_sig_best_imp = 1e7 #last significant best large test set loss (set large initially)
+        tr_loss_arr = []
+        te_loss_arr = []
+        loop_epochs = []
         
-        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f3:
-            tr_loss_arr = np.loadtxt(f3)
-        f3.close
+        active_loop_num = 0
         
-        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f4:
-            te_loss_arr = np.loadtxt(f4)
-        f4.close
+        #create initial dataset object to create scaler (and then delete object)
+        data_init_dataset = CustomData(theta_init, data_init, scaler)
+        del data_init_dataset
         
-        with open(f"loss/{active_loop_num}_epochs.txt","r") as f5:
-            loop_epochs = np.loadtxt(f5)
-        f5.close
-        
-        last_sig_best_tr = np.min(tr_loss_arr) #last significant best training loss 
-        last_sig_best_te = np.min(te_loss_arr) #last significant best testing loss
-        
-        tr_loss_arr = tr_loss_arr.tolist()
-        te_loss_arr = te_loss_arr.tolist()
-        loop_epochs = loop_epochs.tolist()
-        
-        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
-    
     batch_size = 1024
     num_workers = 4
     
