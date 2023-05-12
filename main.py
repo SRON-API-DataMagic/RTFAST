@@ -177,7 +177,9 @@ def train(dataloader,model,optimizer,loss_fn,device):
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
+        print(D)
         pred = model(P.to(device))
+        print(pred)
         loss = loss_fn(pred,D.to(device),M.to(device))
         optimizer.zero_grad()
         loss.backward()
