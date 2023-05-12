@@ -143,7 +143,7 @@ def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
     print("Saved losses")
     return
     
-def train(dataloader,model,optimizer,loss_fn):
+def train(dataloader,model,optimizer,loss_fn,device):
     """
     
 
@@ -176,12 +176,12 @@ def train(dataloader,model,optimizer,loss_fn):
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
-        pred = model(P)
+        pred = model(P.to(device))
         loss = loss_fn(pred,D,M)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        loss_b, current = loss.detach().item(), (batch*batch_size + 1)
+        loss_b, current = loss.detach().item().cpu(), (batch*batch_size + 1)
         if batch % 100 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
@@ -195,7 +195,7 @@ def train(dataloader,model,optimizer,loss_fn):
         print(f"There were {big_loss} batches with very large loss.")
     return model, optimizer , avg_loss
 
-def test(dataloader,model,loss_fn,improvement_set = []):
+def test(dataloader,model,loss_fn,device,improvement_set = []):
     """
     
 
@@ -220,7 +220,7 @@ def test(dataloader,model,loss_fn,improvement_set = []):
     
     with torch.no_grad():
         for batch, (D,P,M) in enumerate(dataloader):
-            pred = model(P)
+            pred = model(P.to(device))
             test_loss += loss_fn(pred, D, M).detach().item().cpu()
     test_loss /= batches
     
@@ -229,7 +229,7 @@ def test(dataloader,model,loss_fn,improvement_set = []):
         imp_batches = len(improvement_set)
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
-                pred = model(P)
+                pred = model(P.to(device))
                 improvement_loss += loss_fn(pred, D, M).detach().item().cpu()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
@@ -505,8 +505,8 @@ def queryByDropout(wrk_dir, device = None):
         while (imp_te < 5 or imp_tr < 5):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(query_dataloader,model,
-                                                 optimizer,loss_fn)
-            loss,improv_loss = test(test_dataloader,model,loss_fn,
+                                                 optimizer,loss_fn,device)
+            loss,improv_loss = test(test_dataloader,model,loss_fn,device,
                                     improvement_dataloader)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
