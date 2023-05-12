@@ -382,189 +382,189 @@ def queryByDropout(wrk_dir, device = None):
                                         num_workers = num_workers, shuffle=True)
     
     print("Beginning training")
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        while active_loop_num < active_loops:
+            #set improvements counters to 0
+            imp_te = 0
+            imp_tr = 0
+            imp_imp = 0
+            print(f"I am in active learning loop {active_loop_num+1}")
+            # randomly generate points in parameter space
+            print("Generating random samples of theta")
+            theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
+            
+            print("computing neural network predictions with dropout for each theta")
+            # compute 100 neural network predictions with dropout
+            pred_query_all = np.zeros((100,n_samples_small,len(egrid)))
+            model.train()
+            query_idx = []
+            
+            for j in tqdm(range(divider),desc="Sample dropout loops"):
+                theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
+                for i in range(100):
+                    pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_query_all[i] = pred_query.detach().cpu().numpy()
+                # find uncertainty (as measured by relative variance)
+                dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
+                var_query = np.var(dvar, axis=0)
+                mean_var_query = np.mean(var_query, axis=1)
+                # add to uncertainties per theta to list
+                query_idx.append(mean_var_query.tolist())
+            
+            #Performing manual memory cleanup
+            del pred_query, pred_query_all, dvar, var_query, mean_var_query
+            del theta_query_small
+            print("Successfully finished generating thetas")
+            
+            print("Finding top uncertain thetas")
+            # sort these thetas from largest uncertainty (as measured by 
+            # relative variance) to smallest
+            query_idx = np.asarray(query_idx).flatten()
+            query_idx = np.argsort(query_idx)[::-1]
+            
+            print("Generating data for these samples")
+            # get out the top `nsamples` values of theta_query
+            theta_query = theta_query_large[query_idx[:n_samples]]
+            
+            # compute the physical model for these thetas
+            data_query = np.zeros((theta_query.shape[0],len(egrid)))
+            theta_query_iterate = generator.pars_conversion(theta_query)
+            print("Parallelized model generation")
+            data_query =  parallel(delayed(generator.rtdist_flux)(pars, egrid)
+                                            for pars in theta_query_iterate)
+            data_query = np.asarray(data_query)
+            del theta_query_iterate
+            # shuffle indices for neural network training
+            idx_shuffle = np.arange(0, len(theta_query), dtype=int)
+            np.random.shuffle(idx_shuffle)
+        
+            idx_query = idx_shuffle[:len(idx_shuffle)-500]
+            idx_test = idx_shuffle[-500:]
+            
+            #Split data and thetas into test and training data
+            data_test = data_query[idx_test]
+            theta_test  = theta_query[idx_test]
+            
+            data_query = data_query[idx_query]
+            theta_query = theta_query[idx_query]
+            
+            # add corresponding models to the rest of the training data
+            data_init = np.vstack([data_init, data_query])
+            # add thetas to the rest of the training data
+            theta_init = np.vstack([theta_init, theta_query])
+            
+            del data_query, theta_query
+            
+            #Eliminate any broken models
+            data_init, theta_init = nanChecker(data_init, theta_init)
+            data_test, theta_test = nanChecker(data_test, theta_test)
+            
+            # add rejected parameter sets back to original array for potential 
+            # future use:
+            theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
+        
+            print(f"size of theta_init: {theta_init.shape}")
+            print(f"size of data_init: {data_init.shape}")
+            
+            # increment the index for reading parameters from theta_lhs
+            lhs_idx += (n_samples_large)
     
-    while active_loop_num < active_loops:
-        #set improvements counters to 0
-        imp_te = 0
-        imp_tr = 0
-        imp_imp = 0
-        print(f"I am in active learning loop {active_loop_num+1}")
-        # randomly generate points in parameter space
-        print("Generating random samples of theta")
-        theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
+            print("Setting up modeling")
+            Xquery = CustomData(theta_init, data_init, scaler, 
+                                scaling=False)
+            print("Query data set created")
+            query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
+                                          num_workers = num_workers, shuffle=True)
+            print("Query data loader created")
         
-        print("computing neural network predictions with dropout for each theta")
-        # compute 100 neural network predictions with dropout
-        pred_query_all = np.zeros((100,n_samples_small,len(egrid)))
-        model.train()
-        query_idx = []
-        
-        for j in tqdm(range(divider),desc="Sample dropout loops"):
-            theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
-            for i in range(100):
-                pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
-                pred_query_all[i] = pred_query.detach().cpu().numpy()
-            # find uncertainty (as measured by relative variance)
-            dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
-            var_query = np.var(dvar, axis=0)
-            mean_var_query = np.mean(var_query, axis=1)
-            # add to uncertainties per theta to list
-            query_idx.append(mean_var_query.tolist())
-        
-        #Performing manual memory cleanup
-        del pred_query, pred_query_all, dvar, var_query, mean_var_query
-        del theta_query_small
-        print("Successfully finished generating thetas")
-        
-        print("Finding top uncertain thetas")
-        # sort these thetas from largest uncertainty (as measured by 
-        # relative variance) to smallest
-        query_idx = np.asarray(query_idx).flatten()
-        query_idx = np.argsort(query_idx)[::-1]
-        
-        print("Generating data for these samples")
-        # get out the top `nsamples` values of theta_query
-        theta_query = theta_query_large[query_idx[:n_samples]]
-        
-        # compute the physical model for these thetas
-        data_query = np.zeros((theta_query.shape[0],len(egrid)))
-        theta_query_iterate = generator.pars_conversion(theta_query)
-        print("Parallelized model generation")
-        data_query =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
-                                        for pars in theta_query_iterate)
-        data_query = np.asarray(data_query)
-        del theta_query_iterate
-        # shuffle indices for neural network training
-        idx_shuffle = np.arange(0, len(theta_query), dtype=int)
-        np.random.shuffle(idx_shuffle)
-    
-        idx_query = idx_shuffle[:len(idx_shuffle)-500]
-        idx_test = idx_shuffle[-500:]
-        
-        #Split data and thetas into test and training data
-        data_test = data_query[idx_test]
-        theta_test  = theta_query[idx_test]
-        
-        data_query = data_query[idx_query]
-        theta_query = theta_query[idx_query]
-        
-        # add corresponding models to the rest of the training data
-        data_init = np.vstack([data_init, data_query])
-        # add thetas to the rest of the training data
-        theta_init = np.vstack([theta_init, theta_query])
-        
-        del data_query, theta_query
-        
-        #Eliminate any broken models
-        data_init, theta_init = nanChecker(data_init, theta_init)
-        data_test, theta_test = nanChecker(data_test, theta_test)
-        
-        # add rejected parameter sets back to original array for potential 
-        # future use:
-        theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
-    
-        print(f"size of theta_init: {theta_init.shape}")
-        print(f"size of data_init: {data_init.shape}")
-        
-        # increment the index for reading parameters from theta_lhs
-        lhs_idx += (n_samples_large)
-
-        print("Setting up modeling")
-        Xquery = CustomData(theta_init, data_init, scaler, 
-                            scaling=False)
-        print("Query data set created")
-        query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
-                                      num_workers = num_workers, shuffle=True)
-        print("Query data loader created")
-    
-        Xtest = CustomData(theta_test, data_test, scaler,
-                           scaling=False)
-        print("Test data set created")
-        test_dataloader = DataLoader(Xtest, batch_size=batch_size,
-                                     num_workers = num_workers, shuffle=True)
-        print("Test data loader created")
-        
-        # add test models to the rest of the training data for use in training
-        #in the future
-        data_init = np.vstack([data_init, data_test])
-        # add corresponding thetas thetas to the rest of the training data
-        theta_init = np.vstack([theta_init, theta_test])
-        
-        print("Saving new data to disk")
-        # save new data and parameters to disk
-        saveData(data_init, generator.pars_conversion(theta_init))
-        
-        epoch = 0
-        while (imp_te < 5 or imp_tr < 5 or imp_imp < 5):
-            print(f"Epoch {epoch+1} \n -----------------------")
-            model, optimizer, train_loss = train(query_dataloader,model,
-                                                 optimizer,loss_fn,device)
-            loss,improv_loss = test(test_dataloader,model,loss_fn,device,
-                                    improvement_dataloader)
-            te_loss_arr.append(loss)
-            tr_loss_arr.append(train_loss)
-            tr_bet = (0.9*last_sig_best_tr) - train_loss
-            te_bet = (0.9*last_sig_best_te) - loss
-            imp_bet = (0.9*last_sig_best_imp) - improv_loss
-            if tr_bet > 0 and te_bet > 0:
-                last_sig_best_tr = train_loss
-                last_sig_best_te = loss
-                imp_te = 0
-                imp_tr = 0
-                print(f"New best training loss: {train_loss}")
-                print(f"New best testing loss: {loss}")
-            elif tr_bet > 0:
-                imp_tr = 0
-                imp_te += 1
-                last_sig_best_tr = train_loss
-                print(f"New best training loss: {train_loss}")
-            elif te_bet > 0:
-                imp_tr += 1
-                imp_te = 0
-                last_sig_best_te = loss
-                print(f"New best testing loss: {loss}")
+            Xtest = CustomData(theta_test, data_test, scaler,
+                               scaling=False)
+            print("Test data set created")
+            test_dataloader = DataLoader(Xtest, batch_size=batch_size,
+                                         num_workers = num_workers, shuffle=True)
+            print("Test data loader created")
+            
+            # add test models to the rest of the training data for use in training
+            #in the future
+            data_init = np.vstack([data_init, data_test])
+            # add corresponding thetas thetas to the rest of the training data
+            theta_init = np.vstack([theta_init, theta_test])
+            
+            print("Saving new data to disk")
+            # save new data and parameters to disk
+            saveData(data_init, generator.pars_conversion(theta_init))
+            
+            epoch = 0
+            while (imp_te < 5 or imp_tr < 5 or imp_imp < 5):
+                print(f"Epoch {epoch+1} \n -----------------------")
+                model, optimizer, train_loss = train(query_dataloader,model,
+                                                     optimizer,loss_fn,device)
+                loss,improv_loss = test(test_dataloader,model,loss_fn,device,
+                                        improvement_dataloader)
+                te_loss_arr.append(loss)
+                tr_loss_arr.append(train_loss)
+                tr_bet = (0.9*last_sig_best_tr) - train_loss
+                te_bet = (0.9*last_sig_best_te) - loss
+                imp_bet = (0.9*last_sig_best_imp) - improv_loss
+                if tr_bet > 0 and te_bet > 0:
+                    last_sig_best_tr = train_loss
+                    last_sig_best_te = loss
+                    imp_te = 0
+                    imp_tr = 0
+                    print(f"New best training loss: {train_loss}")
+                    print(f"New best testing loss: {loss}")
+                elif tr_bet > 0:
+                    imp_tr = 0
+                    imp_te += 1
+                    last_sig_best_tr = train_loss
+                    print(f"New best training loss: {train_loss}")
+                elif te_bet > 0:
+                    imp_tr += 1
+                    imp_te = 0
+                    last_sig_best_te = loss
+                    print(f"New best testing loss: {loss}")
+                else:
+                    imp_te += 1
+                    imp_tr += 1
+                if imp_bet > 0:
+                    imp_imp = 0
+                    last_sig_best_imp = improv_loss
+                    print("Current best performer on true test set, saving...")
+                    torch.save(model.state_dict(), "models/active_best.pth")
+                epoch += 1
+            if active_loop_num != 0:
+                loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
             else:
-                imp_te += 1
-                imp_tr += 1
-            if imp_bet > 0:
-                imp_imp = 0
-                last_sig_best_imp = improv_loss
-                print("Current best performer on true test set, saving...")
-                torch.save(model.state_dict(), "models/active_best.pth")
-            epoch += 1
-        if active_loop_num != 0:
-            loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
-        else:
-            loop_epochs.append(epoch)
+                loop_epochs.append(epoch)
+            
+            #save state of models and data if loop is a multiple of 5, first 5
+            #loops or the final loop.
+            if ((active_loop_num % 5) == 0 or active_loop_num < 5 
+                or active_loop_num == (active_loops - 1)):
+                temp_te = np.asarray(te_loss_arr)
+                temp_tr = np.asarray(tr_loss_arr)
+                temp_epochs = np.asarray(loop_epochs)
+                try:
+                    best_model.load_state_dict(torch.load("models/active_best.pth"))
+                except:
+                    best_model.load_state_dict(model.state_dict())
+                saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
+                         active_loop_num, temp_epochs)
+            #iterate loop number by 1
+            active_loop_num += 1
+            
+        print("Completed training")
+        print("Final best training loss:", last_sig_best_tr)
+        print("Final best testing loss:", last_sig_best_te)
+        torch.save(model.state_dict(), "models/active_final.pth")
+        print("Saved PyTorch Model State to models/active_final.pth")
         
-        #save state of models and data if loop is a multiple of 5, first 5
-        #loops or the final loop.
-        if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-            or active_loop_num == (active_loops - 1)):
-            temp_te = np.asarray(te_loss_arr)
-            temp_tr = np.asarray(tr_loss_arr)
-            temp_epochs = np.asarray(loop_epochs)
-            try:
-                best_model.load_state_dict(torch.load("models/active_best.pth"))
-            except:
-                best_model.load_state_dict(model.state_dict())
-            saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
-                     active_loop_num, temp_epochs)
-        #iterate loop number by 1
-        active_loop_num += 1
+        tr_loss_arr = np.asarray(tr_loss_arr)
+        te_loss_arr = np.asarray(te_loss_arr)
         
-    print("Completed training")
-    print("Final best training loss:", last_sig_best_tr)
-    print("Final best testing loss:", last_sig_best_te)
-    torch.save(model.state_dict(), "models/active_final.pth")
-    print("Saved PyTorch Model State to models/active_final.pth")
-    
-    tr_loss_arr = np.asarray(tr_loss_arr)
-    te_loss_arr = np.asarray(te_loss_arr)
-    
-    np.savetxt("loss/active_te_loss.txt",te_loss_arr)
-    np.savetxt("loss/active_tr_loss.txt",tr_loss_arr)
-    np.savetxt("loss/active_epochs.txt",loop_epochs)
+        np.savetxt("loss/active_te_loss.txt",te_loss_arr)
+        np.savetxt("loss/active_tr_loss.txt",tr_loss_arr)
+        np.savetxt("loss/active_epochs.txt",loop_epochs)
 
 def grid_data_gen(size,fname,egrid):
     
