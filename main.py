@@ -182,7 +182,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*batch_size + 1)
-        if batch % 100 == 0:
+        if batch % 5 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
             print(f"Extremely large batch loss of {loss_b:.2E}")
