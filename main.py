@@ -177,9 +177,8 @@ def train(dataloader,model,optimizer,loss_fn,device):
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
-        print(D)
+        print(P)
         pred = model(P.to(device))
-        print(pred)
         loss = loss_fn(pred,D.to(device),M.to(device))
         optimizer.zero_grad()
         loss.backward()
@@ -256,7 +255,6 @@ def nanChecker(data,pars):
     return data, pars
 
 def maskedMSELoss(pred,data,mask):
-    print(torch.any(torch.isnan(data)))
     data = torch.mul(data,mask)
     pred = torch.mul(pred,mask)
     loss = nn.MSELoss()
