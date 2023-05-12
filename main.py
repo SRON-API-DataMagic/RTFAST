@@ -261,6 +261,7 @@ def maskedMSELoss(pred,data,mask):
     print("Data")
     print(data)
     print("Mask")
+    print(mask)
     data = torch.mul(data,mask)
     pred = torch.mul(pred,mask)
     loss = nn.MSELoss()
