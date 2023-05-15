@@ -352,7 +352,9 @@ def calculate_loss(testing_dataloader,model,scaler):
         values,counts = np.unique(M,return_counts=True)
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
+        print(pred)
         resid = (D-pred)/D
+        print(resid)
         resid = resid*M
         print(resid)
         residuals.append(np.absolute(np.asarray(resid)))
@@ -475,9 +477,6 @@ def main():
     test_pars[:,3] = test_pars[:,3]
     test_pars[:,4] = np.log10(test_pars[:,4])
     test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
-    
-    print(test_pars)
-    print(test_data)
     
     data = test_data
     pars = test_pars
