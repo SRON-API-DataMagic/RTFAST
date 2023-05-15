@@ -474,6 +474,9 @@ def main():
     test_pars[:,4] = np.log10(test_pars[:,4])
     test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
     
+    print(test_pars)
+    print(test_data)
+    
     data = test_data
     pars = test_pars
     
