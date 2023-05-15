@@ -354,7 +354,6 @@ def calculate_loss(testing_dataloader,model,scaler):
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
         resid[M == 0] = 0
-        print(resid)
         residuals.append(np.absolute(np.asarray(resid)))
     
     residuals = np.asarray(residuals)
