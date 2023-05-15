@@ -585,11 +585,10 @@ def grid_data_gen(size,fname,egrid):
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     pars_init = generator.pars_conversion(theta_init)
-    
-    #generate rtdist models for the correlated grid
-    data_init = np.zeros((theta_init.shape[0],len(egrid)))
-    for i,pars in enumerate(tqdm(pars_init,desc="Generating models")):
-        data_init[i] = generator.rtdist_flux(pars, egrid)
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        data_init = parallel(delayed(generator.rtdist_flux)(pars, egrid)
+                                        for pars in pars_init)
     data_init = np.array(data_init)
     data_init, pars_init = nanChecker(data_init, pars_init)
     
