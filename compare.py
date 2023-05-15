@@ -312,6 +312,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
     for batch, (D,P,M) in enumerate(testing_dataloader):
         #retrieve relevant data and parameters
         spin, mass = P[0][0].item(),10**P[0][1].item()
+        D[M==0] = 0
         da = torch.squeeze(D)
         
         #generate neural network prediction and rescale to linear space
@@ -390,7 +391,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         active_median_loss.append(median)
         active_loss_low_q.append(low_q)
         active_loss_high_q.append(high_q)
-        #model_samples(testing_dataloader,active_scaler,model,egrid,gr)
+        model_samples(testing_dataloader,active_scaler,model,egrid,gr)
         """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
