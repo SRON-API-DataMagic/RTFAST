@@ -162,7 +162,7 @@ def retrieve_egrid(wrk_dir):
     return egrid
 
 def model_load(model_loc,egrid):
-    model = network.NeuralNetwork(len(egrid))
+    model = network.NeuralNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -451,18 +451,23 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
-    #load test set not seen by any models
-    data, pars = generate_test_set(10000,egrid)
-    print("Test data generated")
+    with open("data/test_data.txt","r") as f1:
+        test_data = np.loadtxt(f1)
+    f1.close()
     
-    pars = pars_conversion(pars)
+    with open("data/test_pars.txt","r") as f1:
+        test_pars = np.loadtxt(f1)
+    f1.close()
     
-    np.savetxt("data/test_data.txt", data)
-    np.savetxt("data/test_pars.txt", pars)
+    test_pars[:,13] = np.log10(test_pars[:,13]) 
+    test_pars[:,2] = test_pars[:,2]
+    test_pars[:,3] = test_pars[:,3]
+    test_pars[:,4] = np.log10(test_pars[:,4])
+    test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
     
     #convert test set to pytorch tensors
-    pars = torch.tensor(pars)
-    data = torch.tensor(data)
+    pars = torch.tensor(test_pars)
+    data = torch.tensor(test_data)
     
     #put test set into dataloader format
     batch_size = 1
