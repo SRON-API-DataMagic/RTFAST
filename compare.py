@@ -377,6 +377,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     print("Calculating loss for active learning")
     for (model_loc,gr) in zip(active_model_names,active_name):
+        gr = str(gr) + "_active"
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
@@ -400,6 +401,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     print("Calculating loss for grid learning")
     for (model_loc,gr) in zip(grid_model_names,grid_name):
+        gr = str(gr) + "_grid"
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
