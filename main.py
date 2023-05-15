@@ -377,7 +377,7 @@ def queryByDropout(wrk_dir, device = None):
     
     test_set = CustomData(test_pars, test_data, scaler, 
                         scaling=False)
-    print("Query data set created")
+    print("Improvement data set created")
     improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
                                         num_workers = num_workers, shuffle=True)
     
@@ -599,13 +599,13 @@ def grid_data_gen(size,fname,egrid):
     np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
     return data_init, theta_init
 
-def grid(wrk_dir):
+def grid(wrk_dir,device):
     print("Training using grid")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    grid_sizes = [70,100,120,140,225,275,320,400,450]
+    grid_sizes = [5,6,7,8,9,10]
     
     for i, size in enumerate(grid_sizes):
     
@@ -623,7 +623,8 @@ def grid(wrk_dir):
                                            scaler_name="grid_scaler")
             del data_init_dataset
         
-        batch_size = 12
+        batch_size = 1024
+        num_workers = 4
         
         #split dataset indexes randomly into 90% training, 10% test
         idxs = np.arange(0,data_init.shape[0])
@@ -637,6 +638,22 @@ def grid(wrk_dir):
         test_data = data_init[tes_idx]
         test_pars = theta_init[tes_idx]
         
+        with open(f"data/test_data.txt","r") as f1:
+            test_data = np.loadtxt(f1)
+        f1.close()
+        
+        with open(f"data/test_pars.txt","r") as f1:
+            test_pars = np.loadtxt(f1)
+        f1.close()
+        
+        test_pars[:,13] = np.log10(test_pars[:,13]) 
+        test_pars[:,2] = test_pars[:,2]
+        test_pars[:,3] = test_pars[:,3]
+        test_pars[:,4] = np.log10(test_pars[:,4])
+        test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
+        
+        test_set = CustomData(test_pars, test_data, scaler, 
+                            scaling=False)
         
         training_dataset = CustomData(train_pars, train_data, scaler, 
                                       scaling = False, scaler_name="grid_scaler")
@@ -644,17 +661,23 @@ def grid(wrk_dir):
                                      scaling = False, scaler_name="grid_scaler")
         print("Datasets created")
         training_dataloader = DataLoader(training_dataset, batch_size=batch_size, 
-                                         shuffle=True)
+                                         num_workers = num_workers, shuffle=True)
+        
         test_dataloader = DataLoader(testing_dataset, batch_size=batch_size, 
-                                     shuffle=True)
+                                     num_workers = num_workers, shuffle=True)
+        
+        improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
+                                            num_workers = num_workers, shuffle=True)
         print("Dataloaders created")
         
         model = network.NeuralNetwork(5,len(egrid))
+        model.to(device)
         optimizer = Adam(model.parameters(),lr = 0.001)
-        loss_fn = nn.MSELoss()
+        loss_fn = maskedMSELoss
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
+        last_sig_best_imp = 1e7
         tr_loss_arr = []
         te_loss_arr = []
         
@@ -666,12 +689,14 @@ def grid(wrk_dir):
         while (imp_te < 5 or imp_tr < 5):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
-                                                 optimizer,loss_fn)
-            loss = test(test_dataloader,model,loss_fn)
+                                                 optimizer,loss_fn,device)
+            loss,improv_loss = test(test_dataloader,model,loss_fn,device,
+                                    improvement_dataloader)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
             tr_bet = (0.9*last_sig_best_tr) - train_loss
             te_bet = (0.9*last_sig_best_te) - loss
+            imp_bet = (0.9*last_sig_best_imp) - improv_loss
             if tr_bet > 0 and te_bet > 0:
                 last_sig_best_tr = train_loss
                 last_sig_best_te = loss
@@ -679,7 +704,6 @@ def grid(wrk_dir):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -690,10 +714,13 @@ def grid(wrk_dir):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
+            if imp_bet > 0:
+                last_sig_best_imp = improv_loss
+                print("Current best performer on true test set, saving...")
+                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             epoch += 1
         
         print("Completed training")
@@ -731,8 +758,8 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
-    #grid(wrk_dir)
+    #queryByDropout(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()

@@ -442,17 +442,15 @@ def main():
     set_envir_vars(wrk_dir)
     
     #retrieve scalers
-    """
     active_scaler = MinMaxScaler()
     active_scaler = load('scalers/active_scaler.bin')
     grid_scaler = MinMaxScaler()
     grid_scaler = load('scalers/grid_scaler.bin')
-    """
     
     egrid = retrieve_egrid(wrk_dir)
     
     #load test set not seen by any models
-    data, pars = generate_test_set(1000,egrid)
+    data, pars = generate_test_set(10000,egrid)
     print("Test data generated")
     
     pars = pars_conversion(pars)
@@ -460,7 +458,6 @@ def main():
     np.savetxt("data/test_data.txt", data)
     np.savetxt("data/test_pars.txt", pars)
     
-    """
     #convert test set to pytorch tensors
     pars = torch.tensor(pars)
     data = torch.tensor(data)
@@ -471,7 +468,6 @@ def main():
     testing_dataloader = DataLoader(test_data,batch_size = batch_size)
     
     active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)
-    """
     
 if __name__ == "__main__":
     main()
