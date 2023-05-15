@@ -312,7 +312,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
     for batch, (D,P,M) in enumerate(testing_dataloader):
         #retrieve relevant data and parameters
         spin, mass = P[0][0].item(),10**P[0][1].item()
-        D[M==0] = -38
+        D[M==0] = 1e-38
         da = torch.squeeze(D)
         
         #generate neural network prediction and rescale to linear space
