@@ -33,6 +33,7 @@ class LoadCustomData(CustomData):
         parameters = self.par_list[idx]
         mask = self.mask[idx]
         return datum, parameters, mask
+    
 class Residual():
     
     def __init__(self,residuals):
@@ -462,23 +463,11 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
-    with open("data/test_data.txt","r") as f1:
-        test_data = np.loadtxt(f1)
-    f1.close()
-    
-    with open("data/test_pars.txt","r") as f1:
-        test_pars = np.loadtxt(f1)
-    f1.close()
-    
-    test_pars[:,13] = np.log10(test_pars[:,13]) 
-    test_pars[:,2] = test_pars[:,2]
-    test_pars[:,3] = test_pars[:,3]
-    test_pars[:,4] = np.log10(test_pars[:,4])
-    test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
+    data,pars = generate_test_set(10000, egrid)
     
     #convert test set to pytorch tensors
-    pars = torch.tensor(test_pars)
-    data = torch.tensor(test_data)
+    pars = torch.tensor(pars)
+    data = torch.tensor(data)
     
     #put test set into dataloader format
     batch_size = 1
