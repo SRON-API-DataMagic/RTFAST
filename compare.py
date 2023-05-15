@@ -229,14 +229,14 @@ def generate_test_set(size,egrid):
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
 
     #generate physical models of test set
-    data_lhs = np.zeros((theta_lhs.shape[0],len(egrid)))
     theta_lhs_iterate = pars_conversion(theta_lhs)
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_lhs_iterate)
+    data_init = np.asarray(data_init)
     
-    return data_lhs, theta_lhs
+    return data_init, theta_lhs
     
 def residual_computation(testing_dataloader,model,scaler):
     mass, spin = [], []
@@ -463,13 +463,22 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
-    data,pars = generate_test_set(10000, egrid)
+    with open(f"data/test_data.txt","r") as f1:
+        test_data = np.loadtxt(f1)
+    f1.close()
     
-    #convert test set to pytorch tensors
-    pars = torch.tensor(pars)
-    data = torch.tensor(data)
+    with open(f"data/test_pars.txt","r") as f1:
+        test_pars = np.loadtxt(f1)
+    f1.close()
     
-    print(data)
+    test_pars[:,13] = np.log10(test_pars[:,13]) 
+    test_pars[:,2] = test_pars[:,2]
+    test_pars[:,3] = test_pars[:,3]
+    test_pars[:,4] = np.log10(test_pars[:,4])
+    test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
+    
+    data = test_data
+    pars = test_pars
     
     #put test set into dataloader format
     batch_size = 1
