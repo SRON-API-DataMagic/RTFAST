@@ -27,6 +27,10 @@ class LoadCustomData(CustomData):
         self.par_list = pars
         self.data = data
 
+    def __getitem__(self,idx):
+        datum = self.data[idx]
+        parameters = self.par_list[idx]
+        return datum, parameters
 class Residual():
     
     def __init__(self,residuals):
