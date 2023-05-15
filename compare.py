@@ -469,6 +469,8 @@ def main():
     pars = torch.tensor(pars)
     data = torch.tensor(data)
     
+    print(data)
+    
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
