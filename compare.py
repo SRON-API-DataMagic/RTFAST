@@ -442,7 +442,6 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     plt.xlabel("Number of samples used in training")
     plt.ylabel("Average percentage error")
     plt.legend()
-    plt.ylim(bottom = 1e-3)
     plt.savefig("loss/loss_by_sample_size.png")
     plt.close()
 
