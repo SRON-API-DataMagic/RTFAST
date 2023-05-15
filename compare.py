@@ -30,7 +30,8 @@ class LoadCustomData(CustomData):
     def __getitem__(self,idx):
         datum = self.data[idx]
         parameters = self.par_list[idx]
-        return datum, parameters
+        mask = self.mask[idx]
+        return datum, parameters, mask
 class Residual():
     
     def __init__(self,residuals):
@@ -306,7 +307,7 @@ def residual_computation(testing_dataloader,model,scaler):
                       spin_tick)
 
 def model_samples(testing_dataloader,scaler,model,egrid,gr):
-    for batch, (D,P) in enumerate(testing_dataloader):
+    for batch, (D,P,M) in enumerate(testing_dataloader):
         #retrieve relevant data and parameters
         spin, mass = P[0][0].item(),10**P[0][1].item()
         da = torch.squeeze(D)
@@ -345,10 +346,11 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
 
 def calculate_loss(testing_dataloader,model,scaler):
     residuals = []
-    for batch, (D,P) in enumerate(testing_dataloader):
+    for batch, (D,P,M) in enumerate(testing_dataloader):
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
+        resid = resid*M
         residuals.append(np.absolute(np.asarray(resid)))
     
     residuals = np.asarray(residuals)
