@@ -415,7 +415,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         grid_median_loss.append(median)
         grid_loss_low_q.append(low_q)
         grid_loss_high_q.append(high_q)
-        #model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
+        model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
         """
         (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
                           mass_ticklabel,spin_ticklabel,
