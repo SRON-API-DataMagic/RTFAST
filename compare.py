@@ -352,10 +352,8 @@ def calculate_loss(testing_dataloader,model,scaler):
         values,counts = np.unique(M,return_counts=True)
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
-        print(pred)
         resid = (D-pred)/D
-        print(resid)
-        resid = resid*M
+        resid[M == 0] = 0
         print(resid)
         residuals.append(np.absolute(np.asarray(resid)))
     
