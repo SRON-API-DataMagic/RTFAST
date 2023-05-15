@@ -365,7 +365,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
     grid_model_names = np.array([5,6,7,8,9,10])
-    grid_sample_nums = grid_model_names**2
+    grid_sample_nums = grid_model_names**5
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
     active_median_loss = []
