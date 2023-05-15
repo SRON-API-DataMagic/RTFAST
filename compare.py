@@ -235,7 +235,7 @@ def generate_test_set(size,egrid):
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_lhs_iterate)
     data_init = np.asarray(data_init)
-    
+    print(data_init)
     return data_init, theta_lhs
     
 def residual_computation(testing_dataloader,model,scaler):
