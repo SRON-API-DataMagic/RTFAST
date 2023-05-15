@@ -460,22 +460,12 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
-    with open(f"data/test_data.txt","r") as f1:
-        test_data = np.loadtxt(f1)
-    f1.close()
+    data, pars = generate_test_set(10000, egrid)
     
-    with open(f"data/test_pars.txt","r") as f1:
-        test_pars = np.loadtxt(f1)
-    f1.close()
+    pars = pars_conversion(pars)
     
-    test_pars[:,13] = np.log10(test_pars[:,13]) 
-    test_pars[:,2] = test_pars[:,2]
-    test_pars[:,3] = test_pars[:,3]
-    test_pars[:,4] = np.log10(test_pars[:,4])
-    test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
-    
-    data = test_data
-    pars = test_pars
+    np.savetxt("data/test_data.txt",data)
+    np.savetxt("data/test_pars.txt",pars)
     
     #put test set into dataloader format
     batch_size = 1
