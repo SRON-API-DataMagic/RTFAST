@@ -26,6 +26,7 @@ class LoadCustomData(CustomData):
         super().__init__(pars,data,scaler)
         self.par_list = pars
         self.data = data
+        self.mask = np.where(self.data <= 1e-38, 0, 1)
 
     def __getitem__(self,idx):
         datum = self.data[idx]
@@ -351,6 +352,7 @@ def calculate_loss(testing_dataloader,model,scaler):
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
         resid = resid*M
+        print(M)
         residuals.append(np.absolute(np.asarray(resid)))
     
     residuals = np.asarray(residuals)
