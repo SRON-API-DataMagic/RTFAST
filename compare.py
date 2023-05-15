@@ -349,7 +349,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
 def calculate_loss(testing_dataloader,model,scaler):
     residuals = []
     for batch, (D,P,M) in enumerate(testing_dataloader):
-        values,counts = np.unique(M)
+        values,counts = np.unique(M,return_counts=True)
         print(values)
         print(counts)
         pred = model(P).detach().numpy()
