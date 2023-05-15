@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
-from joblib import load
+from joblib import load, Parallel, delayed
 import scipy.stats
 
 import pandas as pd
@@ -224,8 +224,10 @@ def generate_test_set(size,egrid):
     #generate physical models of test set
     data_lhs = np.zeros((theta_lhs.shape[0],len(egrid)))
     theta_lhs_iterate = pars_conversion(theta_lhs)
-    for i,pars in enumerate(tqdm(theta_lhs_iterate,desc="Generating models")):
-        data_lhs[i] = rtdist_flux(pars, egrid)
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        data_init = parallel(delayed(rtdist_flux)(pars, egrid)
+                                        for pars in theta_lhs_iterate)
     
     return data_lhs, theta_lhs
     
@@ -353,12 +355,12 @@ def calculate_loss(testing_dataloader,model,scaler):
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/"
     
-    active_name = [0,1,2,3,4,5,10,15,20,25,30,35,40,45,50]
-    active_model_names = np.array([0,1,2,3,4,5,10,15,20,25,30,35,40,45,50])
+    active_name = [0,1,2,3,4,5,10,15,19]
+    active_model_names = np.array([0,1,2,3,4,5,10,15,19])
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
-    grid_name = [70,100,120,140,225,275,320,400,450,500]
-    grid_model_names = np.array([70,100,120,140,225,275,320,400,450,500])
+    grid_name = [5,6,7,8,9,10]
+    grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**2
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
