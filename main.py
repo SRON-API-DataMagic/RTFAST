@@ -611,7 +611,7 @@ def grid(wrk_dir,device):
         fname = str(size)
         print(f"Starting {size} x {size} grid loop")
         
-        data_init, theta_init = grid_data_gen(size, fname, egrid)
+        #data_init, theta_init = grid_data_gen(size, fname, egrid)
         with open(f"data/grid_{size}_data.txt","r") as f1:
             data_init = np.loadtxt(f1)
         f1.close()
