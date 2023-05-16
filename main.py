@@ -531,6 +531,8 @@ def queryByDropout(wrk_dir, device = None):
                     last_sig_best_imp = improv_loss
                     print("Current best performer on true test set, saving...")
                     torch.save(model.state_dict(), "models/active_best.pth")
+                else:
+                    imp_imp += 1
                 epoch += 1
             if active_loop_num != 0:
                 loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
