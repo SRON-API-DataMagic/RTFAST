@@ -313,11 +313,10 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         #retrieve relevant data and parameters
         spin, mass = P[0][0].item(),10**P[0][1].item()
         D[M==0] = 1e-38
-        da = torch.squeeze(D)
+        da = np.squeeze(D)
         
         #generate neural network prediction and rescale to linear space
         pred = model(P).detach().numpy()
-        pred[M==0] = da[M==0]
         pred = 10**np.squeeze(inverse(scaler,pred))
         
         fname = f"{batch}_res"
@@ -327,7 +326,6 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         
         da_log = np.log10(da)
         pred = model(P).detach().numpy()
-        pred[M==0] = da_log[M==0]
         pred = np.squeeze(inverse(scaler,pred))
         
         fname = f"{batch}_res_log"
