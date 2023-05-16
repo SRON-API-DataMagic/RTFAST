@@ -317,7 +317,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         
         #generate neural network prediction and rescale to linear space
         pred = model(P).detach().numpy()
-        pred[M==0] = 1e-38
+        pred[M==0] = da[M==0]
         pred = 10**np.squeeze(inverse(scaler,pred))
         
         fname = f"{batch}_res"
@@ -325,26 +325,24 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         
         residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
         
-        pred = model(P).detach().numpy()
-        pred[M==0] = np.log10(1e-38)
-        pred = np.squeeze(inverse(scaler,pred))
-        
-        
         da_log = np.log10(da)
+        pred = model(P).detach().numpy()
+        pred[M==0] = da_log[M==0]
+        pred = np.squeeze(inverse(scaler,pred))
         
         fname = f"{batch}_res_log"
         title = "Log scaled output"
     
         residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
         
+        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+        
         pred = model(P).detach().numpy()
-        pred[M==0] = scaler.transform(np.log10(1e-38).reshape(1, -1)).flatten()
+        pred[M==0] = da_log_scal[M==0]
         pred = np.squeeze(pred)
         
         fname = f"{batch}_res_scal"
         title = "Neural network normalised output"
-        
-        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
     
         residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
         
