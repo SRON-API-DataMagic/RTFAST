@@ -360,12 +360,23 @@ def calculate_loss(testing_dataloader,model,scaler):
         residuals.append(np.absolute(np.asarray(resid)))
     
     residuals = np.asarray(residuals)
-    median = np.median(residuals)
-    low_q, high_q = np.quantile(residuals,[0.25,0.75])
-    return median,low_q,high_q
+    return residuals
+
+def violin(residuals,names,fname):
+    d = {"Residuals":[],"Sample Size":[]}
+    for i,name in enumerate(names):
+        d["Residuals"].append(residuals[i].flatten())
+        for i in range(residuals[i].size):
+            d["Sample Size"].append(name) 
+        
+    df = pd.DataFrame(data = d)
+    sns.violinplot(data=df, x="Sample size", y="Residuals")
+    plt.savefig(f"loss/violin_{fname}.png")
+    plt.close()
+
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
-    model_base_loc = wrk_dir+"/models/"
+    model_base_loc = wrk_dir+"/models/save/"
     
     active_name = [0,1,2,3,4,5,10,15,19]
     active_model_names = np.array([0,1,2,3,4,5,10,15,19])
@@ -382,6 +393,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     grid_median_loss = []
     grid_loss_low_q = []
     grid_loss_high_q = []
+    resid_list = []
     
     print("Calculating loss for active learning")
     for (model_loc,gr) in zip(active_model_names,active_name):
@@ -389,7 +401,10 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
-        median,low_q,high_q = calculate_loss(testing_dataloader, model, active_scaler)
+        residuals = calculate_loss(testing_dataloader, model, active_scaler)
+        resid_list.append(residuals)
+        median = np.median(residuals)
+        low_q, high_q = np.quantile(residuals,[0.25,0.75])
         active_median_loss.append(median)
         active_loss_low_q.append(low_q)
         active_loss_high_q.append(high_q)
@@ -402,10 +417,14 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           mass_ticklabel,spin_ticklabel,
                           spin_tick,gr)
         """
+    resid_list = np.asarray(resid_list)
+    violin(resid_list,active_sample_nums,"active")
     
     active_median_loss = np.asarray(active_median_loss)
     active_loss_low_q = np.asarray(active_loss_low_q)
     active_loss_high_q = np.asarray(active_loss_high_q)
+    
+    resid_list = []
     
     print("Calculating loss for grid learning")
     for (model_loc,gr) in zip(grid_model_names,grid_name):
@@ -413,7 +432,10 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         print(gr)
         model = model_load(model_loc, egrid)
         model.eval()
-        median,low_q,high_q = calculate_loss(testing_dataloader, model, grid_scaler)
+        residuals = calculate_loss(testing_dataloader, model, grid_scaler)
+        resid_list.append(residuals)
+        median = np.median(residuals)
+        low_q, high_q = np.quantile(residuals,[0.25,0.75])
         grid_median_loss.append(median)
         grid_loss_low_q.append(low_q)
         grid_loss_high_q.append(high_q)
@@ -426,6 +448,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           mass_ticklabel,spin_ticklabel,
                           spin_tick,gr)
         """
+    
+    resid_list = np.asarray(resid_list)
+    violin(resid_list,active_sample_nums,"grid")
     
     grid_median_loss = np.asarray(grid_median_loss)
     grid_loss_low_q = np.asarray(grid_loss_low_q)
