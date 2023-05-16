@@ -612,6 +612,19 @@ def grid(wrk_dir,device):
         print(f"Starting {size} x {size} grid loop")
         
         data_init, theta_init = grid_data_gen(size, fname, egrid)
+        with open(f"data/grid_{size}_data.txt","r") as f1:
+            data_init = np.loadtxt(f1)
+        f1.close()
+        
+        with open(f"data/grid_{size}_pars.txt","r") as f1:
+            theta_init = np.loadtxt(f1)
+        f1.close()
+        
+        theta_init[:,13] = np.log10(theta_init[:,13]) 
+        theta_init[:,2] = theta_init[:,2]
+        theta_init[:,3] = theta_init[:,3]
+        theta_init[:,4] = np.log10(theta_init[:,4])
+        theta_init = theta_init[:,[1,13,2,3,4]] #retrieve parameters
         print("Grid generated")
             
         scaler = MinMaxScaler()
@@ -685,7 +698,7 @@ def grid(wrk_dir,device):
         imp_tr = 0
         
         print("Beginning training")
-        while (imp_te < 5 or imp_tr < 5):
+        while (imp_te < 15 or imp_tr < 15):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn,device)
