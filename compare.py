@@ -339,7 +339,6 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
         
         pred = model(P).detach().numpy()
-        pred[M==0] = da_log_scal[M==0]
         pred = np.squeeze(pred)
         
         fname = f"{batch}_res_scal"
