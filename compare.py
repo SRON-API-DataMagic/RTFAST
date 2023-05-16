@@ -310,6 +310,7 @@ def residual_computation(testing_dataloader,model,scaler):
 
 def model_samples(testing_dataloader,scaler,model,egrid,gr):
     for batch, (D,P,M) in enumerate(testing_dataloader):
+        M = np.squeeze(M)
         #retrieve relevant data and parameters
         spin, mass = P[0][0].item(),10**P[0][1].item()
         D[M==0] = 1e-38
