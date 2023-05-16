@@ -338,7 +338,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
         
         pred = model(P).detach().numpy()
-        pred[M==0] = scaler.transform(np.log10(1e-38))
+        pred[M==0] = scaler.transform(np.log10(1e-38).reshape(1, -1)).flatten()
         pred = np.squeeze(pred)
         
         fname = f"{batch}_res_scal"
