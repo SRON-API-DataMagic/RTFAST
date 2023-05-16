@@ -318,6 +318,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         #generate neural network prediction and rescale to linear space
         pred = model(P).detach().numpy()
         pred = 10**np.squeeze(inverse(scaler,pred))
+        pred[M==0] = 1e-38
         
         fname = f"{batch}_res"
         title = "Standard output"
@@ -326,6 +327,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         
         pred = model(P).detach().numpy()
         pred = np.squeeze(inverse(scaler,pred))
+        pred[M==0] = np.log10(1e-38)
         
         da_log = np.log10(da)
         
@@ -336,6 +338,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         
         pred = model(P).detach().numpy()
         pred = np.squeeze(pred)
+        pred[M==0] = scaler.transform(np.log10(1e-38))
         
         fname = f"{batch}_res_scal"
         title = "Neural network normalised output"
