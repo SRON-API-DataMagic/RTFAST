@@ -495,7 +495,7 @@ def queryByDropout(wrk_dir, device = None):
             saveData(data_init, generator.pars_conversion(theta_init))
             
             epoch = 0
-            while (imp_te < 5 or imp_tr < 5 or imp_imp < 5):
+            while (imp_te < 15 or imp_tr < 15 or imp_imp < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
