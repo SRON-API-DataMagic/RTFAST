@@ -97,8 +97,9 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     cmap_flat = sns.color_palette("hls", 2)
     
     residuals = []
-    for row in df.iterrows():
-        residuals.append(row["Residuals"].flat)
+    for row in df["Residuals"].iterrows():
+        print(row)
+        residuals.append(row.flat)
     residuals = np.asarray(residuals)
     
     fig = plt.figure(figsize=(10,10))
@@ -118,8 +119,9 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
     residuals = []
-    for row in df.iterrows():
-        residuals.append(row["Residuals"].flat)
+    for row in df["Residuals"].iterrows():
+        print(row)
+        residuals.append(row.data)
     residuals = np.asarray(residuals)
     
     fig = plt.figure(figsize=(10,10))
