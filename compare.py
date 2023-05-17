@@ -97,7 +97,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     cmap_flat = sns.color_palette("hls", 2)
     
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(df[index].flat,cmap=cmap_flat,cbar_kws = {})
+    ax = sns.heatmap(df["Residuals"].flat,cmap=cmap_flat,cbar_kws = {})
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
@@ -113,7 +113,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(df[index].data,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
+    ax = sns.heatmap(df["Residuals"].data,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
@@ -124,10 +124,11 @@ def continuous_heatmap(df,index,ticks,ticklabels,fname):
     return
 
 def heatmap_plots(df, indexes, ticks, ticklabels, fname):
-    for index in indexes:
+    for i,index in enumerate(indexes):
         print(index)
-        continuous_heatmap(df, index, ticks, ticklabels, fname)
-        flat_heatmap(df, index, ticks, ticklabels, fname)
+        df.sort_values(by=index,inplace=True,ignore_index=True)
+        continuous_heatmap(df, index, ticks[i], ticklabels[i], fname)
+        flat_heatmap(df, index, ticks[i], ticklabels[i], fname)
 
 def set_envir_vars(wrk_dir):
     #set envionmental variables required in xspec with simrtdist
