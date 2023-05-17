@@ -256,7 +256,7 @@ def residual_computation(testing_dataloader,model,scaler):
         resid = (D-pred)/D
         resid[M == 0] = 0
         resid = np.absolute(np.asarray(resid))
-        resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 0.01 )
+        resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 1. )
         residuals.append(resid)
         residuals_flat.append(resid_flat)
         
