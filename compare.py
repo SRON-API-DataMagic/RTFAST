@@ -428,7 +428,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           spin_tick,gr)
         """
     resid_list = np.asarray(resid_list)
-    df = residuals_dataframe(residuals, active_sample_nums)
+    df = residuals_dataframe(resid_list, active_sample_nums)
     #violin(df,"active")
     box(df,"active")
     
@@ -462,7 +462,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         """
     
     resid_list = np.asarray(resid_list)
-    df = residuals_dataframe(residuals, grid_sample_nums)
+    df = residuals_dataframe(resid_list, grid_sample_nums)
     violin(df,"grid")
     box(df,"grid")
     
