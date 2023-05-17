@@ -4,7 +4,7 @@ This program serves to visualise a neural network's outputs vs the true values.
 from sherpa.astro.ui import unpack_rmf
 import torch
 import os
-
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -235,7 +235,6 @@ def generate_test_set(size,egrid):
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_lhs_iterate)
     data_init = np.asarray(data_init)
-    print(data_init)
     return data_init, theta_lhs
     
 def residual_computation(testing_dataloader,model,scaler):
@@ -362,7 +361,17 @@ def calculate_loss(testing_dataloader,model,scaler):
     residuals = np.asarray(residuals)
     return residuals
 
-def violin(residuals,names,fname):
+def violin(df,fname):
+    sns.violinplot(data=df, x="Sample Size", y="Residuals")
+    plt.savefig(f"loss/violin_{fname}.png")
+    plt.close()
+
+def box(df,fname):
+    sns.boxplot(data=df, x="Sample Size", y="Residuals",whis=1.8)
+    plt.savefig(f"loss/box_{fname}.png")
+    plt.close()
+
+def residuals_dataframe(residuals,names):
     d = {"Residuals":[],"Sample Size":[]}
     for i,name in enumerate(names):
         print(name)
@@ -371,11 +380,10 @@ def violin(residuals,names,fname):
             d["Sample Size"].append(name) 
     print("# of residuals:"+str(len(d["Residuals"])))
     print("# of labels:"+str(len(d["Sample Size"])))
+    time_start = time.time()
     df = pd.DataFrame(data = d)
-    sns.violinplot(data=df, x="Sample Size", y="Residuals")
-    plt.savefig(f"loss/violin_{fname}.png")
-    plt.close()
-
+    print(time.time()-time_start)
+    return df
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/save/"
@@ -420,7 +428,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
                           spin_tick,gr)
         """
     resid_list = np.asarray(resid_list)
-    violin(resid_list,active_sample_nums,"active")
+    df = residuals_dataframe(residuals, active_sample_nums)
+    #violin(df,"active")
+    box(df,"active")
     
     active_median_loss = np.asarray(active_median_loss)
     active_loss_low_q = np.asarray(active_loss_low_q)
@@ -452,7 +462,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         """
     
     resid_list = np.asarray(resid_list)
-    violin(resid_list,active_sample_nums,"grid")
+    df = residuals_dataframe(residuals, grid_sample_nums)
+    violin(df,"grid")
+    box(df,"grid")
     
     grid_median_loss = np.asarray(grid_median_loss)
     grid_loss_low_q = np.asarray(grid_loss_low_q)
