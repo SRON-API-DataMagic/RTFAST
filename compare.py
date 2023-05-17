@@ -365,13 +365,14 @@ def calculate_loss(testing_dataloader,model,scaler):
 def violin(residuals,names,fname):
     d = {"Residuals":[],"Sample Size":[]}
     for i,name in enumerate(names):
+        print(name)
         for point in residuals[i].flatten():
             d["Residuals"].append(point)
             d["Sample Size"].append(name) 
     print("# of residuals:"+str(len(d["Residuals"])))
     print("# of labels:"+str(len(d["Sample Size"])))
     df = pd.DataFrame(data = d)
-    sns.violinplot(data=df, x="Sample size", y="Residuals")
+    sns.violinplot(data=df, x="Sample Size", y="Residuals")
     plt.savefig(f"loss/violin_{fname}.png")
     plt.close()
 
