@@ -367,7 +367,6 @@ def violin(residuals,names,fname):
     for i,name in enumerate(names):
         for point in residuals[i].flatten():
             d["Residuals"].append(point)
-        for i in range(residuals[i].size):
             d["Sample Size"].append(name) 
     print("# of residuals:"+str(len(d["Residuals"])))
     print("# of labels:"+str(len(d["Sample Size"])))
@@ -491,6 +490,8 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
+    data, pars = generate_test_set(5000, egrid)
+    """
     with open(f"data/test_data.txt","r") as f1:
         test_data = np.loadtxt(f1)
     f1.close()
@@ -507,7 +508,7 @@ def main():
     
     data = test_data
     pars = test_pars
-    
+    """
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
