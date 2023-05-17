@@ -266,7 +266,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 20
+    active_loops = 50
     range_all = np.asarray(generator.lhs_trimmed_gen())
     n_samples = 5000
     n_samples_large = 10000 # number of parameter sets to draw 
@@ -280,7 +280,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -343,14 +343,23 @@ def queryByDropout(wrk_dir, device = None):
         del data
         del pars
         
-        last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-        last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-        last_sig_best_imp = 1e7 #last significant best large test set loss (set large initially)
-        tr_loss_arr = []
-        te_loss_arr = []
-        loop_epochs = []
+        with open(f"loss/active_tr_loss.txt","r") as f1:
+            tr_loss_arr = np.loadtxt(f1)
+        f1.close()
         
-        active_loop_num = 0
+        with open(f"loss/active_te_loss.txt","r") as f1:
+            te_loss_arr = np.loadtxt(f1)
+        f1.close()
+        
+        with open(f"loss/active_epochs.txt","r") as f1:
+            loop_epochs = np.loadtxt(f1)
+        f1.close()
+        
+        last_sig_best_tr = tr_loss_arr.min()
+        last_sig_best_te = te_loss_arr.min()
+        last_sig_best_imp = te_loss_arr.min()
+        
+        active_loop_num = 19
         
         #create initial dataset object to create scaler (and then delete object)
         data_init_dataset = CustomData(theta_init, data_init, scaler)
