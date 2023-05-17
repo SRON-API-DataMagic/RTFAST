@@ -36,8 +36,9 @@ class LoadCustomData(CustomData):
     
 class Residual():
     
-    def __init__(self,residuals):
+    def __init__(self,residuals,flat):
         self.data = residuals
+        self.flat = flat
             
 def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
@@ -92,59 +93,41 @@ def sample_dist_plots(pars):
     plt.savefig("sample_dist/mass_sample_dist.png")
     plt.close()
     
-
-def heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                  mass_ticklabel,spin_ticklabel,
-                  spin_tick,gr):
+def flat_heatmap(df,index,ticks,ticklabels,fname):
     cmap_flat = sns.color_palette("hls", 2)
     
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(mass_res,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
-    ax.set_yticks(mass_tick,labels=mass_ticklabel)
-    ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
-    ax.set_xlabel("Energy in keV")
-    ax.set_ylabel("Mass")
-    plt.savefig(f"heatmaps/{gr}mass_hm.png")
-    plt.close()
-    print("Continuous mass hm plotted")
-    
-    fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(mass_res_flat,cmap=cmap_flat,cbar_kws = {})
-    ax.set_yticks(mass_tick,labels=mass_ticklabel)
+    ax = sns.heatmap(df[index].flat,cmap=cmap_flat,cbar_kws = {})
+    ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel("Mass")
     colorbar = ax.collections[0].colorbar
-    M=mass_res_flat.max().max()
-    colorbar.set_ticks([1/4*M,3/4*M])
+    maxi=df[index].max().max()
+    colorbar.set_ticks([1/4*maxi,3/4*maxi])
     colorbar.set_ticklabels(['< 1% error','> 1% error'])
-    plt.savefig(f"heatmaps/{gr}flat_mass_hm.png")
+    plt.savefig(f"heatmaps/{fname}_flat_{index}.png")
     plt.close()
-    print("Flat mass hm plotted")
-    
+    print(f"Flat {fname} hm plotted")
+    return
+
+def continuous_heatmap(df,index,ticks,ticklabels,fname):
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(spin_res,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
-    ax.set_yticks(spin_tick,labels=spin_ticklabel)
-    ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
+    ax = sns.heatmap(df[index],cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
+    ax.set_yticks(ticks,labels=ticklabels)
+    ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
-    ax.set_ylabel("Spin")
-    plt.savefig(f"heatmaps/{gr}spin_hm.png")
+    ax.set_ylabel("Mass")
+    plt.savefig(f"heatmaps/{fname}_{index}_hm.png")
     plt.close()
-    print("Continuous spin hm plotted")
-    
-    fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(spin_res_flat,cmap=cmap_flat)
-    ax.set_yticks(spin_tick,labels=spin_ticklabel)
-    ax.set_xticks(np.arange(0,4096,4096/4),labels=np.arange(0,20,5))
-    ax.set_xlabel("Energy in keV")
-    ax.set_ylabel("Spin")
-    colorbar = ax.collections[0].colorbar
-    M=spin_res_flat.max().max()
-    colorbar.set_ticks([1/4*M,3/4*M])
-    colorbar.set_ticklabels(['< 1% error','> 1% error'])
-    plt.savefig(f"heatmaps/{gr}flat_spin_hm.png")
-    plt.close()
-    print("Flat spin hm plotted")
+    print(f"Continuous {fname} hm plotted")
+    return
+
+def heatmap_plots(df, indexes, ticks, ticklabels, fname):
+    for index in indexes:
+        print(index)
+        continuous_heatmap(df, index, ticks, ticklabels, fname)
+        flat_heatmap(df, index, ticks, ticklabels, fname)
 
 def set_envir_vars(wrk_dir):
     #set envionmental variables required in xspec with simrtdist
@@ -237,82 +220,66 @@ def generate_test_set(size,egrid):
     data_init = np.asarray(data_init)
     return data_init, theta_lhs
     
+
+def residual_sorting(df,indexing):
+    df.sort_values(by=indexing,inplace=True,ignore_index=True)
+    percents = [0,0.25,0.5,0.75]
+    tick = []
+    ticklabel = []
+    for p in percents:
+        tick.append(int(len(df)*p))
+        ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2E}")
+    return tick,ticklabel
+
 def residual_computation(testing_dataloader,model,scaler):
-    mass, spin = [], []
-    residuals = []
-    for batch, (D,P) in enumerate(testing_dataloader):
+    mass, spin, inc, rin, rout = [], [], [], [], []
+    residuals,residuals_flat = [], []
+    for batch, (D,P,M) in enumerate(testing_dataloader):
         spin.append(P[0][0].item())
         mass.append(10**P[0][1].item())
+        inc.append(P[0][2].item())
+        rin.append(P[0][3].item())
+        rout.append(10**P[0][4].item())
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
-        residuals.append(np.absolute(np.asarray(resid)))
+        resid[M == 0] = 0
+        resid = np.absolute(np.asarray(resid))
+        resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 0.01 )
+        residuals.append(resid)
+        residuals_flat.append(resid_flat)
         
     residuals = np.asarray(residuals)
+    residuals_flat = np.asarray(residuals_flat)
     obj_residuals = []
-    for res in residuals:
-        obj_residuals.append(Residual(res))
+    for (res,res_flat) in zip(residuals,residuals_flat()):
+        obj_residuals.append(Residual(res,res_flat))
+
+    dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Inclination":inc,
+                              "Inner R":rin,"Outer R":rout,
+                              "Residuals":obj_residuals})
+    del mass,spin,inc,rin,rout,pred,residuals
     
+    mass_tick, mass_ticklabel = residual_sorting(dataframe, "Mass")
+    spin_tick, spin_ticklabel = residual_sorting(dataframe, "Spin")
+    inc_tick, inc_ticklabel = residual_sorting(dataframe, "Inclination")
+    rin_tick, rin_ticklabel = residual_sorting(dataframe, "Inner R")
+    rout_tick, rout_ticklabel = residual_sorting(dataframe, "Outer R")
     
-    dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Residuals":obj_residuals})
-    dataframe.sort_values(by="Spin",inplace=True,ignore_index=True)
+    ticks = [mass_tick,spin_tick,inc_tick,rin_tick,rout_tick]
+    ticklabels = [mass_ticklabel,spin_ticklabel,inc_ticklabel,rin_ticklabel,
+                  rout_ticklabel]
     
-    del mass,spin,pred,residuals
-    
-    spins = np.zeros((len(dataframe)))
-    resids_spin = np.zeros((len(dataframe),4096))
-    resids_spin_flat = np.zeros((len(dataframe),4096))
-    masses = np.zeros((len(dataframe)))
-    
-    for i,row in dataframe.iterrows():
-        spins[i] = row["Spin"]
-        resids_spin[i] = row["Residuals"].data
-        resids_spin_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
-    
-    spin_res = pd.DataFrame(resids_spin,index=spins)
-    spin_res_flat = pd.DataFrame(resids_spin_flat,index=spins)
-    
-    resids_mass = np.zeros((len(dataframe),4096))
-    resids_mass_flat = np.zeros((len(dataframe),4096))
-    dataframe.sort_values(by="Mass",inplace=True,ignore_index=True)
-    
-    for i,row in dataframe.iterrows():
-        resids_mass[i] = row["Residuals"].data
-        masses[i] = row["Mass"]
-        resids_mass_flat[i] = np.where(row["Residuals"].data < 0.01, 0., 0.01 )
-        
-    mass_res = pd.DataFrame(resids_mass,index=masses)
-    mass_res_flat = pd.DataFrame(resids_mass_flat,index=masses)
-    
-    percents = [0,0.25,0.5,0.75]
-    mass_tick = []
-    mass_ticklabel = []
-    spin_tick = []
-    spin_ticklabel = []
-    
-    for p in percents:
-        mass_tick.append(int(len(masses)*p))
-        mass_ticklabel.append(f"{masses[int(len(masses)*p)]:.2E}")
-        
-        spin_tick.append(int(len(spins)*p))
-        spin_ticklabel.append(f"{spins[int(len(spins)*p)]:.2f}")
-        
-    mass_tick.append(int(len(masses)-1))
-    mass_ticklabel.append(f"{masses[int(len(masses)-1)]:.2E}")
-    
-    spin_tick.append(int(len(spins))-1)
-    spin_ticklabel.append(f"{spins[int(len(spins))-1]:.2f}")
-    
-    return (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                      mass_ticklabel,spin_ticklabel,
-                      spin_tick)
+    return (dataframe, ticks, ticklabels)
 
 def model_samples(testing_dataloader,scaler,model,egrid,gr):
     for batch, (D,P,M) in enumerate(testing_dataloader):
         M = np.squeeze(M)
         D = np.squeeze(D)
         #retrieve relevant data and parameters
-        spin, mass = P[0][0].item(),10**P[0][1].item()
+        spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
+                                      P[0][2].item(),P[0][3].item(),
+                                      10**P[0][4].item())
         D[M==0] = 1e-38
         da = np.squeeze(D)
         
@@ -351,7 +318,6 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
 def calculate_loss(testing_dataloader,model,scaler):
     residuals = []
     for batch, (D,P,M) in enumerate(testing_dataloader):
-        values,counts = np.unique(M,return_counts=True)
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
@@ -363,11 +329,13 @@ def calculate_loss(testing_dataloader,model,scaler):
 
 def violin(df,fname):
     sns.violinplot(data=df, x="Sample Size", y="Residuals")
+    plt.ylim(top=1)
     plt.savefig(f"loss/violin_{fname}.png")
     plt.close()
 
 def box(df,fname):
     sns.boxplot(data=df, x="Sample Size", y="Residuals",whis=1.8)
+    plt.ylim(top=1)
     plt.savefig(f"loss/box_{fname}.png")
     plt.close()
 
@@ -387,6 +355,8 @@ def residuals_dataframe(residuals,names):
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     model_base_loc = wrk_dir+"/models/save/"
+    
+    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
     active_name = [0,1,2,3,4,5,10,15,19]
     active_model_names = np.array([0,1,2,3,4,5,10,15,19])
@@ -419,18 +389,19 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         active_loss_low_q.append(low_q)
         active_loss_high_q.append(high_q)
         model_samples(testing_dataloader,active_scaler,model,egrid,gr)
-        """
-        (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                          mass_ticklabel,spin_ticklabel,
-                          spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
-        heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                          mass_ticklabel,spin_ticklabel,
-                          spin_tick,gr)
-        """
+        df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
+        heatmap_plots(df, indexes, ticks, ticklabels, "active")
+        del df, ticks, ticklabels
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
+    time_start = time.time()
     violin(df,"active")
+    print("Violin plot render time:"+str(time.time()-time_start))
+    time_start = time.time()
     box(df,"active")
+    print("Box plot render time:"+str(time.time()-time_start))
+    
+    del df
     
     active_median_loss = np.asarray(active_median_loss)
     active_loss_low_q = np.asarray(active_loss_low_q)
@@ -452,19 +423,19 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         grid_loss_low_q.append(low_q)
         grid_loss_high_q.append(high_q)
         model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
-        """
-        (mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                          mass_ticklabel,spin_ticklabel,
-                          spin_tick) = residual_computation(testing_dataloader, model, grid_scaler)
-        heatmap_plots(mass_res,mass_res_flat,spin_res,spin_res_flat,mass_tick, 
-                          mass_ticklabel,spin_ticklabel,
-                          spin_tick,gr)
-        """
+        df, ticks, ticklabels = residual_computation(testing_dataloader, model, 
+                                                     grid_scaler)
+        heatmap_plots(df, indexes, ticks, ticklabels, "grid")
+        del df, ticks, ticklabels
     
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, grid_sample_nums)
+    time_start = time.time()
     violin(df,"grid")
+    print("Violin plot render time:"+str(time.time()-time_start))
+    time_start = time.time()
     box(df,"grid")
+    print("Box plot render time:"+str(time.time()-time_start))
     
     grid_median_loss = np.asarray(grid_median_loss)
     grid_loss_low_q = np.asarray(grid_loss_low_q)
@@ -504,6 +475,9 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     
     data, pars = generate_test_set(5000, egrid)
+    
+    np.savetxt("data/test_data.txt",data)
+    np.savetxt("data/test_pars.txt",pars_conversion(pars))
     """
     with open(f"data/test_data.txt","r") as f1:
         test_data = np.loadtxt(f1)
