@@ -376,9 +376,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     resid_list = []
     
     print("Calculating loss for active learning")
-    for (model_loc,gr) in zip(active_model_names,active_name):
-        gr = str(gr) + "_active"
-        print(gr)
+    for (model_loc,fname) in zip(active_model_names,active_name):
+        fname = str(fname) + "_active"
+        print(fname)
         model = model_load(model_loc, egrid)
         model.eval()
         residuals = calculate_loss(testing_dataloader, model, active_scaler)
@@ -388,9 +388,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         active_median_loss.append(median)
         active_loss_low_q.append(low_q)
         active_loss_high_q.append(high_q)
-        model_samples(testing_dataloader,active_scaler,model,egrid,gr)
+        model_samples(testing_dataloader,active_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
-        heatmap_plots(df, indexes, ticks, ticklabels, "active")
+        heatmap_plots(df, indexes, ticks, ticklabels, fname)
         del df, ticks, ticklabels
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
@@ -410,9 +410,9 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     resid_list = []
     
     print("Calculating loss for grid learning")
-    for (model_loc,gr) in zip(grid_model_names,grid_name):
-        gr = str(gr) + "_grid"
-        print(gr)
+    for (model_loc,fname) in zip(grid_model_names,grid_name):
+        fname = str(fname) + "_grid"
+        print(fname)
         model = model_load(model_loc, egrid)
         model.eval()
         residuals = calculate_loss(testing_dataloader, model, grid_scaler)
@@ -422,10 +422,10 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         grid_median_loss.append(median)
         grid_loss_low_q.append(low_q)
         grid_loss_high_q.append(high_q)
-        model_samples(testing_dataloader,grid_scaler,model,egrid,gr)
+        model_samples(testing_dataloader,grid_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, 
                                                      grid_scaler)
-        heatmap_plots(df, indexes, ticks, ticklabels, "grid")
+        heatmap_plots(df, indexes, ticks, ticklabels, fname)
         del df, ticks, ticklabels
     
     resid_list = np.asarray(resid_list)
