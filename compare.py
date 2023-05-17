@@ -252,7 +252,7 @@ def residual_computation(testing_dataloader,model,scaler):
     residuals = np.asarray(residuals)
     residuals_flat = np.asarray(residuals_flat)
     obj_residuals = []
-    for (res,res_flat) in zip(residuals,residuals_flat()):
+    for (res,res_flat) in zip(residuals,residuals_flat):
         obj_residuals.append(Residual(res,res_flat))
 
     dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Inclination":inc,
