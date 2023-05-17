@@ -473,17 +473,17 @@ def main():
     grid_scaler = load('scalers/grid_scaler.bin')
     
     egrid = retrieve_egrid(wrk_dir)
-    
+    """
     data, pars = generate_test_set(5000, egrid)
     
     np.savetxt("data/test_data.txt",data)
     np.savetxt("data/test_pars.txt",pars_conversion(pars))
     """
-    with open(f"data/test_data.txt","r") as f1:
+    with open("data/test_data.txt","r") as f1:
         test_data = np.loadtxt(f1)
     f1.close()
     
-    with open(f"data/test_pars.txt","r") as f1:
+    with open("data/test_pars.txt","r") as f1:
         test_pars = np.loadtxt(f1)
     f1.close()
     
@@ -495,7 +495,7 @@ def main():
     
     data = test_data
     pars = test_pars
-    """
+    
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
