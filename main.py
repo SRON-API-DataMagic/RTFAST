@@ -359,9 +359,9 @@ def queryByDropout(wrk_dir, device = None):
         last_sig_best_te = te_loss_arr.min()
         last_sig_best_imp = te_loss_arr.min()
         
-        tr_loss_arr = tr_loss_arr.to_list()
-        te_loss_arr = te_loss_arr.to_list()
-        loop_epochs = loop_epochs.to_list()
+        tr_loss_arr = tr_loss_arr.tolist()
+        te_loss_arr = te_loss_arr.tolist()
+        loop_epochs = loop_epochs.tolist()
         
         active_loop_num = 19
         
