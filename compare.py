@@ -106,7 +106,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
-    ax.set_ylabel("Mass")
+    ax.set_ylabel(index)
     colorbar = ax.collections[0].colorbar
     maxi=1
     colorbar.set_ticks([1/4*maxi,3/4*maxi])
@@ -127,7 +127,7 @@ def continuous_heatmap(df,index,ticks,ticklabels,fname):
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
-    ax.set_ylabel("Mass")
+    ax.set_ylabel(index)
     plt.savefig(f"heatmaps/{fname}_{index}_hm.png")
     plt.close()
     print(f"Continuous {fname} hm plotted")
