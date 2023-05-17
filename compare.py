@@ -369,8 +369,8 @@ def violin(residuals,names,fname):
             d["Residuals"].append(point)
         for i in range(residuals[i].size):
             d["Sample Size"].append(name) 
-    print("# of residuals:"+len(d["Residuals"]))
-    print("# of labels:"+len(d["Sample Size"]))
+    print("# of residuals:"+str(len(d["Residuals"])))
+    print("# of labels:"+str(len(d["Sample Size"])))
     df = pd.DataFrame(data = d)
     sns.violinplot(data=df, x="Sample size", y="Residuals")
     plt.savefig(f"loss/violin_{fname}.png")
