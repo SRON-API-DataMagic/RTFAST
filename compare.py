@@ -118,10 +118,11 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     return
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
-    residuals = []
-    for row in df["Residuals"]:
+    residuals,indexes = [],[]
+    for row in df.iterrows:
         print(row)
-        residuals.append(row.data)
+        residuals.append(row["Residuals"].data)
+        indexes.append(row[index])
     residuals = np.asarray(residuals)
     
     fig = plt.figure(figsize=(10,10))
