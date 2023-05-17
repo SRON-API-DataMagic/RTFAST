@@ -429,7 +429,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
         """
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
-    #violin(df,"active")
+    violin(df,"active")
     box(df,"active")
     
     active_median_loss = np.asarray(active_median_loss)
