@@ -119,7 +119,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
     residuals,indexes = [],[]
-    for row in df.iterrows:
+    for row in df.iterrows():
         print(row)
         residuals.append(row["Residuals"].data)
         indexes.append(row[index])
