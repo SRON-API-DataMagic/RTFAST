@@ -108,7 +108,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel("Mass")
     colorbar = ax.collections[0].colorbar
-    maxi=df[index].max()
+    maxi=1
     colorbar.set_ticks([1/4*maxi,3/4*maxi])
     colorbar.set_ticklabels(['< 1% error','> 1% error'])
     plt.savefig(f"heatmaps/{fname}_flat_{index}.png")
