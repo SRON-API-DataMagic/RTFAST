@@ -94,7 +94,7 @@ def sample_dist_plots(pars):
     plt.close()
     
 def flat_heatmap(df,index,ticks,ticklabels,fname):
-    colors = ["#FCFCFF", "#A30B37"]
+    colors = ["#C6C8EE", "#A30B37"]
     cmap_flat = sns.color_palette(colors)
     
     residuals= []
