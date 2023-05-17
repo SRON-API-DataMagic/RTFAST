@@ -368,6 +368,7 @@ def queryByDropout(wrk_dir, device = None):
         #create initial dataset object to create scaler (and then delete object)
         data_init_dataset = CustomData(theta_init, data_init, scaler)
         del data_init_dataset
+        model.load_state_dict(torch.load("models/active_best.pth"))
         
     batch_size = 1024
     num_workers = 4
