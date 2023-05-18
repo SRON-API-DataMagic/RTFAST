@@ -29,7 +29,7 @@ def breakup(dataset_loc,pars_loc,destination,index):
 
 def main():
     destination = "data/spectra"
-    indexes = [5,6,7,8,9,10]
+    indexes = [10]
     for index in indexes:
         print("Converting grid",index)
         dataset_loc = f"data/grid_{index}_data.txt"
