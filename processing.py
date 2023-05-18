@@ -22,10 +22,10 @@ def main():
     destination = "data/spectra"
     indexes = [0,1,2,3,4,5,10,15]
     for index in indexes:
-        print(index)
+        print("Converting loop",index)
         dataset_loc = f"data/loop_{index}_data.txt"
         pars_loc = f"data/loop_{index}_pars.txt"
-        breakup(dataset_loc, pars_loc, destination)
+        breakup(dataset_loc, pars_loc, destination,index)
 
 if __name__ == "__main__":
     main()
