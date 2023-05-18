@@ -11,16 +11,16 @@ def breakup(dataset_loc,pars_loc,destination):
     for i,spectra in enumerate(dataset):
         loc = f"data/spectra/spectra_{i}.txt"
         print(loc)
-        np.savetxt(loc,spectra)
+        #np.savetxt(loc,spectra)
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt("data/locations/loc_25.txt",locations, fmt='%s')
+    np.savetxt("data/locations/loc_20.txt",locations, fmt='%s')
     
 
 def main():
-    dataset_loc = "data/loop_25_data.txt"
-    pars_loc = "data/loop_25_pars.txt"
+    dataset_loc = "data/loop_20_data.txt"
+    pars_loc = "data/loop_20_pars.txt"
     destination = "data/spectra"
     breakup(dataset_loc, pars_loc, destination)
 
