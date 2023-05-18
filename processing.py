@@ -8,7 +8,7 @@ def breakup(dataset_loc,pars_loc,destination):
     dataset = np.loadtxt(dataset_loc)
     pars = np.loadtxt(pars_loc)
     
-    locations = np.zeros(shape = (pars.shape[0],pars.shape[1]+1))
+    locations = np.empty(shape = (pars.shape[0],pars.shape[1]+1))
     for i,(spectra,pars) in enumerate(zip(dataset,pars)):
         loc = f"data/spectra/spectra_{i}.txt"
         np.savetxt(loc,spectra)
