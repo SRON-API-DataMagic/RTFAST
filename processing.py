@@ -4,27 +4,38 @@ This module generally deals with data processing for plotting and retrieval
 
 import numpy as np
 import tqdm
+import glob, os
 
 def breakup(dataset_loc,pars_loc,destination,index):
     dataset = np.loadtxt(dataset_loc)
     
+    files = glob.glob("/data/spectra/*.txt")
+    for i,file in enumerate(files):
+        tmp = file.replace("/data/spectra/spectra_","")
+        tmp = int(tmp.replace(".txt",""))
+        files[i] = tmp
+    files = np.asarray(files)
+    start = files.max() + 1
+    print(start)
+    os.exit()
+    
     locations = []
-    for i,spectra in enumerate(tqdm.tqdm(dataset)):
+    for i,spectra in enumerate(tqdm.tqdm(dataset),start=start):
         loc = f"data/spectra/spectra_{i}.txt"
-        #np.savetxt(loc,spectra)
+        np.savetxt(loc,spectra)
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt(f"data/locations/loc_{index}.txt",locations, fmt='%s')
+    np.savetxt(f"data/locations/grid_loc_{index}.txt",locations, fmt='%s')
     
 
 def main():
     destination = "data/spectra"
-    indexes = [0,1,2,3,4,5,10,15]
+    indexes = [5,6,7,8,9,10]
     for index in indexes:
         print("Converting loop",index)
-        dataset_loc = f"data/loop_{index}_data.txt"
-        pars_loc = f"data/loop_{index}_pars.txt"
+        dataset_loc = f"data/grid_{index}_data.txt"
+        pars_loc = f"data/grid_{index}_pars.txt"
         breakup(dataset_loc, pars_loc, destination,index)
 
 if __name__ == "__main__":
