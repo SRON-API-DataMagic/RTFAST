@@ -506,7 +506,7 @@ def queryByDropout(wrk_dir, device = None):
             
             print("Saving new data to disk")
             # save new data and parameters to disk
-            saveData(data_init, generator.pars_conversion(theta_init))
+            #saveData(data_init, generator.pars_conversion(theta_init))
             
             epoch = 0
             while (imp_te < 15 or imp_tr < 15 or imp_imp < 15):
