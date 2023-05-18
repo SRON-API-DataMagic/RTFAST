@@ -9,7 +9,7 @@ def breakup(dataset_loc,pars_loc,destination,index):
     dataset = np.loadtxt(dataset_loc)
     
     locations = []
-    for i,spectra in tqdm.tqdm(enumerate(dataset)):
+    for i,spectra in enumerate(tqdm.tqdm(dataset)):
         loc = f"data/spectra/spectra_{i}.txt"
         #np.savetxt(loc,spectra)
         locations.append(loc)
