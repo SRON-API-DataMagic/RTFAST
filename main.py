@@ -322,11 +322,11 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
-        with open(f"data/data.txt","r") as f1:
+        with open(f"data/loop_30_data.txt","r") as f1:
             data = np.loadtxt(f1)
         f1.close()
         
-        with open(f"data/pars.txt","r") as f2:
+        with open(f"data/loop_30_pars.txt","r") as f2:
             pars = np.loadtxt(f2)
         f2.close()
         
@@ -343,15 +343,15 @@ def queryByDropout(wrk_dir, device = None):
         del data
         del pars
         
-        with open(f"loss/active_tr_loss.txt","r") as f1:
+        with open(f"loss/30_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/active_te_loss.txt","r") as f1:
+        with open(f"loss/30_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/active_epochs.txt","r") as f1:
+        with open(f"loss/30_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -363,12 +363,12 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        active_loop_num = 19
+        active_loop_num = 30
         
         #create initial dataset object to create scaler (and then delete object)
         data_init_dataset = CustomData(theta_init, data_init, scaler)
         del data_init_dataset
-        model.load_state_dict(torch.load("models/active_best.pth"))
+        model.load_state_dict(torch.load("models/30_model.pth"))
         
     batch_size = 1024
     num_workers = 4
