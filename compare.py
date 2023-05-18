@@ -370,8 +370,8 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,19]
-    active_model_names = np.array([0,1,2,3,4,5,10,15,19])
+    active_name = [0,1,2,3,4,5,10,15,19,20,25,30]
+    active_model_names = np.array([0,1,2,3,4,5,10,15,19,20,25,30])
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
