@@ -9,7 +9,7 @@ import glob, os
 def breakup(dataset_loc,pars_loc,destination,index):
     dataset = np.loadtxt(dataset_loc)
     
-    files = glob.glob("/data/spectra/*.txt")
+    files = glob.glob("./data/spectra/*.txt")
     for i,file in enumerate(files):
         print(file)
         tmp = file.replace("/data/spectra/spectra_","")
