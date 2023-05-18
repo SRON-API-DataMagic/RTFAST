@@ -14,10 +14,8 @@ def breakup(dataset_loc,pars_loc,destination):
         loc = f"data/spectra/spectra_{i}.txt"
         print(loc)
         print(spectra)
-        print(np.concatenate((pars.astype(str),np.array([loc]))))
-        break
         np.savetxt(loc,spectra)
-        locations[i] = np.concatenate((pars,np.array([loc])))
+        locations[i] = np.concatenate((pars.astype(str),np.array([loc])))
     
     locations = np.asarray(locations)
     np.savetxt("data/spectra_loc.txt",locations)
