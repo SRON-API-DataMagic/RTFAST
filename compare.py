@@ -342,12 +342,14 @@ def calculate_loss(testing_dataloader,model,scaler):
 def violin(df,fname):
     sns.violinplot(data=df, x="Sample Size", y="Residuals")
     plt.ylim(top=1)
+    plt.axhline(y=0.01,ls="--",color="orange")
     plt.savefig(f"loss/violin_{fname}.png")
     plt.close()
 
 def box(df,fname):
     sns.boxplot(data=df, x="Sample Size", y="Residuals",whis=1.8)
     plt.ylim(top=1)
+    plt.axhline(y=0.01,ls="--",color="orange")
     plt.savefig(f"loss/box_{fname}.png")
     plt.close()
 
