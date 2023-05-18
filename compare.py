@@ -366,7 +366,7 @@ def residuals_dataframe(residuals,names):
     return df
 
 def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
-    model_base_loc = wrk_dir+"/models/save/"
+    model_base_loc = wrk_dir+"/models/"
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
