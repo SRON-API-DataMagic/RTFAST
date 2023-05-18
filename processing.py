@@ -11,11 +11,8 @@ def breakup(dataset_loc,pars_loc,destination,index):
     
     files = glob.glob("./data/spectra/*.txt")
     for i,file in enumerate(files):
-        print(file)
-        tmp = file.replace("/data/spectra/spectra_","")
-        print(tmp)
+        tmp = file.replace("./data/spectra/spectra_","")
         tmp = int(tmp.replace(".txt",""))
-        print(tmp)
         files[i] = tmp
     files = np.asarray(files)
     start = files.max() + 1
