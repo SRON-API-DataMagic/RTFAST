@@ -3,26 +3,29 @@ This module generally deals with data processing for plotting and retrieval
 """
 
 import numpy as np
+import tqdm
 
-def breakup(dataset_loc,pars_loc,destination):
+def breakup(dataset_loc,pars_loc,destination,index):
     dataset = np.loadtxt(dataset_loc)
     
     locations = []
-    for i,spectra in enumerate(dataset):
+    for i,spectra in tqdm(enumerate(dataset)):
         loc = f"data/spectra/spectra_{i}.txt"
-        print(loc)
         #np.savetxt(loc,spectra)
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt("data/locations/loc_20.txt",locations, fmt='%s')
+    np.savetxt(f"data/locations/loc_{index}.txt",locations, fmt='%s')
     
 
 def main():
-    dataset_loc = "data/loop_20_data.txt"
-    pars_loc = "data/loop_20_pars.txt"
     destination = "data/spectra"
-    breakup(dataset_loc, pars_loc, destination)
+    indexes = [0,1,2,3,4,5,10,15]
+    for index in indexes:
+        print(index)
+        dataset_loc = f"data/loop_{index}_data.txt"
+        pars_loc = f"data/loop_{index}_pars.txt"
+        breakup(dataset_loc, pars_loc, destination)
 
 if __name__ == "__main__":
     main()
