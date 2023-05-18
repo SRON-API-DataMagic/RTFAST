@@ -15,12 +15,12 @@ def breakup(dataset_loc,pars_loc,destination):
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt("data/spectra_loc.txt",locations, fmt='%s')
+    np.savetxt("data/locations/loc_25.txt",locations, fmt='%s')
     
 
 def main():
-    dataset_loc = "data/loop_30_data.txt"
-    pars_loc = "data/loop_30_pars.txt"
+    dataset_loc = "data/loop_25_data.txt"
+    pars_loc = "data/loop_25_pars.txt"
     destination = "data/spectra"
     breakup(dataset_loc, pars_loc, destination)
 
