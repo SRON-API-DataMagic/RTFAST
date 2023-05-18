@@ -4,7 +4,7 @@ This module generally deals with data processing for plotting and retrieval
 
 import numpy as np
 import tqdm
-import glob, os
+import glob
 
 def breakup(dataset_loc,pars_loc,destination,index):
     dataset = np.loadtxt(dataset_loc)
@@ -16,8 +16,6 @@ def breakup(dataset_loc,pars_loc,destination,index):
         files[i] = tmp
     files = np.asarray(files)
     start = files.max() + 1
-    print(start)
-    os.exit()
     
     locations = []
     for i,spectra in enumerate(tqdm.tqdm(dataset),start=start):
@@ -33,7 +31,7 @@ def main():
     destination = "data/spectra"
     indexes = [5,6,7,8,9,10]
     for index in indexes:
-        print("Converting loop",index)
+        print("Converting grid",index)
         dataset_loc = f"data/grid_{index}_data.txt"
         pars_loc = f"data/grid_{index}_pars.txt"
         breakup(dataset_loc, pars_loc, destination,index)
