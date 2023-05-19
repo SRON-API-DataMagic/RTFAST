@@ -1,14 +1,16 @@
 """
-This module generally deals with data processing for plotting and retrieval
+This module generally deals with data processing for plotting, retrieval and
+saving data.
 """
 
 import numpy as np
 import tqdm
 import glob
 import pandas as pd
+import torch
+import generator
 
-def breakup(dataset_loc, pars_loc, destination):
-    dataset = np.loadtxt(dataset_loc)
+def saveData(dataset, pars, destination, fname, current_locs = None):
     
     files = glob.glob("./data/spectra/*.txt")
     for i,file in enumerate(files):
@@ -25,8 +27,21 @@ def breakup(dataset_loc, pars_loc, destination):
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt("data/locations/test_loc.txt",locations, fmt='%s')
+    column_names = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
+                    "kTe","nH","boost","Mass","honr","b1","b2","fmin","fmax",
+                    "ReIm","phiA","phiAB","g","Anorm","RESP","Xnorm"]
+    pars_df = pd.DataFrame(pars,columns = column_names)
+    locations_df = pd.DataFrame(locations,columns=["Location"])
+    df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
+    
+    if current_locs != None:
+        df = pd.concat([df,current_locs],axis=0,ignore_index=True)
+    
+    df.to_csv(destination+fname)
     return
+
+def loadData(location):
+    return pd.read_csv(location)
 
 def merging_locations_pars(pars_loc, locations_loc, destination,index):
     pars = np.loadtxt(pars_loc)
@@ -39,7 +54,32 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
     final_df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
     final_df.to_csv(destination+"loc_"+index+".csv")
     return
-    
+
+def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
+    print("Saving loop")
+    saveData(data, generator.pars_conversion(pars),destination = "data/locations/",
+              fname = f"loop_{num}_")
+    print("Saved data")
+    torch.save(model.state_dict(), f"models/{num}_model.pth")
+    print("Saved model")
+    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_epochs.txt",epochs)
+    print("Saved losses")
+    return
+
+def nanChecker(data,pars):
+    index = []
+    for i,spec in enumerate(data):
+        if np.any(np.isnan(spec)) == True:
+            index.append(i)
+    if index != []:
+        print("Found bad models, printing parameters...")
+        for indice in index:
+            print(f"{indice}: {pars[indice]}")
+        data = np.delete(data,index, axis=0)
+        pars = np.delete(pars,index, axis=0)
+    return data, pars
 
 def main():
     destination = "data/locations/"
