@@ -46,8 +46,7 @@ def main():
     locations_loc ="data/locations/loc_"
     pars_loc = "data/pars/"
     
-    indexes = ["0","1","2","3","4","5","10","15","20","25","grid_5","grid_6",
-               "grid_7","grid_8","grid_9","grid_10"]
+    indexes = ["test"]
     
     for index in indexes:
         print(index)
