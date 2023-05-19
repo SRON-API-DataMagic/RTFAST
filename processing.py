@@ -53,6 +53,7 @@ def main():
         loc_index = locations_loc+index+".txt"
         pars_index = pars_loc+index+"_pars.txt"
         merging_locations_pars(pars_index, loc_index, destination, index)
+        print(pd.read_csv("/data/locations/loc_"+index+".csv"))
     
 if __name__ == "__main__":
     main()
