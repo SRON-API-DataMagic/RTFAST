@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 import glob
 
-def breakup(dataset_loc,pars_loc,destination,index):
+def breakup(dataset_loc,pars_loc,destination):
     dataset = np.loadtxt(dataset_loc)
     
     files = glob.glob("./data/spectra/*.txt")
@@ -24,17 +24,15 @@ def breakup(dataset_loc,pars_loc,destination,index):
         locations.append(loc)
     
     locations = np.asarray(locations)
-    np.savetxt(f"data/locations/grid_loc_{index}.txt",locations, fmt='%s')
-    
+    np.savetxt("data/locations/test_loc.txt",locations, fmt='%s')
+    return
+
 
 def main():
     destination = "data/spectra"
-    indexes = [10]
-    for index in indexes:
-        print("Converting grid",index)
-        dataset_loc = f"data/grid_{index}_data.txt"
-        pars_loc = f"data/grid_{index}_pars.txt"
-        breakup(dataset_loc, pars_loc, destination,index)
+    dataset_loc ="data/test_data.txt"
+    pars_loc = "data/test_pars.txt"
+    breakup(dataset_loc, pars_loc, destination)
 
 if __name__ == "__main__":
     main()
