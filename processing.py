@@ -30,7 +30,7 @@ def breakup(dataset_loc,pars_loc,destination):
 
 def merging_locations_pars(pars_loc,locations_loc,destination):
     pars = np.loadtxt(pars_loc)
-    locations = np.loadtxt(locations_loc,dtype='%s')
+    locations = np.loadtxt(locations_loc,dtype=str)
     column_names = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
                     "kTe","nH","boost","Mass","honr","b1","b2","fmin","fmax",
                     "ReIm","phiA","phiAB","g","Anorm","RESP","Xnorm"]
