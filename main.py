@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from joblib import dump, load, Parallel, delayed
 import scipy.stats
 
-from processing import nanChecker, saveLoop, saveData
+from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
 import generator
 import network
     
@@ -248,8 +248,8 @@ def queryByDropout(wrk_dir, device = None):
         data_init, theta_init = nanChecker(data_init, theta_init)
         pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
-        np.savetxt("data/data.txt",data_init)
-        np.savetxt("data/pars.txt",pars_init)
+        saveData(data_init, pars_init, 
+                 "data/locations/","active_locs.csv")
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -266,26 +266,7 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
-        with open("data/loop_30_data.txt","r") as f1:
-            data = np.loadtxt(f1)
-        f1.close()
-        
-        with open("data/loop_30_pars.txt","r") as f2:
-            pars = np.loadtxt(f2)
-        f2.close()
-        
-        #make mass log spaced to improve numeric stability in training
-        pars[:,13] = np.log10(pars[:,13]) 
-        pars[:,2] = pars[:,2]
-        pars[:,3] = pars[:,3]
-        pars[:,4] = np.log10(pars[:,4])
-        pars = pars[:,[1,13,2,3,4]] #retrieve spin and mass
-        
-        data_init = data
-        theta_init = pars
-        data_init, theta_init = nanChecker(data_init, theta_init)
-        del data
-        del pars
+        renameData("loc_30.csv", "data/locations/", "active_locs.csv")
         
         with open("loss/30_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
@@ -309,9 +290,6 @@ def queryByDropout(wrk_dir, device = None):
         
         active_loop_num = 30
         
-        #create initial dataset object to create scaler (and then delete object)
-        data_init_dataset = CustomData(theta_init, data_init, scaler)
-        del data_init_dataset
         model.load_state_dict(torch.load("models/30_model.pth"))
         
     batch_size = 1024
@@ -319,7 +297,7 @@ def queryByDropout(wrk_dir, device = None):
     
     lhs_idx = theta_init.shape[0]
     
-    test_set = CustomData("loc_text.csv", scaler, 
+    test_set = CustomData("loc_test.csv", scaler, 
                         scaling=False)
     print("Improvement data set created")
     improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
@@ -424,12 +402,6 @@ def queryByDropout(wrk_dir, device = None):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            # add test models to the rest of the training data for use in training
-            #in the future
-            data_init = np.vstack([data_init, data_test])
-            # add corresponding thetas thetas to the rest of the training data
-            theta_init = np.vstack([theta_init, theta_test])
-            
             epoch = 0
             #set improvements counters to 0
             imp_te = 0
@@ -479,6 +451,10 @@ def queryByDropout(wrk_dir, device = None):
             else:
                 loop_epochs.append(epoch)
             
+            #merge test models into training dataset
+            mergeSaveData(data_test, pd.read_csv("active_locs.csv"), 
+                          "data/locations/","active_locs.csv")
+            
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
@@ -490,7 +466,7 @@ def queryByDropout(wrk_dir, device = None):
                     best_model.load_state_dict(torch.load("models/active_best.pth"))
                 except:
                     best_model.load_state_dict(model.state_dict())
-                saveLoop(best_model, data_init, theta_init, temp_te, temp_tr, 
+                saveLoop(best_model, "active_locs.csv", temp_te, temp_tr, 
                          active_loop_num, temp_epochs)
             #iterate loop number by 1
             active_loop_num += 1

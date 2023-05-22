@@ -10,6 +10,10 @@ import pandas as pd
 import torch
 import generator
 
+def mergeSaveData(new_data,old_data,destination,fname):
+    df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
+    df.to_csv(destination+fname)
+    return
 def saveData(dataset, pars, destination, fname, current_locs = None):
     
     files = glob.glob("./data/spectra/*.txt")
@@ -40,6 +44,11 @@ def saveData(dataset, pars, destination, fname, current_locs = None):
     df.to_csv(destination+fname)
     return
 
+def renameData(data_locs,destination,fname):
+    df = pd.read_csv(data_locs)
+    df.to_csv(destination+fname)
+    return
+
 def loadData(location):
     return pd.read_csv(location)
 
@@ -55,10 +64,10 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
     final_df.to_csv(destination+"loc_"+index+".csv")
     return
 
-def saveLoop(model,data,pars,te_loss,tr_loss,num,epochs):
+def saveLoop(model,data_locs,te_loss,tr_loss,num,epochs):
     print("Saving loop")
-    saveData(data, generator.pars_conversion(pars),destination = "data/locations/",
-              fname = f"loop_{num}_")
+    renameData(data_locs,destination = "data/locations/",
+              fname = f"loc_{num}.csv")
     print("Saved data")
     torch.save(model.state_dict(), f"models/{num}_model.pth")
     print("Saved model")
