@@ -5,6 +5,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 import pandas as pd
+from math import ceil
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -212,10 +213,7 @@ def queryByDropout(wrk_dir, device = None):
     
     active_loops = 50
     range_all = np.asarray(generator.lhs_trimmed_gen())
-    n_samples = 5000
-    n_samples_large = 10000 # number of parameter sets to draw 
-    divider = 10
-    n_samples_small = int(n_samples_large/divider)
+    
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -306,6 +304,17 @@ def queryByDropout(wrk_dir, device = None):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num < active_loops:
+            #increase size of added data dependent on current dataset size
+            data_size = len(pd.read_csv("data/locations/active_locs.csv"))
+            if data_size > 100000:
+                multiplier = ceil(data_size/100000)
+            else:
+                multiplier = 1
+            
+            n_samples = 5000*multiplier
+            n_samples_large = 10000*multiplier # number of parameter sets to draw 
+            divider = 100
+            n_samples_small = int(n_samples_large/divider)
             print(f"I am in active learning loop {active_loop_num+1}")
             # randomly generate points in parameter space
             print("Generating random samples of theta")
@@ -313,13 +322,14 @@ def queryByDropout(wrk_dir, device = None):
             
             print("computing neural network predictions with dropout for each theta")
             # compute 100 neural network predictions with dropout
-            pred_query_all = np.zeros((1000,n_samples_small,len(egrid)))
+            sample_dropout = 100*multiplier
+            pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             model.train()
             query_idx = []
             
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
-                for i in range(1000):
+                for i in range(sample_dropout):
                     pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
