@@ -48,7 +48,7 @@ class CustomData(Dataset):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,27]
         #retrieve parameters used to generate the spectra that we want to train on
-        parameters = self.labels.iloc[idx,self.pars_list]
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         #load spectra
