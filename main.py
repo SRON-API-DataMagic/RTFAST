@@ -295,7 +295,7 @@ def queryByDropout(wrk_dir, device = None):
     batch_size = 1024
     num_workers = 4
     
-    lhs_idx = theta_init.shape[0]
+    lhs_idx = 0
     
     test_set = CustomData("loc_test.csv", scaler, 
                         scaling=False)
