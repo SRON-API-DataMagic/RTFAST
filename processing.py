@@ -38,7 +38,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None):
     locations_df = pd.DataFrame(locations,columns=["Location"])
     df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
     
-    if current_locs != None:
+    if current_locs is not None:
         df = pd.concat([df,current_locs],axis=0,ignore_index=True)
     
     df.to_csv(destination+fname)
