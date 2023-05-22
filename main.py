@@ -41,7 +41,7 @@ class CustomData(Dataset):
         self.scaler_name = scaler_name
     
     def __len__(self):
-        return self.data.shape[0]
+        return len(self.labels)
     
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
