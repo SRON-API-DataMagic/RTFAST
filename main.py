@@ -393,9 +393,6 @@ def queryByDropout(wrk_dir, device = None):
             # add rejected parameter sets back to original array for potential 
             # future use:
             theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
-        
-            print(f"size of theta_init: {theta_init.shape}")
-            print(f"size of data_init: {data_init.shape}")
             
             # increment the index for reading parameters from theta_lhs
             lhs_idx += (n_samples_large)
