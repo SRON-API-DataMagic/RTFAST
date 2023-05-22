@@ -297,7 +297,7 @@ def queryByDropout(wrk_dir, device = None):
     
     lhs_idx = 0
     
-    test_set = CustomData("loc_test.csv", scaler, 
+    test_set = CustomData("data/locations/loc_test.csv", scaler, 
                         scaling=False)
     print("Improvement data set created")
     improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
@@ -374,10 +374,10 @@ def queryByDropout(wrk_dir, device = None):
                      "data/locations/","active_locs.csv", 
                      current_loc = pd.read_csv("data/locations/active_locs.csv"))
             
-            saveData(data_test, theta_query, "data/locations/",
+            saveData(data_test, theta_test, "data/locations/",
                      "data/locations/active_test_locs.csv")
             
-            del data_query, theta_query
+            del data_query, data_test, theta_query, theta_test
             
             # add rejected parameter sets back to original array for potential 
             # future use:
@@ -454,7 +454,7 @@ def queryByDropout(wrk_dir, device = None):
                 loop_epochs.append(epoch)
             
             #merge test models into training dataset
-            mergeSaveData(data_test, 
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
                           pd.read_csv("data/locations/active_locs.csv"), 
                           "data/locations/","active_locs.csv")
             
