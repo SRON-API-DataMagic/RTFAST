@@ -60,7 +60,7 @@ class CustomData(Dataset):
             mask = None
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
-        if self.mask is not None:
+        if mask is not None:
             return datum, parameters, mask
         else:
             return datum, parameters
