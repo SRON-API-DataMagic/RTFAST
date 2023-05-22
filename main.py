@@ -50,7 +50,7 @@ class CustomData(Dataset):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list]
         #convert parameters to log space
-        parameters[1,4] = np.log10(parameters[1,4])
+        parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         #load spectra
         datum = np.loadtxt(location)
         #create a mask for loss calculation later
