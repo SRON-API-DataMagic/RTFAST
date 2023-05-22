@@ -266,7 +266,7 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
-        renameData("loc_30.csv", "data/locations/", "active_locs.csv")
+        renameData("data/locations/loc_30.csv", "data/locations/", "active_locs.csv")
         
         with open("loss/30_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
@@ -372,10 +372,10 @@ def queryByDropout(wrk_dir, device = None):
             
             saveData(data_query, generator.pars_conversion(theta_query), 
                      "data/locations/","active_locs.csv", 
-                     current_loc = pd.read_csv("active_locs.csv"))
+                     current_loc = pd.read_csv("data/locations/active_locs.csv"))
             
             saveData(data_test, theta_query, "data/locations/",
-                     "active_test_locs.csv")
+                     "data/locations/active_test_locs.csv")
             
             del data_query, theta_query
             
@@ -390,13 +390,15 @@ def queryByDropout(wrk_dir, device = None):
             lhs_idx += (n_samples_large)
     
             print("Setting up modeling")
-            Xquery = CustomData("active_locs.csv", scaler, scaling=False)
+            Xquery = CustomData("data/locations/active_locs.csv", scaler, 
+                                scaling=False)
             print("Query data set created")
             query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
         
-            Xtest = CustomData("active_test_locs.csv", scaler, scaling=False)
+            Xtest = CustomData("data/locations/active_test_locs.csv", scaler, 
+                               scaling=False)
             print("Test data set created")
             test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
@@ -452,7 +454,8 @@ def queryByDropout(wrk_dir, device = None):
                 loop_epochs.append(epoch)
             
             #merge test models into training dataset
-            mergeSaveData(data_test, pd.read_csv("active_locs.csv"), 
+            mergeSaveData(data_test, 
+                          pd.read_csv("data/locations/active_locs.csv"), 
                           "data/locations/","active_locs.csv")
             
             #save state of models and data if loop is a multiple of 5, first 5
@@ -466,7 +469,8 @@ def queryByDropout(wrk_dir, device = None):
                     best_model.load_state_dict(torch.load("models/active_best.pth"))
                 except:
                     best_model.load_state_dict(model.state_dict())
-                saveLoop(best_model, "active_locs.csv", temp_te, temp_tr, 
+                saveLoop(best_model, "data/locations/active_locs.csv", 
+                         temp_te, temp_tr, 
                          active_loop_num, temp_epochs)
             #iterate loop number by 1
             active_loop_num += 1
