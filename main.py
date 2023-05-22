@@ -52,7 +52,7 @@ class CustomData(Dataset):
         #convert parameters to log space
         parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         #load spectra
-        datum = np.loadtxt(location)
+        datum = np.loadtxt(location).reshape(1, -1)
         #create a mask for loss calculation later
         try:
             mask = np.where(datum <= 1e-38, 0, 1)
