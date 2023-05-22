@@ -313,7 +313,7 @@ def queryByDropout(wrk_dir, device = None):
             
             print("computing neural network predictions with dropout for each theta")
             # compute 100 neural network predictions with dropout
-            pred_query_all = np.zeros((100,n_samples_small,len(egrid)))
+            pred_query_all = np.zeros((1000,n_samples_small,len(egrid)))
             model.train()
             query_idx = []
             
