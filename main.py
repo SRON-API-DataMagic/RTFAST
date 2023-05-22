@@ -266,17 +266,17 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
-        renameData("data/locations/loc_30.csv", "data/locations/", "active_locs.csv")
+        renameData("data/locations/loc_25.csv", "data/locations/", "active_locs.csv")
         
-        with open("loss/30_tr_loss.txt","r") as f1:
+        with open("loss/25_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/30_te_loss.txt","r") as f1:
+        with open("loss/25_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/30_epochs.txt","r") as f1:
+        with open("loss/25_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -288,9 +288,9 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        active_loop_num = 30
+        active_loop_num = 25
         
-        model.load_state_dict(torch.load("models/30_model.pth"))
+        model.load_state_dict(torch.load("models/25_model.pth"))
         
     batch_size = 1024
     num_workers = 4
@@ -461,7 +461,7 @@ def queryByDropout(wrk_dir, device = None):
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == (active_loops - 1)):
+                or active_loop_num == (active_loops - 1)) and active_loop_num != 25:
                 temp_te = np.asarray(te_loss_arr)
                 temp_tr = np.asarray(tr_loss_arr)
                 temp_epochs = np.asarray(loop_epochs)
