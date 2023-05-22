@@ -386,7 +386,7 @@ def queryByDropout(wrk_dir, device = None):
             
             saveData(data_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
-                     "data/locations/active_test_locs.csv")
+                     "active_test_locs.csv")
             
             del data_query, data_test, theta_query, theta_test
             
