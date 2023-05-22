@@ -382,7 +382,7 @@ def queryByDropout(wrk_dir, device = None):
             
             saveData(data_query, generator.pars_conversion(theta_query), 
                      "data/locations/","active_locs.csv", 
-                     current_loc = pd.read_csv("data/locations/active_locs.csv"))
+                     current_locs = pd.read_csv("data/locations/active_locs.csv"))
             
             saveData(data_test, theta_test, "data/locations/",
                      "data/locations/active_test_locs.csv")
