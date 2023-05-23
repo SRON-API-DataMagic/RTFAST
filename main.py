@@ -51,12 +51,12 @@ class CustomData(Dataset):
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
-        parameters = torch.tensor(parameters)
+        parameters = torch.squeeze(torch.tensor(parameters))
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
         #create a mask for loss calculation later
         try:
-            mask = np.where(datum <= 1e-38, 0, 1)
+            mask = torch.squeeze(np.where(datum <= 1e-38, 0, 1))
         except:
             mask = None
         #scale spectra by energy bin to normalized space
