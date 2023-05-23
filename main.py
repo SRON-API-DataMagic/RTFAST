@@ -51,6 +51,7 @@ class CustomData(Dataset):
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
+        parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
         #create a mask for loss calculation later
