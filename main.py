@@ -60,7 +60,7 @@ class CustomData(Dataset):
         except:
             mask = None
         #scale spectra by energy bin to normalized space
-        datum = self.standardize(datum)[:,None,:]
+        datum = self.standardize(datum)
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -136,7 +136,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
-        pred = model(P.to(device))
+        pred = model(P.to(device))[:,None,:]
         print(pred.shape)
         print(D.shape)
         print(M.shape)
