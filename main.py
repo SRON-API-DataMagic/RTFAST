@@ -36,7 +36,7 @@ class CustomData(Dataset):
     def __init__(self,labels,scaler,scaling=True, scaler_name = "active_scaler"):
         super().__init__()
         self.labels = pd.read_csv(labels)
-        self.pars_list = [1,13,2,3,4]
+        self.pars_list = [1,14,2,3,4]
         self.scaler = scaler
         self.scaling = scaling
         self.scaler_name = scaler_name
@@ -51,7 +51,7 @@ class CustomData(Dataset):
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         print(parameters)
-        parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
+        parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
         parameters = torch.tensor(parameters)
         print(parameters)
         #load spectra
