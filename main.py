@@ -51,16 +51,16 @@ class CustomData(Dataset):
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
-        parameters = torch.squeeze(torch.tensor(parameters))
+        parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
         #create a mask for loss calculation later
         try:
-            mask = torch.squeeze(np.where(datum <= 1e-38, 0, 1))
+            mask = np.where(datum <= 1e-38, 0, 1)
         except:
             mask = None
         #scale spectra by energy bin to normalized space
-        datum = self.standardize(datum)
+        datum = self.standardize(datum)[:,None,:]
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -137,6 +137,9 @@ def train(dataloader,model,optimizer,loss_fn,device):
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
         pred = model(P.to(device))
+        print(pred.shape)
+        print(D.shape)
+        print(M.shape)
         loss = loss_fn(pred,D.to(device),M.to(device))
         optimizer.zero_grad()
         loss.backward()
