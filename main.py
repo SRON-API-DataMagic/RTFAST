@@ -50,25 +50,19 @@ class CustomData(Dataset):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
+        print(parameters)
         parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         parameters = torch.tensor(parameters)
         print(parameters)
-        print(parameters.shape)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
-        print(datum)
-        print(datum.shape)
         #create a mask for loss calculation later
         try:
             mask = np.where(datum <= 1e-38, 0, 1)
         except:
             mask = None
-        print(mask)
-        print(mask.shape)
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
-        print(datum)
-        print(datum.shape)
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -299,7 +293,7 @@ def queryByDropout(wrk_dir, device = None):
         
         model.load_state_dict(torch.load("models/25_model.pth"))
         
-    batch_size = 200
+    batch_size = 128
     num_workers = 4
     
     lhs_idx = 0
