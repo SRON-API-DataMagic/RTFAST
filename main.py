@@ -358,7 +358,7 @@ def queryByDropout(wrk_dir, device = None):
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
             
-            distributions(theta_query, labels, f"loop_{active_loop_num}_")
+            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
             
             # compute the physical model for these thetas
             data_query = np.zeros((theta_query.shape[0],len(egrid)))
