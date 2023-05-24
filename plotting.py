@@ -46,7 +46,7 @@ def inverse(scaler,data):
 
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
-        plt.hist(column)
+        plt.hist(column, bins=100, density = True)
         plt.xlabel(labels[i])
         plt.savefig(fname+labels[i]+".png")
         plt.close()
