@@ -19,6 +19,7 @@ import scipy.stats
 from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
 import generator
 import network
+from plotting import distributions
     
 class CustomData(Dataset):
     """
@@ -215,6 +216,8 @@ def queryByDropout(wrk_dir, device = None):
     active_loops = 50
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
+    labels = ["a","mass","inc","rin","rout"]
+    
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -354,6 +357,8 @@ def queryByDropout(wrk_dir, device = None):
             print("Generating data for these samples")
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
+            
+            distributions(theta_query, labels, f"loop_{active_loop_num}_")
             
             # compute the physical model for these thetas
             data_query = np.zeros((theta_query.shape[0],len(egrid)))

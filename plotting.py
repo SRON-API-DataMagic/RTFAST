@@ -44,6 +44,13 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
+def distributions(data,labels,fname):
+    for i,column in enumerate(data.T):
+        plt.hist(column)
+        plt.xlabel(labels[i])
+        plt.savefig(fname+labels[i]+".png")
+        plt.close()
+
 def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = False):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
