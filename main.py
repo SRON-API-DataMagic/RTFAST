@@ -6,6 +6,7 @@ import os
 from tqdm import tqdm
 import pandas as pd
 from math import ceil
+import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -19,7 +20,6 @@ import scipy.stats
 from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
 import generator
 import network
-from plotting import distributions
     
 class CustomData(Dataset):
     """
@@ -103,7 +103,14 @@ class CustomData(Dataset):
             scaler = load(f'scalers/{self.scaler_name}.bin')
             scaled_data = scaler.transform(data)
         return scaled_data
-    
+
+def distributions(data,labels,fname):
+    for i,column in enumerate(data.T):
+        plt.hist(column, bins=100, density = True)
+        plt.xlabel(labels[i])
+        plt.savefig(fname+labels[i]+".png")
+        plt.close()
+
 def train(dataloader,model,optimizer,loss_fn,device):
     """
     
