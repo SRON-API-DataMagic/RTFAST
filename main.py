@@ -13,7 +13,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 from joblib import dump, load, Parallel, delayed
 import scipy.stats
 
@@ -277,7 +277,6 @@ def queryByDropout(wrk_dir, device = None):
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-        last_sig_best_imp = 1e7 #last significant best large test set loss (set large initially)
         tr_loss_arr = []
         te_loss_arr = []
         loop_epochs = []
@@ -308,7 +307,6 @@ def queryByDropout(wrk_dir, device = None):
         
         last_sig_best_tr = tr_loss_arr.min()
         last_sig_best_te = te_loss_arr.min()
-        last_sig_best_imp = te_loss_arr.min()
         
         tr_loss_arr = tr_loss_arr.tolist()
         te_loss_arr = te_loss_arr.tolist()
@@ -322,12 +320,6 @@ def queryByDropout(wrk_dir, device = None):
     num_workers = 4
     
     lhs_idx = 0
-    
-    test_set = CustomData("data/locations/loc_test.csv", scaler,
-                          "active_scaler.bin")
-    print("Improvement data set created")
-    improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
-                                        num_workers = num_workers, shuffle=True)
     
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
@@ -451,13 +443,11 @@ def queryByDropout(wrk_dir, device = None):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
-                loss,improv_loss = test(test_dataloader,model,loss_fn,device,
-                                        improvement_dataloader)
+                loss,improv_loss = test(test_dataloader,model,loss_fn,device)
                 te_loss_arr.append(loss)
                 tr_loss_arr.append(train_loss)
                 tr_bet = (0.9*last_sig_best_tr) - train_loss
                 te_bet = (0.9*last_sig_best_te) - loss
-                imp_bet = (0.9*last_sig_best_imp) - improv_loss
                 if tr_bet > 0 and te_bet > 0:
                     last_sig_best_tr = train_loss
                     last_sig_best_te = loss
@@ -465,6 +455,7 @@ def queryByDropout(wrk_dir, device = None):
                     imp_tr = 0
                     print(f"New best training loss: {train_loss}")
                     print(f"New best testing loss: {loss}")
+                    torch.save(model.state_dict(), "models/active_best.pth")
                 elif tr_bet > 0:
                     imp_tr = 0
                     imp_te += 1
@@ -475,16 +466,10 @@ def queryByDropout(wrk_dir, device = None):
                     imp_te = 0
                     last_sig_best_te = loss
                     print(f"New best testing loss: {loss}")
+                    torch.save(model.state_dict(), "models/active_best.pth")
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if imp_bet > 0:
-                    imp_imp = 0
-                    last_sig_best_imp = improv_loss
-                    print("Current best performer on true test set, saving...")
-                    torch.save(model.state_dict(), "models/active_best.pth")
-                else:
-                    imp_imp += 1
                 epoch += 1
             if active_loop_num != 0:
                 loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
@@ -552,11 +537,28 @@ def grid_data_gen(size,fname,egrid):
     data_init = np.array(data_init)
     data_init, pars_init = nanChecker(data_init, pars_init)
     
+    scaler = MinMaxScaler()
+    scaler = scaler.transform(data_init)
+    dump(scaler, f'scalers/{fname}_scaler.bin', compress=True)
+    
+    idxs = np.arange(0,data_init.shape[0])
+    np.random.shuffle(idxs)
+    tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
+    tes_idx = idxs[int(-0.1*len(idxs)):]
+    
+    #Splitting data and parameters into training and testing datasets
+    train_data = data_init[tra_idx]
+    train_pars = theta_init[tra_idx]
+    test_data = data_init[tes_idx]
+    test_pars = theta_init[tes_idx]
+    
     print("Saving to disk")
     #save data for the first time in text files
-    np.savetxt(f"data/grid_{fname}_data.txt",data_init)
-    np.savetxt(f"data/grid_{fname}_pars.txt",pars_init)
-    return data_init, theta_init
+    saveData(train_data, train_pars, 
+             "data/locations/","loc_"+fname+".csv")
+    saveData(test_data, test_pars, 
+             "data/locations/","loc_"+fname+"_test.csv")
+    return
 
 def grid(wrk_dir,device):
     print("Training using grid")
@@ -565,81 +567,36 @@ def grid(wrk_dir,device):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
     grid_sizes = [5,6,7,8,9,10]
+    grid_names = []
+    for size in grid_sizes:
+        grid_names.append("grid_{size}")
     
-    for i, size in enumerate(grid_sizes):
+    for size, fname in zip(grid_sizes,grid_names):
+        print(size)
+        grid_data_gen(size, fname, egrid)
+        
+    batch_size = 1024
+    num_workers = 4
+    
+    for i, (size,fname) in enumerate(grid_sizes,grid_names):
     
         fname = str(size)
         print(f"Starting {size} x {size} grid loop")
         
-        #data_init, theta_init = grid_data_gen(size, fname, egrid)
-        with open(f"data/grid_{size}_data.txt","r") as f1:
-            data_init = np.loadtxt(f1)
-        f1.close()
-        
-        with open(f"data/grid_{size}_pars.txt","r") as f1:
-            theta_init = np.loadtxt(f1)
-        f1.close()
-        
-        theta_init[:,13] = np.log10(theta_init[:,13]) 
-        theta_init[:,2] = theta_init[:,2]
-        theta_init[:,3] = theta_init[:,3]
-        theta_init[:,4] = np.log10(theta_init[:,4])
-        theta_init = theta_init[:,[1,13,2,3,4]] #retrieve parameters
-        print("Grid generated")
-            
         scaler = MinMaxScaler()
-        if i == 0:
-            #create initial dataset object to create scaler (and then delete object)
-            data_init_dataset = CustomData(theta_init, data_init, scaler,
-                                           scaler_name="grid_scaler", 
-                                           scaling = True)
-            del data_init_dataset
+        #create initial dataset object to create scaler (and then delete object)
+        training_data = CustomData("loc_"+fname+".csv", scaler, 
+                             scaler_name=f"{fname}_scaler.bin")
         
-        batch_size = 1024
-        num_workers = 4
+        training_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                      num_workers = num_workers, shuffle=True)
         
-        #split dataset indexes randomly into 90% training, 10% test
-        idxs = np.arange(0,data_init.shape[0])
-        np.random.shuffle(idxs)
-        tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
-        tes_idx = idxs[int(-0.1*len(idxs)):]
+        testing_data = CustomData("loc_"+fname+"_test.csv", scaler, 
+                             scaler_name=f"{fname}_scaler.bin")
         
-        #Splitting data and parameters into training and testing datasets
-        train_data = data_init[tra_idx]
-        train_pars = theta_init[tra_idx]
-        test_data = data_init[tes_idx]
-        test_pars = theta_init[tes_idx]
+        test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                      num_workers = num_workers, shuffle=True)
         
-        with open("data/test_data.txt","r") as f1:
-            test_data = np.loadtxt(f1)
-        f1.close()
-        
-        with open("data/test_pars.txt","r") as f1:
-            test_pars = np.loadtxt(f1)
-        f1.close()
-        
-        test_pars[:,13] = np.log10(test_pars[:,13]) 
-        test_pars[:,2] = test_pars[:,2]
-        test_pars[:,3] = test_pars[:,3]
-        test_pars[:,4] = np.log10(test_pars[:,4])
-        test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
-        
-        test_set = CustomData(test_pars, test_data, scaler, 
-                            "grid_scaler")
-        
-        training_dataset = CustomData(train_pars, train_data, scaler,
-                                      "grid_scaler")
-        testing_dataset = CustomData(test_pars, test_data, scaler, 
-                                     "grid_scaler")
-        print("Datasets created")
-        training_dataloader = DataLoader(training_dataset, batch_size=batch_size, 
-                                         num_workers = num_workers, shuffle=True)
-        
-        test_dataloader = DataLoader(testing_dataset, batch_size=batch_size, 
-                                     num_workers = num_workers, shuffle=True)
-        
-        improvement_dataloader = DataLoader(test_set, batch_size=batch_size, 
-                                            num_workers = num_workers, shuffle=True)
         print("Dataloaders created")
         
         model = network.NeuralNetwork(5,len(egrid))
@@ -662,8 +619,7 @@ def grid(wrk_dir,device):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn,device)
-            loss,improv_loss = test(test_dataloader,model,loss_fn,device,
-                                    improvement_dataloader)
+            loss,improv_loss = test(test_dataloader,model,loss_fn,device)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
             tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -730,8 +686,8 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
-    #grid(wrk_dir,device)
+    #queryByDropout(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()
