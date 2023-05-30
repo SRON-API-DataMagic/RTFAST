@@ -538,7 +538,7 @@ def grid_data_gen(size,fname,egrid):
     data_init, pars_init = nanChecker(data_init, pars_init)
     
     scaler = MinMaxScaler()
-    scaler = scaler.transform(data_init)
+    scaler = scaler.fit(data_init)
     dump(scaler, f'scalers/{fname}_scaler.bin', compress=True)
     
     idxs = np.arange(0,data_init.shape[0])
