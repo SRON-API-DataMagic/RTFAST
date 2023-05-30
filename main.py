@@ -38,9 +38,13 @@ class CustomData(Dataset):
         super().__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = [1,14,2,3,4]
-        self.scaler = scaler
         self.scaling = scaling
         self.scaler_name = scaler_name
+        if scaling == True:
+            self.scaler = scaler
+            self.scaler_create()
+        else:
+            self.scaler = load(f'scalers/{self.scaler_name}.bin')
     
     def __len__(self):
         return len(self.labels)
@@ -78,7 +82,24 @@ class CustomData(Dataset):
         D = torch.from_numpy(D)
         D = D.double()
         return D
-        
+    
+    def scaler_create(self):
+        """
+        Creates and loads the scaler for the dataset.
+
+        Returns
+        -------
+        None.
+
+        """
+        data = []
+        for file in self.labels.iloc[:,27]:
+            data.append(np.loadtxt(file))
+        final_dataset = np.concatenate(data,axis=0)
+        scaler = self.scaler.fit(final_dataset)
+        dump(scaler, f'scalers/{self.scaler_name}.bin', compress=True)
+        return
+    
     def scale(self,data):
         """
         Standard scales the logarithm spaced data by energy bin and saves the
@@ -95,13 +116,8 @@ class CustomData(Dataset):
             Scaled array of spectra in the logspace.
 
         """
-        scaler = self.scaler
-        if self.scaling == True:
-            scaled_data = scaler.fit_transform(data)
-            dump(scaler, f'scalers/{self.scaler_name}.bin', compress=True)
-        else:
-            scaler = load(f'scalers/{self.scaler_name}.bin')
-            scaled_data = scaler.transform(data)
+        scaler = self.scaler()
+        scaled_data = scaler.transform(data)
         return scaled_data
 
 def distributions(data,labels,fname):
@@ -242,7 +258,6 @@ def queryByDropout(wrk_dir, device = None):
     scaler = MinMaxScaler()
     
     if first == True: 
-        """
         print("Generating first time dataset")
         init_data_size = 5000
         #generating a random set of parameters and corresponding data
@@ -258,7 +273,6 @@ def queryByDropout(wrk_dir, device = None):
         #save data for the first time in text files
         saveData(data_init, pars_init, 
                  "data/locations/","active_locs.csv")
-        """
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
