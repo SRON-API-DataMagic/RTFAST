@@ -242,6 +242,7 @@ def queryByDropout(wrk_dir, device = None):
     scaler = MinMaxScaler()
     
     if first == True: 
+        """
         print("Generating first time dataset")
         init_data_size = 5000
         #generating a random set of parameters and corresponding data
@@ -257,6 +258,7 @@ def queryByDropout(wrk_dir, device = None):
         #save data for the first time in text files
         saveData(data_init, pars_init, 
                  "data/locations/","active_locs.csv")
+        """
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
