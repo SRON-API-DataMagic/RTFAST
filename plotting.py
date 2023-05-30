@@ -250,7 +250,7 @@ def residual_computation(testing_dataloader,model,scaler):
     return (dataframe, ticks, ticklabels)
 
 def model_samples(testing_dataloader,scaler,model,egrid,gr):
-    for batch, (D,P,M) in enumerate(testing_dataloader):
+    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
         M = np.squeeze(M)
         D = np.squeeze(D)
         #retrieve relevant data and parameters
@@ -294,7 +294,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
 
 def calculate_loss(testing_dataloader,model,scaler):
     residuals = []
-    for batch, (D,P,M) in enumerate(testing_dataloader):
+    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
