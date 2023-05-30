@@ -516,7 +516,8 @@ def main():
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData("data/locations/loc_test.csv",grid_scaler) #scaler unused but must be parsed
-    testing_dataloader = DataLoader(test_data,batch_size = batch_size)
+    testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                    num_workers=8)
     
     active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)
     
