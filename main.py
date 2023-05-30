@@ -268,7 +268,7 @@ def queryByDropout(wrk_dir, device = None):
         active_loop_num = 0
         
         #create initial dataset object to create scaler (and then delete object)
-        data_init_dataset = CustomData(theta_init, data_init, scaler)
+        data_init_dataset = CustomData("data/locations/active_locs.csv", scaler)
         del data_init_dataset
         
     else: #load previously generated data as initial data and parameter set
