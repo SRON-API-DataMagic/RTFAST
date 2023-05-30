@@ -22,17 +22,30 @@ from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
 from main import CustomData, saveData
 
 class LoadCustomData(CustomData):
-    def __init__(self,pars,data,scaler):
-        super().__init__(pars,data,scaler)
-        self.par_list = pars
-        self.data = data
-        self.mask = np.where(self.data <= 1e-38, 0, 1)
+    def __init__(self,labels,scaler):
+        super().__init__(labels,scaler)
+        self.labels = pd.read_csv(labels)
+        self.pars_list = [1,14,2,3,4]
 
     def __getitem__(self,idx):
-        datum = self.data[idx]
-        parameters = self.par_list[idx]
-        mask = self.mask[idx]
-        return datum, parameters, mask
+        #retrieve location of the spectra to load
+        location = self.labels.iloc[idx,27]
+        #retrieve parameters used to generate the spectra that we want to train on
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
+        #convert parameters to log space
+        parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
+        parameters = torch.tensor(parameters)
+        #load spectra
+        datum = np.loadtxt(location).reshape(1, -1)
+        #create a mask for loss calculation later
+        try:
+            mask = np.where(datum <= 1e-38, 0, 1)
+        except:
+            mask = None
+        if mask is not None:
+            return datum, parameters, mask
+        else:
+            return datum, parameters
     
 class Residual():
     
@@ -379,8 +392,8 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,19,20,25,30]
-    active_model_names = np.array([0,1,2,3,4,5,10,15,19,20,25,30])
+    active_name = [0,1,2,3,4,5,10,15,19,20,25,30,35,40,45]
+    active_model_names = np.array(active_name)
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
@@ -500,26 +513,9 @@ def main():
     np.savetxt("data/test_data.txt",data)
     np.savetxt("data/test_pars.txt",pars_conversion(pars))
     """
-    with open("data/test_data.txt","r") as f1:
-        test_data = np.loadtxt(f1)
-    f1.close()
-    
-    with open("data/test_pars.txt","r") as f1:
-        test_pars = np.loadtxt(f1)
-    f1.close()
-    
-    test_pars[:,13] = np.log10(test_pars[:,13]) 
-    test_pars[:,2] = test_pars[:,2]
-    test_pars[:,3] = test_pars[:,3]
-    test_pars[:,4] = np.log10(test_pars[:,4])
-    test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
-    
-    data = test_data
-    pars = test_pars
-    
     #put test set into dataloader format
     batch_size = 1
-    test_data = LoadCustomData(pars,data,grid_scaler) #scaler unused but must be parsed
+    test_data = LoadCustomData("data/locations/loc_test.csv",grid_scaler) #scaler unused but must be parsed
     testing_dataloader = DataLoader(test_data,batch_size = batch_size)
     
     active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)

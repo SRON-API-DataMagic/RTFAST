@@ -133,7 +133,6 @@ def train(dataloader,model,optimizer,loss_fn,device):
     model.train()
     
     size = len(dataloader.dataset)
-    batch_size = 128
     loss_arr = 0
     big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
@@ -142,7 +141,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        loss_b, current = loss.detach().item(), (batch*batch_size + 1)
+        loss_b, current = loss.detach().item(), (batch*P.shape[0] + 1)
         if batch % 50 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
@@ -217,7 +216,6 @@ def queryByDropout(wrk_dir, device = None):
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
-    
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
