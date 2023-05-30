@@ -95,10 +95,14 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     colors = ["#16E6E9", "#E91916"]
     cmap_flat = sns.color_palette(colors)
     
-    residuals = df["Residuals"].apply(returnFlats)[:,None]
+    residuals = df["Residuals"].apply(returnFlats)
+    resids = []
+    for item in residuals:
+        resids.append(item)
+    resids = np.asarray(resids)
     
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(residuals,cmap=cmap_flat,cbar_kws = {})
+    ax = sns.heatmap(resids,cmap=cmap_flat,cbar_kws = {})
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
@@ -114,14 +118,13 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
     residuals = df["Residuals"].apply(returnContinuous)
-    print(residuals)
-    print(residuals.shape)
-    residuals = np.asarray(residuals)
-    print(residuals)
-    residuals = np.squeeze(residuals)
+    resids = []
+    for item in residuals:
+        resids.append(item)
+    resids = np.asarray(resids)
     
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(residuals,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
+    ax = sns.heatmap(resids,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
     ax.set_yticks(ticks,labels=ticklabels)
     ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
@@ -224,7 +227,6 @@ def residual_computation(testing_dataloader,model,scaler):
         residuals_flat.append(resid_flat)
         
     residuals = np.squeeze(np.asarray(residuals))
-    print(residuals)
     residuals_flat = np.squeeze(np.asarray(residuals_flat))
     obj_residuals = []
     for (res,res_flat) in zip(residuals,residuals_flat):
