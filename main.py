@@ -589,9 +589,9 @@ def grid(wrk_dir,device):
         scaler = MinMaxScaler()
         if i == 0:
             #create initial dataset object to create scaler (and then delete object)
-            data_init_dataset = CustomData(theta_init, data_init, scaler, 
-                                           scaling = True, 
-                                           scaler_name="grid_scaler")
+            data_init_dataset = CustomData(theta_init, data_init, scaler,
+                                           scaler_name="grid_scaler", 
+                                           scaling = True)
             del data_init_dataset
         
         batch_size = 1024
@@ -624,12 +624,12 @@ def grid(wrk_dir,device):
         test_pars = test_pars[:,[1,13,2,3,4]] #retrieve parameters
         
         test_set = CustomData(test_pars, test_data, scaler, 
-                            scaling=False)
+                            "grid_scaler")
         
-        training_dataset = CustomData(train_pars, train_data, scaler, 
-                                      scaling = False, scaler_name="grid_scaler")
+        training_dataset = CustomData(train_pars, train_data, scaler,
+                                      "grid_scaler")
         testing_dataset = CustomData(test_pars, test_data, scaler, 
-                                     scaling = False, scaler_name="grid_scaler")
+                                     "grid_scaler")
         print("Datasets created")
         training_dataloader = DataLoader(training_dataset, batch_size=batch_size, 
                                          num_workers = num_workers, shuffle=True)
