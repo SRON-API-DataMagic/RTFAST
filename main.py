@@ -548,9 +548,9 @@ def grid_data_gen(size,fname,egrid):
     
     #Splitting data and parameters into training and testing datasets
     train_data = data_init[tra_idx]
-    train_pars = theta_init[tra_idx]
+    train_pars = pars_init[tra_idx]
     test_data = data_init[tes_idx]
-    test_pars = theta_init[tes_idx]
+    test_pars = pars_init[tes_idx]
     
     print("Saving to disk")
     #save data for the first time in text files
