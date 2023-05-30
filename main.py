@@ -45,7 +45,7 @@ class CustomData(Dataset):
             self.scaler = scaler
             self.scaler_create()
         else:
-            self.scaler = load(f'scalers/{self.scaler_name}.bin')
+            self.scaler = load(f'scalers/{self.scaler_name}')
     
     def __len__(self):
         return len(self.labels)
@@ -98,7 +98,7 @@ class CustomData(Dataset):
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
         self.scaler = self.scaler.fit(final_dataset)
-        dump(self.scaler, f'scalers/{self.scaler_name}.bin', compress=True)
+        dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
     
     def scale(self,data):
