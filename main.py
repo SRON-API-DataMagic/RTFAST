@@ -569,7 +569,7 @@ def grid(wrk_dir,device):
     grid_sizes = [5,6,7,8,9,10]
     grid_names = []
     for size in grid_sizes:
-        grid_names.append("grid_{size}")
+        grid_names.append(f"grid_{size}")
     
     for size, fname in zip(grid_sizes,grid_names):
         print(size)
