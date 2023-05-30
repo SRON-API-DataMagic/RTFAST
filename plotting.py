@@ -211,7 +211,7 @@ def residual_sorting(df,indexing):
 def residual_computation(testing_dataloader,model,scaler):
     mass, spin, inc, rin, rout = [], [], [], [], []
     residuals,residuals_flat = [], []
-    for batch, (D,P,M) in enumerate(testing_dataloader):
+    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
         spin.append(P[0][0].item())
         mass.append(10**P[0][1].item())
         inc.append(P[0][2].item())
