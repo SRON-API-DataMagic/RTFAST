@@ -16,13 +16,16 @@ def mergeSaveData(new_data,old_data,destination,fname):
     return
 def saveData(dataset, pars, destination, fname, current_locs = None):
     
-    files = glob.glob("./data/spectra/*.txt")
-    for i,file in enumerate(files):
-        tmp = file.replace("./data/spectra/spectra_","")
-        tmp = int(tmp.replace(".txt",""))
-        files[i] = tmp
-    files = np.asarray(files)
-    start = files.max() + 1
+    try:
+        files = glob.glob("./data/spectra/*.txt")
+        for i,file in enumerate(files):
+            tmp = file.replace("./data/spectra/spectra_","")
+            tmp = int(tmp.replace(".txt",""))
+            files[i] = tmp
+        files = np.asarray(files)
+        start = files.max() + 1
+    except:
+        start = 0
     
     locations = []
     for i,spectra in enumerate(tqdm.tqdm(dataset),start=start):
