@@ -57,6 +57,12 @@ def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
     return scaled_data
 
+def returnFlats(df):
+    return df.flat
+
+def returnContinuous(df):
+    return df.data
+
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
         plt.hist(column, bins=100, density = True)
@@ -86,41 +92,12 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = Fa
         axs[1].set_ylim(-1,1)
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
-
-def loss_plots(gr):
-    tr_loss_arr = np.loadtxt(f"loss/{gr}tr_loss.txt")
-    te_loss_arr = np.loadtxt(f"loss/{gr}te_loss.txt")
-
-    plt.plot(tr_loss_arr,label="training loss")
-    plt.plot(te_loss_arr,label="testing loss")  
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.yscale("log")
-    plt.legend()
-    plt.savefig(f"loss/{gr}loss_plot.png")
-    plt.close()
-    
-def sample_dist_plots(pars):
-    plt.hist(pars[:,0],bins=100)
-    plt.xlabel("Spin")
-    plt.ylabel("Number of samples")
-    plt.savefig("sample_dist/spin_sample_dist.png")
-    plt.close()
-    
-    plt.hist(pars[:,1],bins=100)
-    plt.xlabel("Log(Mass)")
-    plt.ylabel("Number of samples")
-    plt.savefig("sample_dist/mass_sample_dist.png")
-    plt.close()
     
 def flat_heatmap(df,index,ticks,ticklabels,fname):
     colors = ["#16E6E9", "#E91916"]
     cmap_flat = sns.color_palette(colors)
     
-    residuals= []
-    for indice,row in df.iterrows():
-        residuals.append(row['Residuals'].flat)
-    residuals = np.squeeze(np.asarray(residuals))
+    residuals = df["Residuals"].apply(returnFlats)
     
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(residuals,cmap=cmap_flat,cbar_kws = {})
@@ -138,10 +115,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     return
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
-    residuals,indexes = [],[]
-    for indice,row in df.iterrows():
-        residuals.append(row['Residuals'].data)
-    residuals = np.squeeze(np.asarray(residuals))
+    residuals = df["Residuals"].apply(returnContinuous)
     
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(residuals,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
@@ -188,40 +162,6 @@ def model_load(model_loc,egrid):
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
-
-def data_load(data_name):
-    with open(f"data/{data_name}data.txt","r") as f1:
-        data = np.loadtxt(f1)
-    f1.close()
-    
-    with open(f"data/{data_name}pars.txt","r") as f2:
-        pars = np.loadtxt(f2)
-    f2.close()
-    
-    pars = pars[:,[1,13]]
-    pars[:,1] = np.log10(pars[:,1])
-    
-    return data, pars
-
-def pars_load(data_name):
-    with open(f"data/{data_name}pars.txt","r") as f2:
-        pars = np.loadtxt(f2)
-    f2.close()
-    
-    pars = pars[:,[1,13]]
-    pars[:,1] = np.log10(pars[:,1])
-    
-    return pars
-    
-def pars_comparison(previous_set,new_set):
-    #redefine parameter lists as complex numbers
-    complex_pre = previous_set[:,0] + previous_set[:,1]*1j
-    complex_new = new_set[:,0] + new_set[:,1]*1j
-    #find all matches
-    mask = np.in1d(complex_new,complex_pre)
-    #remove all data from new set already present in training data
-    new_set = new_set[~mask]
-    return new_set
     
 def generate_test_set(size,egrid):
     """
@@ -252,7 +192,6 @@ def generate_test_set(size,egrid):
     data_init = np.asarray(data_init)
     return data_init, theta_lhs
     
-
 def residual_sorting(df,indexing):
     df.sort_values(by=indexing,inplace=True,ignore_index=True)
     percents = [0,0.25,0.5,0.75]
@@ -271,7 +210,7 @@ def residual_computation(testing_dataloader,model,scaler):
         mass.append(10**P[0][1].item())
         inc.append(P[0][2].item())
         rin.append(P[0][3].item())
-        rout.append(10**P[0][4].item())
+        rout.append(P[0][4].item())
         pred = model(P).detach().numpy()
         pred = 10**(inverse(scaler,pred))
         resid = (D-pred)/D
@@ -311,7 +250,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         #retrieve relevant data and parameters
         spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
                                       P[0][2].item(),P[0][3].item(),
-                                      10**P[0][4].item())
+                                      P[0][4].item())
         D[M==0] = 1e-38
         da = np.squeeze(D)
         
@@ -392,7 +331,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,19,20,25,30,35,40,45]
+    active_name = [0,1,2,3,4,5,10,15,20,25,30,35,40,45]
     active_model_names = np.array(active_name)
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]

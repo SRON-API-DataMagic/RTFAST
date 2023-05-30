@@ -149,7 +149,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*P.shape[0] + 1)
-        if batch % 50 == 0:
+        if batch % 250 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
             print(f"Extremely large batch loss of {loss_b:.2E}")
@@ -231,7 +231,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
