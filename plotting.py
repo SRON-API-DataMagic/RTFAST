@@ -452,7 +452,8 @@ def main():
     """
     #put test set into dataloader format
     batch_size = 1
-    test_data = LoadCustomData("data/locations/loc_test.csv",grid_scaler) #scaler unused but must be parsed
+    test_data = LoadCustomData("data/locations/loc_test.csv",active_scaler,
+                               "active_scaler.bin") #scaler unused but must be parsed
     testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                     num_workers=5)
     
