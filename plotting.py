@@ -22,10 +22,8 @@ from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
 from main import CustomData, saveData
 
 class LoadCustomData(CustomData):
-    def __init__(self,labels,scaler):
-        super().__init__(labels,scaler)
-        self.labels = pd.read_csv(labels)
-        self.pars_list = [1,14,2,3,4]
+    def __init__(self,labels,scaler,scaler_name):
+        super().__init__(labels,scaler,scaler_name)
 
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
@@ -97,7 +95,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     colors = ["#16E6E9", "#E91916"]
     cmap_flat = sns.color_palette(colors)
     
-    residuals = df["Residuals"].apply(returnFlats)
+    residuals = df["Residuals"].apply(returnFlats)[:,None]
     
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(residuals,cmap=cmap_flat,cbar_kws = {})
@@ -115,7 +113,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     return
 
 def continuous_heatmap(df,index,ticks,ticklabels,fname):
-    residuals = df["Residuals"].apply(returnContinuous)
+    residuals = df["Residuals"].apply(returnContinuous)[:,None]
     
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(residuals,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
