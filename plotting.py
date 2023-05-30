@@ -224,6 +224,7 @@ def residual_computation(testing_dataloader,model,scaler):
         residuals_flat.append(resid_flat)
         
     residuals = np.asarray(residuals)
+    print(residuals)
     residuals_flat = np.asarray(residuals_flat)
     obj_residuals = []
     for (res,res_flat) in zip(residuals,residuals_flat):
