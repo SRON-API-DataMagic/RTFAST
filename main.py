@@ -67,7 +67,6 @@ class CustomData(Dataset):
             mask = None
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
-        print(datum)
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -98,9 +97,9 @@ class CustomData(Dataset):
         for file in self.labels.iloc[:,27]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
-        print(final_dataset)
+        final_dataset[final_dataset<=1e-38] = 1e-38
+        final_dataset = np.log10(final_dataset)
         data = self.scaler.fit_transform(final_dataset)
-        print(data)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
     
