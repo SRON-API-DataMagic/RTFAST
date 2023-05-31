@@ -224,8 +224,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
 
 def maskedMSELoss(pred,data,mask):
     data = torch.mul(data,mask)
-    pred[mask == 0 & pred < 0] = torch.mul(pred[mask == 0 & pred < 0],
-                                           mask[mask == 0 & pred < 0])
+    pred = torch.mul(pred,mask)
     loss = nn.MSELoss()
     result = loss(pred,data)
     return result
