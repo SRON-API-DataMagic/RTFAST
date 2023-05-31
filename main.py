@@ -442,7 +442,7 @@ def queryByDropout(wrk_dir, device = None):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
-                loss,improv_loss = test(test_dataloader,model,loss_fn,device)
+                loss = test(test_dataloader,model,loss_fn,device)
                 te_loss_arr.append(loss)
                 tr_loss_arr.append(train_loss)
                 tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -615,12 +615,11 @@ def grid(wrk_dir,device):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn,device)
-            loss,improv_loss = test(test_dataloader,model,loss_fn,device)
+            loss = test(test_dataloader,model,loss_fn,device)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
             tr_bet = (0.9*last_sig_best_tr) - train_loss
             te_bet = (0.9*last_sig_best_te) - loss
-            imp_bet = (0.9*last_sig_best_imp) - improv_loss
             if tr_bet > 0 and te_bet > 0:
                 last_sig_best_tr = train_loss
                 last_sig_best_te = loss
@@ -628,6 +627,7 @@ def grid(wrk_dir,device):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
+                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -638,13 +638,10 @@ def grid(wrk_dir,device):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
+                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
-            if imp_bet > 0:
-                last_sig_best_imp = improv_loss
-                print("Current best performer on true test set, saving...")
-                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
             epoch += 1
         
         print("Completed training")
