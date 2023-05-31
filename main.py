@@ -97,6 +97,7 @@ class CustomData(Dataset):
         for file in self.labels.iloc[:,27]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
+        print(final_dataset)
         self.scaler = self.scaler.fit(final_dataset)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
