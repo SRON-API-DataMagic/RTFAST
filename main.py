@@ -591,7 +591,7 @@ def grid(wrk_dir,device):
                                       num_workers = num_workers, shuffle=True)
         
         testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
-                             scaler_name=f"{fname}_scaler.bin", scaling=True)
+                             scaler_name=f"{fname}_scaler.bin")
         
         test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                       num_workers = num_workers, shuffle=True)
