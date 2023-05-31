@@ -439,8 +439,8 @@ def queryByDropout(wrk_dir, device = None):
             #set improvements counters to 0
             imp_te = 0
             imp_tr = 0
-            imp_imp = 0
-            while (imp_te < 15 or imp_tr < 15 or imp_imp < 15):
+            
+            while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
@@ -680,8 +680,8 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    #queryByDropout(wrk_dir,device)
-    grid(wrk_dir,device)
+    queryByDropout(wrk_dir,device)
+    #grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()
