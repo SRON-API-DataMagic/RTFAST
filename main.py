@@ -56,7 +56,7 @@ class CustomData(Dataset):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
+        parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
