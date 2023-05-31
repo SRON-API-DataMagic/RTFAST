@@ -67,6 +67,7 @@ class CustomData(Dataset):
             mask = None
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
+        print(datum)
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -165,7 +166,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         loss.backward()
         optimizer.step()
         loss_b, current = loss.detach().item(), (batch*P.shape[0] + 1)
-        if batch % 250 == 0:
+        if batch % 5 == 0:
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         if loss_b > 100:
             print(f"Extremely large batch loss of {loss_b:.2E}")
@@ -602,7 +603,6 @@ def grid(wrk_dir,device):
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-        last_sig_best_imp = 1e7
         tr_loss_arr = []
         te_loss_arr = []
         
@@ -627,7 +627,7 @@ def grid(wrk_dir,device):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
+                torch.save(model.state_dict(), f"models/grid_{size}.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -638,7 +638,7 @@ def grid(wrk_dir,device):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{fname}.pth")
+                torch.save(model.state_dict(), f"models/grid_{size}.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
@@ -647,14 +647,14 @@ def grid(wrk_dir,device):
         print("Completed training")
         print("Final best training loss:", last_sig_best_tr)
         print("Final best testing loss:", last_sig_best_te)
-        torch.save(model.state_dict(), f"models/grid_{fname}_final.pth")
-        print(f"Saved PyTorch Model State to grid_{fname}_final.pth")
+        torch.save(model.state_dict(), f"models/grid_{size}_final.pth")
+        print(f"Saved PyTorch Model State to grid_{size}_final.pth")
         
         tr_loss_arr = np.asarray(tr_loss_arr)
         te_loss_arr = np.asarray(te_loss_arr)
         
-        np.savetxt(f"loss/grid_{fname}_te_loss.txt",te_loss_arr)
-        np.savetxt(f"loss/grid_{fname}_tr_loss.txt",tr_loss_arr)
+        np.savetxt(f"loss/grid_{size}_te_loss.txt",te_loss_arr)
+        np.savetxt(f"loss/grid_{size}_tr_loss.txt",tr_loss_arr)
         
 def main():
     torch.set_default_dtype(torch.double)
