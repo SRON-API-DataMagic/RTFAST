@@ -578,8 +578,6 @@ def grid(wrk_dir,device):
     num_workers = 4
     
     for (size,fname) in zip(grid_sizes,grid_names):
-    
-        fname = str(size)
         print(f"Starting {size} x {size} grid loop")
         
         scaler = MinMaxScaler()
