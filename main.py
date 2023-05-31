@@ -566,10 +566,13 @@ def grid(wrk_dir,device):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
+    locations = "data/locations/"
+    
     grid_sizes = [5,6,7,8,9,10]
     grid_names = []
     for size in grid_sizes:
         grid_names.append(f"grid_{size}")
+    print(grid_names)
         
     batch_size = 128
     num_workers = 4
@@ -581,13 +584,13 @@ def grid(wrk_dir,device):
         
         scaler = MinMaxScaler()
         #create initial dataset object to create scaler (and then delete object)
-        training_data = CustomData("loc_"+fname+".csv", scaler, 
+        training_data = CustomData(locations+"loc_"+fname+".csv", scaler, 
                              scaler_name=f"{fname}_scaler.bin")
         
         training_dataloader = DataLoader(training_data,batch_size=batch_size,
                                       num_workers = num_workers, shuffle=True)
         
-        testing_data = CustomData("loc_"+fname+"_test.csv", scaler, 
+        testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
                              scaler_name=f"{fname}_scaler.bin")
         
         test_dataloader = DataLoader(testing_data,batch_size=batch_size,
