@@ -580,7 +580,7 @@ def grid(wrk_dir,device):
     for (size,fname) in zip(grid_sizes,grid_names):
         print(f"Starting {size} x {size} grid loop")
         
-        scaler = MinMaxScaler()
+        scaler = MinMaxScaler
         #create initial dataset object to create scaler (and then delete object)
         training_data = CustomData(locations+"loc_"+fname+".csv", scaler, 
                              scaler_name=f"{fname}_scaler.bin")
