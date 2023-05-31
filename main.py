@@ -55,7 +55,6 @@ class CustomData(Dataset):
         location = self.labels.iloc[idx,27]
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
-        print(parameters)
         #convert parameters to log space
         parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
         parameters = torch.tensor(parameters)
@@ -68,7 +67,6 @@ class CustomData(Dataset):
             mask = None
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
-        print(datum)
         if mask is not None:
             return datum, parameters, mask
         else:
@@ -584,13 +582,13 @@ def grid(wrk_dir,device):
         scaler = MinMaxScaler
         #create initial dataset object to create scaler (and then delete object)
         training_data = CustomData(locations+"loc_"+fname+".csv", scaler, 
-                             scaler_name=f"{fname}_scaler.bin")
+                             scaler_name=f"{fname}_scaler.bin", scaling=True)
         
         training_dataloader = DataLoader(training_data,batch_size=batch_size,
                                       num_workers = num_workers, shuffle=True)
         
         testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
-                             scaler_name=f"{fname}_scaler.bin")
+                             scaler_name=f"{fname}_scaler.bin", scaling=True)
         
         test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                       num_workers = num_workers, shuffle=True)
