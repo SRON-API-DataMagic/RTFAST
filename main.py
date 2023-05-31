@@ -570,15 +570,11 @@ def grid(wrk_dir,device):
     grid_names = []
     for size in grid_sizes:
         grid_names.append(f"grid_{size}")
-    
-    for size, fname in zip(grid_sizes,grid_names):
-        print(size)
-        grid_data_gen(size, fname, egrid)
         
-    batch_size = 1024
+    batch_size = 128
     num_workers = 4
     
-    for i, (size,fname) in enumerate(grid_sizes,grid_names):
+    for (size,fname) in zip(grid_sizes,grid_names):
     
         fname = str(size)
         print(f"Starting {size} x {size} grid loop")
