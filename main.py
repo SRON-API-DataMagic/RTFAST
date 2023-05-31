@@ -117,8 +117,7 @@ class CustomData(Dataset):
             Scaled array of spectra in the logspace.
 
         """
-        scaler = self.scaler()
-        scaled_data = scaler.transform(data)
+        scaled_data = self.scaler.transform(data)
         return scaled_data
 
 def distributions(data,labels,fname):
@@ -225,7 +224,8 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
 
 def maskedMSELoss(pred,data,mask):
     data = torch.mul(data,mask)
-    pred = torch.mul(pred,mask)
+    pred[mask == 0 & pred < 0] = torch.mul(pred[mask == 0 & pred < 0],
+                                           mask[mask == 0 & pred < 0])
     loss = nn.MSELoss()
     result = loss(pred,data)
     return result
