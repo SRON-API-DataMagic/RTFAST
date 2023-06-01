@@ -6,7 +6,7 @@ No modules in this file should be used in regular usage.
 import torch
 import numpy as np
 from torch import nn
-import torch.autograd.profiler as profiler
+from torch.profiler import profile, record_function, ProfilerActivity
 
 from network import NeuralNetwork
 from main import maskedMSELoss
@@ -24,9 +24,13 @@ data = torch.rand(1024,4096).double().cuda()
 
 model(inp.to(device))
 
-with profiler.profile(with_stack=True, profile_memory=True) as prof:
-    pred = model(inp.to(device))
-    loss = maskedMSELoss(pred, data.to(device), mask.to(device))
+with profile(with_stack=True, profile_memory=True,
+             activities=[ProfilerActivity.CPU,ProfilerActivity.CUDA], 
+             record_shapes=True) as prof:
+    with record_function("Model inference"):
+        pred = model(inp.to(device))
+    with record_function("Loss calculation"):
+        loss = maskedMSELoss(pred, data.to(device), mask.to(device))
 
-print(prof.key_averages(group_by_stack_n=5).table(sort_by='self_cpu_time_total', 
+print(prof.key_averages(group_by_input_shape=True,group_by_stack_n=5).table(sort_by="cuda_time_total", 
                                                   row_limit=10))
