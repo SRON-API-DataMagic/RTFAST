@@ -63,7 +63,6 @@ class CustomData(Dataset):
         #create a mask for loss calculation later
         try:
             mask = np.where(datum <= 1e-38, 0, 1)
-            mask = torch.tensor(mask)
         except:
             mask = None
         #scale spectra by energy bin to normalized space
@@ -160,11 +159,9 @@ def train(dataloader,model,optimizer,loss_fn,device):
     
     size = len(dataloader.dataset)
     loss_arr = 0
-    big_loss = 0
     for batch, (D,P,M) in enumerate(dataloader):
-        (D,P,M) = (D.to(device),P.to(device),M.to(device))
-        pred = model(P)[:,None,:]
-        loss = loss_fn(pred,D,M)
+        pred = model(P.to(device))[:,None,:]
+        loss = loss_fn(pred,D.to(device),M.to(device))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -203,9 +200,8 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
     
     with torch.no_grad():
         for batch, (D,P,M) in enumerate(dataloader):
-            (D,P,M) = (D.to(device),P.to(device),M.to(device))
-            pred = model(P)[:,None,:]
-            test_loss += loss_fn(pred, D, M).detach().item()
+            pred = model(P.to(device))[:,None,:]
+            test_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item()
     test_loss /= batches
     
     if improvement_set != []:
