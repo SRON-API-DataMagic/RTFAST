@@ -25,7 +25,7 @@ inp = torch.rand(1024,1,5).double().cuda()
 mask = torch.randint(0,2,(1024,1,4096)).double().cuda()
 data = torch.rand(1024,1,4096).double().cuda()
 
-fname = "grid_5"
+fname = "grid_6"
 locations = "data/locations/"
 scaler = MinMaxScaler()
 num_workers = 4
@@ -56,13 +56,14 @@ with profile(with_stack=True, profile_memory=True,
         
     with record_function("Loss calculation"):
         loss = maskedMSELoss(pred, data.to(device), mask.to(device))
-        """
+        
     with record_function("Training"):
         model, optimizer, train_loss = train(dataloader, model, optimizer, 
                                              loss_fn, device)
-        """
+    """
     with record_function("Testing"):
         loss = test(test_dataloader,model,loss_fn,device)
+    """
 
 print(prof.key_averages(group_by_input_shape=True,group_by_stack_n=5).table(sort_by="cuda_memory_usage", 
                                                   row_limit=10))
