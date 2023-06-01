@@ -59,8 +59,9 @@ with profile(with_stack=True, profile_memory=True,
         loss = maskedMSELoss(pred, data.to(device), mask.to(device))
         
     with record_function("Training"):
-        model, optimizer, train_loss = train(dataloader, model, optimizer, 
-                                             loss_fn, device)
+        for i in range(5):
+            model, optimizer, train_loss = train(dataloader, model, optimizer, 
+                                                 loss_fn, device)
     """
     with record_function("Testing"):
         loss = test(test_dataloader,model,loss_fn,device)
@@ -69,4 +70,3 @@ with profile(with_stack=True, profile_memory=True,
 print(prof.key_averages(group_by_input_shape=True,group_by_stack_n=5).table(sort_by="cuda_memory_usage", 
                                                   row_limit=10))
 
-prof.export_chrome_trace("traces/trace.json")
