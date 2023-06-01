@@ -29,7 +29,7 @@ fname = "grid_5"
 locations = "data/locations/"
 scaler = MinMaxScaler()
 num_workers = 4
-batch_size = 256
+batch_size = 512
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 loss_fn = maskedMSELoss
