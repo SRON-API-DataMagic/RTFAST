@@ -18,9 +18,9 @@ print(device)
 model = NeuralNetwork(5, 4096)
 model.to(device)
 
-inp = torch.rand(1024, 5).double().cuda()
-mask = torch.randint(0,2,(1024, 4096)).double().cuda()
-data = torch.rand(1024,4096).double().cuda()
+inp = torch.rand(1024,1,5).double().cuda()
+mask = torch.randint(0,2,(1024,1,4096)).double().cuda()
+data = torch.rand(1024,1,4096).double().cuda()
 
 model(inp.to(device))
 
