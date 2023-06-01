@@ -18,11 +18,11 @@ print(device)
 model = NeuralNetwork(5, 4096)
 model.to(device)
 
-inp = torch.rand(128, 5).double().cuda()
-mask = torch.randint(0,2,(128, 4096)).double().cuda()
-data = torch.rand(128,4096).cuda()
+inp = torch.rand(1024, 5).double().cuda()
+mask = torch.randint(0,2,(1024, 4096)).double().cuda()
+data = torch.rand(1024,4096).double().cuda()
 
-model(inp)
+model(inp.to(device))
 
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     pred = model(inp.to(device))
