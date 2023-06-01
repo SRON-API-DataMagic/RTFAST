@@ -329,7 +329,7 @@ def queryByDropout(wrk_dir, device = None):
             
             n_samples = 5000*multiplier
             n_samples_large = 10000*multiplier # number of parameter sets to draw 
-            divider = 100
+            divider = 1000
             n_samples_small = int(n_samples_large/divider)
             print(f"I am in active learning loop {active_loop_num+1}")
             # randomly generate points in parameter space
