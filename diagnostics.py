@@ -28,7 +28,7 @@ data = torch.rand(1024,1,4096).double().cuda()
 fname = "grid_5"
 locations = "data/locations/"
 scaler = MinMaxScaler()
-num_workers = 1
+num_workers = 4
 batch_size = 128
 
 optimizer = Adam(model.parameters(),lr = 0.001)
