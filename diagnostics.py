@@ -12,7 +12,7 @@ from torch.profiler import profile, record_function, ProfilerActivity
 from sklearn.preprocessing import MinMaxScaler
 
 from network import NeuralNetwork
-from main import maskedMSELoss, train, CustomData
+from main import maskedMSELoss, train, CustomData, test
 
 print(torch.cuda.is_available())
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -40,6 +40,12 @@ training_data = CustomData(locations+"loc_"+fname+".csv", scaler,
 dataloader = DataLoader(training_data,batch_size=batch_size,
                               num_workers = num_workers, shuffle=True)
 
+testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
+                     scaler_name=f"{fname}_scaler.bin")
+
+test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                              num_workers = num_workers, shuffle=True)
+
 model(inp.to(device))
 
 with profile(with_stack=True, profile_memory=True,
@@ -47,11 +53,16 @@ with profile(with_stack=True, profile_memory=True,
              record_shapes=True) as prof:
     with record_function("Model inference"):
         pred = model(inp.to(device))
+        
     with record_function("Loss calculation"):
         loss = maskedMSELoss(pred, data.to(device), mask.to(device))
+        """
     with record_function("Training"):
         model, optimizer, train_loss = train(dataloader, model, optimizer, 
                                              loss_fn, device)
+        """
+    with record_function("Testing"):
+        loss = test(test_dataloader,model,loss_fn,device)
 
 print(prof.key_averages(group_by_input_shape=True,group_by_stack_n=5).table(sort_by="cuda_memory_usage", 
                                                   row_limit=10))
