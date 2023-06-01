@@ -62,6 +62,7 @@ with profile(with_stack=True, profile_memory=True,
         for i in range(5):
             model, optimizer, train_loss = train(dataloader, model, optimizer, 
                                                  loss_fn, device)
+            loss = test(test_dataloader,model,loss_fn,device)
     """
     with record_function("Testing"):
         loss = test(test_dataloader,model,loss_fn,device)
