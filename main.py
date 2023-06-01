@@ -312,7 +312,7 @@ def queryByDropout(wrk_dir, device = None):
         
         model.load_state_dict(torch.load("models/25_model.pth"))
         
-    batch_size = 128
+    batch_size = 1024
     num_workers = 4
     
     lhs_idx = 0
