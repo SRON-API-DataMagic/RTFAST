@@ -29,7 +29,7 @@ fname = "grid_7"
 locations = "data/locations/"
 scaler = MinMaxScaler()
 num_workers = 4
-batch_size = 512
+batch_size = 1024
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 loss_fn = maskedMSELoss
@@ -38,13 +38,15 @@ training_data = CustomData(locations+"loc_"+fname+".csv", scaler,
                      scaler_name=f"{fname}_scaler.bin")
 
 dataloader = DataLoader(training_data,batch_size=batch_size,
-                              num_workers = num_workers, shuffle=True)
+                              num_workers = num_workers, shuffle=True,
+                              pin_memory=True)
 
 testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
                      scaler_name=f"{fname}_scaler.bin")
 
 test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                              num_workers = num_workers, shuffle=True)
+                              num_workers = num_workers, shuffle=True,
+                              pin_memory=True)
 
 model(inp.to(device))
 
