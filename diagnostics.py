@@ -25,7 +25,7 @@ inp = torch.rand(1024,1,5).double().cuda()
 mask = torch.randint(0,2,(1024,1,4096)).double().cuda()
 data = torch.rand(1024,1,4096).double().cuda()
 
-fname = "grid_6"
+fname = "grid_7"
 locations = "data/locations/"
 scaler = MinMaxScaler()
 num_workers = 4
