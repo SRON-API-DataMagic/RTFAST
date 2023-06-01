@@ -50,6 +50,7 @@ model(inp.to(device))
 
 with profile(with_stack=True, profile_memory=True,
              activities=[ProfilerActivity.CPU,ProfilerActivity.CUDA], 
+             on_trace_ready=torch.profiler.tensorboard_trace_handler('./traces/memory_load'),
              record_shapes=True) as prof:
     with record_function("Model inference"):
         pred = model(inp.to(device))
