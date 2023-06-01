@@ -29,13 +29,13 @@ fname = "grid_5"
 locations = "data/locations/"
 scaler = MinMaxScaler()
 num_workers = 4
-batch_size = 128
+batch_size = 256
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 loss_fn = maskedMSELoss
 
 training_data = CustomData(locations+"loc_"+fname+".csv", scaler, 
-                     scaler_name=f"{fname}_scaler.bin", scaling=True)
+                     scaler_name=f"{fname}_scaler.bin")
 
 dataloader = DataLoader(training_data,batch_size=batch_size,
                               num_workers = num_workers, shuffle=True)
