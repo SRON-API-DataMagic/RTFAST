@@ -67,3 +67,5 @@ with profile(with_stack=True, profile_memory=True,
 
 print(prof.key_averages(group_by_input_shape=True,group_by_stack_n=5).table(sort_by="cuda_memory_usage", 
                                                   row_limit=10))
+
+prof.export_chrome_trace("traces/trace.json")
