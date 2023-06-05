@@ -479,7 +479,7 @@ def queryByDropout(wrk_dir, device = None):
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == (active_loops - 1)) and active_loop_num != 25:
+                or active_loop_num == (active_loops - 1)):
                 temp_te = np.asarray(te_loss_arr)
                 temp_tr = np.asarray(tr_loss_arr)
                 temp_epochs = np.asarray(loop_epochs)

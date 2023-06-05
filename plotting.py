@@ -456,6 +456,7 @@ def active_v_grid(wrk_dir,egrid):
              color = "blue",zorder=2)
     plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
     plt.yscale("log")
+    plt.xscale("log")
     plt.xlabel("Number of samples used in training")
     plt.ylabel("Average percentage error")
     plt.legend()
