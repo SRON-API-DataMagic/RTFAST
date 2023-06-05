@@ -20,6 +20,7 @@ from tqdm import tqdm
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
 from main import CustomData
+from processing import saveData, nanChecker
 
 class LoadCustomData(CustomData):
     def __init__(self,labels,scaler,scaler_name):
@@ -332,7 +333,7 @@ def residuals_dataframe(residuals,names):
     print(time.time()-time_start)
     return df
 
-def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
+def active_v_grid(wrk_dir,egrid):
     model_base_loc = wrk_dir+"/models/"
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
@@ -342,6 +343,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
+    scaler_name = grid_name
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
@@ -354,7 +356,19 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     grid_loss_high_q = []
     resid_list = []
     
+    scaler = MinMaxScaler()
+    
     print("Calculating loss for active learning")
+    active_scaler = MinMaxScaler()
+    active_scaler = load('scalers/active_scaler.bin')
+    
+    #put test set into dataloader format
+    batch_size = 1
+    test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
+                               "active_scaler.bin") #scaler unused but must be parsed
+    testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                    num_workers=4)
+    
     for (model_loc,fname) in zip(active_model_names,active_name):
         fname = str(fname) + "_active"
         print(fname)
@@ -389,7 +403,13 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     resid_list = []
     
     print("Calculating loss for grid learning")
-    for (model_loc,fname) in zip(grid_model_names,grid_name):
+    for (model_loc,fname,sname) in zip(grid_model_names,grid_name,scaler_name):
+        grid_scaler = MinMaxScaler()
+        grid_scaler = load(f'scalers/grid_{sname}_scaler.bin')
+        test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
+                                   "grid_{sname}_scaler.bin")
+        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                        num_workers=4)
         fname = str(fname) + "_grid"
         print(fname)
         model = model_load(model_loc, egrid)
@@ -445,27 +465,17 @@ def main():
     
     set_envir_vars(wrk_dir)
     
-    #retrieve scalers
-    active_scaler = MinMaxScaler()
-    active_scaler = load('scalers/active_scaler.bin')
-    grid_scaler = MinMaxScaler()
-    grid_scaler = load('scalers/grid_scaler.bin')
-    
     egrid = retrieve_egrid(wrk_dir)
-    """
+    
     data, pars = generate_test_set(5000, egrid)
     
-    np.savetxt("data/test_data.txt",data)
-    np.savetxt("data/test_pars.txt",pars_conversion(pars))
-    """
-    #put test set into dataloader format
-    batch_size = 1
-    test_data = LoadCustomData("data/locations/loc_test.csv",active_scaler,
-                               "active_scaler.bin") #scaler unused but must be parsed
-    testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                    num_workers=5)
+    data, pars = nanChecker(data, pars)
+    pars = pars_conversion(pars)
     
-    active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler)
+    saveData(data, pars, 
+             "data/locations/","loc_test.csv")
+    
+    active_v_grid(wrk_dir,egrid)
     
 if __name__ == "__main__":
     main()
