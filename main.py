@@ -488,6 +488,7 @@ def queryByDropout(wrk_dir, device = None):
                 except:
                     best_model.load_state_dict(model.state_dict())
                 saveLoop(best_model, "data/locations/active_locs.csv", 
+                         optimizer,
                          temp_te, temp_tr, 
                          active_loop_num, temp_epochs)
             #iterate loop number by 1

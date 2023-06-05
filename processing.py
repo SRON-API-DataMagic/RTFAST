@@ -66,13 +66,15 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
     final_df.to_csv(destination+"loc_"+index+".csv")
     return
 
-def saveLoop(model,data_locs,te_loss,tr_loss,num,epochs):
+def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
               fname = f"loc_{num}.csv")
     print("Saved data")
     torch.save(model.state_dict(), f"models/{num}_model.pth")
     print("Saved model")
+    torch.save(optimizer.state_dict())
+    print("Saved optimizer")
     np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
     np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
     np.savetxt(f"loss/{num}_epochs.txt",epochs)
