@@ -232,7 +232,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 50
+    active_loops = 100
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -244,7 +244,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -286,17 +286,17 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")
-        renameData("data/locations/loc_25.csv", "data/locations/", "active_locs.csv")
+        renameData("data/locations/loc_49.csv", "data/locations/", "active_locs.csv")
         
-        with open("loss/25_tr_loss.txt","r") as f1:
+        with open("loss/49_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/25_te_loss.txt","r") as f1:
+        with open("loss/49_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/25_epochs.txt","r") as f1:
+        with open("loss/49_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -307,7 +307,7 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        active_loop_num = 25
+        active_loop_num = 49
         
         model.load_state_dict(torch.load("models/25_model.pth"))
         
