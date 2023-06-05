@@ -405,9 +405,9 @@ def active_v_grid(wrk_dir,egrid):
     print("Calculating loss for grid learning")
     for (model_loc,fname,sname) in zip(grid_model_names,grid_name,scaler_name):
         grid_scaler = MinMaxScaler()
-        grid_scaler = load(f'scalers/grid_{sname}_scaler.bin')
+        grid_scaler = load(f"scalers/grid_{sname}_scaler.bin")
         test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
-                                   "grid_{sname}_scaler.bin")
+                                   f"grid_{sname}_scaler.bin")
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                         num_workers=4)
         fname = str(fname) + "_grid"
@@ -466,7 +466,7 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
-    
+    """
     data, pars = generate_test_set(500, egrid)
     
     data, pars = nanChecker(data, pars)
@@ -474,7 +474,7 @@ def main():
     
     saveData(data, pars, 
              "data/locations/","loc_test.csv")
-    
+    """
     active_v_grid(wrk_dir,egrid)
     
 if __name__ == "__main__":
