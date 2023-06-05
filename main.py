@@ -285,18 +285,19 @@ def queryByDropout(wrk_dir, device = None):
                                        scaling=True)
         
     else: #load previously generated data as initial data and parameter set
+        active_loop_num = 49
         print("Loading previous data")
-        renameData("data/locations/loc_49.csv", "data/locations/", "active_locs.csv")
+        renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
         
-        with open("loss/49_tr_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/49_te_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open("loss/49_epochs.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -307,9 +308,7 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        active_loop_num = 49
-        
-        model.load_state_dict(torch.load("models/25_model.pth"))
+        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
         
     batch_size = 1024
     num_workers = 4
