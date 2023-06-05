@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
-from main import CustomData, saveData
+from main import CustomData
 
 class LoadCustomData(CustomData):
     def __init__(self,labels,scaler,scaler_name):
@@ -31,7 +31,7 @@ class LoadCustomData(CustomData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[1]] = np.log10(parameters.iloc[[1]])
+        parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
@@ -337,7 +337,7 @@ def active_v_grid(wrk_dir,egrid,testing_dataloader,active_scaler,grid_scaler):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,20,25,30,35,40,45]
+    active_name = [0,1,2,3,4,5,10,15,20,25,30,35,40,45,49]
     active_model_names = np.array(active_name)
     active_sample_nums = (active_model_names+2)*5000
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]

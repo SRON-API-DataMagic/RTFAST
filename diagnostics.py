@@ -4,8 +4,6 @@ No modules in this file should be used in regular usage.
 """
 
 import torch
-import numpy as np
-from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch.profiler import profile, record_function, ProfilerActivity

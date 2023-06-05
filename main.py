@@ -280,10 +280,9 @@ def queryByDropout(wrk_dir, device = None):
         active_loop_num = 0
         
         #create initial dataset object to create scaler (and then delete object)
-        data_init_dataset = CustomData("data/locations/active_locs.csv", 
+        query_dataloader = CustomData("data/locations/active_locs.csv", 
                                        scaler,"active_scaler.bin",
                                        scaling=True)
-        del data_init_dataset
         
     else: #load previously generated data as initial data and parameter set
         print("Loading previous data")

@@ -8,7 +8,6 @@ import tqdm
 import glob
 import pandas as pd
 import torch
-import generator
 
 def mergeSaveData(new_data,old_data,destination,fname):
     df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
