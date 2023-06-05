@@ -251,7 +251,7 @@ def residual_computation(testing_dataloader,model,scaler):
     return (dataframe, ticks, ticklabels)
 
 def model_samples(testing_dataloader,scaler,model,egrid,gr):
-    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
+    for batch, (D,P,M) in enumerate(testing_dataloader):
         M = np.squeeze(M)
         D = np.squeeze(D)
         #retrieve relevant data and parameters
@@ -467,7 +467,7 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     
-    data, pars = generate_test_set(5000, egrid)
+    data, pars = generate_test_set(500, egrid)
     
     data, pars = nanChecker(data, pars)
     pars = pars_conversion(pars)
