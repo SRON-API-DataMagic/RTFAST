@@ -73,7 +73,7 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saved data")
     torch.save(model.state_dict(), f"models/{num}_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict())
+    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
     print("Saved optimizer")
     np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
     np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
