@@ -8,6 +8,7 @@ import tqdm
 import glob
 import pandas as pd
 import torch
+import os
 
 def mergeSaveData(new_data,old_data,destination,fname):
     df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
@@ -44,6 +45,32 @@ def saveData(dataset, pars, destination, fname, current_locs = None):
         df = pd.concat([df,current_locs],axis=0,ignore_index=True)
     
     df.to_csv(destination+fname)
+    return
+
+def removeRedundantData():
+    locations = "./data/locations/"
+    labels = ["loc_55.csv","loc_test.csv",
+              "loc_grid_5.csv","loc_grid_5_test.csv",
+              "loc_grid_6.csv","loc_grid_6_test.csv",
+              "loc_grid_7.csv","loc_grid_7_test.csv",
+              "loc_grid_8.csv","loc_grid_8_test.csv",
+              "loc_grid_9.csv","loc_grid_9_test.csv",
+              "loc_grid_10.csv","loc_grid_10_test.csv"]
+    
+    spectra_names = []
+    for fname in labels:
+        data = pd.read_csv(locations+fname)
+        names = data["Location"].values.tolist()
+        spectra_names.append(names)
+    
+    spectra_names = np.asarray(spectra_names)
+    files = glob.glob("data/spectra/*.txt")
+    files = np.asarray(files)
+    
+    diff = np.setdiff1d(files,spectra_names)
+    for file in diff:
+        os.remove(file)
+    
     return
 
 def renameData(data_locs,destination,fname):
