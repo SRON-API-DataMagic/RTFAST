@@ -226,6 +226,42 @@ def maskedMSELoss(pred,data,mask):
     result = loss(pred,data)
     return result
 
+class barredMSELoss(nn.Module):
+    def __init__(self,scaler):
+        super(barredMSELoss, self).__init__()
+        self.scaler = load(f'scalers/{scaler}')
+        self.set_scale()
+        
+    def set_scale(self):
+        self.min = torch.tensor(self.scaler.data_min_)
+        self.max = torch.tensor(self.scaler.data_max_)
+        self.scale = self.max - self.min
+    
+    def scaling(self,a):
+        result = (a * self.scale) + self.min
+        result = 10**result
+        return result
+        
+    def forward(self, output, target, mask):
+        #scale to real space
+        scaled_tar = self.scaling(target)
+        scaled_out = self.scaling(output)
+        #find desired boundaries of the original data
+        data_low = 0.99*scaled_tar
+        data_high = 1.01*scaled_tar
+        #create mask where prediction is within boundaries
+        loss_mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
+        #multiply with low data mask to obtain mask of where network needs to learn
+        mask = torch.mul(loss_mask,mask)
+        #multiply with mask to only consider where network is out of bounds or
+        #too small to care
+        pred = torch.mul(output,mask)
+        data = torch.mul(target,mask)
+        #calculate loss
+        criterion = nn.MSELoss()
+        loss = criterion(pred,data)
+        return loss 
+
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
@@ -251,8 +287,8 @@ def queryByDropout(wrk_dir, device = None):
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
-    loss_fn = maskedMSELoss
     scaler = MinMaxScaler()
+    loss_fn = maskedMSELoss
     
     if first == True: 
         print("Generating first time dataset")
@@ -309,6 +345,8 @@ def queryByDropout(wrk_dir, device = None):
         loop_epochs = loop_epochs.tolist()
         
         model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
+        #use different loss function
+        loss_fn = barredMSELoss("active_scaler.bin")
         
     batch_size = 1024
     num_workers = 4
