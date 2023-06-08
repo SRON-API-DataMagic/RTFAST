@@ -61,8 +61,7 @@ def removeRedundantData():
     for fname in labels:
         data = pd.read_csv(locations+fname)
         names = data["Location"].values.tolist()
-        print(names)
-        spectra_names.append(names)
+        spectra_names.extend(names)
     
     spectra_names = np.asarray(spectra_names)
     print(len(spectra_names))
