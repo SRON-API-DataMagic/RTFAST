@@ -289,6 +289,7 @@ def queryByDropout(wrk_dir, device = None):
     optimizer = Adam(model.parameters(),lr = 0.001)
     scaler = MinMaxScaler()
     loss_fn = maskedMSELoss
+    start_num = 0
     
     if first == True: 
         print("Generating first time dataset")
@@ -321,7 +322,8 @@ def queryByDropout(wrk_dir, device = None):
                                        scaling=True)
         
     else: #load previously generated data as initial data and parameter set
-        active_loop_num = 49
+        start_num = 55
+        active_loop_num = start_num
         print("Loading previous data")
         renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
         
@@ -516,7 +518,7 @@ def queryByDropout(wrk_dir, device = None):
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == (active_loops - 1)):
+                or active_loop_num == (active_loops - 1) and active_loop_num != start_num):
                 temp_te = np.asarray(te_loss_arr)
                 temp_tr = np.asarray(tr_loss_arr)
                 temp_epochs = np.asarray(loop_epochs)
