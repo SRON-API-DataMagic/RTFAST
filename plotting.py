@@ -463,6 +463,17 @@ def active_v_grid(wrk_dir,egrid):
     plt.savefig("loss/loss_by_sample_size.png")
     plt.close()
 
+def plot_resids_vs_energy(data,base,basename,energy,scale = "linear"):
+    plt.plot(base,data)
+    plt.axhline(0.01)
+    plt.xlabel(basename)
+    plt.ylabel("Residuals")
+    plt.xscale(scale)
+    plt.yscale("log")
+    plt.title(f"Residuals as dependent on {basename} at {energy}keV")
+    plt.savefig(f"loss/{basename}_{energy}.png")
+    
+
 def main():
     wrk_dir = os.getcwd()
     

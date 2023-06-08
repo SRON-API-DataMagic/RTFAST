@@ -227,7 +227,7 @@ def maskedMSELoss(pred,data,mask):
     return result
 
 class barredMSELoss(nn.Module):
-    def __init__(self,scaler):
+    def __init__(self,scaler,device):
         super(barredMSELoss, self).__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.set_scale()
@@ -238,7 +238,7 @@ class barredMSELoss(nn.Module):
         self.scale = self.max - self.min
     
     def scaling(self,a):
-        result = (a * self.scale) + self.min
+        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
         result = 10**result
         return result
         
@@ -348,7 +348,7 @@ def queryByDropout(wrk_dir, device = None):
         
         model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_scaler.bin")
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
