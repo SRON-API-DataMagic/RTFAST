@@ -262,18 +262,6 @@ class barredMSELoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
-def dropout(parameters,sample_dropout,n_samples_small,device,j,model,egrid):
-    pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
-    theta_query_small = parameters[j*n_samples_small:(j+1)*n_samples_small]
-    for i in range(sample_dropout):
-        pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
-        pred_query_all[i] = pred_query.detach().cpu().numpy()
-    # find uncertainty (as measured by relative variance)
-    dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
-    var_query = np.var(dvar, axis=0)
-    mean_var_query = np.mean(var_query, axis=1).tolist()
-    return mean_var_query
-
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
@@ -389,13 +377,21 @@ def queryByDropout(wrk_dir, device = None):
             print("computing neural network predictions with dropout for each theta")
             # compute 100 neural network predictions with dropout
             sample_dropout = 100*multiplier
+            pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             model.train()
+            query_idx = []
             
-            query_idx =  parallel(delayed(dropout)(theta_query_large,
-                                                   sample_dropout,
-                                                   n_samples_small,
-                                                   device,j,model,egrid)
-                                            for j in range(divider))
+            for j in tqdm(range(divider),desc="Sample dropout loops"):
+                theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
+                for i in range(sample_dropout):
+                    pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_query_all[i] = pred_query.detach().cpu().numpy()
+                # find uncertainty (as measured by relative variance)
+                dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
+                var_query = np.var(dvar, axis=0)
+                mean_var_query = np.mean(var_query, axis=1)
+                # add to uncertainties per theta to list
+                query_idx.append(mean_var_query.tolist())
             
             #Performing manual memory cleanup
             del pred_query, pred_query_all, dvar, var_query, mean_var_query
