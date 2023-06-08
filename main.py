@@ -236,9 +236,12 @@ class barredMSELoss(nn.Module):
         self.min = torch.tensor(self.scaler.data_min_)
         self.max = torch.tensor(self.scaler.data_max_)
         self.scale = self.max - self.min
-    
+        self.scale.to(self.device)
+        self.min.to(self.device)
+        self.max.to(self.device)
+        
     def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+        result = (a * self.scale) + self.min
         result = 10**result
         return result
         
