@@ -64,10 +64,15 @@ def removeRedundantData():
         spectra_names.append(names)
     
     spectra_names = np.asarray(spectra_names)
+    print(len(spectra_names))
     files = glob.glob("data/spectra/*.txt")
     files = np.asarray(files)
+    print(len(files))
     
     diff = np.setdiff1d(files,spectra_names)
+    print(diff)
+    print(len(diff))
+    quit()
     for file in diff:
         os.remove(file)
     
@@ -122,18 +127,7 @@ def nanChecker(data,pars):
     return data, pars
 
 def main():
-    destination = "data/locations/"
-    locations_loc ="data/locations/loc_"
-    pars_loc = "data/pars/"
-    
-    indexes = ["test"]
-    
-    for index in indexes:
-        print(index)
-        loc_index = locations_loc+index+".txt"
-        pars_index = pars_loc+index+"_pars.txt"
-        merging_locations_pars(pars_index, loc_index, destination, index)
-        print(pd.read_csv("data/locations/loc_"+index+".csv"))
+    removeRedundantData()
     
 if __name__ == "__main__":
     main()
