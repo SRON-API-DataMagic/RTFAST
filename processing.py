@@ -64,16 +64,11 @@ def removeRedundantData():
         spectra_names.extend(names)
     
     spectra_names = np.asarray(spectra_names)
-    print(len(spectra_names))
     files = glob.glob("data/spectra/*.txt")
     files = np.asarray(files)
-    print(len(files))
-    
     diff = np.setdiff1d(files,spectra_names)
-    print(diff)
-    print(len(diff))
-    quit()
-    for file in diff:
+    print(f"Removing {len(diff)} files...")
+    for file in tqdm.tqdm(diff):
         os.remove(file)
     
     return
