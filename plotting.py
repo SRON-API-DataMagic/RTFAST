@@ -507,9 +507,9 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
                      zorder=2)
     axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_75_q, 
                      grid_median_loss-grid_loss_25_q, alpha = 0.5,color = "orange",
-                     zorder=2)
+                     zorder=3)
     axs[0].plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
-             zorder=2)
+             zorder=4)
     
     for (x,y,z) in zip(active_sample_nums,active_loss_low_out,active_loss_high_out):
         axs[1].scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
@@ -519,15 +519,15 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         
     axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_95_q, 
                      active_median_loss-active_loss_05_q, alpha = 0.25,color = "blue",
-                     zorder=3)
+                     zorder=2)
     axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_75_q, 
                      active_median_loss-active_loss_25_q, alpha = 0.5,color = "blue",
                      zorder=3)
     axs[1].plot(active_sample_nums,active_median_loss,label="Active learning",
-             color = "blue",zorder=3)
+             color = "blue",zorder=4)
     
-    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
-    axs[1].axhline(y=1e-2, ls = "--",zorder=3,color="green")
+    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=5,color="green")
+    axs[1].axhline(y=1e-2, ls = "--",zorder=5,color="green")
     
     plt.yscale("log")
     plt.xscale("log")
