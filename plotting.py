@@ -502,14 +502,11 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         axs[0].scatter([x]*len(z),z, s=1, color="orange", zorder = 1, marker = "x",
                        alpha = 0.5)
         
-    axs[0].fill_between(grid_sample_nums, grid_median_loss-grid_loss_25_q, 
-                     grid_median_loss-grid_loss_05_q, alpha = 0.25,color = "orange",
+    axs[0].fill_between(grid_sample_nums, grid_loss_95_q, 
+                     grid_loss_05_q, alpha = 0.25,color = "orange",
                      zorder=2)
-    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_95_q, 
-                     grid_median_loss+grid_loss_75_q, alpha = 0.25,color = "orange",
-                     zorder=2)
-    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_75_q, 
-                     grid_median_loss-grid_loss_25_q, alpha = 0.5,color = "orange",
+    axs[0].fill_between(grid_sample_nums, grid_loss_75_q, 
+                     grid_loss_25_q, alpha = 0.5,color = "orange",
                      zorder=3)
     axs[0].plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
              zorder=4)
@@ -520,14 +517,11 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         axs[1].scatter([x]*len(z),z, s=1, color="blue", zorder = 2, marker = "x",
                        alpha = 0.5)
         
-    axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_95_q, 
-                     active_median_loss+active_loss_75_q, alpha = 0.25,color = "blue",
+    axs[1].fill_between(active_sample_nums, active_loss_95_q, 
+                     active_loss_05_q, alpha = 0.25,color = "blue",
                      zorder=2)
-    axs[1].fill_between(active_sample_nums, active_median_loss-active_loss_25_q, 
-                     active_median_loss-active_loss_05_q, alpha = 0.25,color = "blue",
-                     zorder=2)
-    axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_75_q, 
-                     active_median_loss-active_loss_25_q, alpha = 0.5,color = "blue",
+    axs[1].fill_between(active_sample_nums, active_loss_75_q, 
+                     active_loss_25_q, alpha = 0.5,color = "blue",
                      zorder=3)
     axs[1].plot(active_sample_nums,active_median_loss,label="Active learning",
              color = "blue",zorder=4)
