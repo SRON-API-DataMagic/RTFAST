@@ -494,7 +494,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
                              active_loss_05_q,
                              active_loss_low_out,active_loss_high_out):
     
-    fig , axs = plt.subplots(1,2,sharey=True)
+    fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
     
     for (x,y,z) in zip(grid_sample_nums,grid_loss_low_out,grid_loss_high_out):
         axs[0].scatter([x]*len(y),y,color="orange",zorder = 1, marker = "x")
@@ -523,10 +523,12 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
              color = "blue",zorder=2)
     
     axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
-    axs[1].axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
+    axs[1].axhline(y=1e-2, ls = "--",zorder=3,color="green")
     
     plt.yscale("log")
-    plt.xscale("log")
+    axs[0].xscale("log")
+    axs[1].xscale("log")
+    
     fig.supxlabel("Number of samples used in training")
     fig.supylabel("Residuals")
     lines = []
