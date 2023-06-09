@@ -502,8 +502,11 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         axs[0].scatter([x]*len(z),z, s=1, color="orange", zorder = 1, marker = "x",
                        alpha = 0.5)
         
-    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_95_q, 
+    axs[0].fill_between(grid_sample_nums, grid_median_loss-grid_loss_25_q, 
                      grid_median_loss-grid_loss_05_q, alpha = 0.25,color = "orange",
+                     zorder=2)
+    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_95_q, 
+                     grid_median_loss+grid_loss_75_q, alpha = 0.25,color = "orange",
                      zorder=2)
     axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_75_q, 
                      grid_median_loss-grid_loss_25_q, alpha = 0.5,color = "orange",
@@ -518,6 +521,9 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
                        alpha = 0.5)
         
     axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_95_q, 
+                     active_median_loss+active_loss_75_q, alpha = 0.25,color = "blue",
+                     zorder=2)
+    axs[1].fill_between(active_sample_nums, active_median_loss-active_loss_25_q, 
                      active_median_loss-active_loss_05_q, alpha = 0.25,color = "blue",
                      zorder=2)
     axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_75_q, 
