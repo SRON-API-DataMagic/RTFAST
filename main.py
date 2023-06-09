@@ -230,6 +230,7 @@ class barredMSELoss(nn.Module):
     def __init__(self,scaler,device):
         super(barredMSELoss, self).__init__()
         self.scaler = load(f'scalers/{scaler}')
+        self.device = device
         self.set_scale()
         
     def set_scale(self):
