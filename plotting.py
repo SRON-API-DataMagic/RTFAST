@@ -497,8 +497,10 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
     
     for (x,y,z) in zip(grid_sample_nums,grid_loss_low_out,grid_loss_high_out):
-        axs[0].scatter([x]*len(y),y,color="orange",zorder = 1, marker = "x")
-        axs[0].scatter([x]*len(z),z,color="orange",zorder = 1, marker = "x")
+        axs[0].scatter([x]*len(y),y,color="orange",zorder = 1, marker = "x",
+                       alpha = 0.5)
+        axs[0].scatter([x]*len(z),z,color="orange",zorder = 1, marker = "x",
+                       alpha = 0.5)
         
     axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_95_q, 
                      grid_median_loss-grid_loss_05_q, alpha = 0.25,color = "orange",
@@ -510,8 +512,10 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
              zorder=1)
     
     for (x,y,z) in zip(active_sample_nums,active_loss_low_out,active_loss_high_out):
-        axs[1].scatter([x]*len(y),y,color="blue",zorder = 2, marker = "x")
-        axs[1].scatter([x]*len(z),z,color="blue",zorder = 2, marker = "x")
+        axs[1].scatter([x]*len(y),y,color="blue",zorder = 2, marker = "x",
+                       alpha = 0.5)
+        axs[1].scatter([x]*len(z),z,color="blue",zorder = 2, marker = "x",
+                       alpha = 0.5)
         
     axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_95_q, 
                      active_median_loss-active_loss_05_q, alpha = 0.25,color = "blue",
@@ -528,6 +532,8 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
     plt.yscale("log")
     plt.xscale("log")
     
+    plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
+    
     fig.supxlabel("Number of samples used in training")
     fig.supylabel("Residuals")
     lines = []
@@ -540,6 +546,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         labels.extend(Label)
         
     fig.legend(lines, labels, loc='upper right')
+    fig.tight_layout()
     plt.savefig("loss/loss_by_sample_size.png")
     plt.close()
     
