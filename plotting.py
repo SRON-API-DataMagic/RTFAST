@@ -526,8 +526,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
     axs[1].axhline(y=1e-2, ls = "--",zorder=3,color="green")
     
     plt.yscale("log")
-    axs[0].xscale("log")
-    axs[1].xscale("log")
+    plt.xscale("log")
     
     fig.supxlabel("Number of samples used in training")
     fig.supylabel("Residuals")
