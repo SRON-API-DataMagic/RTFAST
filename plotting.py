@@ -351,11 +351,21 @@ def active_v_grid(wrk_dir,egrid):
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
     active_median_loss = []
-    active_loss_low_q = []
-    active_loss_high_q = []
+    active_loss_05_q = []
+    active_loss_25_q = []
+    active_loss_75_q = []
+    active_loss_95_q = []
+    active_loss_low_out = []
+    active_loss_high_out = []
+    
     grid_median_loss = []
-    grid_loss_low_q = []
-    grid_loss_high_q = []
+    grid_loss_05_q = []
+    grid_loss_25_q = []
+    grid_loss_75_q = []
+    grid_loss_95_q = []
+    grid_loss_low_out = []
+    grid_loss_high_out = []
+    
     resid_list = []
     
     scaler = MinMaxScaler()
@@ -379,10 +389,16 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, active_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        low_q, high_q = np.quantile(residuals,[0.25,0.75])
+        q_05, q_25, q_75, q_95 = np.quantile(residuals,[0.05,0.25,0.75,0.95])
         active_median_loss.append(median)
-        active_loss_low_q.append(low_q)
-        active_loss_high_q.append(high_q)
+        active_loss_05_q.append(q_05)
+        active_loss_25_q.append(q_25)
+        active_loss_75_q.append(q_75)
+        active_loss_95_q.append(q_95)
+        high_outliers = residuals[np.argwhere(residuals >= np.percentile(residuals, 95))]
+        low_outliers = residuals[np.argwhere(residuals <= np.percentile(residuals, 5))]
+        active_loss_low_out.append(low_outliers)
+        active_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,active_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
@@ -399,8 +415,8 @@ def active_v_grid(wrk_dir,egrid):
     del df
     
     active_median_loss = np.asarray(active_median_loss)
-    active_loss_low_q = np.asarray(active_loss_low_q)
-    active_loss_high_q = np.asarray(active_loss_high_q)
+    active_loss_25_q = np.asarray(active_loss_25_q)
+    active_loss_75_q = np.asarray(active_loss_75_q)
     
     resid_list = []
     
@@ -419,10 +435,16 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, grid_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        low_q, high_q = np.quantile(residuals,[0.25,0.75])
+        q_05, q_25, q_75, q_95 = np.quantile(residuals,[0.05,0.25,0.75,0.95])
         grid_median_loss.append(median)
-        grid_loss_low_q.append(low_q)
-        grid_loss_high_q.append(high_q)
+        grid_loss_05_q.append(q_05)
+        grid_loss_25_q.append(q_25)
+        grid_loss_75_q.append(q_75)
+        grid_loss_95_q.append(q_95)
+        high_outliers = residuals[np.argwhere(residuals >= np.percentile(residuals, 95))]
+        low_outliers = residuals[np.argwhere(residuals <= np.percentile(residuals, 5))]
+        grid_loss_low_out.append(low_outliers)
+        grid_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,grid_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, 
                                                      grid_scaler)
@@ -439,29 +461,19 @@ def active_v_grid(wrk_dir,egrid):
     print("Box plot render time:"+str(time.time()-time_start))
     
     grid_median_loss = np.asarray(grid_median_loss)
-    grid_loss_low_q = np.asarray(grid_loss_low_q)
-    grid_loss_high_q = np.asarray(grid_loss_high_q)
+    grid_loss_25_q = np.asarray(grid_loss_25_q)
+    grid_loss_75_q = np.asarray(grid_loss_75_q)
     
     print("Plotting loss by sample size")
+    plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
+                                 grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
+                                 grid_loss_low_out,grid_loss_high_out,
+                                 active_sample_nums, 
+                                 active_median_loss, active_loss_75_q,
+                                 active_loss_25_q, active_loss_95_q, 
+                                 active_loss_05_q,
+                                 active_loss_low_out,active_loss_high_out)
     
-    plt.fill_between(grid_sample_nums, grid_median_loss+grid_loss_high_q, 
-                     grid_median_loss-grid_loss_low_q, alpha = 0.5,color = "orange",
-                     zorder=1)
-    plt.plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
-             zorder=1)
-    plt.fill_between(active_sample_nums, active_median_loss+active_loss_high_q, 
-                     active_median_loss-active_loss_low_q, alpha = 0.5,color = "blue",
-                     zorder=2)
-    plt.plot(active_sample_nums,active_median_loss,label="Active learning",
-             color = "blue",zorder=2)
-    plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
-    plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Number of samples used in training")
-    plt.ylabel("Average percentage error")
-    plt.legend()
-    plt.savefig("loss/loss_by_sample_size.png")
-    plt.close()
 
 def plot_resids_vs_energy(data,base,basename,energy,scale = "linear"):
     plt.plot(base,data)
@@ -472,8 +484,56 @@ def plot_resids_vs_energy(data,base,basename,energy,scale = "linear"):
     plt.yscale("log")
     plt.title(f"Residuals as dependent on {basename} at {energy}keV")
     plt.savefig(f"loss/{basename}_{energy}.png")
-    
 
+def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
+                             grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
+                             grid_loss_low_out,grid_loss_high_out,
+                             active_sample_nums, 
+                             active_median_loss, active_loss_75_q,
+                             active_loss_25_q, active_loss_95_q, 
+                             active_loss_05_q,
+                             active_loss_low_out,active_loss_high_out):
+    
+    fig , axs = plt.subplots(1,2,sharey=True)
+    
+    for (x,y,z) in zip(grid_sample_nums,grid_loss_low_out,grid_loss_high_out):
+        axs[0].scatter([x]*len(y),y,color="orange",zorder = 1, marker = "x")
+        axs[0].scatter([x]*len(z),z,color="orange",zorder = 1, marker = "x")
+        
+    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_95_q, 
+                     grid_median_loss-grid_loss_05_q, alpha = 0.25,color = "orange",
+                     zorder=1)
+    axs[0].fill_between(grid_sample_nums, grid_median_loss+grid_loss_75_q, 
+                     grid_median_loss-grid_loss_25_q, alpha = 0.5,color = "orange",
+                     zorder=1)
+    axs[0].plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
+             zorder=1)
+    
+    for (x,y,z) in zip(active_sample_nums,active_loss_low_out,active_loss_high_out):
+        axs[1].scatter([x]*len(y),y,color="blue",zorder = 2, marker = "x")
+        axs[1].scatter([x]*len(z),z,color="blue",zorder = 2, marker = "x")
+        
+    axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_95_q, 
+                     active_median_loss-active_loss_05_q, alpha = 0.25,color = "blue",
+                     zorder=2)
+    axs[1].fill_between(active_sample_nums, active_median_loss+active_loss_75_q, 
+                     active_median_loss-active_loss_25_q, alpha = 0.5,color = "blue",
+                     zorder=2)
+    axs[1].plot(active_sample_nums,active_median_loss,label="Active learning",
+             color = "blue",zorder=2)
+    
+    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
+    axs[1].axhline(y=1e-2, ls = "--",label="1% error",zorder=3,color="green")
+    
+    plt.yscale("log")
+    plt.xscale("log")
+    fig.supxlabel("Number of samples used in training")
+    fig.supylabel("Residuals")
+    handles, labels = axs.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center')
+    plt.savefig("loss/loss_by_sample_size.png")
+    plt.close()
+    
 def main():
     wrk_dir = os.getcwd()
     
