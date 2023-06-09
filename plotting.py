@@ -529,8 +529,16 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
     plt.xscale("log")
     fig.supxlabel("Number of samples used in training")
     fig.supylabel("Residuals")
-    handles, labels = axs.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper center')
+    lines = []
+    labels = []
+      
+    for ax in fig.axes:
+        Line, Label = ax.get_legend_handles_labels()
+        # print(Label)
+        lines.extend(Line)
+        labels.extend(Label)
+        
+    fig.legend(lines, labels, loc='upper right')
     plt.savefig("loss/loss_by_sample_size.png")
     plt.close()
     
