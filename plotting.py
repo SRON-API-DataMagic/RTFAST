@@ -395,8 +395,8 @@ def active_v_grid(wrk_dir,egrid):
         active_loss_25_q.append(q_25)
         active_loss_75_q.append(q_75)
         active_loss_95_q.append(q_95)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 95)]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 5)]
+        high_outliers = residuals[residuals >= np.percentile(residuals, 95)][::100]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 5)][::100]
         active_loss_low_out.append(low_outliers)
         active_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,active_scaler,model,egrid,fname)
@@ -441,8 +441,8 @@ def active_v_grid(wrk_dir,egrid):
         grid_loss_25_q.append(q_25)
         grid_loss_75_q.append(q_75)
         grid_loss_95_q.append(q_95)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 95)]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 5)]
+        high_outliers = residuals[residuals >= np.percentile(residuals, 95)][::100]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 5)][::100]
         grid_loss_low_out.append(low_outliers)
         grid_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,grid_scaler,model,egrid,fname)
