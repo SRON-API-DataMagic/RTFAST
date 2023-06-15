@@ -281,7 +281,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -321,6 +321,8 @@ def queryByDropout(wrk_dir, device = None):
         query_dataloader = CustomData("data/locations/active_locs.csv", 
                                        scaler,"active_scaler.bin",
                                        scaling=True)
+        
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 55
@@ -488,23 +490,24 @@ def queryByDropout(wrk_dir, device = None):
                     last_sig_best_te = loss
                     imp_te = 0
                     imp_tr = 0
-                    print(f"New best training loss: {train_loss}")
-                    print(f"New best testing loss: {loss}")
-                    torch.save(model.state_dict(), "models/active_best.pth")
+                    print(f"New sig best training loss: {train_loss}")
+                    print(f"New sig best testing loss: {loss}")
                 elif tr_bet > 0:
                     imp_tr = 0
                     imp_te += 1
                     last_sig_best_tr = train_loss
-                    print(f"New best training loss: {train_loss}")
+                    print(f"New sig best training loss: {train_loss}")
                 elif te_bet > 0:
                     imp_tr += 1
                     imp_te = 0
                     last_sig_best_te = loss
-                    print(f"New best testing loss: {loss}")
-                    torch.save(model.state_dict(), "models/active_best.pth")
+                    print(f"New sig best testing loss: {loss}")
                 else:
                     imp_te += 1
                     imp_tr += 1
+                if loss == min(te_loss_arr):
+                    torch.save(model.state_dict(), "models/active_best.pth")
+                    
                 epoch += 1
             if active_loop_num != 0:
                 loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
@@ -519,7 +522,7 @@ def queryByDropout(wrk_dir, device = None):
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == (active_loops - 1) and active_loop_num != start_num):
+                or active_loop_num == (active_loops - 1)):
                 temp_te = np.asarray(te_loss_arr)
                 temp_tr = np.asarray(tr_loss_arr)
                 temp_epochs = np.asarray(loop_epochs)

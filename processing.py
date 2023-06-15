@@ -14,6 +14,7 @@ def mergeSaveData(new_data,old_data,destination,fname):
     df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
     df.to_csv(destination+fname)
     return
+
 def saveData(dataset, pars, destination, fname, current_locs = None):
     
     try:
@@ -96,15 +97,15 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
-              fname = f"loc_{num}.csv")
+              fname = f"loc_{num}_bar.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_bar_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_bar_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_bar_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_bar_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_bar_epochs.txt",epochs)
     print("Saved losses")
     return
 
