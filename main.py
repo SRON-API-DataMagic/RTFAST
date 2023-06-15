@@ -263,6 +263,46 @@ class barredMSELoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
+class multiplierMSEmaxLoss(nn.Module):
+    def __init__(self,scaler,device):
+        super(barredMSELoss, self).__init__()
+        self.scaler = load(f'scalers/{scaler}')
+        self.device = device
+        self.set_scale()
+        
+    def set_scale(self):
+        self.min = torch.tensor(self.scaler.data_min_)
+        self.max = torch.tensor(self.scaler.data_max_)
+        self.scale = self.max - self.min
+        
+    def scaling(self,a):
+        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+        result = 10**result
+        return result
+    
+    def scaled_MSE_loss(self,output,target,mask):
+        loss = (target-output)**2
+        adjusted_loss = loss*mask
+        mean_loss = torch.mean(adjusted_loss)
+        max_loss = torch.max(adjusted_loss)
+        total_loss = mean_loss + max_loss
+        return total_loss
+        
+    def forward(self, output, target, mask):
+        #scale to real space
+        scaled_tar = self.scaling(target)
+        scaled_out = self.scaling(output)
+        #find desired boundaries of the original data
+        multiplier_mask = torch.abs(1-scaled_out/scaled_tar)*100
+        #multiply with mask to only consider where data is large enough to be
+        #important
+        pred = torch.mul(output,mask)
+        data = torch.mul(target,mask)
+        #calculate loss
+        loss = self.scaled_MSE_loss(pred,data,multiplier_mask)
+        #add the worst outlying points to loss to encourage tighter constraints
+        return loss
+
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
