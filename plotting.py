@@ -406,10 +406,10 @@ def active_v_grid(wrk_dir,egrid):
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
     time_start = time.time()
-    violin(df,"active")
+    violin(df,"bar_active")
     print("Violin plot render time:"+str(time.time()-time_start))
     time_start = time.time()
-    box(df,"active")
+    box(df,"bar_active")
     print("Box plot render time:"+str(time.time()-time_start))
     
     del df
