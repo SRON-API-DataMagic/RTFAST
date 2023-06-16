@@ -424,6 +424,8 @@ def queryByDropout(wrk_dir, device = None):
             model.train()
             query_idx = []
             
+            distributions(theta_query_large, labels, f"dists/loop_{active_loop_num}_bs_")
+            
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
                 for i in range(sample_dropout):
@@ -451,7 +453,7 @@ def queryByDropout(wrk_dir, device = None):
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
             
-            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
+            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_as_")
             
             # compute the physical model for these thetas
             data_query = np.zeros((theta_query.shape[0],len(egrid)))
