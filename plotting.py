@@ -338,12 +338,12 @@ def active_v_grid(wrk_dir,egrid):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,20,30,35,40,45,49,50,55,60]
+    active_name = [0,1,2,3,4,5,10,15,20,29]
     active_model_names = np.array(active_name)
     active_sample_nums = []
     for name in active_name:
-        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}.csv")))
-    active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
+        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}_bar.csv")))
+    active_model_names = [model_base_loc+str(i)+"_bar_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
     scaler_name = grid_name
     grid_model_names = np.array([5,6,7,8,9,10])
@@ -372,17 +372,17 @@ def active_v_grid(wrk_dir,egrid):
     
     print("Calculating loss for active learning")
     active_scaler = MinMaxScaler()
-    active_scaler = load('scalers/active_scaler.bin')
+    active_scaler = load('scalers/active_bar_scaler.bin')
     
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
-                               "active_scaler.bin") #scaler unused but must be parsed
+                               "active_bar_scaler.bin") #scaler unused but must be parsed
     testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                     num_workers=4)
     
     for (model_loc,fname) in zip(active_model_names,active_name):
-        fname = str(fname) + "_active"
+        fname = str(fname) + "_bar_active"
         print(fname)
         model = model_load(model_loc, egrid)
         model.eval()
@@ -547,7 +547,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         
     fig.legend(lines, labels, loc='upper right')
     fig.tight_layout()
-    plt.savefig("loss/loss_by_sample_size.png")
+    plt.savefig("loss/bar_loss_by_sample_size.png")
     plt.close()
     
 def main():
