@@ -248,8 +248,8 @@ class barredMSELoss(nn.Module):
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
         #find desired boundaries of the original data
-        data_low = 0.99*scaled_tar
-        data_high = 1.01*scaled_tar
+        data_low = 0.999*scaled_tar
+        data_high = 1.001*scaled_tar
         #create mask where prediction is within boundaries
         loss_mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
         #multiply with low data mask to obtain mask of where network needs to learn
