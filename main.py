@@ -320,7 +320,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 30
+    active_loops = 50
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -332,7 +332,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -376,20 +376,20 @@ def queryByDropout(wrk_dir, device = None):
         loss_fn = barredMSELoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
-        start_num = 55
+        start_num = 29
         active_loop_num = start_num
         print("Loading previous data")
-        renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
+        renameData(f"data/locations/loc_{active_loop_num}_bar.csv", "data/locations/", "active_locs.csv")
         
-        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_bar_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_bar_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_epochs.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_bar_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -400,9 +400,10 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
+        model.load_state_dict(torch.load(f"models/{active_loop_num}_bar_model.pth"))
+        optimizer.load_state_dict(torch.load(f"models/{active_loop_num}_bar_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_bar_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
