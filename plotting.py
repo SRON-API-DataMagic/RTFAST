@@ -402,7 +402,7 @@ def active_v_grid(wrk_dir,egrid):
         model_samples(testing_dataloader,active_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
-        energy_plots(testing_dataloader, active_scaler, model, egrid)
+        energy_plots(testing_dataloader, active_scaler, model, egrid, fname)
         del df, ticks, ticklabels
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
@@ -475,7 +475,7 @@ def active_v_grid(wrk_dir,egrid):
                                  active_loss_05_q,
                                  active_loss_low_out,active_loss_high_out)
     
-def energy_plots(dataset,scaler,model,egrid):
+def energy_plots(dataset,scaler,model,egrid,fname):
     flux_true = []
     flux_model = []
     spins = []
@@ -522,7 +522,7 @@ def energy_plots(dataset,scaler,model,egrid):
             plot_resids_vs_energy(data_true, data_model, parameter, basename, energy)
 
 
-def plot_resids_vs_energy(data_true,data_model,base,basename,energy,scale = "linear"):
+def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,scale = "linear"):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(base,data_true,c="blue",label="NN model")
     axs[0].plot(base,data_model,c="r",label="Truth",lw=1.)
@@ -534,7 +534,7 @@ def plot_resids_vs_energy(data_true,data_model,base,basename,energy,scale = "lin
     plt.xscale(scale)
     plt.yscale("log")
     plt.title(f"Residuals as dependent on {basename} at {energy}keV")
-    plt.savefig(f"loss/{basename}_{energy}.png")
+    plt.savefig(f"loss/{fname}_{basename}_{energy}.png")
     plt.close()
 
 def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
