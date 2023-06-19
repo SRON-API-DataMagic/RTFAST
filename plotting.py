@@ -382,8 +382,8 @@ def active_v_grid(wrk_dir,egrid):
                                     num_workers=4)
     
     for (model_loc,fname) in zip(active_model_names,active_name):
-        fname = str(fname) + "_bar_active"
         folname = str(fname)+"_bar"
+        fname = str(fname) + "_bar_active"
         print(fname)
         model = model_load(model_loc, egrid)
         model.eval()
