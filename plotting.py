@@ -338,7 +338,7 @@ def active_v_grid(wrk_dir,egrid):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,5,10,15,20,29]
+    active_name = [0,1,2,3,4,5,10,15,20,25,29]
     active_model_names = np.array(active_name)
     active_sample_nums = []
     for name in active_name:
