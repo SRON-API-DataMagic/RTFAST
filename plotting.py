@@ -507,12 +507,10 @@ def energy_plots(dataset,scaler,model,egrid):
         pred = 10**np.squeeze(inverse(scaler,pred))
         pred[M==0] = 1e-38
         
-        print(pred[indexes].shape)
-        print(da[indexes].shape)
-        
         flux_true.append(pred[indexes])
         flux_model.append(da[indexes])
     
+    print(flux_true)
     flux_true = np.asarray(flux_true)
     flux_model = np.asarray(flux_model)
     
