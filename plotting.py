@@ -519,7 +519,7 @@ def energy_plots(dataset,scaler,model,egrid,fname):
         data_true = flux_true[:,i]
         data_model = flux_model[:,i]
         for parameter,basename in zip(parameters,parameter_names):
-            plot_resids_vs_energy(data_true, data_model, parameter, basename, energy)
+            plot_resids_vs_energy(data_true, data_model, parameter, basename, energy, fname)
 
 
 def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,scale = "linear"):
