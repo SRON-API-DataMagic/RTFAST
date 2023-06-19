@@ -512,14 +512,14 @@ def queryByDropout(wrk_dir, device = None):
     
             print("Setting up modeling")
             Xquery = CustomData("data/locations/active_locs.csv", scaler, 
-                                "active_scaler.bin")
+                                "active_bar_scaler.bin")
             print("Query data set created")
             query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
         
             Xtest = CustomData("data/locations/active_test_locs.csv", scaler, 
-                               "active_scaler.bin")
+                               "active_bar_scaler.bin")
             print("Test data set created")
             test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
