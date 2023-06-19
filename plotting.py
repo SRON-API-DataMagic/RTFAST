@@ -533,8 +533,8 @@ def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,scale 
     axs[1].set_xlabel(basename)
     plt.xscale(scale)
     plt.yscale("log")
-    plt.title(f"Residuals as dependent on {basename} at {energy}keV")
-    plt.savefig(f"loss/{fname}_{basename}_{energy}.png")
+    plt.title(f"Residuals as dependent on {basename} at {round(energy,2)}keV")
+    plt.savefig(f"loss/{fname}_{basename}_{round(energy,2)}.png")
     plt.close()
 
 def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
