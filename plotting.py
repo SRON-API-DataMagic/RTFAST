@@ -483,7 +483,8 @@ def energy_plots(dataset,scaler,model,egrid):
     incs = []
     rins = []
     routs = []
-    indexes = int([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]*len(egrid))
+    index_start = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+    indexes = (int(i*len(egrid)) for i in index_start)
     values = egrid[indexes]
     for batch, (D,P,M) in enumerate(dataset):
         M = np.squeeze(M)
