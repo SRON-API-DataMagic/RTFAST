@@ -519,13 +519,14 @@ def energy_plots(dataset,scaler,model,egrid,fname):
         data_true = flux_true[:,i]
         data_model = flux_model[:,i]
         for parameter,basename in zip(parameters,parameter_names):
+            print(parameter)
             plot_resids_vs_energy(data_true, data_model, parameter, basename, energy, fname)
 
 
 def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,scale = "linear"):
     fig, axs = plt.subplots(2,1,sharex=True)
-    axs[0].plot(base,data_true,c="blue",label="NN model")
-    axs[0].plot(base,data_model,c="r",label="Truth",lw=1.)
+    axs[0].scatter(base,data_true,c="blue",label="NN model")
+    axs[0].scatter(base,data_model,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_ylabel("Flux")
     axs[1].scatter(base,(data_true-data_model),s=0.5)
