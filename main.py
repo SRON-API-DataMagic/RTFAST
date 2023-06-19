@@ -165,12 +165,11 @@ def train(dataloader,model,optimizer,loss_fn,device):
         optimizer.zero_grad()
         loss.backward()
         
-        threshold = 0.001
+        threshold = 0
         vanishing_grads = 0
         for p in model.parameters():
-            if p.grad.norm() < threshold:
+            if p.grad.norm() == threshold:
                 vanishing_grads += 1
-                print(f"Approaching vanishing gradient value:{p.grad.norm()}")
         
         if vanishing_grads != 0:
             print(f"{vanishing_grads} gradients are approaching 0")
