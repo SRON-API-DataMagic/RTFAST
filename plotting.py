@@ -485,7 +485,6 @@ def energy_plots(dataset,scaler,model,egrid):
     routs = []
     index_start = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
     indexes = [int(i*len(egrid)) for i in index_start]
-    print(indexes)
     values = egrid[indexes]
     for batch, (D,P,M) in enumerate(dataset):
         M = np.squeeze(M)
@@ -510,7 +509,6 @@ def energy_plots(dataset,scaler,model,egrid):
         flux_true.append(pred[indexes].tolist())
         flux_model.append(da[indexes].tolist())
     
-    print(flux_true)
     flux_true = np.asarray(flux_true)
     flux_model = np.asarray(flux_model)
     
