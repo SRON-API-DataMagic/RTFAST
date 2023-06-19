@@ -510,6 +510,9 @@ def energy_plots(dataset,scaler,model,egrid):
         flux_true.append(pred[indexes])
         flux_model.append(da[indexes])
     
+    flux_true = np.asarray(flux_true)
+    flux_model = np.asarray(flux_model)
+    
     parameters = [spins,masses,incs,rins,routs]
     parameter_names = ["spins","masses","incs","rins","routs"]
     
