@@ -332,14 +332,14 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
-    scheduler = ReduceLROnPlateau(optimizer)
+    scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=20)
     scaler = MinMaxScaler()
     loss_fn = maskedMSELoss
     start_num = 0
@@ -371,10 +371,10 @@ def queryByDropout(wrk_dir, device = None):
         
         #create initial dataset object to create scaler (and then delete object)
         query_dataloader = CustomData("data/locations/active_locs.csv", 
-                                       scaler,"active_scaler.bin",
+                                       scaler,"active_bar_scaler.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_bar_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 29
