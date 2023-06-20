@@ -13,6 +13,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
 from joblib import dump, load, Parallel, delayed
 import scipy.stats
@@ -338,6 +339,7 @@ def queryByDropout(wrk_dir, device = None):
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
+    scheduler = ReduceLROnPlateau(optimizer)
     scaler = MinMaxScaler()
     loss_fn = maskedMSELoss
     start_num = 0
@@ -534,6 +536,7 @@ def queryByDropout(wrk_dir, device = None):
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
                 loss = test(test_dataloader,model,loss_fn,device)
+                scheduler.step(loss)
                 te_loss_arr.append(loss)
                 tr_loss_arr.append(train_loss)
                 tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -560,7 +563,6 @@ def queryByDropout(wrk_dir, device = None):
                     imp_tr += 1
                 if loss == min(te_loss_arr):
                     torch.save(model.state_dict(), "models/active_best.pth")
-                    
                 epoch += 1
             if active_loop_num != 0:
                 loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
