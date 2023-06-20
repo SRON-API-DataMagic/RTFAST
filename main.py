@@ -320,7 +320,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 50
+    active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -413,7 +413,7 @@ def queryByDropout(wrk_dir, device = None):
     
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
-        while active_loop_num < active_loops:
+        while active_loop_num <= active_loops:
             #increase size of added data dependent on current dataset size
             data_size = len(pd.read_csv("data/locations/active_locs.csv"))
             if data_size > 100000:
@@ -577,7 +577,7 @@ def queryByDropout(wrk_dir, device = None):
             #save state of models and data if loop is a multiple of 5, first 5
             #loops or the final loop.
             if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == (active_loops - 1)):
+                or active_loop_num == active_loops):
                 temp_te = np.asarray(te_loss_arr)
                 temp_tr = np.asarray(tr_loss_arr)
                 temp_epochs = np.asarray(loop_epochs)
