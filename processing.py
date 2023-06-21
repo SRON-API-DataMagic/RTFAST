@@ -94,6 +94,12 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
     final_df.to_csv(destination+"loc_"+index+".csv")
     return
 
+def loadSpectra(df,egrid):
+    spectra = np.zeros(len(df),len(egrid))
+    for index, row in df.iterrows():
+        spectra[index]=np.loadtxt(row["Location"])
+    return spectra
+
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
