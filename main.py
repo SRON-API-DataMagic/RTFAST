@@ -360,7 +360,7 @@ def queryByDropout(wrk_dir, device = None):
         pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
         saveData(data_init, pars_init, 
-                 "data/locations/","active_first_locs.csv")
+                 "data/locations/","active_full_locs.csv")
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -371,7 +371,7 @@ def queryByDropout(wrk_dir, device = None):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        query_dataloader = CustomData("data/locations/active_first_locs.csv", 
+        query_dataloader = CustomData("data/locations/active_full_locs.csv", 
                                        scaler,"active_scaler.bin",
                                        scaling=True)
         
@@ -509,7 +509,7 @@ def queryByDropout(wrk_dir, device = None):
                               "data/locations/","active_locs.csv")
             else:
                 #merge first generated models into training dataset
-                mergeSaveData(pd.read_csv("data/locations/active_first_locs.csv"), 
+                mergeSaveData(pd.read_csv("data/locations/active_full_locs.csv"), 
                               pd.read_csv("data/locations/active_locs.csv"), 
                               "data/locations/","active_locs.csv")
                 first = False
