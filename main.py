@@ -19,6 +19,7 @@ from joblib import dump, load, Parallel, delayed
 import scipy.stats
 
 from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
+from processing import loadData, loadSpectra, loadParameters
 import generator
 import network
     
@@ -38,7 +39,7 @@ class CustomData(Dataset):
     def __init__(self,labels, scaler, scaler_name, scaling=False):
         super().__init__()
         self.labels = pd.read_csv(labels)
-        self.pars_list = [2,14,3,4,5]
+        self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
         if scaling == True:
@@ -53,7 +54,7 @@ class CustomData(Dataset):
     
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
-        location = self.labels.iloc[idx,27]
+        location = self.labels.iloc[idx,26]
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
@@ -95,7 +96,7 @@ class CustomData(Dataset):
 
         """
         data = []
-        for file in self.labels.iloc[:,27]:
+        for file in self.labels.iloc[:,26]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
         final_dataset[final_dataset<=1e-38] = 1e-38
@@ -177,7 +178,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         
         optimizer.step()
         loss_b = loss.detach().item()
-        if batch % 5 == 0:
+        if batch % 2 == 0:
             current = (batch*P.shape[0] + 1)
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss_b
@@ -359,7 +360,7 @@ def queryByDropout(wrk_dir, device = None):
         pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
         saveData(data_init, pars_init, 
-                 "data/locations/","active_locs.csv")
+                 "data/locations/","active_first_locs.csv")
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -369,28 +370,28 @@ def queryByDropout(wrk_dir, device = None):
         
         active_loop_num = 0
         
-        #create initial dataset object to create scaler (and then delete object)
-        query_dataloader = CustomData("data/locations/active_locs.csv", 
-                                       scaler,"active_bar_scaler.bin",
+        #create initial dataset object to create scaler
+        query_dataloader = CustomData("data/locations/active_first_locs.csv", 
+                                       scaler,"active_scaler.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_bar_scaler.bin",device)
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 29
         active_loop_num = start_num
         print("Loading previous data")
-        renameData(f"data/locations/loc_{active_loop_num}_bar.csv", "data/locations/", "active_locs.csv")
+        renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
         
-        with open(f"loss/{active_loop_num}_bar_tr_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_bar_te_loss.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_bar_epochs.txt","r") as f1:
+        with open(f"loss/{active_loop_num}_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -401,10 +402,10 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        model.load_state_dict(torch.load(f"models/{active_loop_num}_bar_model.pth"))
-        optimizer.load_state_dict(torch.load(f"models/{active_loop_num}_bar_optimizer.pth"))
+        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
+        optimizer.load_state_dict(torch.load(f"models/{active_loop_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_bar_scaler.bin",device)
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
@@ -429,8 +430,6 @@ def queryByDropout(wrk_dir, device = None):
             pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             model.train()
             query_idx = []
-            
-            distributions(theta_query_large, labels, f"dists/loop_{active_loop_num}_bs_")
             
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
@@ -459,7 +458,7 @@ def queryByDropout(wrk_dir, device = None):
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
             
-            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_as_")
+            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
             
             # compute the physical model for these thetas
             data_query = np.zeros((theta_query.shape[0],len(egrid)))
@@ -469,6 +468,7 @@ def queryByDropout(wrk_dir, device = None):
                                             for pars in theta_query_iterate)
             data_query = np.asarray(data_query)
             del theta_query_iterate
+            
             # shuffle indices for neural network training
             idx_shuffle = np.arange(0, len(theta_query), dtype=int)
             np.random.shuffle(idx_shuffle)
@@ -487,13 +487,37 @@ def queryByDropout(wrk_dir, device = None):
             data_query, theta_query = nanChecker(data_query, theta_query)
             data_test, theta_test = nanChecker(data_test, theta_test)
             
+            #save to disk
             saveData(data_query, generator.pars_conversion(theta_query), 
-                     "data/locations/","active_locs.csv", 
-                     current_locs = pd.read_csv("data/locations/active_locs.csv"))
-            
+                     "data/locations/","active_locs.csv")
             saveData(data_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
                      "active_test_locs.csv")
+            
+            #combine into intermediary file to save to full dataset later
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
+                          pd.read_csv("data/locations/active_locs.csv"), 
+                          "data/locations/","active_tmp_locs.csv")
+            
+            #retrieve 4500 random samples from previously generated training
+            #data to add to this loops training set (as long as this is not the 
+            #first loop)
+            if first != True:
+                #retrieve 4500 random spectra + parameters from overall dataset
+                mergeSaveData(pd.read_csv("data/locations/active_full_locs.csv").sample(n=4500), 
+                              pd.read_csv("data/locations/active_locs.csv"), 
+                              "data/locations/","active_locs.csv")
+            else:
+                #merge first generated models into training dataset
+                mergeSaveData(pd.read_csv("data/locations/active_first_locs.csv"), 
+                              pd.read_csv("data/locations/active_locs.csv"), 
+                              "data/locations/","active_locs.csv")
+                first = False
+            
+            #merge all new models into training dataset
+            mergeSaveData(pd.read_csv("data/locations/active_tmp_locs.csv"), 
+                          pd.read_csv("data/locations/active_full_locs.csv"), 
+                          "data/locations/","active_full_locs.csv")
             
             del data_query, data_test, theta_query, theta_test
             
@@ -506,14 +530,14 @@ def queryByDropout(wrk_dir, device = None):
     
             print("Setting up modeling")
             Xquery = CustomData("data/locations/active_locs.csv", scaler, 
-                                "active_bar_scaler.bin")
+                                "active_scaler.bin")
             print("Query data set created")
             query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
         
             Xtest = CustomData("data/locations/active_test_locs.csv", scaler, 
-                               "active_bar_scaler.bin")
+                               "active_scaler.bin")
             print("Test data set created")
             test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
@@ -562,12 +586,7 @@ def queryByDropout(wrk_dir, device = None):
             else:
                 loop_epochs.append(epoch)
             
-            #merge test models into training dataset
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
-                          pd.read_csv("data/locations/active_locs.csv"), 
-                          "data/locations/","active_locs.csv")
-            
-            #save state of models and data
+            #save state of models and data for this loop
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
@@ -575,7 +594,7 @@ def queryByDropout(wrk_dir, device = None):
                 best_model.load_state_dict(torch.load("models/active_best.pth"))
             except:
                 best_model.load_state_dict(model.state_dict())
-            saveLoop(best_model, "data/locations/active_locs.csv", 
+            saveLoop(best_model, "data/locations/active_full_locs.csv", 
                      optimizer,
                      temp_te, temp_tr, 
                      active_loop_num, temp_epochs)

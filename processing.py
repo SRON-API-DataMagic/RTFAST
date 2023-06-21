@@ -103,21 +103,21 @@ def loadSpectra(df,egrid):
 def loadParameters(df):
     parameters = np.zeros((len(df),len(df.columns)-2))
     for index, row in df.iterrows():
-        parameters[index]=row.iloc[1:len(df.columns)-1]
+        parameters[index]=row.iloc[0:len(df.columns)-1]
     return parameters
 
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
-              fname = f"loc_{num}_bar.csv")
+              fname = f"loc_{num}.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_bar_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_bar_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_bar_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_bar_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_bar_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_epochs.txt",epochs)
     print("Saved losses")
     return
 
