@@ -95,7 +95,7 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
     return
 
 def loadSpectra(df,egrid):
-    spectra = np.zeros(len(df),len(egrid))
+    spectra = np.zeros((len(df),len(egrid)))
     for index, row in df.iterrows():
         spectra[index]=np.loadtxt(row["Location"])
     return spectra
