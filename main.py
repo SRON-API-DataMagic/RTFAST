@@ -414,16 +414,9 @@ def queryByDropout(wrk_dir, device = None):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            #increase size of added data dependent on current dataset size
-            data_size = len(pd.read_csv("data/locations/active_locs.csv"))
-            if data_size > 100000:
-                multiplier = ceil(data_size/100000)
-            else:
-                multiplier = 1
-            
-            n_samples = 5000*multiplier
-            n_samples_large = 10000*multiplier # number of parameter sets to draw 
-            divider = 1000
+            n_samples = 5000
+            n_samples_large = 10000 # number of parameter sets to draw 
+            divider = 100
             n_samples_small = int(n_samples_large/divider)
             print(f"I am in active learning loop {active_loop_num+1}")
             # randomly generate points in parameter space
@@ -432,7 +425,7 @@ def queryByDropout(wrk_dir, device = None):
             
             print("computing neural network predictions with dropout for each theta")
             # compute 100 neural network predictions with dropout
-            sample_dropout = 100*multiplier
+            sample_dropout = 100
             pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             model.train()
             query_idx = []
@@ -574,21 +567,18 @@ def queryByDropout(wrk_dir, device = None):
                           pd.read_csv("data/locations/active_locs.csv"), 
                           "data/locations/","active_locs.csv")
             
-            #save state of models and data if loop is a multiple of 5, first 5
-            #loops or the final loop.
-            if ((active_loop_num % 5) == 0 or active_loop_num < 5 
-                or active_loop_num == active_loops):
-                temp_te = np.asarray(te_loss_arr)
-                temp_tr = np.asarray(tr_loss_arr)
-                temp_epochs = np.asarray(loop_epochs)
-                try:
-                    best_model.load_state_dict(torch.load("models/active_best.pth"))
-                except:
-                    best_model.load_state_dict(model.state_dict())
-                saveLoop(best_model, "data/locations/active_locs.csv", 
-                         optimizer,
-                         temp_te, temp_tr, 
-                         active_loop_num, temp_epochs)
+            #save state of models and data
+            temp_te = np.asarray(te_loss_arr)
+            temp_tr = np.asarray(tr_loss_arr)
+            temp_epochs = np.asarray(loop_epochs)
+            try:
+                best_model.load_state_dict(torch.load("models/active_best.pth"))
+            except:
+                best_model.load_state_dict(model.state_dict())
+            saveLoop(best_model, "data/locations/active_locs.csv", 
+                     optimizer,
+                     temp_te, temp_tr, 
+                     active_loop_num, temp_epochs)
             #iterate loop number by 1
             active_loop_num += 1
             

@@ -12,7 +12,7 @@ import os
 
 def mergeSaveData(new_data,old_data,destination,fname):
     df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
-    df.to_csv(destination+fname)
+    df.to_csv(destination+fname,index=False)
     return
 
 def saveData(dataset, pars, destination, fname, current_locs = None):
@@ -40,12 +40,12 @@ def saveData(dataset, pars, destination, fname, current_locs = None):
                     "ReIm","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     pars_df = pd.DataFrame(pars,columns = column_names)
     locations_df = pd.DataFrame(locations,columns=["Location"])
-    df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
+    df = pd.concat([pars_df,locations_df],axis = 1, join = "inner",ignore_index=True)
     
     if current_locs is not None:
         df = pd.concat([df,current_locs],axis=0,ignore_index=True)
     
-    df.to_csv(destination+fname)
+    df.to_csv(destination+fname,index=False)
     return
 
 def removeRedundantData():
@@ -76,7 +76,7 @@ def removeRedundantData():
 
 def renameData(data_locs,destination,fname):
     df = pd.read_csv(data_locs)
-    df.to_csv(destination+fname)
+    df.to_csv(destination+fname,index=False)
     return
 
 def loadData(location):
@@ -90,8 +90,8 @@ def merging_locations_pars(pars_loc, locations_loc, destination,index):
                     "ReIm","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     pars_df = pd.DataFrame(pars,columns = column_names)
     locations_df = pd.DataFrame(locations,columns=["Location"])
-    final_df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
-    final_df.to_csv(destination+"loc_"+index+".csv")
+    final_df = pd.concat([pars_df,locations_df],axis = 1, join = "inner",ignore_index=True)
+    final_df.to_csv(destination+"loc_"+index+".csv",index=False)
     return
 
 def loadSpectra(df,egrid):
@@ -99,6 +99,12 @@ def loadSpectra(df,egrid):
     for index, row in df.iterrows():
         spectra[index]=np.loadtxt(row["Location"])
     return spectra
+
+def loadParameters(df):
+    parameters = np.zeros((len(df),len(df.columns)-2))
+    for index, row in df.iterrows():
+        parameters[index]=row.iloc[1:len(df.columns)-1]
+    return parameters
 
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
