@@ -178,7 +178,7 @@ def train(dataloader,model,optimizer,loss_fn,device):
         
         optimizer.step()
         loss_b = loss.detach().item()
-        if batch % 2 == 0:
+        if batch % 5 == 0:
             current = (batch*P.shape[0] + 1)
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss_b
@@ -371,7 +371,7 @@ def queryByDropout(wrk_dir, device = None):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        query_dataloader = CustomData("data/locations/active_full_locs.csv", 
+        query_dataloader = CustomData("data/locations/active_locs.csv", 
                                        scaler,"active_scaler.bin",
                                        scaling=True)
         
@@ -488,36 +488,13 @@ def queryByDropout(wrk_dir, device = None):
             
             #save to disk
             saveData(data_query, generator.pars_conversion(theta_query), 
-                     "data/locations/","active_locs.csv")
+                     "data/locations/","active_locs.csv", 
+                     current_locs = pd.read_csv("data/locations/active_locs.csv"))
+
             saveData(data_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
                      "active_test_locs.csv")
-            
-            #combine into intermediary file to save to full dataset later
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
-                          pd.read_csv("data/locations/active_locs.csv"), 
-                          "data/locations/","active_tmp_locs.csv")
-            
-            #retrieve 4500 random samples from previously generated training
-            #data to add to this loops training set (as long as this is not the 
-            #first loop)
-            if first != True:
-                #retrieve 4500 random spectra + parameters from overall dataset
-                mergeSaveData(pd.read_csv("data/locations/active_full_locs.csv").sample(n=4500), 
-                              pd.read_csv("data/locations/active_locs.csv"), 
-                              "data/locations/","active_locs.csv")
-            else:
-                #merge first generated models into training dataset
-                mergeSaveData(pd.read_csv("data/locations/active_full_locs.csv"), 
-                              pd.read_csv("data/locations/active_locs.csv"), 
-                              "data/locations/","active_locs.csv")
-                first = False
-            
-            #merge all new models into training dataset
-            mergeSaveData(pd.read_csv("data/locations/active_tmp_locs.csv"), 
-                          pd.read_csv("data/locations/active_full_locs.csv"), 
-                          "data/locations/","active_full_locs.csv")
-            
+
             del data_query, data_test, theta_query, theta_test
             
             # add rejected parameter sets back to original array for potential 
@@ -585,6 +562,10 @@ def queryByDropout(wrk_dir, device = None):
             else:
                 loop_epochs.append(epoch)
             
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
+                          pd.read_csv("data/locations/active_locs.csv"), 
+                          "data/locations/","active_locs.csv")
+
             #save state of models and data for this loop
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
@@ -593,7 +574,7 @@ def queryByDropout(wrk_dir, device = None):
                 best_model.load_state_dict(torch.load("models/active_best.pth"))
             except:
                 best_model.load_state_dict(model.state_dict())
-            saveLoop(best_model, "data/locations/active_full_locs.csv", 
+            saveLoop(best_model, "data/locations/active_locs.csv", 
                      optimizer,
                      temp_te, temp_tr, 
                      active_loop_num, temp_epochs)
