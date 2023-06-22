@@ -437,9 +437,8 @@ def queryByDropout(wrk_dir, device = None):
                     pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
-                dvar = pred_query_all / np.array([np.var(pred_query_all, axis=-1).T, ]).T
-                var_query = np.var(dvar, axis=0)
-                mean_var_query = np.mean(var_query, axis=1)
+                dvar = np.var(pred_query_all,axis=0)
+                mean_var_query = np.mean(dvar, axis=1)
                 # add to uncertainties per theta to list
                 query_idx.append(mean_var_query.tolist())
             
