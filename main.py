@@ -434,7 +434,7 @@ def queryByDropout(wrk_dir, device = None):
                 query_idx.append(mean_var_query.tolist())
             
             #Performing manual memory cleanup
-            del pred_query, pred_query_all, dvar, var_query, mean_var_query
+            del pred_query, pred_query_all, dvar, mean_var_query
             del theta_query_small
             print("Successfully finished generating thetas")
             
