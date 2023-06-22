@@ -54,7 +54,7 @@ class CustomData(Dataset):
     
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
-        location = self.labels.iloc[idx,26]
+        location = self.labels.iloc[idx,-1]
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
@@ -88,7 +88,7 @@ class CustomData(Dataset):
 
         """
         data = []
-        for file in self.labels.iloc[:,26]:
+        for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
         final_dataset[final_dataset<=1e-38] = 1e-38
