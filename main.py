@@ -351,7 +351,7 @@ def queryByDropout(wrk_dir, device = None):
         pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
         saveData(data_init, pars_init, 
-                 "data/locations/","active_full_locs.csv")
+                 "data/locations/","active_locs.csv")
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
