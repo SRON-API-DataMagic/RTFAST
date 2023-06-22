@@ -62,17 +62,9 @@ class CustomData(Dataset):
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
-        #create a mask for loss calculation later
-        try:
-            mask = np.where(datum <= 1e-38, 0, 1)
-        except:
-            mask = None
         #scale spectra by energy bin to normalized space
         datum = self.standardize(datum)
-        if mask is not None:
-            return datum, parameters, mask
-        else:
-            return datum, parameters
+        return datum, parameters
     
     def standardize(self,D):
         """
@@ -161,9 +153,9 @@ def train(dataloader,model,optimizer,loss_fn,device):
     
     size = len(dataloader.dataset)
     loss_arr = 0
-    for batch, (D,P,M) in enumerate(dataloader):
+    for batch, (D,P) in enumerate(dataloader):
         pred = model(P.to(device))[:,None,:]
-        loss = loss_fn(pred,D.to(device),M.to(device))
+        loss = loss_fn(pred,D.to(device))
         optimizer.zero_grad()
         loss.backward()
         
@@ -211,9 +203,9 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
     batches = len(dataloader)
     
     with torch.no_grad():
-        for batch, (D,P,M) in enumerate(dataloader):
+        for batch, (D,P) in enumerate(dataloader):
             pred = model(P.to(device))[:,None,:]
-            test_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item()
+            test_loss += loss_fn(pred, D.to(device)).detach().item()
     test_loss /= batches
     
     if improvement_set != []:
@@ -222,7 +214,7 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
         with torch.no_grad():
             for batch, (D, P, M) in enumerate(improvement_set):
                 pred = model(P.to(device))[:,None,:]
-                improvement_loss += loss_fn(pred, D.to(device), M.to(device)).detach().item()
+                improvement_loss += loss_fn(pred, D.to(device)).detach().item()
         improvement_loss /= imp_batches
         print(f"Average testing loss: {test_loss:>8f}")
         print(f"Average improvement loss: {improvement_loss:>8f}")
@@ -255,17 +247,16 @@ class barredMSELoss(nn.Module):
         result = 10**result
         return result
         
-    def forward(self, output, target, mask):
+    def forward(self, output, target):
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
         #find desired boundaries of the original data
-        data_low = 0.999*scaled_tar
-        data_high = 1.001*scaled_tar
+        data_low = 0.995*scaled_tar
+        data_high = 1.005*scaled_tar
         #create mask where prediction is within boundaries
-        loss_mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
+        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
         #multiply with low data mask to obtain mask of where network needs to learn
-        mask = torch.mul(loss_mask,mask)
         #multiply with mask to only consider where network is out of bounds or
         #too small to care
         pred = torch.mul(output,mask)
@@ -321,7 +312,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 60
+    active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -524,7 +515,7 @@ def queryByDropout(wrk_dir, device = None):
             imp_te = 0
             imp_tr = 0
             
-            while (imp_te < 30 or imp_tr < 30):
+            while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
