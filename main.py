@@ -321,7 +321,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 30
+    active_loops = 60
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -548,7 +548,7 @@ def queryByDropout(wrk_dir, device = None):
             imp_te = 0
             imp_tr = 0
             
-            while (imp_te < 15 or imp_tr < 15):
+            while (imp_te < 30 or imp_tr < 30):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
