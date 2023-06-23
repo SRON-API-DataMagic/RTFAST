@@ -685,7 +685,7 @@ def grid(wrk_dir,device):
         imp_tr = 0
         
         print("Beginning training")
-        while (imp_te < 15 or imp_tr < 15):
+        while epoch < 200:
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn,device)
@@ -753,8 +753,17 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
-    #grid(wrk_dir,device)
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    
+    grid_sizes = [5,6,7,8,9,10]
+    for size in grid_sizes:
+        fname = f"grid_{size}"
+        grid_data_gen(size, fname, egrid)
+    
+    #queryByDropout(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()
