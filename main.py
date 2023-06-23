@@ -39,8 +39,6 @@ class CustomData(Dataset):
     def __init__(self,labels, scaler, scaler_name, scaling=False):
         super().__init__()
         self.labels = pd.read_csv(labels)
-        print(self.labels)
-        print(self.labels.isnull().sum())
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
@@ -57,7 +55,6 @@ class CustomData(Dataset):
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,-1]
-        print(location)
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
