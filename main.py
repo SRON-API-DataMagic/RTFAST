@@ -406,7 +406,7 @@ def queryByDropout(wrk_dir, device = None):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            n_samples = 5000
+            n_samples = 1000
             n_samples_large = 10000 # number of parameter sets to draw 
             divider = 100
             n_samples_small = int(n_samples_large/divider)
@@ -463,8 +463,8 @@ def queryByDropout(wrk_dir, device = None):
             idx_shuffle = np.arange(0, len(theta_query), dtype=int)
             np.random.shuffle(idx_shuffle)
         
-            idx_query = idx_shuffle[:len(idx_shuffle)-500]
-            idx_test = idx_shuffle[-500:]
+            idx_query = idx_shuffle[:len(idx_shuffle)-250]
+            idx_test = idx_shuffle[-250:]
             
             #Split data and thetas into test and training data
             data_test = data_query[idx_test]
