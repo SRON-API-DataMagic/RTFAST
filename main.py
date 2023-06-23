@@ -55,6 +55,7 @@ class CustomData(Dataset):
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,-1]
+        print(location)
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
