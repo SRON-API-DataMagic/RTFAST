@@ -40,6 +40,7 @@ class CustomData(Dataset):
         super().__init__()
         self.labels = pd.read_csv(labels)
         print(self.labels)
+        print(self.labels.isnull().sum())
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
