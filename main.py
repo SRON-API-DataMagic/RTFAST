@@ -39,6 +39,7 @@ class CustomData(Dataset):
     def __init__(self,labels, scaler, scaler_name, scaling=False):
         super().__init__()
         self.labels = pd.read_csv(labels)
+        print(self.labels)
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
