@@ -34,15 +34,6 @@ class Committee(nn.Module):
             nn.Linear(512,data_len))
         self.dropout1 = nn.Dropout(p=self.p)
         self.dropout2 = nn.Dropout(p=self.p)
-        self.LinearStack = nn.Sequential(
-            nn.Linear(num_pars,256),
-            nn.ReLU(),
-            nn.Dropout(p=self.p),
-            nn.Linear(256,512),
-            nn.ReLU(),
-            nn.Dropout(p=self.p),
-            nn.Linear(512,data_len)
-            ) 
         self.double()
     
     def forward(self,pars):
@@ -67,7 +58,7 @@ class NeuralNetwork(nn.Module):
         converts all parameters to doubles rather than float
     """
     def __init__(self,num_pars,data_len):
-        super().__init__()
+        self.p = 0.5
         self.LinearStack1 = nn.Sequential(
             nn.Linear(num_pars,256),
             nn.ReLU()
@@ -77,6 +68,8 @@ class NeuralNetwork(nn.Module):
             nn.ReLU())
         self.LinearStack3 = nn.Sequential(
             nn.Linear(512,data_len))
+        self.dropout1 = nn.Dropout(p=self.p)
+        self.dropout2 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
