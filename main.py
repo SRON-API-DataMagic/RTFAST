@@ -673,7 +673,7 @@ def grid(wrk_dir,device):
         model = network.NeuralNetwork(5,len(egrid))
         model.to(device)
         optimizer = Adam(model.parameters(),lr = 0.001)
-        loss_fn = maskedMSELoss
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -752,15 +752,6 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
-    
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    
-    grid_sizes = [5,6,7,8,9,10]
-    for size in grid_sizes:
-        fname = f"grid_{size}"
-        grid_data_gen(size, fname, egrid)
     
     #queryByDropout(wrk_dir,device)
     grid(wrk_dir,device)
