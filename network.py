@@ -4,9 +4,11 @@ rtdist emulator.
 """
 from torch import nn
 
-class NeuralNetwork(nn.Module):
+class Committee(nn.Module):
     """
-    A class that determines a neural network structure
+    A class that determines a variant of the neural network infrastructure
+    that adds a dropout to create a committee format when performing active
+    learning.
     
     Attributes
     ----------
@@ -36,3 +38,30 @@ class NeuralNetwork(nn.Module):
         result = self.LinearStack(pars)
         return result
 
+class NeuralNetwork(nn.Module):
+    """
+    A class that determines a neural network structure
+    
+    Attributes
+    ----------
+    flatten : method
+        nn.flatten() from pytorch
+    LinearStack : Sequential neural network layers
+        Feedforward neural network callable in one method
+    double : method
+        converts all parameters to doubles rather than float
+    """
+    def __init__(self,num_pars,data_len):
+        super().__init__()
+        self.LinearStack = nn.Sequential(
+            nn.Linear(num_pars,256),
+            nn.ReLU(),
+            nn.Linear(256,512),
+            nn.ReLU(),
+            nn.Linear(512,data_len)
+            ) 
+        self.double()
+    
+    def forward(self,pars):
+        result = self.LinearStack(pars)
+        return result
