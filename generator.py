@@ -113,7 +113,7 @@ def lhs_range_gen():
 def lhs_trimmed_gen():
     spin_range = [0.1,0.998]
     mass_range = [np.log10(3),np.log10(1e11)]
-    inclination_range = [mp.log10(1),np.log10(80)]
+    inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
     
