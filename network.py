@@ -36,8 +36,10 @@ class NeuralNetwork(nn.Module):
     
     def forward(self,pars):
         stack1 = self.LinearStack1(pars)
-        stack2 = self.LinearStack2(stack1)
-        result = self.LinearStack3(stack2)
+        stack2 = self.dropout1(stack1)
+        stack3 = self.LinearStack2(stack2)
+        stack4 = self.dropout2(stack3)
+        result = self.LinearStack3(stack4)
         return result
 
 class Committee(NeuralNetwork):

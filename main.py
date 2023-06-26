@@ -329,8 +329,6 @@ def queryByDropout(wrk_dir, device = None):
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
-    committee = network.Committee(5, len(egrid))
-    committee.to(device)
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
@@ -425,13 +423,10 @@ def queryByDropout(wrk_dir, device = None):
             model.train()
             query_idx = []
             
-            committee.load_state_dict(model.state_dict())
-            committee.train()
-            
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
                 for i in range(sample_dropout):
-                    pred_query = committee(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar = np.var(pred_query_all,axis=0)
