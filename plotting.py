@@ -25,18 +25,18 @@ from processing import saveData, nanChecker
 class LoadCustomData(CustomData):
     def __init__(self,labels,scaler,scaler_name):
         super().__init__(labels,scaler,scaler_name)
-
+        
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
-        location = self.labels.iloc[idx,26]
+        location = self.labels.iloc[idx,-1]
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[1,4]] = np.log10(parameters.iloc[[1,4]])
+        parameters.iloc[[3]] = -parameters.iloc[[3]]
+        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
-        #create a mask for loss calculation later
         try:
             mask = np.where(datum <= 1e-38, 0, 1)
         except:
@@ -256,8 +256,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr):
         D = np.squeeze(D)
         #retrieve relevant data and parameters
         spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
-                                      P[0][2].item(),P[0][3].item(),
-                                      P[0][4].item())
+                                      10**P[0][2].item(),-10**P[0][3].item(),
+                                      10**P[0][4].item())
         D[M==0] = 1e-38
         da = np.squeeze(D)
         
@@ -342,7 +342,7 @@ def active_v_grid(wrk_dir,egrid):
     active_model_names = np.array(active_name)
     active_sample_nums = []
     for name in active_name:
-        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}_bar.csv")))
+        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}.csv")))
     active_model_names = [model_base_loc+str(i)+"_bar_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
     scaler_name = grid_name
@@ -372,18 +372,18 @@ def active_v_grid(wrk_dir,egrid):
     
     print("Calculating loss for active learning")
     active_scaler = MinMaxScaler()
-    active_scaler = load('scalers/active_bar_scaler.bin')
+    active_scaler = load('scalers/active_scaler.bin')
     
     #put test set into dataloader format
     batch_size = 1
     test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
-                               "active_bar_scaler.bin") #scaler unused but must be parsed
+                               "active_scaler.bin") #scaler unused but must be parsed
     testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                     num_workers=4)
     
     for (model_loc,fname) in zip(active_model_names,active_name):
-        folname = str(fname)+"_bar"
-        fname = str(fname) + "_bar_active"
+        folname = str(fname)
+        fname = str(fname)
         print(fname)
         model = model_load(model_loc, egrid)
         model.eval()
@@ -408,10 +408,10 @@ def active_v_grid(wrk_dir,egrid):
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
     time_start = time.time()
-    violin(df,"bar_active")
+    violin(df,"active")
     print("Violin plot render time:"+str(time.time()-time_start))
     time_start = time.time()
-    box(df,"bar_active")
+    box(df,"active")
     print("Box plot render time:"+str(time.time()-time_start))
     
     del df
@@ -610,7 +610,7 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
-    """
+    
     data, pars = generate_test_set(500, egrid)
     
     data, pars = nanChecker(data, pars)
@@ -618,7 +618,7 @@ def main():
     
     saveData(data, pars, 
              "data/locations/","loc_test.csv")
-    """
+    
     active_v_grid(wrk_dir,egrid)
     
 if __name__ == "__main__":
