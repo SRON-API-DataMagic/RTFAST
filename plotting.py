@@ -343,7 +343,7 @@ def active_v_grid(wrk_dir,egrid):
     active_sample_nums = []
     for name in active_name:
         active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}.csv")))
-    active_model_names = [model_base_loc+str(i)+"_bar_model.pth" for i in active_model_names]
+    active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
     grid_name = [5,6,7,8,9,10]
     scaler_name = grid_name
     grid_model_names = np.array([5,6,7,8,9,10])
