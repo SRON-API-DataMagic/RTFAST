@@ -423,7 +423,7 @@ def queryByDropout(wrk_dir, device = None):
             sample_dropout = 100
             pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             model.train()
-            query_idx = []
+            query_samples = []
             
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
@@ -434,7 +434,7 @@ def queryByDropout(wrk_dir, device = None):
                 dvar = np.var(pred_query_all,axis=0)
                 mean_var_query = np.mean(dvar, axis=1)
                 # add to uncertainties per theta to list
-                query_idx.append(mean_var_query.tolist())
+                query_samples.append(mean_var_query.tolist())
             
             #Performing manual memory cleanup
             del pred_query, pred_query_all, dvar, mean_var_query
@@ -442,10 +442,15 @@ def queryByDropout(wrk_dir, device = None):
             print("Successfully finished generating thetas")
             
             print("Finding top uncertain thetas")
-            # sort these thetas from largest uncertainty (as measured by 
-            # relative variance) to smallest
-            query_idx = np.asarray(query_idx).flatten()
-            query_idx = np.argsort(query_idx)[::-1]
+            # sort these thetas from smallest uncertainty to largest
+            query_samples = np.asarray(query_samples).flatten()
+            query_idx = np.argsort(query_samples)[::-1]
+            
+            print("Selected sample variance values \n",
+                  query_samples[query_idx[:n_samples]])
+            print("Top sample mean variance",query_samples[0])
+            print("Bottom sample mean variance",query_samples[-1])
+            print("Range of mean variance",np.ptp(query_samples))
             
             print("Generating data for these samples")
             # get out the top `nsamples` values of theta_query
