@@ -119,7 +119,7 @@ class CustomData(Dataset):
 
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
-        plt.hist(column, bins=100, density = True)
+        plt.hist(column, bins=100)
         plt.xlabel(labels[i])
         plt.savefig(fname+labels[i]+".png")
         plt.close()
