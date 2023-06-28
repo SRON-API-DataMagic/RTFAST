@@ -407,8 +407,10 @@ def queryByDropout(wrk_dir, device = None):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            n_samples = 5000
-            n_samples_large = 100000 # number of parameter sets to draw 
+            data_size = len(pd.read_csv("data/locations/active_locs.csv"))
+            multiplier = ceil(data_size/100000)
+            n_samples = 5000*multiplier
+            n_samples_large = 10000*multiplier # number of parameter sets to draw 
             divider = 1000
             n_samples_small = int(n_samples_large/divider)
             print(f"I am in active learning loop {active_loop_num+1}")
