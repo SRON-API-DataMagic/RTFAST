@@ -610,7 +610,7 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
-    
+    """
     data, pars = generate_test_set(500, egrid)
     
     data, pars = nanChecker(data, pars)
@@ -618,7 +618,7 @@ def main():
     
     saveData(data, pars, 
              "data/locations/","loc_test.csv")
-    
+    """
     active_v_grid(wrk_dir,egrid)
     
 if __name__ == "__main__":
