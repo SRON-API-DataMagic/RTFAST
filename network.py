@@ -45,7 +45,7 @@ class NeuralNetwork(nn.Module):
         stack4 = self.dropout2(stack3)
         stack5 = self.LinearStack3(stack4)
         stack6 = self.dropout3(stack5)
-        result = self.LinearStack3(stack6)
+        result = self.LinearStack4(stack6)
         return result
 
 class Committee(NeuralNetwork):
