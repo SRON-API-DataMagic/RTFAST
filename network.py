@@ -22,16 +22,20 @@ class NeuralNetwork(nn.Module):
         super().__init__()
         self.p = 0.5
         self.LinearStack1 = nn.Sequential(
-            nn.Linear(num_pars,256),
+            nn.Linear(num_pars,512),
             nn.ReLU()
             ) 
         self.LinearStack2 = nn.Sequential(
-            nn.Linear(256,512),
+            nn.Linear(512,512),
             nn.ReLU())
         self.LinearStack3 = nn.Sequential(
+            nn.Linear(512,512),
+            nn.ReLU())
+        self.LinearStack4 = nn.Sequential(
             nn.Linear(512,data_len))
         self.dropout1 = nn.Dropout(p=self.p)
         self.dropout2 = nn.Dropout(p=self.p)
+        self.dropout3 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
@@ -39,7 +43,9 @@ class NeuralNetwork(nn.Module):
         stack2 = self.dropout1(stack1)
         stack3 = self.LinearStack2(stack2)
         stack4 = self.dropout2(stack3)
-        result = self.LinearStack3(stack4)
+        stack5 = self.LinearStack3(stack4)
+        stack6 = self.dropout3(stack5)
+        result = self.LinearStack3(stack6)
         return result
 
 class Committee(NeuralNetwork):
@@ -63,5 +69,7 @@ class Committee(NeuralNetwork):
         stack2 = self.dropout1(stack1)
         stack3 = self.LinearStack2(stack2)
         stack4 = self.dropout2(stack3)
-        result = self.LinearStack3(stack4)
+        stack5 = self.LinearStack3(stack4)
+        stack6 = self.dropout3(stack5)
+        result = self.LinearStack3(stack6)
         return result
