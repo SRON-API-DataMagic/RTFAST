@@ -432,6 +432,7 @@ def queryByDropout(wrk_dir, device = None):
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar = np.var(pred_query_all,axis=0)
+                print(dvar.max(axis=0))
                 mean_var_query = np.mean(dvar, axis=1)
                 # add to uncertainties per theta to list
                 query_samples.append(mean_var_query.tolist())
@@ -448,8 +449,8 @@ def queryByDropout(wrk_dir, device = None):
             
             print("Selected sample variance values \n",
                   query_samples[query_idx[:n_samples]])
-            print("Top sample mean variance",query_samples[0])
-            print("Bottom sample mean variance",query_samples[-1])
+            print("Top sample mean variance",query_samples[query_idx[0]])
+            print("Bottom sample mean variance",query_samples[query_idx[-1]])
             print("Range of mean variance",np.ptp(query_samples))
             
             print("Generating data for these samples")
