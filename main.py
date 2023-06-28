@@ -445,9 +445,9 @@ def queryByDropout(wrk_dir, device = None):
             # sort these thetas from smallest uncertainty to largest
             query_samples = np.asarray(query_samples).flatten()
             query_idx = np.argsort(query_samples)[::-1]
-            
-            print("Selected sample variance values \n",
-                  query_samples[query_idx[:n_samples]])
+            plt.hist(query_samples,bins=100)
+            plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
+            plt.close()
             print("Top sample mean variance",query_samples[query_idx[0]])
             print("Bottom sample mean variance",query_samples[query_idx[-1]])
             print("Range of mean variance",np.ptp(query_samples))
