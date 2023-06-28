@@ -432,7 +432,6 @@ def queryByDropout(wrk_dir, device = None):
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar = np.var(pred_query_all,axis=0)
-                print(dvar.max(axis=0))
                 mean_var_query = np.mean(dvar, axis=1)
                 # add to uncertainties per theta to list
                 query_samples.append(mean_var_query.tolist())
