@@ -389,6 +389,8 @@ def queryByDropout(wrk_dir, device = None):
         
         last_sig_best_tr = tr_loss_arr.min()
         last_sig_best_te = te_loss_arr.min()
+        print("Best training loss:",last_sig_best_tr)
+        print("Best testing loss:",last_sig_best_te)
         
         tr_loss_arr = tr_loss_arr.tolist()
         te_loss_arr = te_loss_arr.tolist()
