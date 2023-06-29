@@ -371,19 +371,19 @@ def queryByDropout(wrk_dir, device = None):
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
-        active_loop_num = start_num
+        active_loop_num = start_num + 1
         print("Loading previous data")
-        renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
+        renameData(f"data/locations/loc_{start_num}.csv", "data/locations/", "active_locs.csv")
         
-        with open(f"loss/{active_loop_num}_tr_loss.txt","r") as f1:
+        with open(f"loss/{start_num}_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_te_loss.txt","r") as f1:
+        with open(f"loss/{start_num}_te_loss.txt","r") as f1:
             te_loss_arr = np.loadtxt(f1)
         f1.close()
         
-        with open(f"loss/{active_loop_num}_epochs.txt","r") as f1:
+        with open(f"loss/{start_num}_epochs.txt","r") as f1:
             loop_epochs = np.loadtxt(f1)
         f1.close()
         
@@ -394,8 +394,8 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        model.load_state_dict(torch.load(f"models/{active_loop_num}_model.pth"))
-        optimizer.load_state_dict(torch.load(f"models/{active_loop_num}_optimizer.pth"))
+        model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
+        optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
         loss_fn = barredMSELoss("active_scaler.bin",device)
         
@@ -413,7 +413,7 @@ def queryByDropout(wrk_dir, device = None):
             n_samples_large = 10000*multiplier # number of parameter sets to draw 
             divider = 1000
             n_samples_small = int(n_samples_large/divider)
-            print(f"I am in active learning loop {active_loop_num+1}")
+            print(f"I am in active learning loop {active_loop_num}")
             # randomly generate points in parameter space
             print("Generating random samples of theta")
             theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
