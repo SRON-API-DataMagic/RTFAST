@@ -313,7 +313,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 30
+    active_loops = 45
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -325,7 +325,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
@@ -370,7 +370,7 @@ def queryByDropout(wrk_dir, device = None):
         loss_fn = barredMSELoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
-        start_num = 29
+        start_num = 30
         active_loop_num = start_num
         print("Loading previous data")
         renameData(f"data/locations/loc_{active_loop_num}.csv", "data/locations/", "active_locs.csv")
