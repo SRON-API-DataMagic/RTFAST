@@ -257,9 +257,7 @@ class barredMSELoss(nn.Module):
         data_high = 1.005*scaled_tar
         #create mask where prediction is within boundaries
         mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
-        #multiply with low data mask to obtain mask of where network needs to learn
-        #multiply with mask to only consider where network is out of bounds or
-        #too small to care
+        #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
         #calculate loss
@@ -288,22 +286,20 @@ class multiplierMSEmaxLoss(nn.Module):
         loss = (target-output)**2
         adjusted_loss = loss*mask
         mean_loss = torch.mean(adjusted_loss)
-        max_loss = torch.max(adjusted_loss)
-        total_loss = mean_loss + max_loss
+        #add next line to total loss if outliers persist
+        #max_loss = torch.max(adjusted_loss)
+        total_loss = mean_loss
         return total_loss
         
-    def forward(self, output, target, mask):
+    def forward(self, output, target):
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
         #find desired boundaries of the original data
         multiplier_mask = torch.abs(1-scaled_out/scaled_tar)*100
-        #multiply with mask to only consider where data is large enough to be
-        #important
-        pred = torch.mul(output,mask)
-        data = torch.mul(target,mask)
-        #calculate loss
-        loss = self.scaled_MSE_loss(pred,data,multiplier_mask)
+        #multiply with mask to emphasise percentage differences and
+        #calculate weighted mean squared error loss
+        loss = self.scaled_MSE_loss(output,target,multiplier_mask)
         #add the worst outlying points to loss to encourage tighter constraints
         return loss
 
