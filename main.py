@@ -309,7 +309,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 45
+    active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -321,14 +321,14 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.NeuralNetwork(5,len(egrid))
     model.to(device)
     best_model = network.NeuralNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 0.001)
-    scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
+    #scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
     scaler = MinMaxScaler()
     loss_fn = maskedMSELoss
     start_num = 0
@@ -363,7 +363,7 @@ def queryByDropout(wrk_dir, device = None):
                                        scaler,"active_scaler.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -395,7 +395,7 @@ def queryByDropout(wrk_dir, device = None):
         model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
@@ -526,7 +526,7 @@ def queryByDropout(wrk_dir, device = None):
                 model, optimizer, train_loss = train(query_dataloader,model,
                                                      optimizer,loss_fn,device)
                 loss = test(test_dataloader,model,loss_fn,device)
-                scheduler.step(loss)
+                #scheduler.step(loss)
                 te_loss_arr.append(loss)
                 tr_loss_arr.append(train_loss)
                 tr_bet = (0.9*last_sig_best_tr) - train_loss
