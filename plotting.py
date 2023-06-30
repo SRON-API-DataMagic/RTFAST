@@ -601,7 +601,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         
     fig.legend(lines, labels, loc='upper right')
     fig.tight_layout()
-    plt.savefig("loss/bar_loss_by_sample_size.png")
+    plt.savefig("loss/loss_by_sample_size.png")
     plt.close()
     
 def main():
