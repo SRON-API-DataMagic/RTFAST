@@ -15,15 +15,11 @@ class sharpActivation(nn.Module):
             self.beta = Parameter(torch.zeros(self.in_features)) # create a tensor out of alpha
         else:
             self.beta = Parameter(torch.tensor(beta)) # create a tensor out of alpha
-            
-        self.beta.requiresGrad = True # set requiresGrad to true!
         
         if gamma == None:
             self.gamma = Parameter(torch.zeros(self.in_features)) # create a tensor out of alpha
         else:
             self.gamma = Parameter(torch.tensor(gamma)) # create a tensor out of alpha
-            
-        self.gamma.requiresGrad = True # set requiresGrad to true!
         
     def forward(self,x):
         a = self.gamma + ((1+torch.exp(-torch.mul(self.beta,x)))**-1)*(1-self.gamma)
