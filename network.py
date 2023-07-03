@@ -2,8 +2,32 @@
 This program comprimises the neural network structure used as a base for the
 rtdist emulator.
 """
+import torch
 from torch import nn
+from torch.nn.parameter import Parameter # import Parameter for custom activations
 
+class sharpActivation(nn.Module):
+    def __init__(self, beta = None, gamma = None):
+        super(sharpActivation,self).__init__()
+        
+        if beta == None:
+            self.beta = Parameter(torch.tensor(0.0)) # create a tensor out of alpha
+        else:
+            self.beta = Parameter(torch.tensor(beta)) # create a tensor out of alpha
+            
+        self.beta.requiresGrad = True # set requiresGrad to true!
+        
+        if gamma == None:
+            self.gamma = Parameter(torch.tensor(0.0)) # create a tensor out of alpha
+        else:
+            self.gamma = Parameter(torch.tensor(gamma)) # create a tensor out of alpha
+            
+        self.gamma.requiresGrad = True # set requiresGrad to true!
+        
+    def forward(self,x):
+        a = self.gamma + ((1+torch.exp(-torch.mul(self.beta,x)))**-1)*(1-self.gamma)
+        result = torch.mul(a,x)
+        return result
 
 class NeuralNetwork(nn.Module):
     """
