@@ -8,7 +8,7 @@ from torch.nn.parameter import Parameter # import Parameter for custom activatio
 
 class SharpActivation(nn.Module):
     def __init__(self, in_features,beta = None, gamma = None):
-        super(sharpActivation,self).__init__()
+        super(SharpActivation,self).__init__()
         self.in_features = in_features
         
         if beta == None:
