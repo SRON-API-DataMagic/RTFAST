@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.nn.parameter import Parameter # import Parameter for custom activations
 
-class sharpActivation(nn.Module):
+class SharpActivation(nn.Module):
     def __init__(self, in_features,beta = None, gamma = None):
         super(sharpActivation,self).__init__()
         self.in_features = in_features
@@ -83,11 +83,11 @@ class SharpNetwork(NeuralNetwork):
         self.p = 0.2
         self.LinearStack1 = nn.Sequential(
             nn.Linear(num_pars,256),
-            sharpActivation(256)
+            SharpActivation(256)
             ) 
         self.LinearStack2 = nn.Sequential(
             nn.Linear(256,512),
-            sharpActivation(512))
+            SharpActivation(512))
         self.LinearStack3 = nn.Sequential(
             nn.Linear(512,data_len))
         self.dropout1 = nn.Dropout(p=self.p)
