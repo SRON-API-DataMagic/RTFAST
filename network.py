@@ -66,6 +66,37 @@ class NeuralNetwork(nn.Module):
         result = self.LinearStack3(stack2)
         return result
 
+class SharpNetwork(NeuralNetwork):
+    """
+    A class that determines a variant of the neural network architecture
+    that uses a custom activation function
+    
+    Attributes
+    ----------
+    flatten : method
+        nn.flatten() from pytorch
+    LinearStack : Sequential neural network layers
+        Feedforward neural network callable in one method
+    double : method
+        converts all parameters to doubles rather than float
+    """
+    
+    def __init__(self,num_pars,data_len):
+        super().__init__()
+        self.p = 0.2
+        self.LinearStack1 = nn.Sequential(
+            nn.Linear(num_pars,256),
+            sharpActivation(256)
+            ) 
+        self.LinearStack2 = nn.Sequential(
+            nn.Linear(256,512),
+            sharpActivation(512))
+        self.LinearStack3 = nn.Sequential(
+            nn.Linear(512,data_len))
+        self.dropout1 = nn.Dropout(p=self.p)
+        self.dropout2 = nn.Dropout(p=self.p)
+        self.double()
+
 class Committee(NeuralNetwork):
     """
     A class that determines a variant of the neural network infrastructure
