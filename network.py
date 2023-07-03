@@ -7,18 +7,19 @@ from torch import nn
 from torch.nn.parameter import Parameter # import Parameter for custom activations
 
 class sharpActivation(nn.Module):
-    def __init__(self, beta = None, gamma = None):
+    def __init__(self, in_features,beta = None, gamma = None):
         super(sharpActivation,self).__init__()
+        self.in_features = in_features
         
         if beta == None:
-            self.beta = Parameter(torch.tensor(0.0)) # create a tensor out of alpha
+            self.beta = Parameter(torch.zeros(self.in_features)) # create a tensor out of alpha
         else:
             self.beta = Parameter(torch.tensor(beta)) # create a tensor out of alpha
             
         self.beta.requiresGrad = True # set requiresGrad to true!
         
         if gamma == None:
-            self.gamma = Parameter(torch.tensor(0.0)) # create a tensor out of alpha
+            self.gamma = Parameter(torch.zeros(self.in_features)) # create a tensor out of alpha
         else:
             self.gamma = Parameter(torch.tensor(gamma)) # create a tensor out of alpha
             
