@@ -79,7 +79,7 @@ class SharpNetwork(NeuralNetwork):
     """
     
     def __init__(self,num_pars,data_len):
-        super(SharpNetwork,self,num_pars,data_len).__init__()
+        super(SharpNetwork,self).__init__()
         self.p = 0.2
         self.LinearStack1 = nn.Sequential(
             nn.Linear(num_pars,256),
