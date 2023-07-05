@@ -321,7 +321,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     model = network.SharpNetwork(5,len(egrid))
     model.to(device)
@@ -395,7 +395,7 @@ def queryByDropout(wrk_dir, device = None):
         model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
