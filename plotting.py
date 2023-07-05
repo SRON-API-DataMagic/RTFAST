@@ -164,8 +164,11 @@ def retrieve_egrid(wrk_dir):
     
     return egrid
 
-def model_load(model_loc,egrid):
-    model = network.SharpNetwork(5,len(egrid))
+def model_load(model_loc,egrid,grid_mod = None):
+    if grid_mod == None:
+        model = network.SharpNetwork(5,len(egrid))
+    else:
+        model = network.NeuralNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -432,7 +435,7 @@ def active_v_grid(wrk_dir,egrid):
                                         num_workers=4)
         fname = str(fname) + "_grid"
         print(fname)
-        model = model_load(model_loc, egrid)
+        model = model_load(model_loc, egrid, grid_mod = True)
         model.eval()
         residuals = calculate_loss(testing_dataloader, model, grid_scaler)
         resid_list.append(residuals)
