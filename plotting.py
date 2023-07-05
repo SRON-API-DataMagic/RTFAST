@@ -165,7 +165,7 @@ def retrieve_egrid(wrk_dir):
     return egrid
 
 def model_load(model_loc,egrid):
-    model = network.NeuralNetwork(5,len(egrid))
+    model = network.SharpNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
