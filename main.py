@@ -309,7 +309,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    active_loops = 50
+    active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
@@ -321,7 +321,7 @@ def queryByDropout(wrk_dir, device = None):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     model = network.SharpNetwork(5,len(egrid))
     model.to(device)
@@ -363,7 +363,7 @@ def queryByDropout(wrk_dir, device = None):
                                        scaler,"active_scaler.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -395,7 +395,7 @@ def queryByDropout(wrk_dir, device = None):
         model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
