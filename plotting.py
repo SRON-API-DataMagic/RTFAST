@@ -341,12 +341,13 @@ def active_v_grid(wrk_dir,egrid):
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_name = [0,1,2,3,4,10,15,20,25,30]
+    active_name = [0,1,2,3,4,10,15,20,25,30,35,40,45,50]
     active_model_names = np.array(active_name)
     active_sample_nums = []
     for name in active_name:
         active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}.csv")))
     active_model_names = [model_base_loc+str(i)+"_model.pth" for i in active_model_names]
+    active_model_names[-1] = "active_final.pth"
     grid_name = [5,6,7,8,9,10]
     scaler_name = grid_name
     grid_model_names = np.array([5,6,7,8,9,10])
