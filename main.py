@@ -327,7 +327,7 @@ def queryByDropout(wrk_dir, device = None):
     model.to(device)
     best_model = network.SharpNetwork(5,len(egrid))
     best_model.to(device)
-    optimizer = Adam(model.parameters(),lr = 0.001)
+    optimizer = Adam(model.parameters(),lr = 5e-4)
     #scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
     scaler = MinMaxScaler()
     loss_fn = maskedMSELoss
