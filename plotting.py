@@ -407,7 +407,7 @@ def active_v_grid(wrk_dir,egrid):
         model_samples(testing_dataloader,active_scaler,model,egrid,fname)
         df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
-        energy_plots(testing_dataloader, active_scaler, model, egrid, fname, folname)
+        #energy_plots(testing_dataloader, active_scaler, model, egrid, fname, folname)
         del df, ticks, ticklabels
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
