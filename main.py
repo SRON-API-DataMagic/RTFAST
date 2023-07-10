@@ -363,7 +363,7 @@ def queryByDropout(wrk_dir, device = None):
                                        scaler,"active_scaler.bin",
                                        scaling=True)
         
-        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -395,7 +395,7 @@ def queryByDropout(wrk_dir, device = None):
         model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = multiplierMSEmaxLoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
