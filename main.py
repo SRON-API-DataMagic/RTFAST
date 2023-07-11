@@ -323,9 +323,9 @@ def queryByDropout(wrk_dir, device = None):
     #make this true
     first = True
     
-    model = network.SharpNetwork(5,len(egrid))
+    model = network.LightSharpNetwork(5,len(egrid))
     model.to(device)
-    best_model = network.SharpNetwork(5,len(egrid))
+    best_model = network.LightSharpNetwork(5,len(egrid))
     best_model.to(device)
     optimizer = Adam(model.parameters(),lr = 5e-4)
     #scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
@@ -360,10 +360,10 @@ def queryByDropout(wrk_dir, device = None):
         
         #create initial dataset object to create scaler
         query_dataloader = CustomData("data/locations/active_locs.csv", 
-                                       scaler,"active_scaler.bin",
+                                       scaler,"active_light_scaler.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_light_scaler.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -395,7 +395,7 @@ def queryByDropout(wrk_dir, device = None):
         model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss("active_light_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
@@ -503,14 +503,14 @@ def queryByDropout(wrk_dir, device = None):
     
             print("Setting up modeling")
             Xquery = CustomData("data/locations/active_locs.csv", scaler, 
-                                "active_scaler.bin")
+                                "active_light_scaler.bin")
             print("Query data set created")
             query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
         
             Xtest = CustomData("data/locations/active_test_locs.csv", scaler, 
-                               "active_scaler.bin")
+                               "active_light_scaler.bin")
             print("Test data set created")
             test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
@@ -676,10 +676,10 @@ def grid(wrk_dir,device):
         
         print("Dataloaders created")
         
-        model = network.NeuralNetwork(5,len(egrid))
+        model = network.LightSharpNetwork(5,len(egrid))
         model.to(device)
         optimizer = Adam(model.parameters(),lr = 0.001)
-        loss_fn = barredMSELoss("active_scaler.bin",device)
+        loss_fn = barredMSELoss(f"{fname}_scaler.bin",device)
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -691,7 +691,7 @@ def grid(wrk_dir,device):
         imp_tr = 0
         
         print("Beginning training")
-        while epoch < 200:
+        while epoch < 400:
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train(training_dataloader,model,
                                                  optimizer,loss_fn,device)
@@ -760,7 +760,7 @@ def main():
     print(device)
     
     queryByDropout(wrk_dir,device)
-    #grid(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()

@@ -109,15 +109,15 @@ def loadParameters(df):
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
-              fname = f"loc_{num}.csv")
+              fname = f"loc_light_{num}.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_light_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_light_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_light_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_light_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_light_epochs.txt",epochs)
     print("Saved losses")
     return
 
