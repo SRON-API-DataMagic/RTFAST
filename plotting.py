@@ -410,6 +410,7 @@ def active_v_grid(wrk_dir,egrid):
         del df, ticks, ticklabels
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, active_sample_nums)
+    print(df.max())
     time_start = time.time()
     violin(df,"active")
     print("Violin plot render time:"+str(time.time()-time_start))
@@ -458,6 +459,7 @@ def active_v_grid(wrk_dir,egrid):
     
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, grid_sample_nums)
+    print(df.max())
     time_start = time.time()
     violin(df,"grid")
     print("Violin plot render time:"+str(time.time()-time_start))
