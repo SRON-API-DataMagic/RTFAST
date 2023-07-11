@@ -354,18 +354,22 @@ def active_v_grid(wrk_dir,egrid):
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
     active_median_loss = []
+    active_loss_01_q = []
     active_loss_05_q = []
     active_loss_25_q = []
     active_loss_75_q = []
     active_loss_95_q = []
+    active_loss_99_q = []
     active_loss_low_out = []
     active_loss_high_out = []
     
     grid_median_loss = []
+    grid_loss_01_q = []
     grid_loss_05_q = []
     grid_loss_25_q = []
     grid_loss_75_q = []
     grid_loss_95_q = []
+    grid_loss_99_q = []
     grid_loss_low_out = []
     grid_loss_high_out = []
     
@@ -393,12 +397,14 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, active_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        q_05, q_25, q_75, q_95 = np.quantile(residuals,[0.05,0.25,0.75,0.95])
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,99])
         active_median_loss.append(median)
         active_loss_05_q.append(q_05)
         active_loss_25_q.append(q_25)
         active_loss_75_q.append(q_75)
         active_loss_95_q.append(q_95)
+        active_loss_99_q.append(q_99)
+        active_loss_01_q.append(q_01)
         high_outliers = residuals[residuals >= np.percentile(residuals, 95)][::1000]
         low_outliers = residuals[residuals <= np.percentile(residuals, 5)][::1000]
         active_loss_low_out.append(low_outliers)
@@ -446,14 +452,16 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, grid_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        q_05, q_25, q_75, q_95 = np.quantile(residuals,[0.05,0.25,0.75,0.95])
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,99])
         grid_median_loss.append(median)
         grid_loss_05_q.append(q_05)
         grid_loss_25_q.append(q_25)
         grid_loss_75_q.append(q_75)
         grid_loss_95_q.append(q_95)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 95)][::1000]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 5)][::1000]
+        grid_loss_01_q.append(q_01)
+        grid_loss_99_q.append(q_99)
+        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::1000]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
         grid_loss_low_out.append(low_outliers)
         grid_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,grid_scaler,model,egrid,fname)
@@ -479,11 +487,13 @@ def active_v_grid(wrk_dir,egrid):
     print("Plotting loss by sample size")
     plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
                                  grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
+                                 grid_loss_01_q, grid_loss_99_q,
                                  grid_loss_low_out,grid_loss_high_out,
                                  active_sample_nums, 
                                  active_median_loss, active_loss_75_q,
                                  active_loss_25_q, active_loss_95_q, 
                                  active_loss_05_q,
+                                 active_loss_01_q,active_loss_99_q,
                                  active_loss_low_out,active_loss_high_out)
     
 def energy_plots(dataset,scaler,model,egrid,fname,folname):
@@ -551,11 +561,13 @@ def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,
 
 def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
                              grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
+                             grid_loss_01_q,grid_loss_99_q,
                              grid_loss_low_out,grid_loss_high_out,
                              active_sample_nums, 
                              active_median_loss, active_loss_75_q,
                              active_loss_25_q, active_loss_95_q, 
                              active_loss_05_q,
+                             active_loss_01_q,active_loss_99_q,
                              active_loss_low_out,active_loss_high_out):
     
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
@@ -568,12 +580,15 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         
     axs[0].fill_between(grid_sample_nums, grid_loss_95_q, 
                      grid_loss_05_q, alpha = 0.25,color = "orange",
-                     zorder=2)
+                     zorder=3)
     axs[0].fill_between(grid_sample_nums, grid_loss_75_q, 
                      grid_loss_25_q, alpha = 0.5,color = "orange",
-                     zorder=3)
+                     zorder=4)
+    axs[0].fill_between(grid_sample_nums, grid_loss_99_q, 
+                     grid_loss_01_q, alpha = 0.5,color = "orange",
+                     zorder=2)
     axs[0].plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
-             zorder=4)
+             zorder=5)
     
     for (x,y,z) in zip(active_sample_nums,active_loss_low_out,active_loss_high_out):
         axs[1].scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
@@ -583,15 +598,18 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
         
     axs[1].fill_between(active_sample_nums, active_loss_95_q, 
                      active_loss_05_q, alpha = 0.25,color = "blue",
-                     zorder=2)
+                     zorder=3)
     axs[1].fill_between(active_sample_nums, active_loss_75_q, 
                      active_loss_25_q, alpha = 0.5,color = "blue",
-                     zorder=3)
+                     zorder=4)
+    axs[1].fill_between(active_sample_nums, active_loss_99_q, 
+                     active_loss_01_q, alpha = 0.5,color = "blue",
+                     zorder=2)
     axs[1].plot(active_sample_nums,active_median_loss,label="Active learning",
-             color = "blue",zorder=4)
+             color = "blue",zorder=5)
     
-    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=5,color="green")
-    axs[1].axhline(y=1e-2, ls = "--",zorder=5,color="green")
+    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
+    axs[1].axhline(y=1e-2, ls = "--",zorder=6,color="green")
     
     plt.yscale("log")
     plt.xscale("log")
