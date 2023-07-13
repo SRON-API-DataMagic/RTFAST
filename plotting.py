@@ -384,6 +384,7 @@ def active_v_grid(wrk_dir,egrid):
     plt.xlabel("Training epochs")
     plt.ylabel("Loss")
     plt.title("Comparison of loss by strategy")
+    plt.legend()
     plt.savefig("loss/loss_over_time.png")
     plt.close()
     
