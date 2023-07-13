@@ -166,9 +166,9 @@ def retrieve_egrid(wrk_dir):
 
 def model_load(model_loc,egrid,grid_mod = None):
     if grid_mod == None:
-        model = network.SharpNetwork(5,len(egrid))
+        model = network.LightSharpNetwork(5,len(egrid))
     else:
-        model = network.NeuralNetwork(5,len(egrid))
+        model = network.LightSharpNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -397,7 +397,7 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, active_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,99])
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,0.99])
         active_median_loss.append(median)
         active_loss_05_q.append(q_05)
         active_loss_25_q.append(q_25)
@@ -452,7 +452,7 @@ def active_v_grid(wrk_dir,egrid):
         residuals = calculate_loss(testing_dataloader, model, grid_scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,99])
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,0.99])
         grid_median_loss.append(median)
         grid_loss_05_q.append(q_05)
         grid_loss_25_q.append(q_25)
