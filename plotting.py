@@ -405,8 +405,8 @@ def active_v_grid(wrk_dir,egrid):
         active_loss_95_q.append(q_95)
         active_loss_99_q.append(q_99)
         active_loss_01_q.append(q_01)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 95)][::1000]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 5)][::1000]
+        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::1000]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
         active_loss_low_out.append(low_outliers)
         active_loss_high_out.append(high_outliers)
         model_samples(testing_dataloader,active_scaler,model,egrid,fname)
