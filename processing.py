@@ -50,7 +50,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None):
 
 def removeRedundantData():
     locations = "./data/locations/"
-    labels = ["loc_30.csv","loc_test.csv",
+    labels = ["loc_30.csv","loc_light_30.csv","loc_test.csv",
               "loc_grid_5.csv","loc_grid_5_test.csv",
               "loc_grid_6.csv","loc_grid_6_test.csv",
               "loc_grid_7.csv","loc_grid_7_test.csv",
