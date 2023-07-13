@@ -338,6 +338,7 @@ def residuals_dataframe(residuals,names):
 
 def active_v_grid(wrk_dir,egrid):
     model_base_loc = wrk_dir+"/models/"
+    loss_base_loc = wrk_dir+"/loss/"
     
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
@@ -352,6 +353,39 @@ def active_v_grid(wrk_dir,egrid):
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
+    
+    train_names = [loss_base_loc+"grid_"+str(i)+"tr_loss.txt" for i in range(5,11)]
+    test_names = [loss_base_loc+"grid_"+str(i)+"te_loss.txt" for i in range(5,11)]
+    
+    active_loss = np.loadtxt(loss_base_loc+"30_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+"30_te_loss.txt")
+    
+    light_loss = np.loadtxt(loss_base_loc+"30_light_tr_loss.txt")
+    light_test = np.loadtxt(loss_base_loc+"30_light_te_loss.txt")
+
+    plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
+             c = "red", ls = "-")
+    plt.plot(np.loadtxt(test_names[-1]), label = "Validation loss: 10x10 grid", 
+             c = "red", ls = "--")
+    
+    plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
+             ls = "-")
+    plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
+             ls = "--")
+    
+    plt.plot(light_loss,label = "Training loss: active learning small network", 
+             c = "orange",
+             ls = "-")
+    plt.plot(light_test,label = "Validation loss: active learning small network", 
+             c = "orange",
+             ls = "--")
+    
+    plt.yscale("log")
+    plt.xlabel("Training epochs")
+    plt.ylabel("Loss")
+    plt.title("Comparison of loss by strategy")
+    plt.savefig("loss/loss_over_time.png")
+    plt.close()
     
     active_median_loss = []
     active_loss_01_q = []

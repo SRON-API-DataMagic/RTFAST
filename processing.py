@@ -130,9 +130,7 @@ def nanChecker(data,pars):
         print("Found bad models, printing parameters...")
         for indice in index:
             print(f"{indice}: {pars[indice]}")
-        data = np.delete(data,index, axis=0)
-        pars = np.delete(pars,index, axis=0)
-    return data, pars
+    return index
 
 def main():
     removeRedundantData()

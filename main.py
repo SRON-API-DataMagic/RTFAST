@@ -224,13 +224,6 @@ def test(dataloader,model,loss_fn,device,improvement_set = []):
         print(f"Average testing loss: {test_loss:>8f}")
         return test_loss
 
-def maskedMSELoss(pred,data,mask):
-    data = torch.mul(data,mask)
-    pred = torch.mul(pred,mask)
-    loss = nn.MSELoss()
-    result = loss(pred,data)
-    return result
-
 class barredMSELoss(nn.Module):
     def __init__(self,scaler,device):
         super(barredMSELoss, self).__init__()
@@ -265,49 +258,12 @@ class barredMSELoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
-class multiplierMSEmaxLoss(nn.Module):
-    def __init__(self,scaler,device):
-        super(multiplierMSEmaxLoss, self).__init__()
-        self.scaler = load(f'scalers/{scaler}')
-        self.device = device
-        self.set_scale()
-        
-    def set_scale(self):
-        self.min = torch.tensor(self.scaler.data_min_)
-        self.max = torch.tensor(self.scaler.data_max_)
-        self.scale = self.max - self.min
-        
-    def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-        result = 10**result
-        return result
-    
-    def scaled_MSE_loss(self,output,target,mask):
-        loss = (target-output)**2
-        adjusted_loss = loss*mask
-        mean_loss = torch.mean(adjusted_loss)
-        #add next line to total loss if outliers persist
-        #max_loss = torch.max(adjusted_loss)
-        total_loss = mean_loss
-        return total_loss
-        
-    def forward(self, output, target):
-        #scale to real space
-        scaled_tar = self.scaling(target)
-        scaled_out = self.scaling(output)
-        #find desired boundaries of the original data
-        multiplier_mask = torch.abs(1-scaled_out/scaled_tar)*100
-        #multiply with mask to emphasise percentage differences and
-        #calculate weighted mean squared error loss
-        loss = self.scaled_MSE_loss(output,target,multiplier_mask)
-        #add the worst outlying points to loss to encourage tighter constraints
-        return loss
-
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    lags_egrid = np.logspace(np.log10(0.1),np.log10(10),num=26)
     
     active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
@@ -323,14 +279,20 @@ def queryByDropout(wrk_dir, device = None):
     #make this true
     first = True
     
-    model = network.LightSharpNetwork(5,len(egrid))
-    model.to(device)
-    best_model = network.LightSharpNetwork(5,len(egrid))
-    best_model.to(device)
-    optimizer = Adam(model.parameters(),lr = 5e-4)
+    flux_model = network.LightSharpNetwork(5,len(egrid))
+    flux_model.to(device)
+    lags_model = network.LightSharpNetwork(5,len(lags_egrid))
+    lags_model.to(device)
+    
+    best_flux_model = network.LightSharpNetwork(5,len(egrid))
+    best_flux_model.to(device)
+    best_lags_model = network.LightSharpNetwork(5,len(egrid))
+    best_lags_model.to(device)
+    
+    optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
+    optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
     #scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
     scaler = MinMaxScaler()
-    loss_fn = maskedMSELoss
     start_num = 0
     
     if first == True: 
@@ -341,14 +303,31 @@ def queryByDropout(wrk_dir, device = None):
                                        size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion(theta_init)
         print("Parallelized model generation")
-        data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
+        flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
-        data_init = np.array(data_init)
-        data_init, theta_init = nanChecker(data_init, theta_init)
+        lags_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_lags)(pars, lags_egrid)
+                                        for pars in pars_init)
+        flux_data_init = np.array(flux_data_init)
+        lags_data_init = np.array(flux_data_init)
+        
+        #check for and delete parameter sets producing NaN results for flux
+        index = nanChecker(flux_data_init, theta_init)
+        flux_data_init = np.delete(flux_data_init,index, axis=0)
+        lags_data_init = np.delete(lags_data_init,index, axis=0)
+        pars_init = np.delete(pars_init,index, axis=0)
+        
+        #check for and delete parameter sets producing NaN results for time lags
+        index = nanChecker(lags_data_init, theta_init)
+        flux_data_init = np.delete(flux_data_init,index, axis=0)
+        lags_data_init = np.delete(lags_data_init,index, axis=0)
+        pars_init = np.delete(pars_init,index, axis=0)
+        
         pars_init = generator.pars_conversion(theta_init)
         #save data for the first time in text files
-        saveData(data_init, pars_init, 
-                 "data/locations/","active_locs.csv")
+        saveData(flux_data_init, pars_init, 
+                 "data/locations/","active_locs_flux.csv")
+        saveData(lags_data_init, pars_init, 
+                 "data/locations/","active_locs_lags.csv")
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -359,8 +338,11 @@ def queryByDropout(wrk_dir, device = None):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        query_dataloader = CustomData("data/locations/active_locs.csv", 
-                                       scaler,"active_light_scaler.bin",
+        query_flux_dataloader = CustomData("data/locations/active_locs_flux.csv", 
+                                       scaler,"active_scaler_flux.bin",
+                                       scaling=True)
+        query_lags_dataloader = CustomData("data/locations/active_locs_lags.csv", 
+                                       scaler,"active_scaler_lags.bin",
                                        scaling=True)
         
         loss_fn = barredMSELoss("active_light_scaler.bin",device)
@@ -392,8 +374,8 @@ def queryByDropout(wrk_dir, device = None):
         te_loss_arr = te_loss_arr.tolist()
         loop_epochs = loop_epochs.tolist()
         
-        model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
-        optimizer.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
+        flux_model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
+        optimizer_flux.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
         loss_fn = barredMSELoss("active_light_scaler.bin",device)
         
@@ -405,7 +387,7 @@ def queryByDropout(wrk_dir, device = None):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            data_size = len(pd.read_csv("data/locations/active_locs.csv"))
+            data_size = len(pd.read_csv("data/locations/active_locs_flux.csv"))
             multiplier = ceil(data_size/100000)
             n_samples = 5000*multiplier
             n_samples_large = 10000*multiplier # number of parameter sets to draw 
@@ -420,13 +402,15 @@ def queryByDropout(wrk_dir, device = None):
             # compute 100 neural network predictions with dropout
             sample_dropout = 100
             pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
-            model.train()
+            flux_model.train()
             query_samples = []
             
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
                 for i in range(sample_dropout):
-                    pred_query = model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_lags = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_query = torch.cat((pred_flux,pred_lags),1)
                     pred_query_all[i] = pred_query.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar = np.var(pred_query_all,axis=0)
@@ -463,7 +447,24 @@ def queryByDropout(wrk_dir, device = None):
             data_query =  parallel(delayed(generator.rtdist_flux)(pars, egrid)
                                             for pars in theta_query_iterate)
             data_query = np.asarray(data_query)
+            lags_query =  parallel(delayed(generator.rtdist_lags)(pars, lags_egrid)
+                                            for pars in theta_query_iterate)
+            lags_query = np.asarray(lags_query)
             del theta_query_iterate
+            
+            
+            #Eliminate any broken models
+            #check for and delete parameter sets producing NaN results for flux
+            index = nanChecker(data_query, theta_query)
+            data_query = np.delete(data_query,index, axis=0)
+            lags_query = np.delete(lags_query,index, axis=0)
+            theta_query = np.delete(theta_query,index, axis=0)
+            
+            #check for and delete parameter sets producing NaN results for time lags
+            index = nanChecker(lags_query, theta_query)
+            data_query = np.delete(data_query,index, axis=0)
+            lags_query = np.delete(lags_query,index, axis=0)
+            theta_query = np.delete(theta_query,index, axis=0)
             
             # shuffle indices for neural network training
             idx_shuffle = np.arange(0, len(theta_query), dtype=int)
@@ -474,25 +475,29 @@ def queryByDropout(wrk_dir, device = None):
             
             #Split data and thetas into test and training data
             data_test = data_query[idx_test]
+            lags_test = lags_query[idx_test]
             theta_test  = theta_query[idx_test]
             
             data_query = data_query[idx_query]
+            lags_query = lags_query[idx_query]
             theta_query = theta_query[idx_query]
-            
-            #Eliminate any broken models
-            data_query, theta_query = nanChecker(data_query, theta_query)
-            data_test, theta_test = nanChecker(data_test, theta_test)
             
             #save to disk
             saveData(data_query, generator.pars_conversion(theta_query), 
-                     "data/locations/","active_locs.csv", 
-                     current_locs = pd.read_csv("data/locations/active_locs.csv"))
+                     "data/locations/","active_locs_flux.csv", 
+                     current_locs = pd.read_csv("data/locations/active_locs_flux.csv"))
+            saveData(lags_query, generator.pars_conversion(theta_query), 
+                     "data/locations/","active_locs_lags.csv", 
+                     current_locs = pd.read_csv("data/locations/active_locs_lags.csv"))
 
             saveData(data_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
-                     "active_test_locs.csv")
+                     "active_test_locs_flux.csv")
+            saveData(lags_test, generator.pars_conversion(theta_test), 
+                     "data/locations/",
+                     "active_test_locs_lags.csv")
 
-            del data_query, data_test, theta_query, theta_test
+            del data_query, data_test, lags_test, lags_query, theta_query, theta_test
             
             # add rejected parameter sets back to original array for potential 
             # future use:
@@ -502,17 +507,31 @@ def queryByDropout(wrk_dir, device = None):
             lhs_idx += (n_samples_large)
     
             print("Setting up modeling")
-            Xquery = CustomData("data/locations/active_locs.csv", scaler, 
-                                "active_light_scaler.bin")
+            Xquery = CustomData("data/locations/active_locs_flux.csv", scaler, 
+                                "active_scaler_flux.bin")
             print("Query data set created")
-            query_dataloader = DataLoader(Xquery, batch_size=batch_size, 
+            flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
-        
-            Xtest = CustomData("data/locations/active_test_locs.csv", scaler, 
-                               "active_light_scaler.bin")
+            
+            Xquery = CustomData("data/locations/active_locs_lags.csv", scaler, 
+                                "active_scaler_lags.bin")
+            print("Query data set created")
+            lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
+                                          num_workers = num_workers, shuffle=True)
+            print("Query data loader created")
+            
+            Xtest = CustomData("data/locations/active_test_locs_flux.csv", scaler, 
+                               "active_scaler_flux.bin")
             print("Test data set created")
-            test_dataloader = DataLoader(Xtest, batch_size=batch_size,
+            flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
+                                         num_workers = num_workers, shuffle=True)
+            print("Test data loader created")
+            
+            Xtest = CustomData("data/locations/active_test_locs_lags.csv", scaler, 
+                               "active_scaler_lags.bin")
+            print("Test data set created")
+            lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
@@ -523,56 +542,94 @@ def queryByDropout(wrk_dir, device = None):
             
             while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
-                model, optimizer, train_loss = train(query_dataloader,model,
-                                                     optimizer,loss_fn,device)
-                loss = test(test_dataloader,model,loss_fn,device)
+                print("Training flux model")
+                flux_model, optimizer_flux, flux_train_loss = train(flux_dataloader,flux_model,
+                                                     optimizer_flux,loss_fn,device)
+                flux_loss = test(flux_test_dataloader,flux_model,loss_fn,device)
+                print("Training lags model")
+                lags_model, optimizer_lags, lags_train_loss = train(lags_dataloader,lags_model,
+                                                     optimizer_lags,loss_fn,device)
+                lags_loss = test(lags_test_dataloader,lags_model,loss_fn,device)
                 #scheduler.step(loss)
-                te_loss_arr.append(loss)
-                tr_loss_arr.append(train_loss)
-                tr_bet = (0.9*last_sig_best_tr) - train_loss
-                te_bet = (0.9*last_sig_best_te) - loss
+                te_loss_arr.append([flux_loss,lags_loss])
+                tr_loss_arr.append([flux_train_loss,lags_train_loss])
+                
+                print("Assessing flux model")
+                tr_bet = (0.9*last_sig_best_tr) - flux_train_loss
+                te_bet = (0.9*last_sig_best_te) - flux_loss
                 if tr_bet > 0 and te_bet > 0:
-                    last_sig_best_tr = train_loss
-                    last_sig_best_te = loss
+                    last_sig_best_tr = flux_train_loss
+                    last_sig_best_te = flux_loss
                     imp_te = 0
                     imp_tr = 0
-                    print(f"New sig best training loss: {train_loss}")
-                    print(f"New sig best testing loss: {loss}")
+                    print(f"New sig best training loss: {flux_train_loss}")
+                    print(f"New sig best testing loss: {flux_loss}")
                 elif tr_bet > 0:
                     imp_tr = 0
                     imp_te += 1
-                    last_sig_best_tr = train_loss
-                    print(f"New sig best training loss: {train_loss}")
+                    last_sig_best_tr = flux_train_loss
+                    print(f"New sig best training loss: {flux_train_loss}")
                 elif te_bet > 0:
                     imp_tr += 1
                     imp_te = 0
-                    last_sig_best_te = loss
-                    print(f"New sig best testing loss: {loss}")
+                    last_sig_best_te = flux_loss
+                    print(f"New sig best testing loss: {flux_loss}")
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if loss == min(te_loss_arr):
-                    torch.save(model.state_dict(), "models/active_best.pth")
+                if flux_loss == np.asarray(te_loss_arr)[:,0].min():
+                    torch.save(flux_model.state_dict(), "models/active_best_flux.pth")
+                
+                print("Assessing lags model")
+                tr_bet = (0.9*last_sig_best_tr) - lags_train_loss
+                te_bet = (0.9*last_sig_best_te) - lags_loss
+                if tr_bet > 0 and te_bet > 0:
+                    last_sig_best_tr = lags_train_loss
+                    last_sig_best_te = lags_loss
+                    imp_te = 0
+                    imp_tr = 0
+                    print(f"New sig best training loss: {lags_train_loss}")
+                    print(f"New sig best testing loss: {lags_loss}")
+                elif tr_bet > 0:
+                    imp_tr = 0
+                    imp_te += 1
+                    last_sig_best_tr = lags_train_loss
+                    print(f"New sig best training loss: {lags_train_loss}")
+                elif te_bet > 0:
+                    imp_tr += 1
+                    imp_te = 0
+                    last_sig_best_te = lags_loss
+                    print(f"New sig best testing loss: {lags_loss}")
+                else:
+                    imp_te += 1
+                    imp_tr += 1
+                if lags_loss == np.asarray(te_loss_arr)[:,1].min():
+                    torch.save(lags_model.state_dict(), "models/active_best_lags.pth")
+                    
                 epoch += 1
+                
             if active_loop_num != 0:
                 loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
             else:
                 loop_epochs.append(epoch)
             
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs.csv"), 
-                          pd.read_csv("data/locations/active_locs.csv"), 
-                          "data/locations/","active_locs.csv")
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs_flux.csv"), 
+                          pd.read_csv("data/locations/active_locs_flux.csv"), 
+                          "data/locations/","active_locs_flux.csv")
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs_lags.csv"), 
+                          pd.read_csv("data/locations/active_locs_lags.csv"), 
+                          "data/locations/","active_locs_lags.csv")
 
             #save state of models and data for this loop
             temp_te = np.asarray(te_loss_arr)
             temp_tr = np.asarray(tr_loss_arr)
             temp_epochs = np.asarray(loop_epochs)
             try:
-                best_model.load_state_dict(torch.load("models/active_best.pth"))
+                best_flux_model.load_state_dict(torch.load("models/active_best_flux.pth"))
             except:
-                best_model.load_state_dict(model.state_dict())
-            saveLoop(best_model, "data/locations/active_locs.csv", 
-                     optimizer,
+                best_flux_model.load_state_dict(flux_model.state_dict())
+            saveLoop(best_flux_model, "data/locations/active_locs_flux.csv", 
+                     optimizer_flux,
                      temp_te, temp_tr, 
                      active_loop_num, temp_epochs)
             #iterate loop number by 1
@@ -581,7 +638,7 @@ def queryByDropout(wrk_dir, device = None):
         print("Completed training")
         print("Final best training loss:", last_sig_best_tr)
         print("Final best testing loss:", last_sig_best_te)
-        torch.save(model.state_dict(), "models/active_final.pth")
+        torch.save(flux_model.state_dict(), "models/active_final.pth")
         print("Saved PyTorch Model State to models/active_final.pth")
         
         tr_loss_arr = np.asarray(tr_loss_arr)
@@ -612,24 +669,24 @@ def grid_data_gen(size,fname,egrid):
     pars_init = generator.pars_conversion(theta_init)
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        data_init = parallel(delayed(generator.rtdist_flux)(pars, egrid)
+        flux_data_init = parallel(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
-    data_init = np.array(data_init)
-    data_init, pars_init = nanChecker(data_init, pars_init)
+    flux_data_init = np.array(flux_data_init)
+    flux_data_init, pars_init = nanChecker(flux_data_init, pars_init)
     
     scaler = MinMaxScaler()
-    scaler = scaler.fit(data_init)
+    scaler = scaler.fit(flux_data_init)
     dump(scaler, f'scalers/{fname}_scaler.bin', compress=True)
     
-    idxs = np.arange(0,data_init.shape[0])
+    idxs = np.arange(0,flux_data_init.shape[0])
     np.random.shuffle(idxs)
     tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
     tes_idx = idxs[int(-0.1*len(idxs)):]
     
     #Splitting data and parameters into training and testing datasets
-    train_data = data_init[tra_idx]
+    train_data = flux_data_init[tra_idx]
     train_pars = pars_init[tra_idx]
-    test_data = data_init[tes_idx]
+    test_data = flux_data_init[tes_idx]
     test_pars = pars_init[tes_idx]
     
     print("Saving to disk")
@@ -676,9 +733,9 @@ def grid(wrk_dir,device):
         
         print("Dataloaders created")
         
-        model = network.LightSharpNetwork(5,len(egrid))
-        model.to(device)
-        optimizer = Adam(model.parameters(),lr = 0.001)
+        flux_model = network.LightSharpNetwork(5,len(egrid))
+        flux_model.to(device)
+        optimizer = Adam(flux_model.parameters(),lr = 0.001)
         loss_fn = barredMSELoss(f"{fname}_scaler.bin",device)
         
         last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
@@ -693,9 +750,9 @@ def grid(wrk_dir,device):
         print("Beginning training")
         while epoch < 400:
             print(f"Epoch {epoch+1} \n -----------------------")
-            model, optimizer, train_loss = train(training_dataloader,model,
+            flux_model, optimizer, train_loss = train(training_dataloader,flux_model,
                                                  optimizer,loss_fn,device)
-            loss = test(test_dataloader,model,loss_fn,device)
+            loss = test(test_dataloader,flux_model,loss_fn,device)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
             tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -707,7 +764,7 @@ def grid(wrk_dir,device):
                 imp_tr = 0
                 print(f"New best training loss: {train_loss}")
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{size}.pth")
+                torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
             elif tr_bet > 0:
                 imp_tr = 0
                 imp_te += 1
@@ -718,7 +775,7 @@ def grid(wrk_dir,device):
                 imp_te = 0
                 last_sig_best_te = loss
                 print(f"New best testing loss: {loss}")
-                torch.save(model.state_dict(), f"models/grid_{size}.pth")
+                torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
             else:
                 imp_te += 1
                 imp_tr += 1
@@ -727,7 +784,7 @@ def grid(wrk_dir,device):
         print("Completed training")
         print("Final best training loss:", last_sig_best_tr)
         print("Final best testing loss:", last_sig_best_te)
-        torch.save(model.state_dict(), f"models/grid_{size}_final.pth")
+        torch.save(flux_model.state_dict(), f"models/grid_{size}_final.pth")
         print(f"Saved PyTorch Model State to grid_{size}_final.pth")
         
         tr_loss_arr = np.asarray(tr_loss_arr)
