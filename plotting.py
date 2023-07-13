@@ -354,8 +354,8 @@ def active_v_grid(wrk_dir,egrid):
     grid_sample_nums = grid_model_names**5
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
-    train_names = [loss_base_loc+"grid_"+str(i)+"tr_loss.txt" for i in range(5,11)]
-    test_names = [loss_base_loc+"grid_"+str(i)+"te_loss.txt" for i in range(5,11)]
+    train_names = [loss_base_loc+"grid_"+str(i)+"_tr_loss.txt" for i in range(5,11)]
+    test_names = [loss_base_loc+"grid_"+str(i)+"_te_loss.txt" for i in range(5,11)]
     
     active_loss = np.loadtxt(loss_base_loc+"30_tr_loss.txt")
     active_test = np.loadtxt(loss_base_loc+"30_te_loss.txt")
