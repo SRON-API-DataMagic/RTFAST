@@ -475,7 +475,6 @@ def queryByDropout(wrk_dir, device = None):
             distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
             
             # compute the physical model for these thetas
-            data_query = np.zeros((theta_query.shape[0],len(egrid)))
             theta_query_iterate = generator.pars_conversion(theta_query)
             print("Parallelized model generation")
             data_query =  parallel(delayed(generator.rtdist_flux)(pars, egrid)
@@ -486,8 +485,7 @@ def queryByDropout(wrk_dir, device = None):
             lags_query = np.asarray(lags_query)
             del theta_query_iterate
             
-            
-            #Eliminate any broken models
+            #Remove any broken models
             #check for and delete parameter sets producing NaN results for flux
             index = nanChecker(data_query, theta_query)
             data_query = np.delete(data_query,index, axis=0)
@@ -496,9 +494,9 @@ def queryByDropout(wrk_dir, device = None):
             
             #check for and delete parameter sets producing NaN results for time lags
             index = nanChecker(lags_query, theta_query)
-            data_query = np.delete(data_query,index, axis=0)
-            lags_query = np.delete(lags_query,index, axis=0)
-            theta_query = np.delete(theta_query,index, axis=0)
+            data_query = np.delete(data_query, index, axis=0)
+            lags_query = np.delete(lags_query, index, axis=0)
+            theta_query = np.delete(theta_query, index, axis=0)
             
             # shuffle indices for neural network training
             idx_shuffle = np.arange(0, len(theta_query), dtype=int)
