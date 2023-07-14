@@ -325,7 +325,7 @@ def queryByDropout(wrk_dir, device = None):
         lags_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_lags)(pars, lags_egrid)
                                         for pars in pars_init)
         flux_data_init = np.array(flux_data_init)
-        lags_data_init = np.array(flux_data_init)
+        lags_data_init = np.array(lags_data_init)
         
         print(np.count_nonzero(np.isinf(lags_data_init)))
         print(np.amax(lags_data_init))
