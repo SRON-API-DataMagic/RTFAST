@@ -344,7 +344,8 @@ def queryByDropout(wrk_dir, device = None):
         saveData(flux_data_init, pars_init, 
                  "data/locations/","active_locs_flux.csv")
         saveData(lags_data_init, pars_init, 
-                 "data/locations/","active_locs_lags.csv")
+                 "data/locations/","active_locs_lags.csv",
+                 lags = True)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
@@ -520,14 +521,16 @@ def queryByDropout(wrk_dir, device = None):
                      current_locs = pd.read_csv("data/locations/active_locs_flux.csv"))
             saveData(lags_query, generator.pars_conversion(theta_query), 
                      "data/locations/","active_locs_lags.csv", 
-                     current_locs = pd.read_csv("data/locations/active_locs_lags.csv"))
+                     current_locs = pd.read_csv("data/locations/active_locs_lags.csv"),
+                     lags = True)
 
             saveData(data_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
                      "active_test_locs_flux.csv")
             saveData(lags_test, generator.pars_conversion(theta_test), 
                      "data/locations/",
-                     "active_test_locs_lags.csv")
+                     "active_test_locs_lags.csv",
+                     lags = True)
 
             del data_query, data_test, lags_test, lags_query, theta_query, theta_test
             
