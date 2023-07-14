@@ -456,8 +456,9 @@ def queryByDropout(wrk_dir, device = None):
             print("Successfully finished generating thetas")
             
             print("Finding top uncertain thetas")
-            # sort these thetas from smallest uncertainty to largest
+            # sort these thetas from smallest uncertainty to largest and save values
             query_samples = np.asarray(query_samples).flatten()
+            np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
             query_idx = np.argsort(query_samples)[::-1]
             plt.hist(query_samples,bins=100)
             plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
