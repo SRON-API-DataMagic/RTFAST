@@ -329,6 +329,7 @@ def queryByDropout(wrk_dir, device = None):
         
         print(np.count_nonzero(np.isinf(lags_data_init)))
         print(np.amax(lags_data_init))
+        print(np.amin(lags_data_init))
         
         #check for and delete parameter sets producing NaN results for flux
         index = nanChecker(flux_data_init, theta_init)
