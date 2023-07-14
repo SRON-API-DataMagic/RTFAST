@@ -134,7 +134,7 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
 def nanChecker(data,pars):
     index = []
     for i,spec in enumerate(data):
-        if np.any(np.isnan(spec)) == True:
+        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
     if index != []:
         print("Found bad models, printing parameters...")

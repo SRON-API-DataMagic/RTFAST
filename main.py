@@ -461,6 +461,8 @@ def queryByDropout(wrk_dir, device = None):
             query_samples = np.asarray(query_samples).flatten()
             np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
             query_idx = np.argsort(query_samples)[::-1]
+            
+            #Plot distribution of variances
             plt.hist(query_samples,bins=100)
             plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
             plt.close()
