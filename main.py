@@ -13,17 +13,16 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset
 from torch.optim import Adam
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+#from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
 from joblib import dump, load, Parallel, delayed
 import scipy.stats
 
 from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
-from processing import loadData, loadSpectra, loadParameters
 import generator
 import network
     
-class CustomData(Dataset):
+class FluxData(Dataset):
     """
     A class that inherits from torch.Dataset that returns both the data from
     the model evaluation and the parameters used to generate the model.
@@ -117,6 +116,24 @@ class CustomData(Dataset):
         scaled_data = self.scaler.transform(data)
         return scaled_data
 
+class LagsData(FluxData):
+    
+    def standardize(self, D):
+        D = self.scale(D)
+        D = torch.from_numpy(D)
+        D = D.double()
+        return D
+    
+    def scaler_create(self):
+        data = []
+        for file in self.labels.iloc[:,-1]:
+            data.append(np.loadtxt(file).reshape(1, -1))
+        final_dataset = np.concatenate(data,axis=0)
+        final_dataset = np.log10(final_dataset)
+        data = self.scaler.fit_transform(final_dataset)
+        dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
+        return
+        
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
         plt.hist(column, bins=100)
@@ -279,14 +296,14 @@ def queryByDropout(wrk_dir, device = None):
     #make this true
     first = True
     
-    flux_model = network.LightSharpNetwork(5,len(egrid))
+    flux_model = network.SharpNetwork(5,len(egrid))
     flux_model.to(device)
-    lags_model = network.LightSharpNetwork(5,len(lags_egrid))
+    lags_model = network.SharpNetwork(5,len(lags_egrid))
     lags_model.to(device)
     
-    best_flux_model = network.LightSharpNetwork(5,len(egrid))
+    best_flux_model = network.SharpNetwork(5,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.LightSharpNetwork(5,len(egrid))
+    best_lags_model = network.SharpNetwork(5,len(lags_egrid))
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -329,23 +346,31 @@ def queryByDropout(wrk_dir, device = None):
         saveData(lags_data_init, pars_init, 
                  "data/locations/","active_locs_lags.csv")
         
-        last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-        last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-        tr_loss_arr = []
-        te_loss_arr = []
-        loop_epochs = []
+        last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
+        last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
+        last_sig_lags_tr = 1e7 #last significant best training loss (set large initially)
+        last_sig_lags_te = 1e7 #last significant best testing loss (set large initially)
+        
+        flux_tr_loss_arr = []
+        flux_te_loss_arr = []
+        lags_tr_loss_arr = []
+        lags_te_loss_arr = []
+        
+        loop_flux_epochs = []
+        loop_lags_epochs = []
         
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        query_flux_dataloader = CustomData("data/locations/active_locs_flux.csv", 
+        flux_dataloader = FluxData("data/locations/active_locs_flux.csv", 
                                        scaler,"active_scaler_flux.bin",
                                        scaling=True)
-        query_lags_dataloader = CustomData("data/locations/active_locs_lags.csv", 
+        lags_dataloader = LagsData("data/locations/active_locs_lags.csv", 
                                        scaler,"active_scaler_lags.bin",
                                        scaling=True)
         
-        loss_fn = barredMSELoss("active_light_scaler.bin",device)
+        loss_fn_flux = barredMSELoss("active_scaler_flux.bin",device)
+        loss_fn_lags = barredMSELoss("active_scaler_lags.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -377,7 +402,7 @@ def queryByDropout(wrk_dir, device = None):
         flux_model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
         optimizer_flux.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
         #use different loss function
-        loss_fn = barredMSELoss("active_light_scaler.bin",device)
+        loss_fn_flux = barredMSELoss("active_scaler.bin",device)
         
     batch_size = 1024
     num_workers = 4
@@ -391,7 +416,7 @@ def queryByDropout(wrk_dir, device = None):
             multiplier = ceil(data_size/100000)
             n_samples = 5000*multiplier
             n_samples_large = 10000*multiplier # number of parameter sets to draw 
-            divider = 1000
+            divider = 100*multiplier
             n_samples_small = int(n_samples_large/divider)
             print(f"I am in active learning loop {active_loop_num}")
             # randomly generate points in parameter space
@@ -401,8 +426,10 @@ def queryByDropout(wrk_dir, device = None):
             print("computing neural network predictions with dropout for each theta")
             # compute 100 neural network predictions with dropout
             sample_dropout = 100
-            pred_query_all = np.zeros((sample_dropout,n_samples_small,len(egrid)))
+            pred_query_flux = np.zeros((sample_dropout,n_samples_small,len(egrid)))
+            pred_query_lags = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)))
             flux_model.train()
+            lags_model.train()
             query_samples = []
             
             for j in tqdm(range(divider),desc="Sample dropout loops"):
@@ -410,17 +437,22 @@ def queryByDropout(wrk_dir, device = None):
                 for i in range(sample_dropout):
                     pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_lags = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                    pred_query = torch.cat((pred_flux,pred_lags),1)
-                    pred_query_all[i] = pred_query.detach().cpu().numpy()
+                    pred_query_flux[i] = pred_flux.detach().cpu().numpy()
+                    pred_query_lags[i] = pred_lags.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
-                dvar = np.var(pred_query_all,axis=0)
-                mean_var_query = np.mean(dvar, axis=1)
+                dvar_flux = np.var(pred_query_flux,axis=0)
+                mean_var_flux = np.mean(dvar_flux, axis=1)
+                # find uncertainty (as measured by relative variance)
+                dvar_lags = np.var(pred_query_lags,axis=0)
+                mean_var_lags = np.mean(dvar_lags, axis=1)
+                #sum the two
+                mean_var_query = mean_var_lags+mean_var_flux
                 # add to uncertainties per theta to list
                 query_samples.append(mean_var_query.tolist())
             
             #Performing manual memory cleanup
-            del pred_query, pred_query_all, dvar, mean_var_query
-            del theta_query_small
+            del pred_query, pred_query_flux, pred_query_lags, dvar, mean_var_query
+            del theta_query_small, mean_var_flux, mean_var_lags
             print("Successfully finished generating thetas")
             
             print("Finding top uncertain thetas")
@@ -430,6 +462,7 @@ def queryByDropout(wrk_dir, device = None):
             plt.hist(query_samples,bins=100)
             plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
             plt.close()
+            
             print("Top sample mean variance",query_samples[query_idx[0]])
             print("Bottom sample mean variance",query_samples[query_idx[-1]])
             print("Range of mean variance",np.ptp(query_samples))
@@ -507,59 +540,61 @@ def queryByDropout(wrk_dir, device = None):
             lhs_idx += (n_samples_large)
     
             print("Setting up modeling")
-            Xquery = CustomData("data/locations/active_locs_flux.csv", scaler, 
+            Xquery = FluxData("data/locations/active_locs_flux.csv", scaler, 
                                 "active_scaler_flux.bin")
             print("Query data set created")
             flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xquery = CustomData("data/locations/active_locs_lags.csv", scaler, 
+            Xquery = LagsData("data/locations/active_locs_lags.csv", scaler, 
                                 "active_scaler_lags.bin")
             print("Query data set created")
             lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xtest = CustomData("data/locations/active_test_locs_flux.csv", scaler, 
+            Xtest = FluxData("data/locations/active_test_locs_flux.csv", scaler, 
                                "active_scaler_flux.bin")
             print("Test data set created")
             flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            Xtest = CustomData("data/locations/active_test_locs_lags.csv", scaler, 
+            Xtest = LagsData("data/locations/active_test_locs_lags.csv", scaler, 
                                "active_scaler_lags.bin")
             print("Test data set created")
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
+            #Train the flux model first
+            
             epoch = 0
             #set improvements counters to 0
             imp_te = 0
             imp_tr = 0
             
+            print("Training flux model")
             while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
-                print("Training flux model")
-                flux_model, optimizer_flux, flux_train_loss = train(flux_dataloader,flux_model,
-                                                     optimizer_flux,loss_fn,device)
-                flux_loss = test(flux_test_dataloader,flux_model,loss_fn,device)
-                print("Training lags model")
-                lags_model, optimizer_lags, lags_train_loss = train(lags_dataloader,lags_model,
-                                                     optimizer_lags,loss_fn,device)
-                lags_loss = test(lags_test_dataloader,lags_model,loss_fn,device)
+                
+                flux_model, optimizer_flux, flux_train_loss = train(flux_dataloader,
+                                                                    flux_model,
+                                                     optimizer_flux,loss_fn_flux,
+                                                     device)
+                flux_loss = test(flux_test_dataloader,flux_model,loss_fn_flux,
+                                 device)
                 #scheduler.step(loss)
-                te_loss_arr.append([flux_loss,lags_loss])
-                tr_loss_arr.append([flux_train_loss,lags_train_loss])
+                flux_te_loss_arr.append(flux_loss)
+                flux_tr_loss_arr.append(flux_train_loss)
                 
                 print("Assessing flux model")
-                tr_bet = (0.9*last_sig_best_tr) - flux_train_loss
-                te_bet = (0.9*last_sig_best_te) - flux_loss
+                tr_bet = (0.9*last_sig_flux_tr) - flux_train_loss
+                te_bet = (0.9*last_sig_flux_te) - flux_loss
                 if tr_bet > 0 and te_bet > 0:
-                    last_sig_best_tr = flux_train_loss
-                    last_sig_best_te = flux_loss
+                    last_sig_flux_tr = flux_train_loss
+                    last_sig_flux_te = flux_loss
                     imp_te = 0
                     imp_tr = 0
                     print(f"New sig best training loss: {flux_train_loss}")
@@ -567,25 +602,71 @@ def queryByDropout(wrk_dir, device = None):
                 elif tr_bet > 0:
                     imp_tr = 0
                     imp_te += 1
-                    last_sig_best_tr = flux_train_loss
+                    last_sig_flux_tr = flux_train_loss
                     print(f"New sig best training loss: {flux_train_loss}")
                 elif te_bet > 0:
                     imp_tr += 1
                     imp_te = 0
-                    last_sig_best_te = flux_loss
+                    last_sig_flux_te = flux_loss
                     print(f"New sig best testing loss: {flux_loss}")
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if flux_loss == np.asarray(te_loss_arr)[:,0].min():
+                if flux_loss == np.asarray(flux_te_loss_arr)[:,0].min():
                     torch.save(flux_model.state_dict(), "models/active_best_flux.pth")
                 
+                epoch += 1
+            
+            if active_loop_num != 0:
+                loop_flux_epochs.append(loop_flux_epochs[active_loop_num-1]+epoch)
+            else:
+                loop_flux_epochs.append(epoch)
+                
+            mergeSaveData(pd.read_csv("data/locations/active_test_locs_flux.csv"), 
+                          pd.read_csv("data/locations/active_locs_flux.csv"), 
+                          "data/locations/","active_locs_flux.csv")
+            
+            temp_te = np.asarray(flux_te_loss_arr)
+            temp_tr = np.asarray(flux_tr_loss_arr)
+            temp_epochs = np.asarray(loop_flux_epochs)
+            try:
+                best_flux_model.load_state_dict(torch.load("models/active_best_flux.pth"))
+            except:
+                best_flux_model.load_state_dict(flux_model.state_dict())
+                
+            saveLoop(best_flux_model, "data/locations/active_locs_flux.csv", 
+                     optimizer_flux,
+                     temp_te, temp_tr, 
+                     active_loop_num, temp_epochs,
+                     typ="flux")
+            
+            #train the lags model second
+            
+            epoch = 0
+            #set improvements counters to 0
+            imp_te = 0
+            imp_tr = 0
+            
+            print("Training lags model")
+            while (imp_te < 15 or imp_tr < 15):
+                print(f"Epoch {epoch+1} \n -----------------------")
+                lags_model, optimizer_lags, lags_train_loss = train(lags_dataloader,
+                                                                    lags_model,
+                                                     optimizer_lags,loss_fn_lags,
+                                                     device)
+                lags_loss = test(lags_test_dataloader,lags_model,loss_fn_lags,
+                                 device)
+                
+                lags_te_loss_arr.append(lags_loss)
+                lags_tr_loss_arr.append(lags_train_loss)
+                
                 print("Assessing lags model")
-                tr_bet = (0.9*last_sig_best_tr) - lags_train_loss
-                te_bet = (0.9*last_sig_best_te) - lags_loss
+                tr_bet = (0.9*last_sig_lags_tr) - lags_train_loss
+                te_bet = (0.9*last_sig_lags_te) - lags_loss
+                
                 if tr_bet > 0 and te_bet > 0:
-                    last_sig_best_tr = lags_train_loss
-                    last_sig_best_te = lags_loss
+                    last_sig_lags_tr = lags_train_loss
+                    last_sig_lags_te = lags_loss
                     imp_te = 0
                     imp_tr = 0
                     print(f"New sig best training loss: {lags_train_loss}")
@@ -593,60 +674,71 @@ def queryByDropout(wrk_dir, device = None):
                 elif tr_bet > 0:
                     imp_tr = 0
                     imp_te += 1
-                    last_sig_best_tr = lags_train_loss
+                    last_sig_lags_tr = lags_train_loss
                     print(f"New sig best training loss: {lags_train_loss}")
                 elif te_bet > 0:
                     imp_tr += 1
                     imp_te = 0
-                    last_sig_best_te = lags_loss
+                    last_sig_lags_te = lags_loss
                     print(f"New sig best testing loss: {lags_loss}")
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if lags_loss == np.asarray(te_loss_arr)[:,1].min():
+                if lags_loss == np.asarray(lags_te_loss_arr)[:,1].min():
                     torch.save(lags_model.state_dict(), "models/active_best_lags.pth")
                     
                 epoch += 1
                 
             if active_loop_num != 0:
-                loop_epochs.append(loop_epochs[active_loop_num-1]+epoch)
+                loop_lags_epochs.append(loop_lags_epochs[active_loop_num-1]+epoch)
             else:
-                loop_epochs.append(epoch)
+                loop_lags_epochs.append(epoch)
             
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs_flux.csv"), 
-                          pd.read_csv("data/locations/active_locs_flux.csv"), 
-                          "data/locations/","active_locs_flux.csv")
             mergeSaveData(pd.read_csv("data/locations/active_test_locs_lags.csv"), 
                           pd.read_csv("data/locations/active_locs_lags.csv"), 
                           "data/locations/","active_locs_lags.csv")
 
             #save state of models and data for this loop
-            temp_te = np.asarray(te_loss_arr)
-            temp_tr = np.asarray(tr_loss_arr)
-            temp_epochs = np.asarray(loop_epochs)
+            temp_te = np.asarray(lags_te_loss_arr)
+            temp_tr = np.asarray(lags_tr_loss_arr)
+            temp_epochs = np.asarray(loop_lags_epochs)
             try:
-                best_flux_model.load_state_dict(torch.load("models/active_best_flux.pth"))
+                best_lags_model.load_state_dict(torch.load("models/active_best_lags.pth"))
             except:
-                best_flux_model.load_state_dict(flux_model.state_dict())
-            saveLoop(best_flux_model, "data/locations/active_locs_flux.csv", 
-                     optimizer_flux,
+                best_lags_model.load_state_dict(lags_model.state_dict())
+            
+            saveLoop(best_lags_model, "data/locations/active_locs_lags.csv", 
+                     optimizer_lags,
                      temp_te, temp_tr, 
-                     active_loop_num, temp_epochs)
+                     active_loop_num, temp_epochs,
+                     typ="lags")
             #iterate loop number by 1
             active_loop_num += 1
             
         print("Completed training")
-        print("Final best training loss:", last_sig_best_tr)
-        print("Final best testing loss:", last_sig_best_te)
-        torch.save(flux_model.state_dict(), "models/active_final.pth")
-        print("Saved PyTorch Model State to models/active_final.pth")
+        print("Final best flux training loss:", last_sig_flux_tr)
+        print("Final best flux testing loss:", last_sig_flux_te)
+        torch.save(flux_model.state_dict(), "models/active_flux_final.pth")
+        print("Saved PyTorch Model State to models/active_flux_final.pth")
         
-        tr_loss_arr = np.asarray(tr_loss_arr)
-        te_loss_arr = np.asarray(te_loss_arr)
+        flux_tr_loss_arr = np.asarray(flux_tr_loss_arr)
+        flux_te_loss_arr = np.asarray(flux_te_loss_arr)
         
-        np.savetxt("loss/active_te_loss.txt",te_loss_arr)
-        np.savetxt("loss/active_tr_loss.txt",tr_loss_arr)
-        np.savetxt("loss/active_epochs.txt",loop_epochs)
+        np.savetxt("loss/active_flux_te_loss.txt",flux_te_loss_arr)
+        np.savetxt("loss/active_flux_tr_loss.txt",flux_tr_loss_arr)
+        np.savetxt("loss/active_flux_epochs.txt",loop_flux_epochs)
+        
+        print("Final best lags training loss:", last_sig_lags_tr)
+        print("Final best lags testing loss:", last_sig_lags_te)
+        torch.save(lags_model.state_dict(), "models/active_flags_final.pth")
+        print("Saved PyTorch Model State to models/active_lags_final.pth")
+        
+        lags_tr_loss_arr = np.asarray(lags_tr_loss_arr)
+        lags_te_loss_arr = np.asarray(lags_te_loss_arr)
+        
+        np.savetxt("loss/active_lags_te_loss.txt",lags_te_loss_arr)
+        np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
+        np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
 
 def grid_data_gen(size,fname,egrid):
     
@@ -719,13 +811,13 @@ def grid(wrk_dir,device):
         
         scaler = MinMaxScaler()
         #create initial dataset object to create scaler (and then delete object)
-        training_data = CustomData(locations+"loc_"+fname+".csv", scaler, 
+        training_data = FluxData(locations+"loc_"+fname+".csv", scaler, 
                              scaler_name=f"{fname}_scaler.bin", scaling=True)
         
         training_dataloader = DataLoader(training_data,batch_size=batch_size,
                                       num_workers = num_workers, shuffle=True)
         
-        testing_data = CustomData(locations+"loc_"+fname+"_test.csv", scaler, 
+        testing_data = FluxData(locations+"loc_"+fname+"_test.csv", scaler, 
                              scaler_name=f"{fname}_scaler.bin")
         
         test_dataloader = DataLoader(testing_data,batch_size=batch_size,

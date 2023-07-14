@@ -15,23 +15,33 @@ def mergeSaveData(new_data,old_data,destination,fname):
     df.to_csv(destination+fname,index=False)
     return
 
-def saveData(dataset, pars, destination, fname, current_locs = None):
+def saveData(dataset, pars, destination, fname, current_locs = None, lags = None):
     
     try:
-        files = glob.glob("./data/spectra/*.txt")
-        for i,file in enumerate(files):
-            tmp = file.replace("./data/spectra/spectra_","")
-            tmp = int(tmp.replace(".txt",""))
-            files[i] = tmp
+        if lags == None:
+            files = glob.glob("./data/spectra/*.txt")
+            for i,file in enumerate(files):
+                tmp = file.replace("./data/spectra/spectra_","")
+                tmp = int(tmp.replace(".txt",""))
+                files[i] = tmp
+        else:
+            files = glob.glob("./data/lags/*.txt")
+            for i,file in enumerate(files):
+                tmp = file.replace("./data/lags/lags_","")
+                tmp = int(tmp.replace(".txt",""))
+                files[i] = tmp
         files = np.asarray(files)
         start = files.max() + 1
     except:
         start = 0
     
     locations = []
-    for i,spectra in enumerate(tqdm.tqdm(dataset),start=start):
-        loc = f"data/spectra/spectra_{i}.txt"
-        np.savetxt(loc,spectra)
+    for i,item in enumerate(tqdm.tqdm(dataset),start=start):
+        if lags == None:
+            loc = f"data/spectra/spectra_{i}.txt"
+        else:
+            loc = f"data/lags/lags_{i}.txt"
+        np.savetxt(loc,item)
         locations.append(loc)
     
     locations = np.asarray(locations)
@@ -106,18 +116,18 @@ def loadParameters(df):
         parameters[index]=row.iloc[0:len(df.columns)-1]
     return parameters
 
-def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
+def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
-              fname = f"loc_light_{num}.csv")
+              fname = f"loc_{typ}_{num}.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_light_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_{typ}_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_light_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_{typ}_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_light_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_light_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_light_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_{typ}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_{typ}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_{typ}_epochs.txt",epochs)
     print("Saved losses")
     return
 
