@@ -327,6 +327,8 @@ def queryByDropout(wrk_dir, device = None):
         flux_data_init = np.array(flux_data_init)
         lags_data_init = np.array(flux_data_init)
         
+        print(np.count_nonzero(np.isinf(lags_data_init)))
+        
         #check for and delete parameter sets producing NaN results for flux
         index = nanChecker(flux_data_init, theta_init)
         flux_data_init = np.delete(flux_data_init,index, axis=0)
