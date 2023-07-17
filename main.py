@@ -593,7 +593,6 @@ def queryByDropout(wrk_dir, device = None):
                 flux_te_loss_arr.append(flux_loss)
                 flux_tr_loss_arr.append(flux_train_loss)
                 
-                print("Assessing flux model")
                 tr_bet = (0.9*last_sig_flux_tr) - flux_train_loss
                 te_bet = (0.9*last_sig_flux_te) - flux_loss
                 if tr_bet > 0 and te_bet > 0:
@@ -664,7 +663,6 @@ def queryByDropout(wrk_dir, device = None):
                 lags_te_loss_arr.append(lags_loss)
                 lags_tr_loss_arr.append(lags_train_loss)
                 
-                print("Assessing lags model")
                 tr_bet = (0.9*last_sig_lags_tr) - lags_train_loss
                 te_bet = (0.9*last_sig_lags_te) - lags_loss
                 
