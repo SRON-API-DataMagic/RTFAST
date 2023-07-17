@@ -616,7 +616,7 @@ def queryByDropout(wrk_dir, device = None):
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if flux_loss == np.asarray(flux_te_loss_arr)[:,0].min():
+                if flux_loss == np.asarray(flux_te_loss_arr).min():
                     torch.save(flux_model.state_dict(), "models/active_best_flux.pth")
                 
                 epoch += 1
@@ -688,7 +688,7 @@ def queryByDropout(wrk_dir, device = None):
                 else:
                     imp_te += 1
                     imp_tr += 1
-                if lags_loss == np.asarray(lags_te_loss_arr)[:,1].min():
+                if lags_loss == np.asarray(lags_te_loss_arr).min():
                     torch.save(lags_model.state_dict(), "models/active_best_lags.pth")
                     
                 epoch += 1
