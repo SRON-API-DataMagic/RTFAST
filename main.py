@@ -129,7 +129,6 @@ class LagsData(FluxData):
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
-        final_dataset = np.log10(final_dataset)
         data = self.scaler.fit(final_dataset)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
@@ -326,11 +325,6 @@ def queryByDropout(wrk_dir, device = None):
                                         for pars in pars_init)
         flux_data_init = np.array(flux_data_init)
         lags_data_init = np.array(lags_data_init)
-        
-        print(np.count_nonzero(np.isinf(lags_data_init)))
-        print(np.count_nonzero(np.isnan(lags_data_init)))
-        print(np.amax(lags_data_init))
-        print(np.amin(lags_data_init))
         
         #check for and delete parameter sets producing NaN results for flux
         index = nanChecker(flux_data_init, theta_init)
