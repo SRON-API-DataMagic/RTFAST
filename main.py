@@ -129,7 +129,8 @@ class LagsData(FluxData):
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
-        data = self.scaler.fit(final_dataset)
+        data = self.scaler.fit_transform(final_dataset)
+        print(data)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
         
