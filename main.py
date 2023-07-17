@@ -131,8 +131,6 @@ class LagsData(FluxData):
         else:
             self.scaler = load(f'scalers/{self.scaler_name}')
             self.minimums = (10**(self.scaler.min_))/0.9
-            print(self.minimums)
-            print(self.minimums.shape)
             
     def standardize(self, D):
         D += self.minimums
@@ -147,9 +145,7 @@ class LagsData(FluxData):
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
-        self.minimums = np.amin(final_dataset,axis=1)*10
-        print(self.minimums)
-        print(self.minimums.shape)
+        self.minimums = np.amin(final_dataset,axis=0)*10
         final_dataset += self.minimums
         final_dataset = np.log10(final_dataset)
         data = self.scaler.fit_transform(final_dataset)
