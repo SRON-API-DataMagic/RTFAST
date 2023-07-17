@@ -118,7 +118,23 @@ class FluxData(Dataset):
 
 class LagsData(FluxData):
     
+    def __init__(self,labels, scaler, scaler_name, scaling=False):
+        super().__init__()
+        self.labels = pd.read_csv(labels)
+        self.pars_list = [1,13,2,3,4]
+        self.scaling = scaling
+        self.scaler_name = scaler_name
+        if scaling == True:
+            print(f"Creating scaler with name {scaler_name}")
+            self.scaler = scaler
+            self.scaler_create()
+        else:
+            self.scaler = load(f'scalers/{self.scaler_name}')
+            self.minimums = (10**(self.scaler.min_))/0.9
+            
     def standardize(self, D):
+        D += self.minimums
+        D = np.log10(D)
         D = self.scale(D)
         D = torch.from_numpy(D)
         D = D.double()
@@ -129,9 +145,10 @@ class LagsData(FluxData):
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
+        self.minimums = np.amin(final_dataset,axis=1)*10
+        final_dataset += self.minimums
+        final_dataset = np.log10(final_dataset)
         data = self.scaler.fit_transform(final_dataset)
-        print(self.scaler.min_)
-        print(self.scaler.scale_)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
         
@@ -281,7 +298,7 @@ def queryByDropout(wrk_dir, device = None):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    lags_egrid = np.logspace(np.log10(0.1),np.log10(10),num=26)
+    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 30
     range_all = np.asarray(generator.lhs_trimmed_gen())
