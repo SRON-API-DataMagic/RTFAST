@@ -119,7 +119,7 @@ class FluxData(Dataset):
 class LagsData(FluxData):
     
     def __init__(self,labels, scaler, scaler_name, scaling=False):
-        super().__init__()
+        super(LagsData, self).__init__(labels, scaler, scaler_name, scaling)
         self.labels = pd.read_csv(labels)
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
