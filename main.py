@@ -297,12 +297,12 @@ def queryByDropout(wrk_dir, device = None):
     
     flux_model = network.SharpNetwork(5,len(egrid))
     flux_model.to(device)
-    lags_model = network.SharpNetwork(5,len(lags_egrid))
+    lags_model = network.SharpNetwork(5,len(lags_egrid)-1)
     lags_model.to(device)
     
     best_flux_model = network.SharpNetwork(5,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.SharpNetwork(5,len(lags_egrid))
+    best_lags_model = network.SharpNetwork(5,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -427,7 +427,7 @@ def queryByDropout(wrk_dir, device = None):
             # compute 100 neural network predictions with dropout
             sample_dropout = 100
             pred_query_flux = np.zeros((sample_dropout,n_samples_small,len(egrid)))
-            pred_query_lags = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)))
+            pred_query_lags = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)-1))
             flux_model.train()
             lags_model.train()
             query_samples = []
