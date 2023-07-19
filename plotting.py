@@ -396,6 +396,7 @@ def loss_epochs_plot(loss_base_loc):
     plt.close()
 
 def analysis(names, locs, nums, scaler_names, egrid, lags = None):
+    scaler_base_loc = os.getcwd()+"/scalers/"
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
     median_loss = []
@@ -415,7 +416,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         scaler_names = tmp
         
     for (model_loc,fname,scaler_name) in zip(names, locs, scaler_names):
-        scaler = load(scaler_name)
+        scaler = load(scaler_base_loc+scaler_name)
         #put test set into dataloader format
         batch_size = 1
         test_data = LoadFluxData("data/locations/loc_test.csv",scaler,
