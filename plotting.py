@@ -191,7 +191,7 @@ def model_load(model_loc,egrid,grid_mod = None):
     if grid_mod == None:
         model = network.SharpNetwork(5,len(egrid))
     else:
-        model = network.SharpNetwork(5,len(egrid))
+        model = network.LightSharpNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -395,7 +395,7 @@ def loss_epochs_plot(loss_base_loc):
     plt.savefig("loss/loss_over_time.png")
     plt.close()
 
-def analysis(names, locs, nums, scaler_names, egrid, lags = None):
+def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
     scaler_base_loc = os.getcwd()+"/scalers/"
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
@@ -428,9 +428,9 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         fname = str(fname)
         print(fname)
         if lags != None:
-            model = model_load(model_loc, egrid[:-1])
+            model = model_load(model_loc, egrid[:-1], grid_mod = grid)
         else:
-            model = model_load(model_loc, egrid)
+            model = model_load(model_loc, egrid, grid_mod = grid)
         residuals = calculate_loss(testing_dataloader, model, scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
@@ -504,7 +504,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot(loss_base_loc)
     
     grid = analysis(grid_name, grid_model_names, grid_sample_nums,
-                            grid_scaler, egrid)
+                            grid_scaler, egrid, grid=True)
     
     active_flux = analysis(active_flux_names, active_name, active_sample_nums, 
                       active_flux_scaler, egrid)
