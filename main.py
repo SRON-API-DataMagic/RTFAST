@@ -133,12 +133,12 @@ class LagsData(FluxData):
             self.minimums = (10**(self.scaler.min_))/0.9
             
     def standardize(self, D):
-        D += self.minimums
-        D = np.log10(D)
+        ind = np.where(D >= 0, 1, 0)
+        D = np.log10(np.abs(D))
         D = self.scale(D)
         D = torch.from_numpy(D)
         D = D.double()
-        return D
+        return D, ind
     
     def scaler_create(self):
         data = []
@@ -151,6 +151,21 @@ class LagsData(FluxData):
         data = self.scaler.fit_transform(final_dataset)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
+    
+    def __getitem__(self,idx):
+        #retrieve location of the spectra to load
+        location = self.labels.iloc[idx,-1]
+        #retrieve parameters used to generate the spectra that we want to train on
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
+        #convert parameters to log space
+        parameters.iloc[[3]] = -parameters.iloc[[3]]
+        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        parameters = torch.tensor(parameters)
+        #load spectra
+        datum = np.loadtxt(location).reshape(1, -1)
+        #scale spectra by energy bin to normalized space
+        datum, ind = self.standardize(datum)
+        return datum, ind, parameters
         
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
@@ -316,12 +331,12 @@ def queryByDropout(wrk_dir, device = None):
     
     flux_model = network.SharpNetwork(5,len(egrid))
     flux_model.to(device)
-    lags_model = network.SharpNetwork(5,len(lags_egrid)-1)
+    lags_model = network.LagNetwork(5,len(lags_egrid)-1)
     lags_model.to(device)
     
     best_flux_model = network.SharpNetwork(5,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.SharpNetwork(5,len(lags_egrid)-1)
+    best_lags_model = network.LagNetwork(5,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)

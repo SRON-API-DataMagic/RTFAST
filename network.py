@@ -117,6 +117,41 @@ class SharpNetwork(NeuralNetwork):
         result = self.LinearStack4(stack3)
         return result
 
+class LagsNetwork(nn.Module):
+    
+    def __init__(self,num_pars,data_len):
+        super().__init__()
+        self.LinearStack1 = nn.Sequential(
+            nn.Linear(num_pars,256),
+            SharpActivation(256)
+            ) 
+        self.LinearStack2 = nn.Sequential(
+            nn.Linear(256,512),
+            SharpActivation(512))
+        self.LinearStack3 = nn.Sequential(
+            nn.Linear(512,1024),
+            SharpActivation(1024))
+        self.OutputAbsolute = nn.Sequential(
+            nn.Linear(1024,data_len))
+        self.OutputIndex = nn.Sequential(
+            nn.Linear(1024,data_len))
+        self.OutputSigmoid = nn.Sigmoid()
+        self.dropout1 = nn.Dropout(p=self.p)
+        self.dropout2 = nn.Dropout(p=self.p)
+        self.dropout3 = nn.Dropout(p=self.p)
+        self.double()
+        
+    def forward(self,pars):
+        stack1 = self.LinearStack1(pars)
+        stack1 = self.dropout1(stack1)
+        stack2 = self.LinearStack2(stack1)
+        stack2 = self.dropout2(stack2)
+        stack3 = self.LinearStack3(stack2)
+        stack3 = self.dropout3(stack3)
+        result = self.OutputAbsolute(stack3)
+        ind = torch.round(self.OutputSigmoid(self.OutputIndex(stack3)))
+        return result, ind
+    
 class LightSharpNetwork(SharpNetwork):
     
     def __init__(self,num_pars,data_len):
