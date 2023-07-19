@@ -415,7 +415,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         tmp = [scaler_names for i in range(len(names))]
         scaler_names = tmp
         
-    for (model_loc,fname,scaler_name) in zip(names, locs, scaler_names):
+    for (model_loc,fname,scaler_name) in zip(locs, names, scaler_names):
         scaler = load(scaler_base_loc+scaler_name)
         #put test set into dataloader format
         batch_size = 1
@@ -430,8 +430,6 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         if lags != None:
             model = model_load(model_loc, egrid[:-1])
         else:
-            print(model_loc)
-            print(type(model_loc))
             model = model_load(model_loc, egrid)
         residuals = calculate_loss(testing_dataloader, model, scaler)
         resid_list.append(residuals)
@@ -495,7 +493,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
         active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
     active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
     active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
-    grid_name = [5,6,7,8,9,10]
+    grid_name = [f"grid_{i}" for i in range(5,11)]
     grid_scaler = [f"grid_{i}_scaler.bin" for i in range(5,11)]
     active_flux_scaler = "active_scaler_flux.bin"
     active_lags_scaler = "active_scaler_lags.bin"
