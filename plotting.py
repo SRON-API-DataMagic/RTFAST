@@ -430,6 +430,8 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         if lags != None:
             model = model_load(model_loc, egrid[:-1])
         else:
+            print(model_loc)
+            print(type(model_loc))
             model = model_load(model_loc, egrid)
         residuals = calculate_loss(testing_dataloader, model, scaler)
         resid_list.append(residuals)
