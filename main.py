@@ -930,7 +930,7 @@ def main():
     print(device)
     
     queryByDropout(wrk_dir,device)
-    grid(wrk_dir,device)
+    #grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()

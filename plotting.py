@@ -19,10 +19,10 @@ from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
-from main import CustomData
+from main import FluxData, LagsData
 from processing import saveData, nanChecker
 
-class LoadCustomData(CustomData):
+class LoadFluxData(FluxData):
     def __init__(self,labels,scaler,scaler_name):
         super().__init__(labels,scaler,scaler_name)
         
@@ -45,12 +45,35 @@ class LoadCustomData(CustomData):
             return datum, parameters, mask
         else:
             return datum, parameters
-    
+
+class LoadLagsData(LagsData):
+    def __init__(self,labels,scaler,scaler_name):
+        super().__init__(labels,scaler,scaler_name)
+        
+    def __getitem__(self,idx):
+        #retrieve location of the spectra to load
+        location = self.labels.iloc[idx,-1]
+        #retrieve parameters used to generate the spectra that we want to train on
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
+        #convert parameters to log space
+        parameters.iloc[[3]] = -parameters.iloc[[3]]
+        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        parameters = torch.tensor(parameters)
+        #load spectra
+        datum = np.loadtxt(location).reshape(1, -1)
+        return datum, parameters
+
 class Residual():
     
     def __init__(self,residuals,flat):
         self.data = residuals
         self.flat = flat
+
+class Losses():
+    
+    def set_loss(self,residuals,name):
+        super().__setattr__(name, residuals)
+        
             
 def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
@@ -166,9 +189,9 @@ def retrieve_egrid(wrk_dir):
 
 def model_load(model_loc,egrid,grid_mod = None):
     if grid_mod == None:
-        model = network.LightSharpNetwork(5,len(egrid))
+        model = network.SharpNetwork(5,len(egrid))
     else:
-        model = network.LightSharpNetwork(5,len(egrid))
+        model = network.SharpNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -336,23 +359,7 @@ def residuals_dataframe(residuals,names):
     print(time.time()-time_start)
     return df
 
-def active_v_grid(wrk_dir,egrid):
-    model_base_loc = wrk_dir+"/models/"
-    loss_base_loc = wrk_dir+"/loss/"
-    
-    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
-    
-    active_name = [0,1,2,3,4,10,15,20,25,30]
-    active_model_names = np.array(active_name)
-    active_sample_nums = []
-    for name in active_name:
-        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_{name}.csv")))
-    active_model_names = [model_base_loc+str(i)+"_light_model.pth" for i in active_model_names]
-    grid_name = [5,6,7,8,9,10]
-    scaler_name = grid_name
-    grid_model_names = np.array([5,6,7,8,9,10])
-    grid_sample_nums = grid_model_names**5
-    grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
+def loss_epochs_plot(loss_base_loc):
     
     train_names = [loss_base_loc+"grid_"+str(i)+"_tr_loss.txt" for i in range(5,11)]
     test_names = [loss_base_loc+"grid_"+str(i)+"_te_loss.txt" for i in range(5,11)]
@@ -387,70 +394,68 @@ def active_v_grid(wrk_dir,egrid):
     plt.legend()
     plt.savefig("loss/loss_over_time.png")
     plt.close()
+
+def analysis(names, locs, nums, scaler_names, egrid, lags = None):
+    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
-    active_median_loss = []
-    active_loss_01_q = []
-    active_loss_05_q = []
-    active_loss_25_q = []
-    active_loss_75_q = []
-    active_loss_95_q = []
-    active_loss_99_q = []
-    active_loss_low_out = []
-    active_loss_high_out = []
-    
-    grid_median_loss = []
-    grid_loss_01_q = []
-    grid_loss_05_q = []
-    grid_loss_25_q = []
-    grid_loss_75_q = []
-    grid_loss_95_q = []
-    grid_loss_99_q = []
-    grid_loss_low_out = []
-    grid_loss_high_out = []
+    median_loss = []
+    loss_01_q = []
+    loss_05_q = []
+    loss_25_q = []
+    loss_75_q = []
+    loss_95_q = []
+    loss_99_q = []
+    loss_low_out = []
+    loss_high_out = []
     
     resid_list = []
     
-    scaler = MinMaxScaler()
-    
-    print("Calculating loss for active learning")
-    active_scaler = MinMaxScaler()
-    active_scaler = load('scalers/active_scaler.bin')
-    
-    #put test set into dataloader format
-    batch_size = 1
-    test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
-                               "active_scaler.bin") #scaler unused but must be parsed
-    testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                    num_workers=4)
-    
-    for (model_loc,fname) in zip(active_model_names,active_name):
-        folname = str(fname)
+    if type(scaler_names) != list:
+        tmp = [scaler_names for i in range(len(names))]
+        scaler_names = tmp
+        
+    for (model_loc,fname,scaler_name) in zip(names, locs, scaler_names):
+        scaler = load(scaler_name)
+        #put test set into dataloader format
+        batch_size = 1
+        test_data = LoadFluxData("data/locations/loc_test.csv",scaler,
+                                   scaler_name) #scaler unused but must be parsed
+        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                        num_workers=4)
+        
+        #folname = str(fname)
         fname = str(fname)
         print(fname)
-        model = model_load(model_loc, egrid)
-        model.eval()
-        residuals = calculate_loss(testing_dataloader, model, active_scaler)
+        if lags != None:
+            model = model_load(model_loc, egrid[:-1])
+        else:
+            model = model_load(model_loc, egrid)
+        residuals = calculate_loss(testing_dataloader, model, scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
-        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,0.99])
-        active_median_loss.append(median)
-        active_loss_05_q.append(q_05)
-        active_loss_25_q.append(q_25)
-        active_loss_75_q.append(q_75)
-        active_loss_95_q.append(q_95)
-        active_loss_99_q.append(q_99)
-        active_loss_01_q.append(q_01)
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
+                                                        [0.01,0.05,0.25,0.75,
+                                                         0.95,0.99])
+        median_loss.append(median)
+        loss_05_q.append(q_05)
+        loss_25_q.append(q_25)
+        loss_75_q.append(q_75)
+        loss_95_q.append(q_95)
+        loss_99_q.append(q_99)
+        loss_01_q.append(q_01)
         high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::1000]
         low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
-        active_loss_low_out.append(low_outliers)
-        active_loss_high_out.append(high_outliers)
-        model_samples(testing_dataloader,active_scaler,model,egrid,fname)
-        df, ticks, ticklabels = residual_computation(testing_dataloader, model, active_scaler)
+        loss_low_out.append(low_outliers)
+        loss_high_out.append(high_outliers)
+        model_samples(testing_dataloader, scaler, model, egrid, fname)
+        df, ticks, ticklabels = residual_computation(testing_dataloader, 
+                                                     model, scaler)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
-        #energy_plots(testing_dataloader, active_scaler, model, egrid, fname, folname)
+        #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
         del df, ticks, ticklabels
+        
     resid_list = np.asarray(resid_list)
-    df = residuals_dataframe(resid_list, active_sample_nums)
+    df = residuals_dataframe(resid_list, nums)
     print(df[df["Sample Size"] == 220000].max())
     over = len(df[(df["Sample Size"] == 220000)&(df["Residuals"] >= 0.01)])
     print(over)
@@ -464,72 +469,51 @@ def active_v_grid(wrk_dir,egrid):
     box(df,"active")
     print("Box plot render time:"+str(time.time()-time_start))
     
-    del df
+    quantiles = [loss_01_q, loss_05_q, loss_25_q,
+                 loss_75_q, loss_95_q, loss_99_q,
+                 loss_high_out, loss_low_out, median_loss]
+    quantile_names = ["q_1", "q_5", "q_25", "q_75", "q_95", "q_99", "high", 
+                      "low", "median"]
+    quants = Losses()
+    for quant_arr, quant_name in zip(quantiles,quantile_names):
+        quants.set_loss(quant_arr,quant_name)
     
-    active_median_loss = np.asarray(active_median_loss)
-    active_loss_25_q = np.asarray(active_loss_25_q)
-    active_loss_75_q = np.asarray(active_loss_75_q)
+    return quants
     
-    resid_list = []
+def active_v_grid(wrk_dir, egrid, lags_egrid):
+    model_base_loc = wrk_dir+"/models/"
+    loss_base_loc = wrk_dir+"/loss/"
+    scaler_base_loc = wrk_dir+"/scalers/"
     
-    print("Calculating loss for grid learning")
-    for (model_loc,fname,sname) in zip(grid_model_names,grid_name,scaler_name):
-        grid_scaler = MinMaxScaler()
-        grid_scaler = load(f"scalers/grid_{sname}_scaler.bin")
-        test_data = LoadCustomData("data/locations/loc_test.csv",scaler,
-                                   f"grid_{sname}_scaler.bin")
-        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                        num_workers=4)
-        fname = str(fname) + "_grid"
-        print(fname)
-        model = model_load(model_loc, egrid, grid_mod = True)
-        model.eval()
-        residuals = calculate_loss(testing_dataloader, model, grid_scaler)
-        resid_list.append(residuals)
-        median = np.median(residuals)
-        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,[0.01,0.05,0.25,0.75,0.95,0.99])
-        grid_median_loss.append(median)
-        grid_loss_05_q.append(q_05)
-        grid_loss_25_q.append(q_25)
-        grid_loss_75_q.append(q_75)
-        grid_loss_95_q.append(q_95)
-        grid_loss_01_q.append(q_01)
-        grid_loss_99_q.append(q_99)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::1000]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
-        grid_loss_low_out.append(low_outliers)
-        grid_loss_high_out.append(high_outliers)
-        model_samples(testing_dataloader,grid_scaler,model,egrid,fname)
-        df, ticks, ticklabels = residual_computation(testing_dataloader, model, 
-                                                     grid_scaler)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname)
-        del df, ticks, ticklabels
+    active_name = [0,1,2,3,4,10,15,20,25,30]
+    active_name = np.array(active_name)
+    active_sample_nums = []
+    for name in active_name:
+        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
+    active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
+    active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
+    grid_name = [5,6,7,8,9,10]
+    grid_scaler = [scaler_base_loc+f"grid_{i}_scaler.bin" for i in range(5,11)]
+    active_flux_scaler = scaler_base_loc+"active_scaler_flux.bin"
+    active_lags_scaler = scaler_base_loc+"active_scaler_lags.bin"
+    grid_model_names = np.array([5,6,7,8,9,10])
+    grid_sample_nums = grid_model_names**5
+    grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
     
-    resid_list = np.asarray(resid_list)
-    df = residuals_dataframe(resid_list, grid_sample_nums)
-    print(df.max())
-    time_start = time.time()
-    violin(df,"grid")
-    print("Violin plot render time:"+str(time.time()-time_start))
-    time_start = time.time()
-    box(df,"grid")
-    print("Box plot render time:"+str(time.time()-time_start))
+    loss_epochs_plot(loss_base_loc)
     
-    grid_median_loss = np.asarray(grid_median_loss)
-    grid_loss_25_q = np.asarray(grid_loss_25_q)
-    grid_loss_75_q = np.asarray(grid_loss_75_q)
+    grid = analysis(grid_name, grid_model_names, grid_sample_nums,
+                            grid_scaler, egrid)
+    
+    active_flux = analysis(active_flux_names, active_name, active_sample_nums, 
+                      active_flux_scaler, egrid)
+    
+    active_lags_flux = analysis(active_lags_names, active_name, active_sample_nums, 
+                      active_lags_scaler, lags_egrid, lags=True)
     
     print("Plotting loss by sample size")
-    plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
-                                 grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
-                                 grid_loss_01_q, grid_loss_99_q,
-                                 grid_loss_low_out,grid_loss_high_out,
-                                 active_sample_nums, 
-                                 active_median_loss, active_loss_75_q,
-                                 active_loss_25_q, active_loss_95_q, 
-                                 active_loss_05_q,
-                                 active_loss_01_q,active_loss_99_q,
-                                 active_loss_low_out,active_loss_high_out)
+    plot_loss_vs_sample_size(grid_sample_nums, grid,
+                             active_sample_nums, active_flux)
     
 def energy_plots(dataset,scaler,model,egrid,fname,folname):
     flux_true = []
@@ -594,53 +578,44 @@ def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,
     plt.savefig(f"loss/{folname}/{fname}_{basename}_{round(energy,2)}.png")
     plt.close()
 
-def plot_loss_vs_sample_size(grid_sample_nums, grid_median_loss,grid_loss_75_q,
-                             grid_loss_25_q, grid_loss_95_q, grid_loss_05_q,
-                             grid_loss_01_q,grid_loss_99_q,
-                             grid_loss_low_out,grid_loss_high_out,
-                             active_sample_nums, 
-                             active_median_loss, active_loss_75_q,
-                             active_loss_25_q, active_loss_95_q, 
-                             active_loss_05_q,
-                             active_loss_01_q,active_loss_99_q,
-                             active_loss_low_out,active_loss_high_out):
+def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active):
     
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
     
-    for (x,y,z) in zip(grid_sample_nums,grid_loss_low_out,grid_loss_high_out):
+    for (x,y,z) in zip(grid_sample_nums,grid.low,grid.high):
         axs[0].scatter([x]*len(y),y, s=1, color="orange", zorder = 1, marker = "x",
                        alpha = 0.5)
         axs[0].scatter([x]*len(z),z, s=1, color="orange", zorder = 1, marker = "x",
                        alpha = 0.5)
         
-    axs[0].fill_between(grid_sample_nums, grid_loss_95_q, 
-                     grid_loss_05_q, alpha = 0.25,color = "orange",
+    axs[0].fill_between(grid_sample_nums, grid.q_95, 
+                     grid.q_5, alpha = 0.25,color = "orange",
                      zorder=3)
-    axs[0].fill_between(grid_sample_nums, grid_loss_75_q, 
-                     grid_loss_25_q, alpha = 0.5,color = "orange",
+    axs[0].fill_between(grid_sample_nums, grid.q_75, 
+                     grid.q_25, alpha = 0.5,color = "orange",
                      zorder=4)
-    axs[0].fill_between(grid_sample_nums, grid_loss_99_q, 
-                     grid_loss_01_q, alpha = 0.5,color = "orange",
+    axs[0].fill_between(grid_sample_nums, grid.q_99, 
+                     grid.q_1, alpha = 0.5,color = "orange",
                      zorder=2)
-    axs[0].plot(grid_sample_nums,grid_median_loss,label="Grid",color = "orange",
+    axs[0].plot(grid_sample_nums,grid.median,label="Grid",color = "orange",
              zorder=5)
     
-    for (x,y,z) in zip(active_sample_nums,active_loss_low_out,active_loss_high_out):
+    for (x,y,z) in zip(active_sample_nums,active.low,active.high):
         axs[1].scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
                        alpha = 0.5)
         axs[1].scatter([x]*len(z),z, s=1, color="blue", zorder = 2, marker = "x",
                        alpha = 0.5)
         
-    axs[1].fill_between(active_sample_nums, active_loss_95_q, 
-                     active_loss_05_q, alpha = 0.25,color = "blue",
+    axs[1].fill_between(active_sample_nums, active.q_95, 
+                     active.q_5, alpha = 0.25,color = "blue",
                      zorder=3)
-    axs[1].fill_between(active_sample_nums, active_loss_75_q, 
-                     active_loss_25_q, alpha = 0.5,color = "blue",
+    axs[1].fill_between(active_sample_nums, active.q_75, 
+                     active.q_25, alpha = 0.5,color = "blue",
                      zorder=4)
-    axs[1].fill_between(active_sample_nums, active_loss_99_q, 
-                     active_loss_01_q, alpha = 0.5,color = "blue",
+    axs[1].fill_between(active_sample_nums, active.q_99, 
+                     active.q_1, alpha = 0.5,color = "blue",
                      zorder=2)
-    axs[1].plot(active_sample_nums,active_median_loss,label="Active learning",
+    axs[1].plot(active_sample_nums,active.median,label="Active learning",
              color = "blue",zorder=5)
     
     axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
@@ -673,6 +648,7 @@ def main():
     set_envir_vars(wrk_dir)
     
     egrid = retrieve_egrid(wrk_dir)
+    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     """
     data, pars = generate_test_set(500, egrid)
     
@@ -682,7 +658,7 @@ def main():
     saveData(data, pars, 
              "data/locations/","loc_test.csv")
     """
-    active_v_grid(wrk_dir,egrid)
+    active_v_grid(wrk_dir,egrid, lags_egrid)
     
 if __name__ == "__main__":
     main()
