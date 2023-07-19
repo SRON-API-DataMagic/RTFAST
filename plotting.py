@@ -493,9 +493,9 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
     active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
     grid_name = [5,6,7,8,9,10]
-    grid_scaler = [scaler_base_loc+f"grid_{i}_scaler.bin" for i in range(5,11)]
-    active_flux_scaler = scaler_base_loc+"active_scaler_flux.bin"
-    active_lags_scaler = scaler_base_loc+"active_scaler_lags.bin"
+    grid_scaler = [f"grid_{i}_scaler.bin" for i in range(5,11)]
+    active_flux_scaler = "active_scaler_flux.bin"
+    active_lags_scaler = "active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
     grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
