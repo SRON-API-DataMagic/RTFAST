@@ -761,55 +761,6 @@ def queryByDropout(wrk_dir, device = None):
         np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
         np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
 
-def grid_data_gen(size,fname,egrid):
-    
-    spin = np.linspace(0.1,1.0,size)
-    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
-    inc = np.linspace(1,80,size)
-    r_in = np.linspace(-400,-1,size)
-    r_out = np.linspace(np.log10(400),np.log10(1e5),size)
-    
-    #create parameter grid
-    theta_init = []
-    for a in spin:
-        for m in mass:
-            for i in inc:
-                for r_i in r_in:
-                    for r_o in r_out:
-                        theta_init.append([a,m,i,r_i,r_o])
-    theta_init = np.asarray(theta_init)
-    #convert to rtdist model compatible parameters
-    pars_init = generator.pars_conversion(theta_init)
-    with Parallel(n_jobs=10,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        flux_data_init = parallel(delayed(generator.rtdist_flux)(pars, egrid)
-                                        for pars in pars_init)
-    flux_data_init = np.array(flux_data_init)
-    flux_data_init, pars_init = nanChecker(flux_data_init, pars_init)
-    
-    scaler = MinMaxScaler()
-    scaler = scaler.fit(flux_data_init)
-    dump(scaler, f'scalers/{fname}_scaler.bin', compress=True)
-    
-    idxs = np.arange(0,flux_data_init.shape[0])
-    np.random.shuffle(idxs)
-    tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
-    tes_idx = idxs[int(-0.1*len(idxs)):]
-    
-    #Splitting data and parameters into training and testing datasets
-    train_data = flux_data_init[tra_idx]
-    train_pars = pars_init[tra_idx]
-    test_data = flux_data_init[tes_idx]
-    test_pars = pars_init[tes_idx]
-    
-    print("Saving to disk")
-    #save data for the first time in text files
-    saveData(train_data, train_pars, 
-             "data/locations/","loc_"+fname+".csv")
-    saveData(test_data, test_pars, 
-             "data/locations/","loc_"+fname+"_test.csv")
-    return
-
 def grid(wrk_dir,device):
     print("Training using grid")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
