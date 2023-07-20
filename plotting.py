@@ -507,10 +507,10 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     grid = analysis(grid_name, grid_model_names, grid_sample_nums,
                             grid_scaler, egrid, grid=True)
     
-    active_flux = analysis(active_flux_names, active_name, active_sample_nums, 
+    active_flux = analysis(active_name, active_flux_names, active_sample_nums, 
                       active_flux_scaler, egrid)
     
-    active_lags_flux = analysis(active_lags_names, active_name, active_sample_nums, 
+    active_lags_flux = analysis(active_name, active_lags_names, active_sample_nums, 
                       active_lags_scaler, lags_egrid, lags=True)
     
     print("Plotting loss by sample size")
