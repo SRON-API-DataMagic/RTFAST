@@ -7,6 +7,7 @@ from reltrans import _models
 from joblib import dump, Parallel, delayed
 from processing import nanChecker, saveData
 from sklearn.preprocessing import MinMaxScaler
+from dataStructures import FluxData, LagsData
 
 def rtdist_flux(pars,egrid):
     """
@@ -156,7 +157,7 @@ def pars_conversion(pars):
     
     return new_pars
     
-def grid_data_gen(size,fname,egrid):
+def grid_data_gen(size,fname,egrid, lags_egrid):
    
    spin = np.linspace(0.1,1.0,size)
    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
@@ -179,12 +180,18 @@ def grid_data_gen(size,fname,egrid):
        #generate rtdist models for the correlated grid
        flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                        for pars in pars_init)
+       lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
+                                       for pars in pars_init)
    flux_data_init = np.array(flux_data_init)
-   flux_data_init, pars_init = nanChecker(flux_data_init, pars_init)
+   indexes = nanChecker(flux_data_init, pars_init)
+   flux_data_init = np.delete(flux_data_init,indexes, axis=0)
+   lags_data_init = np.delete(lags_data_init,indexes, axis=0)
+   pars_init = np.delete(pars_init,indexes, axis=0)
    
-   scaler = MinMaxScaler()
-   scaler = scaler.fit(flux_data_init)
-   dump(scaler, f'scalers/{fname}_scaler.bin', compress=True)
+   indexes = nanChecker(lags_data_init, pars_init)
+   flux_data_init = np.delete(flux_data_init,indexes, axis=0)
+   lags_data_init = np.delete(lags_data_init,indexes, axis=0)
+   pars_init = np.delete(pars_init,indexes, axis=0)
    
    idxs = np.arange(0,flux_data_init.shape[0])
    np.random.shuffle(idxs)
@@ -193,14 +200,30 @@ def grid_data_gen(size,fname,egrid):
    
    #Splitting data and parameters into training and testing datasets
    train_data = flux_data_init[tra_idx]
+   train_lags = lags_data_init[tra_idx]
    train_pars = pars_init[tra_idx]
    test_data = flux_data_init[tes_idx]
+   test_lags = lags_data_init[tes_idx]
    test_pars = pars_init[tes_idx]
    
    print("Saving to disk")
    #save data for the first time in text files
    saveData(train_data, train_pars, 
-            "data/locations/","loc_"+fname+".csv")
+            "data/locations/","loc_"+fname+"_flux.csv")
+   saveData(train_lags, train_pars, 
+            "data/locations/","loc_"+fname+"_lags.csv")
    saveData(test_data, test_pars, 
-            "data/locations/","loc_"+fname+"_test.csv")
+            "data/locations/","loc_"+fname+"_flux_test.csv")
+   saveData(test_lags, train_pars, 
+            "data/locations/","loc_"+fname+"_lags_test.csv")
+   
+   scaler = MinMaxScaler()
+   
+   flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
+                                  scaler,f"{fname}_scaler.bin",
+                                  scaling=True)
+   lags_dataloader = LagsData(f"data/locations/loc_{fname}_flux.csv", 
+                                  scaler,f"{fname}_scaler.bin",
+                                  scaling=True)
+   
    return   
