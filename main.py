@@ -23,147 +23,15 @@ from dataStructures import FluxData, LagsData
 from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
 import generator
 import network
-       
+
+from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
+
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
         plt.hist(column, bins=100)
         plt.xlabel(labels[i])
         plt.savefig(fname+labels[i]+".png")
         plt.close()
-
-def train(dataloader,model,optimizer,loss_fn,device):
-    """
-    
-
-    Parameters
-    ----------
-    dataloader : torch.nn.utils.data.DataLoader
-        provides iterable shuffled form of the training dataset.
-    model : network.NeuralNetwork
-        the neural network model to be trained.
-    optimizer : torch.optim
-        optimizer used for training the network.
-    loss_fn : torch.nn loss function
-        loss function used to train the network.
-
-    Returns
-    -------
-    model : network.NeuralNetwork
-        the neural network model to be trained.
-    optimizer : Ttorch.optim
-        optimizer used for training the network.
-    avg_loss : float
-        used as to record and determine how many iterations should be trained.
-
-    """
-    
-    model.train()
-    
-    size = len(dataloader.dataset)
-    loss_arr = 0
-    for batch, (D,P) in enumerate(dataloader):
-        pred = model(P.to(device))[:,None,:]
-        loss = loss_fn(pred,D.to(device))
-        optimizer.zero_grad()
-        loss.backward()
-        
-        threshold = 0
-        vanishing_grads = 0
-        for p in model.parameters():
-            if p.grad.norm() == threshold:
-                vanishing_grads += 1
-        
-        if vanishing_grads != 0:
-            print(f"{vanishing_grads} gradients are approaching 0")
-        
-        optimizer.step()
-        loss_b = loss.detach().item()
-        if batch % 5 == 0:
-            current = (batch*P.shape[0] + 1)
-            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr += loss_b
-    
-    avg_loss = loss_arr/len(dataloader)
-    print(f"Average training loss: {avg_loss:>8f}")
-    return model, optimizer , avg_loss
-
-def test(dataloader,model,loss_fn,device,improvement_set = []):
-    """
-    
-
-    Parameters
-    ----------
-    dataloader : torch.nn.utils.data.DataLoader
-        provides iterable shuffled form of the testing dataset.
-    model : network.NeuralNetwork
-        the neural network model to be tested.
-    loss_fn : torch.nn loss function
-        loss function used to train the network.
-
-    Returns
-    -------
-    test_loss : float
-        used as to record and determine how many iterations should be trained.
-
-    """
-    model.eval()
-    test_loss = 0
-    batches = len(dataloader)
-    
-    with torch.no_grad():
-        for batch, (D,P) in enumerate(dataloader):
-            pred = model(P.to(device))[:,None,:]
-            test_loss += loss_fn(pred, D.to(device)).detach().item()
-    test_loss /= batches
-    
-    if improvement_set != []:
-        improvement_loss = 0
-        imp_batches = len(improvement_set)
-        with torch.no_grad():
-            for batch, (D, P, M) in enumerate(improvement_set):
-                pred = model(P.to(device))[:,None,:]
-                improvement_loss += loss_fn(pred, D.to(device)).detach().item()
-        improvement_loss /= imp_batches
-        print(f"Average testing loss: {test_loss:>8f}")
-        print(f"Average improvement loss: {improvement_loss:>8f}")
-        return test_loss, improvement_loss
-    else:
-        print(f"Average testing loss: {test_loss:>8f}")
-        return test_loss
-
-class barredMSELoss(nn.Module):
-    def __init__(self,scaler,device):
-        super(barredMSELoss, self).__init__()
-        self.scaler = load(f'scalers/{scaler}')
-        self.device = device
-        self.set_scale()
-        
-    def set_scale(self):
-        self.min = torch.tensor(self.scaler.data_min_)
-        self.max = torch.tensor(self.scaler.data_max_)
-        self.scale = self.max - self.min
-        
-    def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-        result = 10**result
-        return result
-        
-    def forward(self, output, target):
-        #scale to real space
-        scaled_tar = self.scaling(target)
-        scaled_out = self.scaling(output)
-        #find desired boundaries of the original data
-        data_low = 0.995*scaled_tar
-        data_high = 1.005*scaled_tar
-        #create mask where prediction is within boundaries
-        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
-        #multiply with mask to only consider where network is out of bounds
-        pred = torch.mul(output,mask)
-        data = torch.mul(target,mask)
-        #calculate loss
-        criterion = nn.MSELoss()
-        loss = criterion(pred,data)
-        return loss 
 
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
@@ -474,11 +342,11 @@ def queryByDropout(wrk_dir, device = None):
             while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
                 
-                flux_model, optimizer_flux, flux_train_loss = train(flux_dataloader,
+                flux_model, optimizer_flux, flux_train_loss = train_flux(flux_dataloader,
                                                                     flux_model,
                                                      optimizer_flux,loss_fn_flux,
                                                      device)
-                flux_loss = test(flux_test_dataloader,flux_model,loss_fn_flux,
+                flux_loss = test_flux(flux_test_dataloader,flux_model,loss_fn_flux,
                                  device)
                 #scheduler.step(loss)
                 flux_te_loss_arr.append(flux_loss)
@@ -544,11 +412,11 @@ def queryByDropout(wrk_dir, device = None):
             print("Training lags model")
             while (imp_te < 15 or imp_tr < 15):
                 print(f"Epoch {epoch+1} \n -----------------------")
-                lags_model, optimizer_lags, lags_train_loss = train(lags_dataloader,
+                lags_model, optimizer_lags, lags_train_loss = train_lags(lags_dataloader,
                                                                     lags_model,
                                                      optimizer_lags,loss_fn_lags,
                                                      device)
-                lags_loss = test(lags_test_dataloader,lags_model,loss_fn_lags,
+                lags_loss = test_lags(lags_test_dataloader,lags_model,loss_fn_lags,
                                  device)
                 
                 lags_te_loss_arr.append(lags_loss)
@@ -650,84 +518,88 @@ def grid(wrk_dir,device):
     batch_size = 128
     num_workers = 4
     
+    modes = ["flux", "lags"]
+    
     for (size,fname) in zip(grid_sizes,grid_names):
         print(f"Starting {size} x {size} grid loop")
-        
-        scaler = MinMaxScaler()
-        #create initial dataset object to create scaler (and then delete object)
-        training_data = FluxData(locations+"loc_"+fname+".csv", scaler, 
-                             scaler_name=f"{fname}_scaler.bin", scaling=True)
-        
-        training_dataloader = DataLoader(training_data,batch_size=batch_size,
-                                      num_workers = num_workers, shuffle=True)
-        
-        testing_data = FluxData(locations+"loc_"+fname+"_test.csv", scaler, 
-                             scaler_name=f"{fname}_scaler.bin")
-        
-        test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                                      num_workers = num_workers, shuffle=True)
-        
-        print("Dataloaders created")
-        
-        flux_model = network.LightSharpNetwork(5,len(egrid))
-        flux_model.to(device)
-        optimizer = Adam(flux_model.parameters(),lr = 0.001)
-        loss_fn = barredMSELoss(f"{fname}_scaler.bin",device)
-        
-        last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-        last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-        tr_loss_arr = []
-        te_loss_arr = []
-        
-        epoch = 0
-        imp_te = 0
-        imp_tr = 0
-        
-        print("Beginning training")
-        while epoch < 400:
-            print(f"Epoch {epoch+1} \n -----------------------")
-            flux_model, optimizer, train_loss = train(training_dataloader,flux_model,
-                                                 optimizer,loss_fn,device)
-            loss = test(test_dataloader,flux_model,loss_fn,device)
-            te_loss_arr.append(loss)
-            tr_loss_arr.append(train_loss)
-            tr_bet = (0.9*last_sig_best_tr) - train_loss
-            te_bet = (0.9*last_sig_best_te) - loss
-            if tr_bet > 0 and te_bet > 0:
-                last_sig_best_tr = train_loss
-                last_sig_best_te = loss
-                imp_te = 0
-                imp_tr = 0
-                print(f"New best training loss: {train_loss}")
-                print(f"New best testing loss: {loss}")
-                torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
-            elif tr_bet > 0:
-                imp_tr = 0
-                imp_te += 1
-                last_sig_best_tr = train_loss
-                print(f"New best training loss: {train_loss}")
-            elif te_bet > 0:
-                imp_tr += 1
-                imp_te = 0
-                last_sig_best_te = loss
-                print(f"New best testing loss: {loss}")
-                torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
-            else:
-                imp_te += 1
-                imp_tr += 1
-            epoch += 1
-        
-        print("Completed training")
-        print("Final best training loss:", last_sig_best_tr)
-        print("Final best testing loss:", last_sig_best_te)
-        torch.save(flux_model.state_dict(), f"models/grid_{size}_final.pth")
-        print(f"Saved PyTorch Model State to grid_{size}_final.pth")
-        
-        tr_loss_arr = np.asarray(tr_loss_arr)
-        te_loss_arr = np.asarray(te_loss_arr)
-        
-        np.savetxt(f"loss/grid_{size}_te_loss.txt",te_loss_arr)
-        np.savetxt(f"loss/grid_{size}_tr_loss.txt",tr_loss_arr)
+        for mode in modes:
+            print(f"Training on {mode}")
+            
+            scaler = MinMaxScaler()
+            #create initial dataset object to create scaler (and then delete object)
+            training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
+            
+            training_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                          num_workers = num_workers, shuffle=True)
+            
+            testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin")
+            
+            test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                          num_workers = num_workers, shuffle=True)
+            
+            print("Dataloaders created")
+            
+            flux_model = network.LightSharpNetwork(5,len(egrid))
+            flux_model.to(device)
+            optimizer = Adam(flux_model.parameters(),lr = 0.001)
+            loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
+            
+            last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
+            last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
+            tr_loss_arr = []
+            te_loss_arr = []
+            
+            epoch = 0
+            imp_te = 0
+            imp_tr = 0
+            
+            print("Beginning training")
+            while epoch < 400:
+                print(f"Epoch {epoch+1} \n -----------------------")
+                flux_model, optimizer, train_loss = train_flux(training_dataloader,flux_model,
+                                                     optimizer,loss_fn,device)
+                loss = test_flux(test_dataloader,flux_model,loss_fn,device)
+                te_loss_arr.append(loss)
+                tr_loss_arr.append(train_loss)
+                tr_bet = (0.9*last_sig_best_tr) - train_loss
+                te_bet = (0.9*last_sig_best_te) - loss
+                if tr_bet > 0 and te_bet > 0:
+                    last_sig_best_tr = train_loss
+                    last_sig_best_te = loss
+                    imp_te = 0
+                    imp_tr = 0
+                    print(f"New best training loss: {train_loss}")
+                    print(f"New best testing loss: {loss}")
+                    torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
+                elif tr_bet > 0:
+                    imp_tr = 0
+                    imp_te += 1
+                    last_sig_best_tr = train_loss
+                    print(f"New best training loss: {train_loss}")
+                elif te_bet > 0:
+                    imp_tr += 1
+                    imp_te = 0
+                    last_sig_best_te = loss
+                    print(f"New best testing loss: {loss}")
+                    torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
+                else:
+                    imp_te += 1
+                    imp_tr += 1
+                epoch += 1
+            
+            print("Completed training")
+            print("Final best training loss:", last_sig_best_tr)
+            print("Final best testing loss:", last_sig_best_te)
+            torch.save(flux_model.state_dict(), f"models/grid_{size}_{mode}_final.pth")
+            print(f"Saved PyTorch Model State to grid_{size}_{mode}_final.pth")
+            
+            tr_loss_arr = np.asarray(tr_loss_arr)
+            te_loss_arr = np.asarray(te_loss_arr)
+            
+            np.savetxt(f"loss/grid_{size}_{mode}_te_loss.txt",te_loss_arr)
+            np.savetxt(f"loss/grid_{size}_{mode}_tr_loss.txt",tr_loss_arr)
         
 def main():
     torch.set_default_dtype(torch.double)

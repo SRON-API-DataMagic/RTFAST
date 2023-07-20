@@ -183,6 +183,8 @@ def grid_data_gen(size,fname,egrid, lags_egrid):
        lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                        for pars in pars_init)
    flux_data_init = np.array(flux_data_init)
+   lags_data_init = np.array(lags_data_init)
+   
    indexes = nanChecker(flux_data_init, pars_init)
    flux_data_init = np.delete(flux_data_init,indexes, axis=0)
    lags_data_init = np.delete(lags_data_init,indexes, axis=0)
@@ -220,10 +222,10 @@ def grid_data_gen(size,fname,egrid, lags_egrid):
    scaler = MinMaxScaler()
    
    flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
-                                  scaler,f"{fname}_scaler.bin",
+                                  scaler,f"{fname}_flux_scaler.bin",
                                   scaling=True)
    lags_dataloader = LagsData(f"data/locations/loc_{fname}_flux.csv", 
-                                  scaler,f"{fname}_scaler.bin",
+                                  scaler,f"{fname}_lags_scaler.bin",
                                   scaling=True)
    
    return   
