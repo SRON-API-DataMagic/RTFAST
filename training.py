@@ -173,9 +173,9 @@ def train_lags(dataloader,model,optimizer,loss_fn,device):
     
     size = len(dataloader.dataset)
     loss_arr = 0
-    for batch, (D,P) in enumerate(dataloader):
-        pred = model(P.to(device))[:,None,:]
-        loss = loss_fn(pred,D.to(device))
+    for batch, (D, I, P) in enumerate(dataloader):
+        pred, I_pred = model(P.to(device))[:,None,:]
+        loss = loss_fn(pred, D.to(device), I_pred, I)
         optimizer.zero_grad()
         loss.backward()
         
@@ -255,9 +255,9 @@ def test_lags(dataloader,model,loss_fn,device):
     batches = len(dataloader)
     
     with torch.no_grad():
-        for batch, (D,P) in enumerate(dataloader):
-            pred = model(P.to(device))[:,None,:]
-            test_loss += loss_fn(pred, D.to(device)).detach().item()
+        for batch, (D,I,P) in enumerate(dataloader):
+            pred, I_pred = model(P.to(device))[:,None,:]
+            test_loss += loss_fn(pred, D.to(device), I_pred, I).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")

@@ -4,12 +4,12 @@ for generating sampels for training the emulator for rtdist.
 """
 import numpy as np
 from reltrans import _models
-from joblib import dump, Parallel, delayed
+from joblib import Parallel, delayed
 from processing import nanChecker, saveData
 from sklearn.preprocessing import MinMaxScaler
 from dataStructures import FluxData, LagsData
 
-def rtdist_flux(pars,egrid):
+def rtdist_flux(pars, egrid):
     """
     
 
@@ -26,10 +26,10 @@ def rtdist_flux(pars,egrid):
         outputted simulated data.
 
     """
-    model = _models.tdrtdist(pars,egrid)
+    model = _models.tdrtdist(pars, egrid)
     return model
 
-def rtdist_lags(pars,egrid):
+def rtdist_lags(pars, egrid):
     """
     
 
@@ -47,7 +47,7 @@ def rtdist_lags(pars,egrid):
         outputted simulated data.
 
     """
-    y = _models.tdrtdist(pars,egrid)
+    y = _models.tdrtdist(pars, egrid)
     dE = np.diff(egrid)
     output = y[:-1]/dE
     return output
@@ -157,7 +157,7 @@ def pars_conversion(pars):
     
     return new_pars
     
-def grid_data_gen(size,fname,egrid, lags_egrid):
+def grid_data_gen(size, fname, egrid, lags_egrid):
    
    spin = np.linspace(0.1,1.0,size)
    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
