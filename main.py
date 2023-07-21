@@ -10,21 +10,21 @@ import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 import torch
-from torch import nn
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader
 from torch.optim import Adam
 #from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
-from joblib import dump, load, Parallel, delayed
+from joblib import Parallel, delayed
 import scipy.stats
 
 from dataStructures import FluxData, LagsData
 
-from processing import nanChecker, saveLoop, saveData, mergeSaveData,renameData
+from processing import nanChecker, saveData, renameData
 import generator
 import network
 
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
+from training import active_training_loop, grid_training_loop, lagLoss
 
 def distributions(data,labels,fname):
     for i,column in enumerate(data.T):
@@ -129,7 +129,7 @@ def queryByDropout(wrk_dir, device = None):
                                        scaling=True)
         
         loss_fn_flux = barredMSELoss("active_scaler_flux.bin",device)
-        loss_fn_lags = barredMSELoss("active_scaler_lags.bin",device)
+        loss_fn_lags = lagLoss("active_scaler_lags.bin",device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -333,146 +333,30 @@ def queryByDropout(wrk_dir, device = None):
             
             #Train the flux model first
             
-            epoch = 0
-            #set improvements counters to 0
-            imp_te = 0
-            imp_tr = 0
-            
-            print("Training flux model")
-            while (imp_te < 15 or imp_tr < 15):
-                print(f"Epoch {epoch+1} \n -----------------------")
-                
-                flux_model, optimizer_flux, flux_train_loss = train_flux(flux_dataloader,
-                                                                    flux_model,
-                                                     optimizer_flux,loss_fn_flux,
-                                                     device)
-                flux_loss = test_flux(flux_test_dataloader,flux_model,loss_fn_flux,
-                                 device)
-                #scheduler.step(loss)
-                flux_te_loss_arr.append(flux_loss)
-                flux_tr_loss_arr.append(flux_train_loss)
-                
-                tr_bet = (0.9*last_sig_flux_tr) - flux_train_loss
-                te_bet = (0.9*last_sig_flux_te) - flux_loss
-                if tr_bet > 0 and te_bet > 0:
-                    last_sig_flux_tr = flux_train_loss
-                    last_sig_flux_te = flux_loss
-                    imp_te = 0
-                    imp_tr = 0
-                    print(f"New sig best training loss: {flux_train_loss}")
-                    print(f"New sig best testing loss: {flux_loss}")
-                elif tr_bet > 0:
-                    imp_tr = 0
-                    imp_te += 1
-                    last_sig_flux_tr = flux_train_loss
-                    print(f"New sig best training loss: {flux_train_loss}")
-                elif te_bet > 0:
-                    imp_tr += 1
-                    imp_te = 0
-                    last_sig_flux_te = flux_loss
-                    print(f"New sig best testing loss: {flux_loss}")
-                else:
-                    imp_te += 1
-                    imp_tr += 1
-                if flux_loss == np.asarray(flux_te_loss_arr).min():
-                    torch.save(flux_model.state_dict(), "models/active_best_flux.pth")
-                
-                epoch += 1
-            
-            if active_loop_num != 0:
-                loop_flux_epochs.append(loop_flux_epochs[active_loop_num-1]+epoch)
-            else:
-                loop_flux_epochs.append(epoch)
-                
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs_flux.csv"), 
-                          pd.read_csv("data/locations/active_locs_flux.csv"), 
-                          "data/locations/","active_locs_flux.csv")
-            
-            temp_te = np.asarray(flux_te_loss_arr)
-            temp_tr = np.asarray(flux_tr_loss_arr)
-            temp_epochs = np.asarray(loop_flux_epochs)
-            try:
-                best_flux_model.load_state_dict(torch.load("models/active_best_flux.pth"))
-            except:
-                best_flux_model.load_state_dict(flux_model.state_dict())
-                
-            saveLoop(best_flux_model, "data/locations/active_locs_flux.csv", 
-                     optimizer_flux,
-                     temp_te, temp_tr, 
-                     active_loop_num, temp_epochs,
-                     typ="flux")
+            (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
+                    flux_te_loss_arr, flux_tr_loss_arr, 
+                    last_sig_flux_tr, last_sig_flux_te) = active_training_loop(flux_model, flux_dataloader, 
+                                                              optimizer_flux, loss_fn_flux, 
+                                                              device, flux_test_dataloader, 
+                                                              flux_te_loss_arr, flux_tr_loss_arr, 
+                                                              last_sig_flux_te, last_sig_flux_tr, 
+                                                              active_loop_num, loop_flux_epochs, 
+                                                              best_flux_model, 
+                                                              train_flux, test_flux,
+                                                              mode = "flux")
             
             #train the lags model second
-            
-            epoch = 0
-            #set improvements counters to 0
-            imp_te = 0
-            imp_tr = 0
-            
-            print("Training lags model")
-            while (imp_te < 15 or imp_tr < 15):
-                print(f"Epoch {epoch+1} \n -----------------------")
-                lags_model, optimizer_lags, lags_train_loss = train_lags(lags_dataloader,
-                                                                    lags_model,
-                                                     optimizer_lags,loss_fn_lags,
-                                                     device)
-                lags_loss = test_lags(lags_test_dataloader,lags_model,loss_fn_lags,
-                                 device)
-                
-                lags_te_loss_arr.append(lags_loss)
-                lags_tr_loss_arr.append(lags_train_loss)
-                
-                tr_bet = (0.9*last_sig_lags_tr) - lags_train_loss
-                te_bet = (0.9*last_sig_lags_te) - lags_loss
-                
-                if tr_bet > 0 and te_bet > 0:
-                    last_sig_lags_tr = lags_train_loss
-                    last_sig_lags_te = lags_loss
-                    imp_te = 0
-                    imp_tr = 0
-                    print(f"New sig best training loss: {lags_train_loss}")
-                    print(f"New sig best testing loss: {lags_loss}")
-                elif tr_bet > 0:
-                    imp_tr = 0
-                    imp_te += 1
-                    last_sig_lags_tr = lags_train_loss
-                    print(f"New sig best training loss: {lags_train_loss}")
-                elif te_bet > 0:
-                    imp_tr += 1
-                    imp_te = 0
-                    last_sig_lags_te = lags_loss
-                    print(f"New sig best testing loss: {lags_loss}")
-                else:
-                    imp_te += 1
-                    imp_tr += 1
-                if lags_loss == np.asarray(lags_te_loss_arr).min():
-                    torch.save(lags_model.state_dict(), "models/active_best_lags.pth")
-                    
-                epoch += 1
-                
-            if active_loop_num != 0:
-                loop_lags_epochs.append(loop_lags_epochs[active_loop_num-1]+epoch)
-            else:
-                loop_lags_epochs.append(epoch)
-            
-            mergeSaveData(pd.read_csv("data/locations/active_test_locs_lags.csv"), 
-                          pd.read_csv("data/locations/active_locs_lags.csv"), 
-                          "data/locations/","active_locs_lags.csv")
-
-            #save state of models and data for this loop
-            temp_te = np.asarray(lags_te_loss_arr)
-            temp_tr = np.asarray(lags_tr_loss_arr)
-            temp_epochs = np.asarray(loop_lags_epochs)
-            try:
-                best_lags_model.load_state_dict(torch.load("models/active_best_lags.pth"))
-            except:
-                best_lags_model.load_state_dict(lags_model.state_dict())
-            
-            saveLoop(best_lags_model, "data/locations/active_locs_lags.csv", 
-                     optimizer_lags,
-                     temp_te, temp_tr, 
-                     active_loop_num, temp_epochs,
-                     typ="lags")
+            (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
+                    lags_te_loss_arr, lags_tr_loss_arr, 
+                    last_sig_lags_tr, last_sig_lags_te) = active_training_loop(lags_model, lags_dataloader, 
+                                                              optimizer_lags, loss_fn_lags, 
+                                                              device, lags_test_dataloader, 
+                                                              lags_te_loss_arr, lags_tr_loss_arr, 
+                                                              last_sig_lags_te, last_sig_lags_tr, 
+                                                              active_loop_num, loop_lags_epochs, 
+                                                              best_lags_model, 
+                                                              train_lags, test_lags,
+                                                              mode = "lags")
             #iterate loop number by 1
             active_loop_num += 1
             
@@ -527,79 +411,64 @@ def grid(wrk_dir,device):
             
             scaler = MinMaxScaler()
             #create initial dataset object to create scaler (and then delete object)
-            training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
-            
-            training_dataloader = DataLoader(training_data,batch_size=batch_size,
-                                          num_workers = num_workers, shuffle=True)
-            
-            testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin")
-            
-            test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                                          num_workers = num_workers, shuffle=True)
             
             print("Dataloaders created")
             
-            flux_model = network.LightSharpNetwork(5,len(egrid))
-            flux_model.to(device)
-            optimizer = Adam(flux_model.parameters(),lr = 0.001)
-            loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
+            model = network.LightSharpNetwork(5,len(egrid))
+            model.to(device)
+            optimizer = Adam(model.parameters(),lr = 0.001)
             
-            last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-            last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
-            tr_loss_arr = []
-            te_loss_arr = []
+            if mode == "flux":
+                train = train_flux
+                test = test_flux
+                loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
+                training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
             
-            epoch = 0
-            imp_te = 0
-            imp_tr = 0
+                train_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+                
+                testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+                                     scaler_name=f"{fname}_{mode}_scaler.bin")
+                
+                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+            elif mode == "lags":
+                train = train_lags
+                test = test_lags
+                loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
+                training_data = LagsData(locations+f"loc_{fname}_{mode}.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
             
-            print("Beginning training")
-            while epoch < 400:
-                print(f"Epoch {epoch+1} \n -----------------------")
-                flux_model, optimizer, train_loss = train_flux(training_dataloader,flux_model,
-                                                     optimizer,loss_fn,device)
-                loss = test_flux(test_dataloader,flux_model,loss_fn,device)
-                te_loss_arr.append(loss)
-                tr_loss_arr.append(train_loss)
-                tr_bet = (0.9*last_sig_best_tr) - train_loss
-                te_bet = (0.9*last_sig_best_te) - loss
-                if tr_bet > 0 and te_bet > 0:
-                    last_sig_best_tr = train_loss
-                    last_sig_best_te = loss
-                    imp_te = 0
-                    imp_tr = 0
-                    print(f"New best training loss: {train_loss}")
-                    print(f"New best testing loss: {loss}")
-                    torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
-                elif tr_bet > 0:
-                    imp_tr = 0
-                    imp_te += 1
-                    last_sig_best_tr = train_loss
-                    print(f"New best training loss: {train_loss}")
-                elif te_bet > 0:
-                    imp_tr += 1
-                    imp_te = 0
-                    last_sig_best_te = loss
-                    print(f"New best testing loss: {loss}")
-                    torch.save(flux_model.state_dict(), f"models/grid_{size}.pth")
-                else:
-                    imp_te += 1
-                    imp_tr += 1
-                epoch += 1
+                train_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+                
+                testing_data = LagsData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+                                     scaler_name=f"{fname}_{mode}_scaler.bin")
+                
+                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+            else:
+                print("Invalid mode, defaulting to flux modelling")
+                train = train_flux
+                test = test_flux
+                loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
+                training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
             
-            print("Completed training")
-            print("Final best training loss:", last_sig_best_tr)
-            print("Final best testing loss:", last_sig_best_te)
-            torch.save(flux_model.state_dict(), f"models/grid_{size}_{mode}_final.pth")
-            print(f"Saved PyTorch Model State to grid_{size}_{mode}_final.pth")
-            
-            tr_loss_arr = np.asarray(tr_loss_arr)
-            te_loss_arr = np.asarray(te_loss_arr)
-            
-            np.savetxt(f"loss/grid_{size}_{mode}_te_loss.txt",te_loss_arr)
-            np.savetxt(f"loss/grid_{size}_{mode}_tr_loss.txt",tr_loss_arr)
+                train_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+                
+                testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+                                     scaler_name=f"{fname}_{mode}_scaler.bin")
+                
+                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                              num_workers = num_workers, shuffle=True)
+                
+            grid_training_loop(model, optimizer, train, test, 
+                                   train_dataloader, test_dataloader,
+                                   loss_fn, device,
+                                   size, mode)
         
 def main():
     torch.set_default_dtype(torch.double)
