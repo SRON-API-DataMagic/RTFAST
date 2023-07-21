@@ -65,7 +65,7 @@ class lagLoss(nn.Module):
         return result
     
     def forward(self, output, target, index, index_target):
-        threshold = 1e-9
+        threshold = 1e-6
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
@@ -75,7 +75,7 @@ class lagLoss(nn.Module):
         #create mask where prediction is within boundaries
         mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
         #create mask where output is too small to measure
-        small_mask = torch.where((scaled_tar >= threshold)&((0<=scaled_out<=threshold)),0,1)
+        small_mask = torch.where((scaled_tar <= threshold)&((0<=scaled_out<=threshold)),0,1)
         #create overall mask
         mask = mask*small_mask
         #multiply with mask to only consider where network is out of bounds
