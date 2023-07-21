@@ -224,7 +224,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
    flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
                                   scaler,f"{fname}_flux_scaler.bin",
                                   scaling=True)
-   lags_dataloader = LagsData(f"data/locations/loc_{fname}_flux.csv", 
+   lags_dataloader = LagsData(f"data/locations/loc_{fname}_lags.csv", 
                                   scaler,f"{fname}_lags_scaler.bin",
                                   scaling=True)
    
