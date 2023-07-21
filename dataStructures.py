@@ -122,6 +122,8 @@ class LagsData(FluxData):
     def standardize(self, D):
         ind = np.where(D >= 0, 1, 0)
         D = np.abs(D)
+        #set all values lower than the threshold to threshold to avoid 0s
+        #becoming infinities
         D[D<self.threshold] = self.threshold
         D = np.log10(D)
         D = self.scale(D)
