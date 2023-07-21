@@ -110,6 +110,7 @@ class LagsData(FluxData):
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
+        self.threshold = 1e-9
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
@@ -120,7 +121,9 @@ class LagsData(FluxData):
             
     def standardize(self, D):
         ind = np.where(D >= 0, 1, 0)
-        D = np.log10(np.abs(D))
+        D = np.abs(D)
+        D[D<self.threshold] = self.threshold
+        D = np.log10(D)
         D = self.scale(D)
         D = torch.from_numpy(D)
         D = D.double()
