@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
-from main import FluxData, LagsData
+from dataStructures import FluxData, LagsData
 from processing import saveData, nanChecker
 
 class LoadFluxData(FluxData):

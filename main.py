@@ -25,13 +25,7 @@ import network
 
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
-
-def distributions(data,labels,fname):
-    for i,column in enumerate(data.T):
-        plt.hist(column, bins=100)
-        plt.xlabel(labels[i])
-        plt.savefig(fname+labels[i]+".png")
-        plt.close()
+from plotting import distributions
 
 def queryByDropout(wrk_dir, device = None):
     print("Training using query by dropout committee")
