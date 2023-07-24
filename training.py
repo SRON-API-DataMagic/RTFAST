@@ -257,7 +257,8 @@ def test_lags(dataloader,model,loss_fn,device):
     
     with torch.no_grad():
         for batch, (D,I,P) in enumerate(dataloader):
-            pred, I_pred = model(P.to(device))[:,None,:]
+            pred, I_pred = model(P.to(device))
+            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
             test_loss += loss_fn(pred, D.to(device), I_pred, I).detach().item()
     test_loss /= batches
     
