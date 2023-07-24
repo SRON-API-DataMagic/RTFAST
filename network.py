@@ -150,7 +150,7 @@ class LagsNetwork(nn.Module):
         stack3 = self.LinearStack3(stack2)
         stack3 = self.dropout3(stack3)
         result = self.OutputAbsolute(stack3)
-        ind = torch.round(self.OutputSigmoid(self.OutputIndex(stack3)))
+        ind = self.OutputSigmoid(self.OutputIndex(stack3))
         return result, ind
     
 class LightSharpNetwork(SharpNetwork):

@@ -129,6 +129,8 @@ class LagsData(FluxData):
         D = self.scale(D)
         D = torch.from_numpy(D)
         D = D.double()
+        ind = torch.from_numpy(ind)
+        ind = ind.double()
         return D, ind
     
     def scaler_create(self):

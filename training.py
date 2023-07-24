@@ -176,7 +176,7 @@ def train_lags(dataloader,model,optimizer,loss_fn,device):
     for batch, (D, I, P) in enumerate(dataloader):
         pred, I_pred = model(P.to(device))
         pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-        loss = loss_fn(pred, D.to(device), I_pred, I)
+        loss = loss_fn(pred, D.to(device), I_pred, I.to(device))
         optimizer.zero_grad()
         loss.backward()
         
