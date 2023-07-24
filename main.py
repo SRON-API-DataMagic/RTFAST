@@ -50,12 +50,12 @@ def queryByDropout(wrk_dir, device = None):
     
     flux_model = network.SharpNetwork(5,len(egrid))
     flux_model.to(device)
-    lags_model = network.LagNetwork(5,len(lags_egrid)-1)
+    lags_model = network.LagsNetwork(5,len(lags_egrid)-1)
     lags_model.to(device)
     
     best_flux_model = network.SharpNetwork(5,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.LagNetwork(5,len(lags_egrid)-1)
+    best_lags_model = network.LagsNetwork(5,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -486,17 +486,6 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
-    
-    sizes = [5,6,7,8,9,10]
-    fnames = [f"grid_{i}" for i in sizes]
-    
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    
-    for size, fname in zip(sizes, fnames):
-        generator.grid_data_gen(size, fname, egrid, lags_egrid)
     
     queryByDropout(wrk_dir,device)
     grid(wrk_dir,device)
