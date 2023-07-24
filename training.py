@@ -309,7 +309,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
             imp_te += 1
             imp_tr += 1
         if loss == np.asarray(te_loss_arr).min():
-            torch.save(model.state_dict(), "models/active_{mode}_best.pth")
+            torch.save(model.state_dict(), f"models/active_best_{mode}.pth")
         
         epoch += 1
     
@@ -318,19 +318,19 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
     else:
         loop_epochs.append(epoch)
         
-    mergeSaveData(pd.read_csv(f"data/locations/active_{mode}_test_locs.csv"), 
-                  pd.read_csv(f"data/locations/active_{mode}_locs.csv"), 
-                  "data/locations/",f"active_{mode}_locs.csv")
+    mergeSaveData(pd.read_csv(f"data/locations/active_test_locs_{mode}.csv"), 
+                  pd.read_csv(f"data/locations/active_locs_{mode}.csv"), 
+                  "data/locations/",f"active_locs_{mode}.csv")
     
     temp_te = np.asarray(te_loss_arr)
     temp_tr = np.asarray(tr_loss_arr)
     temp_epochs = np.asarray(loop_epochs)
     try:
-        best_model.load_state_dict(torch.load("models/active_{mode}_best.pth"))
+        best_model.load_state_dict(torch.load(f"models/active_best_{mode}.pth"))
     except:
         best_model.load_state_dict(model.state_dict())
         
-    saveLoop(best_model, "data/locations/active_{mode}_locs.csv", 
+    saveLoop(best_model, f"data/locations/active_locs_{mode}.csv", 
              optimizer,
              temp_te, temp_tr, 
              active_loop_num, temp_epochs,
