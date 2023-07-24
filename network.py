@@ -121,6 +121,7 @@ class LagsNetwork(nn.Module):
     
     def __init__(self,num_pars,data_len):
         super().__init__()
+        self.p = 0.2
         self.LinearStack1 = nn.Sequential(
             nn.Linear(num_pars,256),
             SharpActivation(256)
