@@ -189,7 +189,7 @@ def queryByDropout(wrk_dir, device = None):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
                 for i in range(sample_dropout):
                     pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                    pred_lags = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+                    pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_query_flux[i] = pred_flux.detach().cpu().numpy()
                     pred_query_lags[i] = pred_lags.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
