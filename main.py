@@ -416,48 +416,32 @@ def grid(wrk_dir,device):
                 train = train_flux
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
-                training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
-            
-                train_dataloader = DataLoader(training_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
+                dataType = FluxData
                 
-                testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
-                                     scaler_name=f"{fname}_{mode}_scaler.bin")
-                
-                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
                 loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
-                training_data = LagsData(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
-            
-                train_dataloader = DataLoader(training_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
+                dataType = LagsData
                 
-                testing_data = LagsData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
-                                     scaler_name=f"{fname}_{mode}_scaler.bin")
-                
-                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
             else:
                 print("Invalid mode, defaulting to flux modelling")
                 train = train_flux
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
-                training_data = FluxData(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
+                dataType = FluxData
+                
+            training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
+                             scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
+        
+            train_dataloader = DataLoader(training_data,batch_size=batch_size,
+                                          num_workers = num_workers, shuffle=True)
             
-                train_dataloader = DataLoader(training_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
-                
-                testing_data = FluxData(locations+"loc_{fname}_{mode}_test.csv", scaler, 
-                                     scaler_name=f"{fname}_{mode}_scaler.bin")
-                
-                test_dataloader = DataLoader(testing_data,batch_size=batch_size,
-                                              num_workers = num_workers, shuffle=True)
+            testing_data = dataType(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+                                 scaler_name=f"{fname}_{mode}_scaler.bin")
+            
+            test_dataloader = DataLoader(testing_data,batch_size=batch_size,
+                                          num_workers = num_workers, shuffle=True)
                 
             grid_training_loop(model, optimizer, train, test, 
                                    train_dataloader, test_dataloader,
