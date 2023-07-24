@@ -259,7 +259,7 @@ def test_lags(dataloader,model,loss_fn,device):
         for batch, (D,I,P) in enumerate(dataloader):
             pred, I_pred = model(P.to(device))
             pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-            test_loss += loss_fn(pred, D.to(device), I_pred, I).detach().item()
+            test_loss += loss_fn(pred, D.to(device), I_pred, I.to(device)).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
