@@ -110,7 +110,7 @@ class LagsData(FluxData):
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.threshold = 1e-7
+        self.threshold = 1e-6
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
@@ -135,11 +135,11 @@ class LagsData(FluxData):
         data = []
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
-        final_dataset = np.concatenate(data,axis=0)
-        self.minimums = np.amin(final_dataset,axis=0)*10
-        final_dataset += self.minimums
-        final_dataset = np.log10(final_dataset)
-        data = self.scaler.fit_transform(final_dataset)
+        D = np.concatenate(data,axis=0)
+        D = np.abs(D)
+        D[D<self.threshold] = self.threshold
+        D = np.log10(D)
+        data = self.scaler.fit_transform(D)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
     
