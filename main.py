@@ -193,10 +193,10 @@ def queryByDropout(wrk_dir, device = None):
                     pred_query_flux[i] = pred_flux.detach().cpu().numpy()
                     pred_query_lags[i] = pred_lags.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
-                dvar_flux = np.var(pred_query_flux,axis=0)
+                dvar_flux = np.var(pred_query_flux,axis=0)/np.mean(pred_query_flux,axis=0)
                 mean_var_flux = np.mean(dvar_flux, axis=1)
                 # find uncertainty (as measured by relative variance)
-                dvar_lags = np.var(pred_query_lags,axis=0)
+                dvar_lags = np.var(pred_query_lags,axis=0)/np.mean(pred_query_lags,axis=0)
                 mean_var_lags = np.mean(dvar_lags, axis=1)
                 #sum the two
                 mean_var_query = mean_var_lags+mean_var_flux

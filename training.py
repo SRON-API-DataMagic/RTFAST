@@ -12,6 +12,39 @@ from processing import mergeSaveData, saveLoop
 
 
 class barredMSELoss(nn.Module):
+    """
+    Class of loss functon that only induces loss for values extending outside
+    a given range (0.5%) of the original data
+    
+    -------------
+    Parameters:
+        scaler:
+            loads a MinMaxScaler from scikitlearn that allows retrieval of
+            original data
+        device:
+            pytorch device to load tensors into for manipulation
+        min:
+            minimum value of non-normalized form of data
+        max:
+            maximum value of non-normalized form of data
+        scale:
+            range of non-normalized form of data
+    
+    -------------
+    Methods:
+        __init__():
+            initalizes key parameters
+        
+        set_scale():
+            used in intializing to calculate rescaling method
+        
+        scaling(a):
+            a is data vector to be rescaled
+        
+        forward(output, target):
+            forward pass that returns a loss value based on mean squared error
+            and masking.
+    """
     def __init__(self,scaler,device):
         super(barredMSELoss, self).__init__()
         self.scaler = load(f'scalers/{scaler}')
@@ -46,6 +79,43 @@ class barredMSELoss(nn.Module):
         return loss 
 
 class lagLoss(nn.Module):
+    """
+    Class of loss functon that only induces loss for values extending outside
+    a given range (0.5%) of the original data. Features a threshold value that 
+    all data below must be within the threshold.
+    
+    -------------
+    Parameters:
+        scaler:
+            loads a MinMaxScaler from scikitlearn that allows retrieval of
+            original data
+        device:
+            pytorch device to load tensors into for manipulation
+        min:
+            minimum value of non-normalized form of data
+        max:
+            maximum value of non-normalized form of data
+        scale:
+            range of non-normalized form of data
+    
+    -------------
+    Methods:
+        __init__():
+            initalizes key parameters
+        
+        set_scale():
+            used in intializing to calculate rescaling method
+        
+        scaling(a):
+            a is data vector to be rescaled
+        
+        forward(output, target, index, index_target):
+            forward pass that returns a loss value based on mean squared error
+            and masking. Loss value is the sum of the binary criterion loss of
+            getting the signed value of outputs correct and the mean squared
+            error of the output, once again masked when within a certain 
+            boundary.
+    """
     def __init__(self,scaler,device):
         super().__init__()
         self.scaler = load(f'scalers/{scaler}')
