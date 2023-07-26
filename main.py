@@ -437,7 +437,7 @@ def grid(wrk_dir,device):
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
             
-            testing_data = dataType(locations+"loc_{fname}_{mode}_test.csv", scaler, 
+            testing_data = dataType(locations+f"loc_{fname}_{mode}_test.csv", scaler, 
                                  scaler_name=f"{fname}_{mode}_scaler.bin")
             
             test_dataloader = DataLoader(testing_data,batch_size=batch_size,
