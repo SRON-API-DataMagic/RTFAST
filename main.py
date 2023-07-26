@@ -384,6 +384,7 @@ def grid(wrk_dir,device):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     locations = "data/locations/"
     
@@ -408,21 +409,18 @@ def grid(wrk_dir,device):
             
             print("Dataloaders created")
             
-            model = network.LightSharpNetwork(5,len(egrid))
-            model.to(device)
-            optimizer = Adam(model.parameters(),lr = 0.001)
-            
             if mode == "flux":
                 train = train_flux
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                
+                model = network.LightSharpNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
                 loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = LagsData
+                model = network.LagsNetwork(5,len(lags_egrid)-1)
                 
             else:
                 print("Invalid mode, defaulting to flux modelling")
@@ -430,7 +428,11 @@ def grid(wrk_dir,device):
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                
+                model = network.LightSharpNetwork(5,len(egrid))
+            
+            model.to(device)
+            optimizer = Adam(model.parameters(),lr = 0.001)
+            
             training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
                              scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
         
