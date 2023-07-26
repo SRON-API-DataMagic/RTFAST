@@ -471,7 +471,7 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
+    #queryByDropout(wrk_dir,device)
     grid(wrk_dir,device)
 
 if __name__ == "__main__":
