@@ -18,7 +18,7 @@ import seaborn as sns
 from tqdm import tqdm
 
 import network
-from generator import lhs_trimmed_gen,pars_conversion,rtdist_flux
+from generator import lhs_trimmed_gen, pars_conversion, rtdist_flux, rtdist_lags
 from dataStructures import FluxData, LagsData
 from processing import saveData, nanChecker
 
@@ -222,8 +222,11 @@ def generate_test_set(size,egrid):
         #generate rtdist models for the correlated grid
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_lhs_iterate)
+        lags = parallel(delayed(rtdist_lags)(pars, egrid)
+                                        for pars in theta_lhs_iterate)
     data_init = np.asarray(data_init)
-    return data_init, theta_lhs
+    lags = np.asarray(lags)
+    return data_init, lags, theta_lhs_iterate
     
 def residual_sorting(df,indexing):
     df.sort_values(by=indexing,inplace=True,ignore_index=True)
@@ -359,16 +362,13 @@ def residuals_dataframe(residuals,names):
     print(time.time()-time_start)
     return df
 
-def loss_epochs_plot(loss_base_loc):
+def loss_epochs_plot(loss_base_loc,mode):
     
-    train_names = [loss_base_loc+"grid_"+str(i)+"_tr_loss.txt" for i in range(5,11)]
-    test_names = [loss_base_loc+"grid_"+str(i)+"_te_loss.txt" for i in range(5,11)]
+    train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
+    test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
-    active_loss = np.loadtxt(loss_base_loc+"30_tr_loss.txt")
-    active_test = np.loadtxt(loss_base_loc+"30_te_loss.txt")
-    
-    light_loss = np.loadtxt(loss_base_loc+"30_light_tr_loss.txt")
-    light_test = np.loadtxt(loss_base_loc+"30_light_te_loss.txt")
+    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
 
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
@@ -378,13 +378,6 @@ def loss_epochs_plot(loss_base_loc):
     plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
              ls = "-")
     plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
-             ls = "--")
-    
-    plt.plot(light_loss,label = "Training loss: active learning small network", 
-             c = "orange",
-             ls = "-")
-    plt.plot(light_test,label = "Validation loss: active learning small network", 
-             c = "orange",
              ls = "--")
     
     plt.yscale("log")
@@ -489,33 +482,47 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     active_name = [0,1,2,3,4,10,15,20,25,30]
     active_name = np.array(active_name)
-    active_sample_nums = []
+    active_sample_flux_nums = []
+    active_sample_lags_nums = []
     for name in active_name:
-        active_sample_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
+        active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
+        active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
     active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
     active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
-    grid_name = [f"grid_{i}" for i in range(5,11)]
-    grid_scaler = [f"grid_{i}_scaler.bin" for i in range(5,11)]
+    grid_flux_name = [f"grid_{i}_flux" for i in range(5,11)]
+    grid_lags_name = [f"grid_{i}_lags" for i in range(5,11)]
+    grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
+    grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
     active_flux_scaler = "active_scaler_flux.bin"
     active_lags_scaler = "active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
-    grid_model_names = [model_base_loc+"grid_"+str(i)+".pth" for i in grid_model_names]
+    grid_model_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
+    grid_model_lag_names = [model_base_loc+f"grid_{i}_lags.pth" for i in grid_model_names]
     
-    loss_epochs_plot(loss_base_loc)
+    loss_epochs_plot(loss_base_loc,"flux")
+    loss_epochs_plot(loss_base_loc,"lags")
     
-    grid = analysis(grid_name, grid_model_names, grid_sample_nums,
-                            grid_scaler, egrid, grid=True)
+    grid_flux = analysis(grid_flux_name, grid_model_names, grid_sample_nums,
+                            grid_flux_scaler, egrid, grid=True)
     
-    active_flux = analysis(active_name, active_flux_names, active_sample_nums, 
+    grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
+                            grid_lags_scaler, lags_egrid, grid=True)
+    
+    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
     
-    active_lags_flux = analysis(active_name, active_lags_names, active_sample_nums, 
+    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                       active_lags_scaler, lags_egrid, lags=True)
     
+    
     print("Plotting loss by sample size")
-    plot_loss_vs_sample_size(grid_sample_nums, grid,
-                             active_sample_nums, active_flux)
+    print("Plotting fluxes")
+    plot_loss_vs_sample_size(grid_sample_nums, grid_flux,
+                             active_sample_flux_nums, active_flux)
+    print("Plotting lags")
+    plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
+                             active_sample_lags_nums, active_lags)
     
 def energy_plots(dataset,scaler,model,egrid,fname,folname):
     flux_true = []
@@ -651,15 +658,26 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    """
-    data, pars = generate_test_set(500, egrid)
     
-    data, pars = nanChecker(data, pars)
-    pars = pars_conversion(pars)
+    data, lags, pars = generate_test_set(500, egrid)
+    
+    index = nanChecker(data, pars)
+    data = np.delete(data,index, axis=0)
+    lags = np.delete(lags,index, axis=0)
+    pars = np.delete(pars,index, axis=0)
+    
+    #check for and delete parameter sets producing NaN results for time lags
+    index = nanChecker(lags, pars)
+    data = np.delete(data, index, axis=0)
+    lags = np.delete(lags, index, axis=0)
+    pars = np.delete(pars, index, axis=0)
     
     saveData(data, pars, 
-             "data/locations/","loc_test.csv")
-    """
+             "data/locations/","loc_flux_test.csv")
+    
+    saveData(lags, pars, 
+             "data/locations/","loc_lags_test.csv")
+    
     active_v_grid(wrk_dir,egrid, lags_egrid)
     
 if __name__ == "__main__":

@@ -394,7 +394,7 @@ def grid(wrk_dir,device):
         grid_names.append(f"grid_{size}")
     print(grid_names)
         
-    batch_size = 128
+    batch_size = 1024
     num_workers = 4
     
     modes = ["flux", "lags"]
