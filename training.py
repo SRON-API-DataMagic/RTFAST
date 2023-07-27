@@ -442,7 +442,7 @@ def grid_training_loop(model, optimizer, train, test,
             imp_tr = 0
             print(f"New best training loss: {train_loss}")
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), f"models/grid_{size}.pth")
+            torch.save(model.state_dict(), f"models/grid_{size}_{mode}.pth")
         elif tr_bet > 0:
             imp_tr = 0
             imp_te += 1
@@ -453,7 +453,7 @@ def grid_training_loop(model, optimizer, train, test,
             imp_te = 0
             last_sig_best_te = loss
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), f"models/grid_{size}.pth")
+            torch.save(model.state_dict(), f"models/grid_{size}_{mode}.pth")
         else:
             imp_te += 1
             imp_tr += 1
