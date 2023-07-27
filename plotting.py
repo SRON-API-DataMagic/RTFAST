@@ -238,23 +238,40 @@ def residual_sorting(df,indexing):
         ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2E}")
     return tick,ticklabel
 
-def residual_computation(testing_dataloader,model,scaler):
+def residual_computation(testing_dataloader, model, scaler, mode):
     mass, spin, inc, rin, rout = [], [], [], [], []
     residuals,residuals_flat = [], []
-    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
-        spin.append(P[0][0].item())
-        mass.append(10**P[0][1].item())
-        inc.append(P[0][2].item())
-        rin.append(P[0][3].item())
-        rout.append(P[0][4].item())
-        pred = model(P).detach().numpy()
-        pred = 10**(inverse(scaler,pred))
-        resid = (D-pred)/D
-        resid[M == 0] = 0
-        resid = np.absolute(np.asarray(resid))
-        resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 1. )
-        residuals.append(resid)
-        residuals_flat.append(resid_flat)
+    if mode == "flux":
+        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
+            spin.append(P[0][0].item())
+            mass.append(10**P[0][1].item())
+            inc.append(P[0][2].item())
+            rin.append(P[0][3].item())
+            rout.append(P[0][4].item())
+            pred = model(P).detach().numpy()
+            pred = 10**(inverse(scaler,pred))
+            resid = (D-pred)/D
+            resid[M == 0] = 0
+            resid = np.absolute(np.asarray(resid))
+            resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 1. )
+            residuals.append(resid)
+            residuals_flat.append(resid_flat)
+    else:
+        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+            spin.append(P[0][0].item())
+            mass.append(10**P[0][1].item())
+            inc.append(P[0][2].item())
+            rin.append(P[0][3].item())
+            rout.append(P[0][4].item())
+            pred, I_pred = model(P).detach().numpy()
+            pred = 10**(inverse(scaler,pred))
+            pred = pred*np.where(I_pred > 0.5, 1, -1)
+            resid = (D-pred)/D
+            resid[np.abs(D)<1e-6] = 0
+            resid = np.absolute(np.asarray(resid))
+            resid_flat = np.where(np.absolute(np.asarray(resid)) < 0.01, 0., 1. )
+            residuals.append(resid)
+            residuals_flat.append(resid_flat)
         
     residuals = np.squeeze(np.asarray(residuals))
     residuals_flat = np.squeeze(np.asarray(residuals_flat))
@@ -279,58 +296,110 @@ def residual_computation(testing_dataloader,model,scaler):
     
     return (dataframe, ticks, ticklabels)
 
-def model_samples(testing_dataloader,scaler,model,egrid,gr):
-    for batch, (D,P,M) in enumerate(testing_dataloader):
-        M = np.squeeze(M)
-        D = np.squeeze(D)
-        #retrieve relevant data and parameters
-        spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
-                                      10**P[0][2].item(),-10**P[0][3].item(),
-                                      10**P[0][4].item())
-        D[M==0] = 1e-38
-        da = np.squeeze(D)
+def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
+    if mode == "flux":
+        for batch, (D,P,M) in enumerate(testing_dataloader):
+            M = np.squeeze(M)
+            D = np.squeeze(D)
+            #retrieve relevant data and parameters
+            spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
+                                          10**P[0][2].item(),-10**P[0][3].item(),
+                                          10**P[0][4].item())
+            D[M==0] = 1e-38
+            da = np.squeeze(D)
+            
+            #generate neural network prediction and rescale to linear space
+            pred = model(P).detach().numpy()
+            pred = 10**np.squeeze(inverse(scaler,pred))
+            pred[M==0] = 1e-38
+            
+            fname = f"{batch}_{mode}_res"
+            title = "Standard output"
+            
+            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
+            
+            da_log = np.log10(da)
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(inverse(scaler,pred))
+            
+            fname = f"{batch}_{mode}_res_log"
+            title = "Log scaled output"
         
-        #generate neural network prediction and rescale to linear space
-        pred = model(P).detach().numpy()
-        pred = 10**np.squeeze(inverse(scaler,pred))
-        pred[M==0] = 1e-38
+            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
+            
+            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+            
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(pred)
+            
+            fname = f"{batch}_{mode}_res_scal"
+            title = "Neural network normalised output"
         
-        fname = f"{batch}_res"
-        title = "Standard output"
+            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
+            
+            if batch > 5:
+                break
+    else:
+        for batch, (D,P) in enumerate(testing_dataloader):
+            D = np.squeeze(D)
+            #retrieve relevant data and parameters
+            spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
+                                          10**P[0][2].item(),-10**P[0][3].item(),
+                                          10**P[0][4].item())
+            D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
+            D[(D>0)&(D<1e-6)] = 1e-6
+            da = np.squeeze(D)
+            
+            #generate neural network prediction and rescale to linear space
+            pred, I_pred = model(P).detach().numpy()
+            pred = 10**np.squeeze(inverse(scaler,pred))
+            pred[pred<1e-6] = 1e-6
+            pred = pred*np.where(I_pred > 0.5, 1, -1)
+            
+            fname = f"{batch}_{mode}_res"
+            title = "Standard output"
+            
+            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
+            
+            da_log = np.log10(np.abs(da))
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(inverse(scaler,pred))
+            
+            fname = f"{batch}_{mode}_res_log"
+            title = "Log scaled output"
         
-        residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
+            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
+            
+            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+            
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(pred)
+            
+            fname = f"{batch}_{mode}_res_scal"
+            title = "Neural network normalised output"
         
-        da_log = np.log10(da)
-        pred = model(P).detach().numpy()
-        pred = np.squeeze(inverse(scaler,pred))
-        
-        fname = f"{batch}_res_log"
-        title = "Log scaled output"
-    
-        residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
-        
-        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
-        
-        pred = model(P).detach().numpy()
-        pred = np.squeeze(pred)
-        
-        fname = f"{batch}_res_scal"
-        title = "Neural network normalised output"
-    
-        residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
-        
-        if batch > 5:
-            break
+            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
+            
+            if batch > 5:
+                break
 
-def calculate_loss(testing_dataloader,model,scaler):
+def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
     residuals = []
-    for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
-        pred = model(P).detach().numpy()
-        pred = 10**(inverse(scaler,pred))
-        resid = (D-pred)/D
-        resid[M == 0] = 0
-        residuals.append(np.absolute(np.asarray(resid)))
-    
+    if mode == "flux":
+        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
+            pred = model(P).detach().numpy()
+            pred = 10**(inverse(scaler,pred))
+            resid = (D-pred)/D
+            resid[D < 1e-38] = 0
+            residuals.append(np.absolute(np.asarray(resid)))
+    else:
+        for batch, (D,I,P) in enumerate(tqdm(testing_dataloader)):
+            pred, I_pred = model(P).detach().numpy()
+            pred = 10**(inverse(scaler,pred))
+            pred = pred*np.where(I_pred > 0.5, 1, -1)
+            resid = (D-pred)/D
+            resid[np.abs(D)<1e-6] = 0
+            residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
 
@@ -412,8 +481,12 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
         scaler = load(scaler_base_loc+scaler_name)
         #put test set into dataloader format
         batch_size = 1
-        test_data = LoadFluxData("data/locations/loc_test.csv",scaler,
-                                   scaler_name) #scaler unused but must be parsed
+        if lags == None:
+            test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
+                                       scaler_name) #scaler unused but must be parsed
+        else:
+            test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
+                                       scaler_name) #scaler unused but must be parsed
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                         num_workers=4)
         
@@ -478,7 +551,6 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
 def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
-    scaler_base_loc = wrk_dir+"/scalers/"
     
     active_name = [0,1,2,3,4,10,15,20,25,30]
     active_name = np.array(active_name)
@@ -507,7 +579,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
                             grid_flux_scaler, egrid, grid=True)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, grid=True)
+                            grid_lags_scaler, lags_egrid, grid=True, lags=True)
     
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
