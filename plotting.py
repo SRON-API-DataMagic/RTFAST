@@ -458,6 +458,10 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.close()
 
 def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
+    if lags != None:
+        mode = "lags"
+    else:
+        mode = "flux"
     scaler_base_loc = os.getcwd()+"/scalers/"
     indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
     
@@ -514,9 +518,9 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
         low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
-        model_samples(testing_dataloader, scaler, model, egrid, fname)
+        model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
-                                                     model, scaler)
+                                                     model, scaler, mode)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
         #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
         del df, ticks, ticklabels
