@@ -735,25 +735,6 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    data, lags, pars = generate_test_set(500, egrid)
-    
-    index = nanChecker(data, pars)
-    data = np.delete(data,index, axis=0)
-    lags = np.delete(lags,index, axis=0)
-    pars = np.delete(pars,index, axis=0)
-    
-    #check for and delete parameter sets producing NaN results for time lags
-    index = nanChecker(lags, pars)
-    data = np.delete(data, index, axis=0)
-    lags = np.delete(lags, index, axis=0)
-    pars = np.delete(pars, index, axis=0)
-    
-    saveData(data, pars, 
-             "data/locations/","loc_flux_test.csv")
-    
-    saveData(lags, pars, 
-             "data/locations/","loc_lags_test.csv")
-    
     active_v_grid(wrk_dir,egrid, lags_egrid)
     
 if __name__ == "__main__":
