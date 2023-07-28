@@ -573,13 +573,13 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     active_lags_scaler = "active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
-    grid_model_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
+    grid_model_flux_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
     grid_model_lag_names = [model_base_loc+f"grid_{i}_lags.pth" for i in grid_model_names]
     
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
     
-    grid_flux = analysis(grid_flux_name, grid_model_names, grid_sample_nums,
+    grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid, grid=True)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
