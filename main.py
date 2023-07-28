@@ -397,7 +397,7 @@ def grid(wrk_dir,device):
     batch_size = 1024
     num_workers = 4
     
-    modes = ["flux", "lags"]
+    modes = ["flux"]
     
     for (size,fname) in zip(grid_sizes,grid_names):
         print(f"Starting {size} x {size} grid loop")
@@ -414,7 +414,7 @@ def grid(wrk_dir,device):
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                model = network.LightSharpNetwork(5,len(egrid))
+                model = network.SharpNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
@@ -428,7 +428,7 @@ def grid(wrk_dir,device):
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                model = network.LightSharpNetwork(5,len(egrid))
+                model = network.SharpNetwork(5,len(egrid))
             
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 0.001)

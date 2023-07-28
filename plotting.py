@@ -187,11 +187,11 @@ def retrieve_egrid(wrk_dir):
     
     return egrid
 
-def model_load(model_loc,egrid,grid_mod = None):
-    if grid_mod == None:
+def model_load(model_loc,egrid, lags = None):
+    if lags == None:
         model = network.SharpNetwork(5,len(egrid))
     else:
-        model = network.LightSharpNetwork(5,len(egrid))
+        model = network.LagsNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
