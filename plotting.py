@@ -457,7 +457,7 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.savefig("loss/loss_over_time.png")
     plt.close()
 
-def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
+def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     if lags != None:
         mode = "lags"
     else:
@@ -498,9 +498,9 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, grid = None):
         fname = str(fname)
         print(fname)
         if lags != None:
-            model = model_load(model_loc, egrid[:-1], grid_mod = grid)
+            model = model_load(model_loc, egrid[:-1], lags = lags)
         else:
-            model = model_load(model_loc, egrid, grid_mod = grid)
+            model = model_load(model_loc, egrid, lags = lags)
         residuals = calculate_loss(testing_dataloader, model, scaler)
         resid_list.append(residuals)
         median = np.median(residuals)
@@ -580,10 +580,10 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot(loss_base_loc,"lags")
     
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
-                            grid_flux_scaler, egrid, grid=True)
+                            grid_flux_scaler, egrid)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, grid=True, lags=True)
+                            grid_lags_scaler, lags_egrid, lags=True)
     
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
