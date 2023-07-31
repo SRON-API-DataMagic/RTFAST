@@ -263,6 +263,8 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
             resid = resid.numpy()
+            print(len(np.abs(pred)<=1e-6))
+            print(len(np.abs(D)<=1e-6))
             try:
                 resid[(M == 0)&(pred<=1e-38)] = 0
             except:
@@ -283,6 +285,8 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
             resid = resid.numpy()
+            print(len(np.abs(pred)<=1e-6))
+            print(len(np.abs(D)<=1e-6))
             try:
                 resid[(np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6)] = 0
             except:
@@ -332,7 +336,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = 10**np.squeeze(inverse(scaler,pred))
             pred[M==0] = 1e-38
             
-            fname = f"{batch}_{mode}"
+            fname = f"{batch}"
             title = "Standard output"
             
             residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
@@ -341,7 +345,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = model(P).detach().numpy()
             pred = np.squeeze(inverse(scaler,pred))
             
-            fname = f"{batch}_{mode}_log"
+            fname = f"{batch}_log"
             title = "Log scaled output"
         
             residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
@@ -351,7 +355,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = model(P).detach().numpy()
             pred = np.squeeze(pred)
             
-            fname = f"{batch}_{mode}_scal"
+            fname = f"{batch}_scal"
             title = "Neural network normalised output"
         
             residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
@@ -497,12 +501,10 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         #put test set into dataloader format
         batch_size = 1
         if lags == None:
-            print("Loading flux data")
             test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
             model = model_load(model_loc, egrid, lags = lags)
         else:
-            print("Loading lag data")
             test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
             model = model_load(model_loc, egrid[:-1], lags = lags)
