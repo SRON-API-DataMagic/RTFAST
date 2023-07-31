@@ -402,6 +402,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
             resid = resid.numpy()
+            print(resid[D<=1e-38])
             try:
                 resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
             except:
