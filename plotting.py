@@ -113,7 +113,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False,
     max_res = np.absolute((da-pred)/da).max()
     if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
-    plt.savefig(f"samples/{gr}_{fname}_{mode}.png")
+    plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
     
 def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
@@ -324,7 +324,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = 10**np.squeeze(inverse(scaler,pred))
             pred[M==0] = 1e-38
             
-            fname = f"{batch}_{mode}_res"
+            fname = f"{batch}_{mode}"
             title = "Standard output"
             
             residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
@@ -333,7 +333,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = model(P).detach().numpy()
             pred = np.squeeze(inverse(scaler,pred))
             
-            fname = f"{batch}_{mode}_res_log"
+            fname = f"{batch}_{mode}_log"
             title = "Log scaled output"
         
             residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
@@ -343,7 +343,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = model(P).detach().numpy()
             pred = np.squeeze(pred)
             
-            fname = f"{batch}_{mode}_res_scal"
+            fname = f"{batch}_{mode}_scal"
             title = "Neural network normalised output"
         
             residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
@@ -367,7 +367,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred[pred<1e-6] = 1e-6
             pred = np.squeeze(pred*np.where(I_pred > 0.5, 1, -1))
             
-            fname = f"{batch}_{mode}_res"
+            fname = f"{batch}_{mode}"
             title = "Standard output"
             
             residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
@@ -376,7 +376,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred, I_pred = model(P)
             pred = np.squeeze(inverse(scaler,pred.detach().numpy()))
             
-            fname = f"{batch}_{mode}_res_log"
+            fname = f"{batch}_{mode}_log"
             title = "Log scaled output"
         
             residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
@@ -386,7 +386,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred, I_pred = model(P)
             pred = np.squeeze(pred.detach().numpy())
             
-            fname = f"{batch}_{mode}_res_scal"
+            fname = f"{batch}_{mode}_scal"
             title = "Neural network normalised output"
         
             residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
