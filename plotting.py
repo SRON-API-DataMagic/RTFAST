@@ -115,7 +115,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = Fa
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
     
-def flat_heatmap(df,index,ticks,ticklabels,fname):
+def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
     colors = ["#16E6E9", "#E91916"]
     cmap_flat = sns.color_palette(colors)
     
@@ -140,7 +140,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname):
     print(f"Flat {fname} hm plotted")
     return
 
-def continuous_heatmap(df,index,ticks,ticklabels,fname):
+def continuous_heatmap(df,index,ticks,ticklabels,fname, mode):
     residuals = df["Residuals"].apply(returnContinuous)
     resids = []
     for item in residuals:
@@ -150,7 +150,10 @@ def continuous_heatmap(df,index,ticks,ticklabels,fname):
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(resids,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
     ax.set_yticks(ticks,labels=ticklabels)
-    ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+    if mode == "flux":
+        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+    else:
+        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
     plt.savefig(f"heatmaps/{fname}_{index}_hm.png")
@@ -158,12 +161,12 @@ def continuous_heatmap(df,index,ticks,ticklabels,fname):
     print(f"Continuous {fname} hm plotted")
     return
 
-def heatmap_plots(df, indexes, ticks, ticklabels, fname):
+def heatmap_plots(df, indexes, ticks, ticklabels, fname, mode):
     for i,index in enumerate(indexes):
         print(index)
         df.sort_values(by=index,inplace=True,ignore_index=True)
-        continuous_heatmap(df, index, ticks[i], ticklabels[i], fname)
-        flat_heatmap(df, index, ticks[i], ticklabels[i], fname)
+        continuous_heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
+        flat_heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
 
 def set_envir_vars(wrk_dir):
     #set envionmental variables required in xspec with simrtdist
@@ -390,7 +393,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
-            resid[D < 1e-38] = 0
+            resid[(D < 1e-38)&(pred<1e-38)] = 0
             residuals.append(np.absolute(np.asarray(resid)))
     else:
         for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
@@ -398,7 +401,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
-            resid[np.abs(D)<1e-6] = 0
+            resid[(np.abs(D)<1e-6)&(np.abs(pred)<1e-6)] = 0
             residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
@@ -499,7 +502,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                         num_workers=1)
         #folname = str(fname)
-        fname = str(fname)
+        fname = f"{fname}_{mode}"
         print(fname)
         residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
@@ -514,8 +517,12 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         loss_95_q.append(q_95)
         loss_99_q.append(q_99)
         loss_01_q.append(q_01)
-        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::1000]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
+        if mode == "flux":
+            filt = 1000
+        else:
+            filt = 1
+        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::filt]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::filt]
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
         if lags == None:
@@ -661,7 +668,8 @@ def plot_resids_vs_energy(data_true,data_model,base,basename,energy,fname,
     plt.savefig(f"loss/{folname}/{fname}_{basename}_{round(energy,2)}.png")
     plt.close()
 
-def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active):
+def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
+                             mode):
     
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
     
@@ -722,7 +730,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active)
         
     fig.legend(lines, labels, loc='upper right')
     fig.tight_layout()
-    plt.savefig("loss/loss_by_sample_size.png")
+    plt.savefig(f"loss/loss_size_{mode}.png")
     plt.close()
     
 def main():
