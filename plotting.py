@@ -411,7 +411,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             try:
                 resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
             except:
-                print("Masking failed")
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
     else:
@@ -424,7 +423,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             try:
                 resid[(np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6)] = 0
             except:
-                print("Masking failed")
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
