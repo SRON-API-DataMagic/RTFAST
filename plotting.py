@@ -141,7 +141,7 @@ def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
     maxi=1
     colorbar.set_ticks([1/4*maxi,3/4*maxi])
     colorbar.set_ticklabels(['< 1% error','> 1% error'])
-    plt.savefig(f"heatmaps/{fname}_{mode}_{index}_flat.png")
+    plt.savefig(f"heatmaps/{fname}_{index}_flat.png")
     plt.close()
     print(f"Flat {fname} hm plotted")
     return
@@ -164,7 +164,7 @@ def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
         ax.set_xticks(tick_index, labels=egrid[tick_index])
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
-    plt.savefig(f"heatmaps/{fname}_{mode}_{index}_hm.png")
+    plt.savefig(f"heatmaps/{fname}_{index}.png")
     plt.close()
     print(f"Continuous {fname} hm plotted")
     return
