@@ -401,9 +401,11 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
-            print(resid)
             resid = resid.numpy()
-            resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
+            try:
+                resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
+            except:
+                pass
             residuals.append(np.absolute(np.asarray(resid)))
     else:
         for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
@@ -566,8 +568,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
         active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
     active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
     active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
-    grid_flux_name = [f"grid_{i}_flux" for i in range(5,11)]
-    grid_lags_name = [f"grid_{i}_lags" for i in range(5,11)]
+    grid_flux_name = [f"grid_{i}" for i in range(5,11)]
+    grid_lags_name = [f"grid_{i}" for i in range(5,11)]
     grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
     grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
     active_flux_scaler = "active_scaler_flux.bin"
