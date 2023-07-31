@@ -413,7 +413,11 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
-            resid[(np.abs(D)<1e-6)&(np.abs(pred)<1e-6)] = 0
+            resid = resid.numpy()
+            try:
+                resid[(np.abs(D)<1e-6)&(np.abs(pred)<1e-6)] = 0
+            except:
+                pass
             residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
