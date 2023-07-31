@@ -395,6 +395,8 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
     else:
         for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
             pred, I_pred = model(P)
+            print(pred.shape)
+            print(D.shape)
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
@@ -489,20 +491,18 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
             print("Loading flux data")
             test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
+            model = model_load(model_loc, egrid, lags = lags)
         else:
             print("Loading lag data")
             test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
-        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                        num_workers=4)
+            model = model_load(model_loc, egrid[:-1], lags = lags)
         
+        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                        num_workers=1)
         #folname = str(fname)
         fname = str(fname)
         print(fname)
-        if lags != None:
-            model = model_load(model_loc, egrid[:-1], lags = lags)
-        else:
-            model = model_load(model_loc, egrid, lags = lags)
         residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
         median = np.median(residuals)
