@@ -354,7 +354,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred, I_pred = model(P)
             pred = 10**np.squeeze(inverse(scaler,pred.detach().numpy()))
             pred[pred<1e-6] = 1e-6
-            pred = pred*np.where(I_pred > 0.5, 1, -1)
+            pred = np.squeeze(pred*np.where(I_pred > 0.5, 1, -1))
             
             fname = f"{batch}_{mode}_res"
             title = "Standard output"
