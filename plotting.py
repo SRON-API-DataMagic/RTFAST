@@ -263,9 +263,9 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             inc.append(P[0][2].item())
             rin.append(P[0][3].item())
             rout.append(P[0][4].item())
-            pred, I_pred = model(P).detach().numpy()
-            pred = 10**(inverse(scaler,pred))
-            pred = pred*np.where(I_pred > 0.5, 1, -1)
+            pred, I_pred = model(P)
+            pred = 10**(inverse(scaler,pred.detach().numpy()))
+            pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
             resid[np.abs(D)<1e-6] = 0
             resid = np.absolute(np.asarray(resid))
