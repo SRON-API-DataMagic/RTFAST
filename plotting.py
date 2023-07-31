@@ -486,9 +486,11 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         #put test set into dataloader format
         batch_size = 1
         if lags == None:
+            print("Loading flux data")
             test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
         else:
+            print("Loading lag data")
             test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
