@@ -501,7 +501,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
             model = model_load(model_loc, egrid[:-1], lags = lags)
         else:
             model = model_load(model_loc, egrid, lags = lags)
-        residuals = calculate_loss(testing_dataloader, model, scaler)
+        residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
         median = np.median(residuals)
         q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
