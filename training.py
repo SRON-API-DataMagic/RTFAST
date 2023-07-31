@@ -49,6 +49,7 @@ class barredMSELoss(nn.Module):
         super(barredMSELoss, self).__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.device = device
+        self.threshold = 1e-38
         self.set_scale()
         
     def set_scale(self):
@@ -70,6 +71,8 @@ class barredMSELoss(nn.Module):
         data_high = 1.005*scaled_tar
         #create mask where prediction is within boundaries
         mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
+        mask_thresh = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
+        mask = torch.mul(mask,mask_thresh)
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
