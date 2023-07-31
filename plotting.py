@@ -196,7 +196,7 @@ def model_load(model_loc,egrid, lags = None):
     model.eval()
     return model
     
-def generate_test_set(size,egrid):
+def generate_test_set(size, egrid, lags_egrid):
     """
     
 
@@ -222,7 +222,7 @@ def generate_test_set(size,egrid):
         #generate rtdist models for the correlated grid
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_lhs_iterate)
-        lags = parallel(delayed(rtdist_lags)(pars, egrid)
+        lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                         for pars in theta_lhs_iterate)
     data_init = np.asarray(data_init)
     lags = np.asarray(lags)
@@ -737,6 +737,14 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    size= 500
+    
+    data, lags, theta_lhs_iterate = generate_test_set(size, egrid, lags_egrid)
+    
+    saveData(data, theta_lhs_iterate, 
+             "data/locations/","loc_flux_test.csv")
+    saveData(lags, theta_lhs_iterate, 
+             "data/locations/","loc_lags_test.csv")
     
     active_v_grid(wrk_dir,egrid, lags_egrid)
     
