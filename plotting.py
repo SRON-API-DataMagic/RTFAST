@@ -263,8 +263,8 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
             resid = resid.numpy()
-            print(len(np.abs(pred)<=1e-6))
-            print(len(np.abs(D)<=1e-6))
+            print(len(np.abs(pred)<=1e-38))
+            print(len(np.abs(D)<=1e-38))
             try:
                 resid[(M == 0)&(pred<=1e-38)] = 0
             except:
