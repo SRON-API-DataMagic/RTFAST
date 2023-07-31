@@ -351,8 +351,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             da = np.squeeze(D)
             
             #generate neural network prediction and rescale to linear space
-            pred, I_pred = model(P).detach().numpy()
-            pred = 10**np.squeeze(inverse(scaler,pred))
+            pred, I_pred = model(P)
+            pred = 10**np.squeeze(inverse(scaler,pred.detach().numpy()))
             pred[pred<1e-6] = 1e-6
             pred = pred*np.where(I_pred > 0.5, 1, -1)
             
@@ -362,8 +362,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
             
             da_log = np.log10(np.abs(da))
-            pred = model(P).detach().numpy()
-            pred = np.squeeze(inverse(scaler,pred))
+            pred, I_pred = model(P)
+            pred = np.squeeze(inverse(scaler,pred.detach().numpy()))
             
             fname = f"{batch}_{mode}_res_log"
             title = "Log scaled output"
@@ -372,8 +372,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             
             da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
             
-            pred = model(P).detach().numpy()
-            pred = np.squeeze(pred)
+            pred, I_pred = model(P)
+            pred = np.squeeze(pred.detach().numpy())
             
             fname = f"{batch}_{mode}_res_scal"
             title = "Neural network normalised output"
@@ -395,8 +395,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
     else:
         for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
             pred, I_pred = model(P)
-            print(pred.shape)
-            print(D.shape)
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
@@ -737,14 +735,6 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    size= 500
-    
-    data, lags, theta_lhs_iterate = generate_test_set(size, egrid, lags_egrid)
-    
-    saveData(data, theta_lhs_iterate, 
-             "data/locations/","loc_flux_test.csv")
-    saveData(lags, theta_lhs_iterate, 
-             "data/locations/","loc_lags_test.csv")
     
     active_v_grid(wrk_dir,egrid, lags_egrid)
     
