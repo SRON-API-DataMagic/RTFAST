@@ -263,10 +263,8 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
             resid = resid.numpy()
-            print(np.argwhere(np.abs(pred)<=1e-38).sum())
-            print(np.argwhere(np.abs(D)<=1e-38).sum())
             try:
-                resid[(M == 0)&(pred<=1e-38)] = 0
+                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
             except:
                 pass
             resid = np.absolute(np.asarray(resid))
@@ -285,10 +283,8 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
             resid = resid.numpy()
-            print(np.argwhere(np.abs(pred)<=1e-6))
-            print(np.argwhere(np.abs(D)<=1e-6))
             try:
-                resid[(np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6)] = 0
+                resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
             except:
                 pass
             resid = np.absolute(np.asarray(resid))
