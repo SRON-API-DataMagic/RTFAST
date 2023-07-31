@@ -518,7 +518,10 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::1000]
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
-        model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
+        if lags == None:
+            model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
+        else:
+            model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, mode)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
                                                      model, scaler, mode)
         heatmap_plots(df, indexes, ticks, ticklabels, fname)
