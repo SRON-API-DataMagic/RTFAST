@@ -405,6 +405,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             try:
                 resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
             except:
+                print("Masking failed")
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
     else:
@@ -415,8 +416,9 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             resid = (D-pred)/D
             resid = resid.numpy()
             try:
-                resid[(np.abs(D)<1e-6)&(np.abs(pred)<1e-6)] = 0
+                resid[(np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6)] = 0
             except:
+                print("Masking failed")
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
@@ -431,9 +433,7 @@ def residuals_dataframe(residuals,names):
             d["Sample Size"].append(name) 
     print("# of residuals:"+str(len(d["Residuals"])))
     print("# of labels:"+str(len(d["Sample Size"])))
-    time_start = time.time()
     df = pd.DataFrame(data = d)
-    print(time.time()-time_start)
     return df
 
 def loss_epochs_plot(loss_base_loc,mode):
@@ -540,7 +540,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, nums)
     print(df["Sample Size"].max())
-    large_resid = df[df["Sample Size"] == df["Sample Size"].max()].max()
+    large_resid = df[df["Sample Size"] == df["Sample Size"].max()].max()[0]
     print(f"The largest residual was {large_resid}")
     over = len(df[(df["Sample Size"] == df["Sample Size"].max())&(df["Residuals"] >= 0.01)])
     print(f"There were {over} residuals over 1%")
@@ -602,10 +602,10 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     print("Plotting loss by sample size")
     print("Plotting fluxes")
     plot_loss_vs_sample_size(grid_sample_nums, grid_flux,
-                             active_sample_flux_nums, active_flux)
+                             active_sample_flux_nums, active_flux, mode="flux")
     print("Plotting lags")
     plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
-                             active_sample_lags_nums, active_lags)
+                             active_sample_lags_nums, active_lags, mode="lags")
     
 def energy_plots(dataset,scaler,model,egrid,fname,folname):
     flux_true = []
