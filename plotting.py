@@ -262,6 +262,7 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
+            resid = resid.numpy()
             try:
                 resid[(M == 0)&(pred<=1e-38)] = 0
             except:
@@ -281,6 +282,7 @@ def residual_computation(testing_dataloader, model, scaler, mode):
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
+            resid = resid.numpy()
             try:
                 resid[(np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6)] = 0
             except:
