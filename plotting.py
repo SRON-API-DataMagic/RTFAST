@@ -367,7 +367,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred[pred<1e-6] = 1e-6
             pred = np.squeeze(pred*np.where(I_pred > 0.5, 1, -1))
             
-            fname = f"{batch}_{mode}"
+            fname = f"{batch}"
             title = "Standard output"
             
             residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
@@ -376,7 +376,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred, I_pred = model(P)
             pred = np.squeeze(inverse(scaler,pred.detach().numpy()))
             
-            fname = f"{batch}_{mode}_log"
+            fname = f"{batch}_log"
             title = "Log scaled output"
         
             residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
@@ -386,7 +386,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred, I_pred = model(P)
             pred = np.squeeze(pred.detach().numpy())
             
-            fname = f"{batch}_{mode}_scal"
+            fname = f"{batch}_scal"
             title = "Neural network normalised output"
         
             residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
@@ -402,7 +402,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
             resid = resid.numpy()
-            print(resid[(D<=1e-38)&(pred <= 1e-38)])
             try:
                 resid[(D <= 1e-38)&(pred <= 1e-38)] = 0
             except:
