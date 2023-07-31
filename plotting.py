@@ -160,7 +160,7 @@ def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
         ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     else:
         egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
-        tick_index = np.arange(0,25,24/4)
+        tick_index = np.arange(0,25,24/4).astype(int)
         ax.set_xticks(tick_index, labels=egrid[tick_index])
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
