@@ -538,12 +538,6 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     overall = len(df[df["Sample Size"] == df["Sample Size"].max()])
     print(f"There were {overall} residuals overall")
     print(f"The ratio of residuals over 1% was {over/overall}")
-    time_start = time.time()
-    violin(df,"active")
-    print("Violin plot render time:"+str(time.time()-time_start))
-    time_start = time.time()
-    box(df,"active")
-    print("Box plot render time:"+str(time.time()-time_start))
     
     quantiles = [loss_01_q, loss_05_q, loss_25_q,
                  loss_75_q, loss_95_q, loss_99_q,
