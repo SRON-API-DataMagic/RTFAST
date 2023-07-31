@@ -393,7 +393,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             resid[D < 1e-38] = 0
             residuals.append(np.absolute(np.asarray(resid)))
     else:
-        for batch, (D,I,P) in enumerate(tqdm(testing_dataloader)):
+        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
             pred, I_pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
             pred = pred*np.where(I_pred > 0.5, 1, -1)
