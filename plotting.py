@@ -92,7 +92,8 @@ def distributions(data,labels,fname):
         plt.savefig(fname+labels[i]+".png")
         plt.close()
 
-def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = False):
+def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, 
+                   norm = False, mode = "flux"):
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -101,9 +102,9 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = Fa
                 transform=axs[0].transAxes)
     axs[0].set_title(title)
     if log == True:
-        axs[0].set_ylabel("Log(Flux)")
+        axs[0].set_ylabel(f"Log({mode})")
     else:
-        axs[0].set_ylabel("Flux")
+        axs[0].set_ylabel(f"{mode}")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
@@ -112,7 +113,7 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False, norm = Fa
     max_res = np.absolute((da-pred)/da).max()
     if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
-    plt.savefig(f"samples/{gr}_{fname}.png")
+    plt.savefig(f"samples/{gr}_{fname}_{mode}.png")
     plt.close()
     
 def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
@@ -128,19 +129,24 @@ def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
     fig = plt.figure(figsize=(10,10))
     ax = sns.heatmap(resids,cmap=cmap_flat,cbar_kws = {})
     ax.set_yticks(ticks,labels=ticklabels)
-    ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+    if mode == "flux":
+        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+    else:
+        egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
+        tick_index = np.arange(0,25,24/4)
+        ax.set_xticks(tick_index, labels=egrid[tick_index])
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
     colorbar = ax.collections[0].colorbar
     maxi=1
     colorbar.set_ticks([1/4*maxi,3/4*maxi])
     colorbar.set_ticklabels(['< 1% error','> 1% error'])
-    plt.savefig(f"heatmaps/{fname}_flat_{index}.png")
+    plt.savefig(f"heatmaps/{fname}_{mode}_{index}_flat.png")
     plt.close()
     print(f"Flat {fname} hm plotted")
     return
 
-def continuous_heatmap(df,index,ticks,ticklabels,fname, mode):
+def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
     residuals = df["Residuals"].apply(returnContinuous)
     resids = []
     for item in residuals:
@@ -153,10 +159,12 @@ def continuous_heatmap(df,index,ticks,ticklabels,fname, mode):
     if mode == "flux":
         ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     else:
-        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
+        tick_index = np.arange(0,25,24/4)
+        ax.set_xticks(tick_index, labels=egrid[tick_index])
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
-    plt.savefig(f"heatmaps/{fname}_{index}_hm.png")
+    plt.savefig(f"heatmaps/{fname}_{mode}_{index}_hm.png")
     plt.close()
     print(f"Continuous {fname} hm plotted")
     return
@@ -319,7 +327,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res"
             title = "Standard output"
             
-            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
+            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
             
             da_log = np.log10(da)
             pred = model(P).detach().numpy()
@@ -328,7 +336,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res_log"
             title = "Log scaled output"
         
-            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
+            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
             
             da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
             
@@ -338,7 +346,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res_scal"
             title = "Neural network normalised output"
         
-            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
+            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
             
             if batch > 5:
                 break
@@ -350,7 +358,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
                                           10**P[0][2].item(),-10**P[0][3].item(),
                                           10**P[0][4].item())
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
-            D[(D>0)&(D<1e-6)] = 1e-6
+            D[(D>0)&(np.abs(D)<1e-6)] = 1e-6
             da = np.squeeze(D)
             
             #generate neural network prediction and rescale to linear space
@@ -362,7 +370,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res"
             title = "Standard output"
             
-            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True)
+            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
             
             da_log = np.log10(np.abs(da))
             pred, I_pred = model(P)
@@ -371,7 +379,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res_log"
             title = "Log scaled output"
         
-            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr)
+            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
             
             da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
             
@@ -381,7 +389,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             fname = f"{batch}_{mode}_res_scal"
             title = "Neural network normalised output"
         
-            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr)
+            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
             
             if batch > 5:
                 break
@@ -405,20 +413,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
-
-def violin(df,fname):
-    sns.violinplot(data=df, x="Sample Size", y="Residuals")
-    plt.ylim(top=1)
-    plt.axhline(y=0.01,ls="--",color="orange")
-    plt.savefig(f"loss/violin_{fname}.png")
-    plt.close()
-
-def box(df,fname):
-    sns.boxplot(data=df, x="Sample Size", y="Residuals",whis=1.8)
-    plt.ylim(top=1)
-    plt.axhline(y=0.01,ls="--",color="orange")
-    plt.savefig(f"loss/box_{fname}.png")
-    plt.close()
 
 def residuals_dataframe(residuals,names):
     d = {"Residuals":[],"Sample Size":[]}
@@ -457,7 +451,7 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.ylabel("Loss")
     plt.title("Comparison of loss by strategy")
     plt.legend()
-    plt.savefig("loss/loss_over_time.png")
+    plt.savefig(f"loss/loss_time_{mode}.png")
     plt.close()
 
 def analysis(names, locs, nums, scaler_names, egrid, lags = None):
@@ -531,7 +525,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
             model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, mode)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
                                                      model, scaler, mode)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname)
+        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
         #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
         del df, ticks, ticklabels
         
