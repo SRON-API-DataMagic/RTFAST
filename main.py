@@ -325,6 +325,11 @@ def queryByDropout(wrk_dir, device = None):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
+            if active_loop_num == active_loops:
+                stopping = 30
+            else:
+                stopping = 15
+            
             #Train the flux model first
             
             (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
@@ -337,7 +342,7 @@ def queryByDropout(wrk_dir, device = None):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux")
+                                                              mode = "flux", stopping = stopping)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -350,7 +355,7 @@ def queryByDropout(wrk_dir, device = None):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags")
+                                                              mode = "lags", stopping = stopping)
             #iterate loop number by 1
             active_loop_num += 1
             

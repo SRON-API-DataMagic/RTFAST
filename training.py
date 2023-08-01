@@ -342,14 +342,14 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                   test_dataloader,te_loss_arr,tr_loss_arr,
                   last_sig_te,last_sig_tr, active_loop_num,
                   loop_epochs, best_model, train, test,
-                  mode = "flux"):
+                  mode = "flux", stopping = 15):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
     imp_tr = 0
     
     print(f"Training {mode} model")
-    while (imp_te < 15 or imp_tr < 15):
+    while (imp_te < stopping or imp_tr < stopping):
         print(f"Epoch {epoch+1} \n -----------------------")
         
         model, optimizer, train_loss = train(dataloader,model,
