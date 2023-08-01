@@ -463,7 +463,7 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.yscale("log")
     plt.xlabel("Training epochs")
     plt.ylabel("Loss")
-    plt.title("Comparison of loss by strategy")
+    plt.title(f"Comparison of loss by strategy for {mode}")
     plt.legend()
     plt.savefig(f"loss/loss_time_{mode}.png")
     plt.close()
@@ -722,6 +722,7 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
     plt.xscale("log")
     
     plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
+    plt.title(f"Loss by sample size for {mode}")
     
     fig.supxlabel("Number of samples used in training")
     fig.supylabel("Residuals")
