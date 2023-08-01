@@ -117,7 +117,7 @@ class SharpNetwork(NeuralNetwork):
         result = self.LinearStack4(stack3)
         return result
 
-def HeavyFluxNetwork(SharpNetwork):
+class HeavyFluxNetwork(SharpNetwork):
     def __init__(self,num_pars,data_len):
         super().__init__(num_pars,data_len)
         self.LinearStack4 = nn.Sequential(
@@ -176,7 +176,7 @@ class LagsNetwork(nn.Module):
         ind = self.OutputSigmoid(self.OutputIndex(stack3))
         return result, ind
 
-def HeavyLagsNetwork(LagsNetwork):
+class HeavyLagsNetwork(LagsNetwork):
     
     def __init__(self,num_pars,data_len):
         super().__init__(num_pars,data_len)
