@@ -7,6 +7,10 @@ import os
 import time
 
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.colors import ListedColormap
+import matplotlib.colors as colors
+
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
@@ -116,37 +120,19 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False,
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
     
-def flat_heatmap(df,index,ticks,ticklabels,fname, mode):
-    colors = ["#16E6E9", "#E91916"]
-    cmap_flat = sns.color_palette(colors)
-    
-    residuals = df["Residuals"].apply(returnFlats)
-    resids = []
-    for item in residuals:
-        resids.append(item)
-    resids = np.asarray(resids)
-    
-    fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(resids,cmap=cmap_flat,cbar_kws = {})
-    ax.set_yticks(ticks,labels=ticklabels)
-    if mode == "flux":
-        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
-    else:
-        egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
-        tick_index = np.arange(0,25,24/4).astype(int)
-        ax.set_xticks(tick_index, labels=egrid[tick_index])
-    ax.set_xlabel("Energy in keV")
-    ax.set_ylabel(index)
-    colorbar = ax.collections[0].colorbar
-    maxi=1
-    colorbar.set_ticks([1/4*maxi,3/4*maxi])
-    colorbar.set_ticklabels(['< 1% error','> 1% error'])
-    plt.savefig(f"heatmaps/{fname}_{index}_flat.png")
-    plt.close()
-    print(f"Flat {fname} hm plotted")
-    return
+def heatmap(df, index, ticks, ticklabels, fname, mode):
+    zlabel = "Fractional difference between NN model and rtdist"
+    Z_center = 2.5
+    #colormap
+    top = cm.get_cmap('autumn', 128)
+    middle = cm.get_cmap('winter', 224)
+    bottom = cm.get_cmap('summer',224)
 
-def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
+    newcolors = np.vstack((bottom(np.linspace(0, 1/1.75, 128)),
+                           middle(np.linspace(0, 1, 128)),
+                        top(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+    
     residuals = df["Residuals"].apply(returnContinuous)
     resids = []
     for item in residuals:
@@ -154,7 +140,11 @@ def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
     resids = np.asarray(resids)
     
     fig = plt.figure(figsize=(10,10))
-    ax = sns.heatmap(resids,cmap="vlag", vmin = 0, vmax = 0.05, center = 0.01)
+    norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+    ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+    ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+    cbar = plt.colorbar(ticks=ticks, format='%.0e', norm=norm)
     ax.set_yticks(ticks,labels=ticklabels)
     if mode == "flux":
         ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
@@ -164,17 +154,18 @@ def continuous_heatmap(df, index, ticks, ticklabels, fname, mode):
         ax.set_xticks(tick_index, labels=egrid[tick_index])
     ax.set_xlabel("Energy in keV")
     ax.set_ylabel(index)
+    
+    cbar.set_label(zlabel, rotation=270, labelpad=15)
+    fig.tight_layout()
     plt.savefig(f"heatmaps/{fname}_{index}.png")
     plt.close()
-    print(f"Continuous {fname} hm plotted")
     return
 
 def heatmap_plots(df, indexes, ticks, ticklabels, fname, mode):
     for i,index in enumerate(indexes):
         print(index)
         df.sort_values(by=index,inplace=True,ignore_index=True)
-        continuous_heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
-        flat_heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
+        heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
 
 def set_envir_vars(wrk_dir):
     #set envionmental variables required in xspec with simrtdist
