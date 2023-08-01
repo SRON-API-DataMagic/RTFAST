@@ -68,47 +68,6 @@ def residual_plots(egrid,pred,da,spin,mass,fname,title,gr,log = False,
     plt.savefig(f"samples/{gr}_{fname}.png")
     plt.close()
     
-def heatmap(df, index, ticks, ticklabels, fname, mode):
-    zlabel = "Fractional difference between NN model and rtdist"
-    Z_center = 2.5
-    #colormap
-    top = cm.get_cmap('autumn', 128)
-    middle = cm.get_cmap('winter', 224)
-    bottom = cm.get_cmap('summer',224)
-
-    newcolors = np.vstack((bottom(np.linspace(0, 1/1.75, 128)),
-                           middle(np.linspace(0, 1, 128)),
-                        top(np.linspace(0, 1, 128))))
-    newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-    
-    residuals = df["Residuals"].apply(returnContinuous)
-    resids = []
-    for item in residuals:
-        resids.append(item)
-    resids = np.asarray(resids)
-    
-    fig = plt.figure(figsize=(10,10))
-    norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
-    ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-    ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
-                10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-    cbar = plt.colorbar(ticks=ticks, format='%.0e', norm=norm)
-    ax.set_yticks(ticks,labels=ticklabels)
-    if mode == "flux":
-        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
-    else:
-        egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
-        tick_index = np.arange(0,25,24/4).astype(int)
-        ax.set_xticks(tick_index, labels=egrid[tick_index])
-    ax.set_xlabel("Energy in keV")
-    ax.set_ylabel(index)
-    
-    cbar.set_label(zlabel, rotation=270, labelpad=15)
-    fig.tight_layout()
-    plt.savefig(f"heatmaps/{fname}_{index}.png")
-    plt.close()
-    return
-
 def heatmap_plots(df, indexes, ticks, ticklabels, fname, mode):
     for i,index in enumerate(indexes):
         print(index)
@@ -222,6 +181,46 @@ def residual_computation(testing_dataloader, model, scaler, mode):
     
     return (dataframe, ticks, ticklabels)
 
+def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
+    residuals = []
+    if mode == "flux":
+        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
+            pred = model(P).detach().numpy()
+            pred = 10**(inverse(scaler,pred))
+            resid = (D-pred)/D
+            resid = resid.numpy()
+            try:
+                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
+            except:
+                pass
+            residuals.append(np.absolute(np.asarray(resid)))
+    else:
+        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+            pred, I_pred = model(P)
+            pred = 10**(inverse(scaler,pred.detach().numpy()))
+            pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
+            resid = (D-pred)/D
+            resid = resid.numpy()
+            try:
+                resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
+            except:
+                pass
+            residuals.append(np.absolute(np.asarray(resid)))
+    residuals = np.asarray(residuals)
+    return residuals
+
+def residuals_dataframe(residuals,names):
+    d = {"Residuals":[],"Sample Size":[]}
+    for i,name in enumerate(names):
+        print(name)
+        for point in residuals[i].flatten():
+            d["Residuals"].append(point)
+            d["Sample Size"].append(name) 
+    print("# of residuals:"+str(len(d["Residuals"])))
+    print("# of labels:"+str(len(d["Sample Size"])))
+    df = pd.DataFrame(data = d)
+    return df
+
 def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
     if mode == "flux":
         for batch, (D,P,M) in enumerate(testing_dataloader):
@@ -309,215 +308,47 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             if batch > 5:
                 break
 
-def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
-    residuals = []
+def heatmap(df, index, ticks, ticklabels, fname, mode):
+    zlabel = "Fractional difference between NN model and rtdist"
+    Z_center = 2.5
+    #colormap
+    top = cm.get_cmap('autumn', 128)
+    middle = cm.get_cmap('winter', 224)
+    bottom = cm.get_cmap('summer',224)
+
+    newcolors = np.vstack((bottom(np.linspace(0, 1/1.75, 128)),
+                           middle(np.linspace(0, 1, 128)),
+                        top(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+    
+    residuals = df["Residuals"].apply(returnContinuous)
+    resids = []
+    for item in residuals:
+        resids.append(item)
+    resids = np.asarray(resids)
+    
+    fig = plt.figure(figsize=(10,10))
+    norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+    ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+    ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+    cbar = plt.colorbar(ticks=ticks, format='%.0e', norm=norm)
+    ax.set_yticks(ticks,labels=ticklabels)
     if mode == "flux":
-        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
-            pred = model(P).detach().numpy()
-            pred = 10**(inverse(scaler,pred))
-            resid = (D-pred)/D
-            resid = resid.numpy()
-            try:
-                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
-            except:
-                pass
-            residuals.append(np.absolute(np.asarray(resid)))
+        ax.set_xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     else:
-        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
-            pred, I_pred = model(P)
-            pred = 10**(inverse(scaler,pred.detach().numpy()))
-            pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
-            resid = (D-pred)/D
-            resid = resid.numpy()
-            try:
-                resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
-            except:
-                pass
-            residuals.append(np.absolute(np.asarray(resid)))
-    residuals = np.asarray(residuals)
-    return residuals
-
-def residuals_dataframe(residuals,names):
-    d = {"Residuals":[],"Sample Size":[]}
-    for i,name in enumerate(names):
-        print(name)
-        for point in residuals[i].flatten():
-            d["Residuals"].append(point)
-            d["Sample Size"].append(name) 
-    print("# of residuals:"+str(len(d["Residuals"])))
-    print("# of labels:"+str(len(d["Sample Size"])))
-    df = pd.DataFrame(data = d)
-    return df
-
-def loss_epochs_plot(loss_base_loc,mode):
+        egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
+        tick_index = np.arange(0,25,24/4).astype(int)
+        ax.set_xticks(tick_index, labels=egrid[tick_index])
+    ax.set_xlabel("Energy in keV")
+    ax.set_ylabel(index)
     
-    train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
-    test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
-    
-    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
-    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
-
-    plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
-             c = "red", ls = "-")
-    plt.plot(np.loadtxt(test_names[-1]), label = "Validation loss: 10x10 grid", 
-             c = "red", ls = "--")
-    
-    plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
-             ls = "-")
-    plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
-             ls = "--")
-    
-    plt.yscale("log")
-    plt.xlabel("Training epochs")
-    plt.ylabel("Loss")
-    plt.title(f"Comparison of loss by strategy for {mode}")
-    plt.legend()
-    plt.savefig(f"loss/loss_time_{mode}.png")
+    cbar.set_label(zlabel, rotation=270, labelpad=15)
+    fig.tight_layout()
+    plt.savefig(f"heatmaps/{fname}_{index}.png")
     plt.close()
+    return
 
-def analysis(names, locs, nums, scaler_names, egrid, lags = None):
-    if lags != None:
-        mode = "lags"
-    else:
-        mode = "flux"
-    scaler_base_loc = os.getcwd()+"/scalers/"
-    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
-    
-    median_loss = []
-    loss_01_q = []
-    loss_05_q = []
-    loss_25_q = []
-    loss_75_q = []
-    loss_95_q = []
-    loss_99_q = []
-    loss_low_out = []
-    loss_high_out = []
-    
-    resid_list = []
-    
-    if type(scaler_names) != list:
-        tmp = [scaler_names for i in range(len(names))]
-        scaler_names = tmp
-        
-    for (model_loc,fname,scaler_name) in zip(locs, names, scaler_names):
-        scaler = load(scaler_base_loc+scaler_name)
-        #put test set into dataloader format
-        batch_size = 1
-        if lags == None:
-            test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
-                                       scaler_name) #scaler unused but must be parsed
-            model = model_load(model_loc, egrid, lags = lags)
-        else:
-            test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
-                                       scaler_name) #scaler unused but must be parsed
-            model = model_load(model_loc, egrid[:-1], lags = lags)
-        
-        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                        num_workers=1)
-        #folname = str(fname)
-        fname = f"{fname}_{mode}"
-        print(fname)
-        residuals = calculate_loss(testing_dataloader, model, scaler, mode)
-        resid_list.append(residuals)
-        median = np.median(residuals)
-        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
-                                                        [0.01,0.05,0.25,0.75,
-                                                         0.95,0.99])
-        median_loss.append(median)
-        loss_05_q.append(q_05)
-        loss_25_q.append(q_25)
-        loss_75_q.append(q_75)
-        loss_95_q.append(q_95)
-        loss_99_q.append(q_99)
-        loss_01_q.append(q_01)
-        if mode == "flux":
-            filt = 1000
-        else:
-            filt = 1
-        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::filt]
-        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::filt]
-        loss_low_out.append(low_outliers)
-        loss_high_out.append(high_outliers)
-        if lags == None:
-            model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
-        else:
-            model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, mode)
-        df, ticks, ticklabels = residual_computation(testing_dataloader, 
-                                                     model, scaler, mode)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
-        #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
-        del df, ticks, ticklabels
-        
-    resid_list = np.asarray(resid_list)
-    df = residuals_dataframe(resid_list, nums)
-    print(df["Sample Size"].max())
-    large_resid = df[df["Sample Size"] == df["Sample Size"].max()].max()[0]
-    print(f"The largest residual was {large_resid}")
-    over = len(df[(df["Sample Size"] == df["Sample Size"].max())&(df["Residuals"] >= 0.01)])
-    print(f"There were {over} residuals over 1%")
-    overall = len(df[df["Sample Size"] == df["Sample Size"].max()])
-    print(f"There were {overall} residuals overall")
-    print(f"The ratio of residuals over 1% was {over/overall}")
-    
-    quantiles = [loss_01_q, loss_05_q, loss_25_q,
-                 loss_75_q, loss_95_q, loss_99_q,
-                 loss_high_out, loss_low_out, median_loss]
-    quantile_names = ["q_1", "q_5", "q_25", "q_75", "q_95", "q_99", "high", 
-                      "low", "median"]
-    quants = Losses()
-    for quant_arr, quant_name in zip(quantiles,quantile_names):
-        quants.set_loss(quant_arr,quant_name)
-    
-    return quants
-    
-def active_v_grid(wrk_dir, egrid, lags_egrid):
-    model_base_loc = wrk_dir+"/models/"
-    loss_base_loc = wrk_dir+"/loss/"
-    
-    active_name = [0,1,2,3,4,10,15,20,25,30]
-    active_name = np.array(active_name)
-    active_sample_flux_nums = []
-    active_sample_lags_nums = []
-    for name in active_name:
-        active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
-        active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
-    active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
-    active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
-    grid_flux_name = [f"grid_{i}" for i in range(5,11)]
-    grid_lags_name = [f"grid_{i}" for i in range(5,11)]
-    grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
-    grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
-    active_flux_scaler = "active_scaler_flux.bin"
-    active_lags_scaler = "active_scaler_lags.bin"
-    grid_model_names = np.array([5,6,7,8,9,10])
-    grid_sample_nums = grid_model_names**5
-    grid_model_flux_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
-    grid_model_lag_names = [model_base_loc+f"grid_{i}_lags.pth" for i in grid_model_names]
-    
-    loss_epochs_plot(loss_base_loc,"flux")
-    loss_epochs_plot(loss_base_loc,"lags")
-    
-    grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
-                            grid_flux_scaler, egrid)
-    
-    grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, lags=True)
-    
-    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
-                      active_flux_scaler, egrid)
-    
-    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
-                      active_lags_scaler, lags_egrid, lags=True)
-    
-    
-    print("Plotting loss by sample size")
-    print("Plotting fluxes")
-    plot_loss_vs_sample_size(grid_sample_nums, grid_flux,
-                             active_sample_flux_nums, active_flux, mode="flux")
-    print("Plotting lags")
-    plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
-                             active_sample_lags_nums, active_lags, mode="lags")
-    
 def energy_plots(dataset,scaler,model,egrid,fname,folname):
     flux_true = []
     flux_model = []
@@ -646,7 +477,177 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
     fig.tight_layout()
     plt.savefig(f"loss/loss_size_{mode}.png")
     plt.close()
+
+def loss_epochs_plot(loss_base_loc,mode):
     
+    train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
+    test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
+    
+    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
+
+    plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
+             c = "red", ls = "-")
+    plt.plot(np.loadtxt(test_names[-1]), label = "Validation loss: 10x10 grid", 
+             c = "red", ls = "--")
+    
+    plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
+             ls = "-")
+    plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
+             ls = "--")
+    
+    plt.yscale("log")
+    plt.xlabel("Training epochs")
+    plt.ylabel("Loss")
+    plt.title(f"Comparison of loss by strategy for {mode}")
+    plt.legend()
+    plt.savefig(f"loss/loss_time_{mode}.png")
+    plt.close()
+
+def analysis(names, locs, nums, scaler_names, egrid, lags = None):
+    if lags != None:
+        mode = "lags"
+    else:
+        mode = "flux"
+    scaler_base_loc = os.getcwd()+"/scalers/"
+    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
+    
+    median_loss = []
+    loss_01_q = []
+    loss_05_q = []
+    loss_25_q = []
+    loss_75_q = []
+    loss_95_q = []
+    loss_99_q = []
+    loss_low_out = []
+    loss_high_out = []
+    
+    resid_list = []
+    
+    if type(scaler_names) != list:
+        tmp = [scaler_names for i in range(len(names))]
+        scaler_names = tmp
+        
+    for (model_loc,fname,scaler_name) in zip(locs, names, scaler_names):
+        scaler = load(scaler_base_loc+scaler_name)
+        #put test set into dataloader format
+        batch_size = 1
+        if lags == None:
+            test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
+                                       scaler_name) #scaler unused but must be parsed
+            model = model_load(model_loc, egrid, lags = lags)
+        else:
+            test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
+                                       scaler_name) #scaler unused but must be parsed
+            model = model_load(model_loc, egrid[:-1], lags = lags)
+        
+        testing_dataloader = DataLoader(test_data,batch_size = batch_size,
+                                        num_workers=1)
+        #folname = str(fname)
+        fname = f"{fname}_{mode}"
+        print(fname)
+        residuals = calculate_loss(testing_dataloader, model, scaler, mode)
+        resid_list.append(residuals)
+        median = np.median(residuals)
+        q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
+                                                        [0.01,0.05,0.25,0.75,
+                                                         0.95,0.99])
+        median_loss.append(median)
+        loss_05_q.append(q_05)
+        loss_25_q.append(q_25)
+        loss_75_q.append(q_75)
+        loss_95_q.append(q_95)
+        loss_99_q.append(q_99)
+        loss_01_q.append(q_01)
+        if mode == "flux":
+            filt = 1000
+        else:
+            filt = 1
+        high_outliers = residuals[residuals >= np.percentile(residuals, 99)][::filt]
+        low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::filt]
+        loss_low_out.append(low_outliers)
+        loss_high_out.append(high_outliers)
+        if lags == None:
+            model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
+        else:
+            model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, mode)
+        df, ticks, ticklabels = residual_computation(testing_dataloader, 
+                                                     model, scaler, mode)
+        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
+        #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
+        del df, ticks, ticklabels
+        
+    resid_list = np.asarray(resid_list)
+    df = residuals_dataframe(resid_list, nums)
+    print(df["Sample Size"].max())
+    large_resid = df[df["Sample Size"] == df["Sample Size"].max()].max()[0]
+    print(f"The largest residual was {large_resid}")
+    over = len(df[(df["Sample Size"] == df["Sample Size"].max())&(df["Residuals"] >= 0.01)])
+    print(f"There were {over} residuals over 1%")
+    overall = len(df[df["Sample Size"] == df["Sample Size"].max()])
+    print(f"There were {overall} residuals overall")
+    print(f"The ratio of residuals over 1% was {over/overall}")
+    
+    quantiles = [loss_01_q, loss_05_q, loss_25_q,
+                 loss_75_q, loss_95_q, loss_99_q,
+                 loss_high_out, loss_low_out, median_loss]
+    quantile_names = ["q_1", "q_5", "q_25", "q_75", "q_95", "q_99", "high", 
+                      "low", "median"]
+    quants = Losses()
+    for quant_arr, quant_name in zip(quantiles,quantile_names):
+        quants.set_loss(quant_arr,quant_name)
+    
+    return quants
+
+def active_v_grid(wrk_dir, egrid, lags_egrid):
+    model_base_loc = wrk_dir+"/models/"
+    loss_base_loc = wrk_dir+"/loss/"
+    
+    active_name = [0,1,2,3,4,10,15,20,25,30]
+    active_name = np.array(active_name)
+    active_sample_flux_nums = []
+    active_sample_lags_nums = []
+    for name in active_name:
+        active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
+        active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
+    active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
+    active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
+    grid_flux_name = [f"grid_{i}" for i in range(5,11)]
+    grid_lags_name = [f"grid_{i}" for i in range(5,11)]
+    grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
+    grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
+    active_flux_scaler = "active_scaler_flux.bin"
+    active_lags_scaler = "active_scaler_lags.bin"
+    grid_model_names = np.array([5,6,7,8,9,10])
+    grid_sample_nums = grid_model_names**5
+    grid_model_flux_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
+    grid_model_lag_names = [model_base_loc+f"grid_{i}_lags.pth" for i in grid_model_names]
+    
+    loss_epochs_plot(loss_base_loc,"flux")
+    loss_epochs_plot(loss_base_loc,"lags")
+    
+    grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
+                            grid_flux_scaler, egrid)
+    
+    grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
+                            grid_lags_scaler, lags_egrid, lags=True)
+    
+    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
+                      active_flux_scaler, egrid)
+    
+    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
+                      active_lags_scaler, lags_egrid, lags=True)
+    
+    
+    print("Plotting loss by sample size")
+    print("Plotting fluxes")
+    plot_loss_vs_sample_size(grid_sample_nums, grid_flux,
+                             active_sample_flux_nums, active_flux, mode="flux")
+    print("Plotting lags")
+    plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
+                             active_sample_lags_nums, active_lags, mode="lags")
+  
+
 def main():
     wrk_dir = os.getcwd()
     
