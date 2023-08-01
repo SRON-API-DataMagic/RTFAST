@@ -136,7 +136,7 @@ class HeavyFluxNetwork(SharpNetwork):
         stack3 = self.LinearStack3(stack2)
         stack3 = self.dropout3(stack3)
         stack4 = self.LinearStack4(stack3)
-        stack4 = self.dropout3(stack4)
+        stack4 = self.dropout4(stack4)
         result = self.LinearStack5(stack4)
         return result
     
@@ -197,8 +197,8 @@ class HeavyLagsNetwork(LagsNetwork):
         stack2 = self.dropout2(stack2)
         stack3 = self.LinearStack3(stack2)
         stack3 = self.dropout3(stack3)
-        stack4 = self.LinearStack3(stack3)
-        stack4 = self.dropout3(stack4)
+        stack4 = self.LinearStack4(stack3)
+        stack4 = self.dropout4(stack4)
         result = self.OutputAbsolute(stack4)
         ind = self.OutputSigmoid(self.OutputIndex(stack4))
         return result, ind
