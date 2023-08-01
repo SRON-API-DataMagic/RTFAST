@@ -11,12 +11,60 @@ import torch
 import os
 
 def mergeSaveData(new_data,old_data,destination,fname):
+    """
+    Method that takes two existing groups of data and collates them together.
+    Usually used for combining training and validation data after an active
+    learning loop.
+
+    Parameters
+    ----------
+    new_data : string
+        location of new data.
+    old_data : string
+        location of old data.
+    destination : string
+        folder to save new file in.
+    fname : string
+        new filename of the collated data.
+
+    Returns
+    -------
+    None.
+
+    """
     df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
     df.to_csv(destination+fname,index=False)
     return
 
 def saveData(dataset, pars, destination, fname, current_locs = None, lags = None):
-    
+    """
+    Checks for existing data on disk and saves data in individual units to disk 
+    that doesn't intefere with existing data. Saves the parameters associated 
+    with the data to a seperate file with the location of the corresponding 
+    data.
+
+    Parameters
+    ----------
+    dataset : ndarray
+        array that contains data to be saved (e.g. spectra or time lags).
+    pars : ndarray
+        array that contains corresponding parameters used to generate the data
+        being saved.
+    destination : string
+        folder for locations of data to be saved.
+    fname : string
+        name of file that locations will be saved in.
+    current_locs : string, optional
+        location of locations to add to if desired. The default is None.
+    lags : string, optional
+        if this is anything but None, will assume that the data being worked
+        with is of time lags format. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
     try:
         if lags == None:
             files = glob.glob("./data/spectra/*.txt")
@@ -59,6 +107,15 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     return
 
 def removeRedundantData():
+    """
+    Method that checks if all data currently saved on disk exists as referenced
+    by the list of locations and if it doesn't exist, deletes it.
+
+    Returns
+    -------
+    None.
+
+    """
     locations = "./data/locations/"
     labels = ["loc_flux_30.csv","loc_flux_test.csv",
               "loc_lags_30.csv","loc_lags_test.csv",
@@ -92,38 +149,75 @@ def removeRedundantData():
     return
 
 def renameData(data_locs,destination,fname):
+    """
+    Changes the name of a locations file as well as moving it to a new folder
+    if wished.
+
+    Parameters
+    ----------
+    data_locs : string
+        location of file.
+    destination : string
+        new folder to be saved to.
+    fname : string
+        new name of file.
+
+    Returns
+    -------
+    None.
+
+    """
     df = pd.read_csv(data_locs)
     df.to_csv(destination+fname,index=False)
     return
 
 def loadData(location):
+    """
+    Reads in panda csv file
+
+    Parameters
+    ----------
+    location : string
+        location of file.
+
+    Returns
+    -------
+    pandas dataframe
+        returns pandas dataframe that is read.
+
+    """
     return pd.read_csv(location)
 
-def merging_locations_pars(pars_loc, locations_loc, destination,index):
-    pars = np.loadtxt(pars_loc)
-    locations = np.loadtxt(locations_loc,dtype=str)
-    column_names = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
-                    "kTe","nH","boost","Mass","honr","b1","b2","fmin","fmax",
-                    "ReIm","phiA","phiAB","g","Anorm","RESP","Xnorm"]
-    pars_df = pd.DataFrame(pars,columns = column_names)
-    locations_df = pd.DataFrame(locations,columns=["Location"])
-    final_df = pd.concat([pars_df,locations_df],axis = 1, join = "inner",ignore_index=True)
-    final_df.to_csv(destination+"loc_"+index+".csv",index=False)
-    return
-
-def loadSpectra(df,egrid):
-    spectra = np.zeros((len(df),len(egrid)))
-    for index, row in df.iterrows():
-        spectra[index]=np.loadtxt(row["Location"])
-    return spectra
-
-def loadParameters(df):
-    parameters = np.zeros((len(df),len(df.columns)-2))
-    for index, row in df.iterrows():
-        parameters[index]=row.iloc[0:len(df.columns)-1]
-    return parameters
-
 def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
+    """
+    Saves information and model for an active learning loop to disk for future
+    use.
+
+    Parameters
+    ----------
+    model : pytorch model
+        the current version of the model to be saved to disk.
+    data_locs : string
+        location of the currect data being used to train the network.
+    optimizer : pytorch optimizer
+        the current version of the optimizer used to train the network.
+    te_loss : ndarray
+        average testing loss for each epoch of the network trained so far.
+    tr_loss : ndarray
+        average training loss for each epoch of the network trained so far.
+    num : int
+        the current active learning loop number.
+    epochs : ndarray
+        the epoch that each active learning loop stopped at so far.
+    typ : string, optional
+        signifies which type of network is being trained and is then saved into
+        filenames for identification later on. The default is "flux".
+
+    Returns
+    -------
+    None.
+
+    """
     print("Saving loop")
     renameData(data_locs,destination = "data/locations/",
               fname = f"loc_{typ}_{num}.csv")
@@ -139,6 +233,23 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
     return
 
 def nanChecker(data,pars):
+    """
+    Returns the row indices of any data that contains NaNs for removal
+
+    Parameters
+    ----------
+    data : ndarray
+        array of data to be checked.
+    pars : ndarray
+        array of associated parameters. Is printed if the associated model has
+        NaN values.
+
+    Returns
+    -------
+    index : list
+        list of indices of data to be removed.
+
+    """
     index = []
     for i,spec in enumerate(data):
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):

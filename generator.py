@@ -115,6 +115,17 @@ def lhs_range_gen():
     return range_all
 
 def lhs_trimmed_gen():
+    """
+    Limited form of lhs_range_gen that returns ranges for only a limited amount
+    of parameters. Used in the comparitive between grid and active learning
+    strategies.
+
+    Returns
+    -------
+    range_all : list
+        a list of ranges of parameter spaces to generate from.
+
+    """
     spin_range = [0.1,0.998]
     mass_range = [np.log10(3),np.log10(1e11)]
     inclination_range = [np.log10(1),np.log10(80)]
@@ -158,74 +169,94 @@ def pars_conversion(pars):
     return new_pars
     
 def grid_data_gen(size, fname, egrid, lags_egrid):
+    """
+    Creates a grid of parameter space and then generates spectra and time lags
+    for each spot on the grid. Saves these to the disk
+
+    Parameters
+    ----------
+    size : int
+        how many grid points in the parameter space to generate.
+    fname : string
+        signifies the file name to save as.
+    egrid : ndarray or list
+        energy grid to pass into rtdist for the spectra to be generated on.
+    lags_egrid : ndarray or list
+        energy grid to pass into rtdist for the time lags to be generated on.
+
+    Returns
+    -------
+    None.
+
+    """
    
-   spin = np.linspace(0.1,1.0,size)
-   mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
-   inc = np.linspace(np.log10(1),np.log10(80),size)
-   r_in = np.linspace(np.log10(1),np.log10(400),size)
-   r_out = np.linspace(np.log10(400),np.log10(1e5),size)
-   
-   #create parameter grid
-   theta_init = []
-   for a in spin:
-       for m in mass:
-           for i in inc:
-               for r_i in r_in:
-                   for r_o in r_out:
-                       theta_init.append([a,m,i,r_i,r_o])
-   theta_init = np.asarray(theta_init)
-   #convert to rtdist model compatible parameters
-   pars_init = pars_conversion(theta_init)
-   with Parallel(n_jobs=10,verbose=5) as parallel:
-       #generate rtdist models for the correlated grid
-       flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
-                                       for pars in pars_init)
-       lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                       for pars in pars_init)
-   flux_data_init = np.array(flux_data_init)
-   lags_data_init = np.array(lags_data_init)
-   
-   indexes = nanChecker(flux_data_init, pars_init)
-   flux_data_init = np.delete(flux_data_init,indexes, axis=0)
-   lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-   pars_init = np.delete(pars_init,indexes, axis=0)
-   
-   indexes = nanChecker(lags_data_init, pars_init)
-   flux_data_init = np.delete(flux_data_init,indexes, axis=0)
-   lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-   pars_init = np.delete(pars_init,indexes, axis=0)
-   
-   idxs = np.arange(0,flux_data_init.shape[0])
-   np.random.shuffle(idxs)
-   tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
-   tes_idx = idxs[int(-0.1*len(idxs)):]
-   
-   #Splitting data and parameters into training and testing datasets
-   train_data = flux_data_init[tra_idx]
-   train_lags = lags_data_init[tra_idx]
-   train_pars = pars_init[tra_idx]
-   test_data = flux_data_init[tes_idx]
-   test_lags = lags_data_init[tes_idx]
-   test_pars = pars_init[tes_idx]
-   
-   print("Saving to disk")
-   #save data for the first time in text files
-   saveData(train_data, train_pars, 
-            "data/locations/",f"loc_{fname}_flux.csv")
-   saveData(train_lags, train_pars, 
-            "data/locations/",f"loc_{fname}_lags.csv")
-   saveData(test_data, test_pars, 
-            "data/locations/",f"loc_{fname}_flux_test.csv")
-   saveData(test_lags, train_pars, 
-            "data/locations/",f"loc_{fname}_lags_test.csv")
-   
-   scaler = MinMaxScaler()
-   
-   flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
-                                  scaler,f"{fname}_flux_scaler.bin",
-                                  scaling=True)
-   lags_dataloader = LagsData(f"data/locations/loc_{fname}_lags.csv", 
-                                  scaler,f"{fname}_lags_scaler.bin",
-                                  scaling=True)
-   
-   return   
+    spin = np.linspace(0.1,1.0,size)
+    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
+    inc = np.linspace(np.log10(1),np.log10(80),size)
+    r_in = np.linspace(np.log10(1),np.log10(400),size)
+    r_out = np.linspace(np.log10(400),np.log10(1e5),size)
+    
+    #create parameter grid
+    theta_init = []
+    for a in spin:
+        for m in mass:
+            for i in inc:
+                for r_i in r_in:
+                    for r_o in r_out:
+                        theta_init.append([a,m,i,r_i,r_o])
+    theta_init = np.asarray(theta_init)
+    #convert to rtdist model compatible parameters
+    pars_init = pars_conversion(theta_init)
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
+                                        for pars in pars_init)
+        lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
+                                        for pars in pars_init)
+    flux_data_init = np.array(flux_data_init)
+    lags_data_init = np.array(lags_data_init)
+    
+    indexes = nanChecker(flux_data_init, pars_init)
+    flux_data_init = np.delete(flux_data_init,indexes, axis=0)
+    lags_data_init = np.delete(lags_data_init,indexes, axis=0)
+    pars_init = np.delete(pars_init,indexes, axis=0)
+    
+    indexes = nanChecker(lags_data_init, pars_init)
+    flux_data_init = np.delete(flux_data_init,indexes, axis=0)
+    lags_data_init = np.delete(lags_data_init,indexes, axis=0)
+    pars_init = np.delete(pars_init,indexes, axis=0)
+    
+    idxs = np.arange(0,flux_data_init.shape[0])
+    np.random.shuffle(idxs)
+    tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
+    tes_idx = idxs[int(-0.1*len(idxs)):]
+    
+    #Splitting data and parameters into training and testing datasets
+    train_data = flux_data_init[tra_idx]
+    train_lags = lags_data_init[tra_idx]
+    train_pars = pars_init[tra_idx]
+    test_data = flux_data_init[tes_idx]
+    test_lags = lags_data_init[tes_idx]
+    test_pars = pars_init[tes_idx]
+    
+    print("Saving to disk")
+    #save data for the first time in text files
+    saveData(train_data, train_pars, 
+             "data/locations/",f"loc_{fname}_flux.csv")
+    saveData(train_lags, train_pars, 
+             "data/locations/",f"loc_{fname}_lags.csv")
+    saveData(test_data, test_pars, 
+             "data/locations/",f"loc_{fname}_flux_test.csv")
+    saveData(test_lags, train_pars, 
+             "data/locations/",f"loc_{fname}_lags_test.csv")
+    
+    scaler = MinMaxScaler()
+    
+    flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
+                                   scaler,f"{fname}_flux_scaler.bin",
+                                   scaling=True)
+    lags_dataloader = LagsData(f"data/locations/loc_{fname}_lags.csv", 
+                                   scaler,f"{fname}_lags_scaler.bin",
+                                   scaling=True)
+    
+    return   

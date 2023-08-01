@@ -118,6 +118,20 @@ class SharpNetwork(NeuralNetwork):
         return result
 
 class HeavyFluxNetwork(SharpNetwork):
+    """
+    A variant network of SharpNetwork that features one extra hidden layer.
+    
+    Attributes
+    ----------
+    p : float
+        determines dropout probability of the dropout layers
+    LinearStack : Sequential neural network layers
+        Feedforward neural network callable in one method
+    dropout : method
+        Randomly zeros nodes in the network to emulate ensemble training
+    double : method
+        converts all parameters to doubles rather than float
+    """
     def __init__(self,num_pars,data_len):
         super().__init__(num_pars,data_len)
         self.LinearStack4 = nn.Sequential(
@@ -141,6 +155,28 @@ class HeavyFluxNetwork(SharpNetwork):
         return result
     
 class LagsNetwork(nn.Module):
+    """
+    A class that determines the neural network architecture for learning the 
+    time lags output of rtdist. This class features a distinct difference to
+    the flux version of this network: it produces sigmoid values for the
+    likelihood that a given value for an energy bin is negative or positive.
+    This allows us to avoid issues with time lags spanning many orders of
+    magnitude in both negative and positive values.
+    
+    Attributes
+    ----------
+    p : float
+        determines dropout probability of the dropout layers
+    LinearStack : Sequential neural network layers
+        Feedforward neural network callable in one method
+    OutputSigmoid: method
+        Places a sigmoid on output values of whether a given energy bin is
+        positive or negative.
+    dropout : method
+        Randomly zeros nodes in the network to emulate ensemble training
+    double : method
+        converts all parameters to doubles rather than float
+    """
     
     def __init__(self,num_pars,data_len):
         super().__init__()
@@ -177,6 +213,23 @@ class LagsNetwork(nn.Module):
         return result, ind
 
 class HeavyLagsNetwork(LagsNetwork):
+    """
+    A variant of the LagsNetwork class that adds one extra hidden layer.
+    
+    Attributes
+    ----------
+    p : float
+        determines dropout probability of the dropout layers
+    LinearStack : Sequential neural network layers
+        Feedforward neural network callable in one method
+    OutputSigmoid: method
+        Places a sigmoid on output values of whether a given energy bin is
+        positive or negative.
+    dropout : method
+        Randomly zeros nodes in the network to emulate ensemble training
+    double : method
+        converts all parameters to doubles rather than float
+    """
     
     def __init__(self,num_pars,data_len):
         super().__init__(num_pars,data_len)

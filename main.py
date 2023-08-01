@@ -494,6 +494,15 @@ def grid(wrk_dir,device):
                                    size, mode)
         
 def main():
+    """
+    Calls other methods when the main program is run. Makes sure all environmental
+    variables for rtdist and CUDA/pytorhc are set.
+
+    Returns
+    -------
+    None.
+
+    """
     torch.set_default_dtype(torch.double)
     
     wrk_dir = os.getcwd()
