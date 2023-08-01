@@ -211,13 +211,13 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
    print("Saving to disk")
    #save data for the first time in text files
    saveData(train_data, train_pars, 
-            "data/locations/","loc_"+fname+"_flux.csv")
+            "data/locations/",f"loc_{fname}_flux.csv")
    saveData(train_lags, train_pars, 
-            "data/locations/","loc_"+fname+"_lags.csv")
+            "data/locations/",f"loc_{fname}_lags.csv")
    saveData(test_data, test_pars, 
-            "data/locations/","loc_"+fname+"_flux_test.csv")
+            "data/locations/",f"loc_{fname}_flux_test.csv")
    saveData(test_lags, train_pars, 
-            "data/locations/","loc_"+fname+"_lags_test.csv")
+            "data/locations/",f"loc_{fname}_lags_test.csv")
    
    scaler = MinMaxScaler()
    
