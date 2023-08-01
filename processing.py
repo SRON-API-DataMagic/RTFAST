@@ -60,13 +60,20 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
 
 def removeRedundantData():
     locations = "./data/locations/"
-    labels = ["loc_30.csv","loc_light_30.csv","loc_test.csv",
-              "loc_grid_5.csv","loc_grid_5_test.csv",
-              "loc_grid_6.csv","loc_grid_6_test.csv",
-              "loc_grid_7.csv","loc_grid_7_test.csv",
-              "loc_grid_8.csv","loc_grid_8_test.csv",
-              "loc_grid_9.csv","loc_grid_9_test.csv",
-              "loc_grid_10.csv","loc_grid_10_test.csv"]
+    labels = ["loc_flux_30.csv","loc_flux_test.csv",
+              "loc_lags_30.csv","loc_lags_test.csv",
+              "loc_grid_5_lags.csv","loc_grid_5_lags_test.csv",
+              "loc_grid_6_lags.csv","loc_grid_6_lags_test.csv",
+              "loc_grid_7_lags.csv","loc_grid_7_lags_test.csv",
+              "loc_grid_8_lags.csv","loc_grid_8_lags_test.csv",
+              "loc_grid_9_lags.csv","loc_grid_9_lags_test.csv",
+              "loc_grid_10_lags.csv","loc_grid_10_lags_test.csv",
+              "loc_grid_5_flux.csv","loc_grid_5_flux_test.csv",
+              "loc_grid_6_flux.csv","loc_grid_6_flux_test.csv",
+              "loc_grid_7_flux.csv","loc_grid_7_flux_test.csv",
+              "loc_grid_8_flux.csv","loc_grid_8_flux_test.csv",
+              "loc_grid_9_flux.csv","loc_grid_9_flux_test.csv",
+              "loc_grid_10_flux.csv","loc_grid_10_flux_test.csv"]
     
     spectra_names = []
     for fname in labels:
