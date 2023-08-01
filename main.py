@@ -27,7 +27,27 @@ from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from plotting import distributions
 
-def queryByDropout(wrk_dir, device = None):
+def queryByDropout(wrk_dir, device = "cpu"):
+    """
+    Core method that collates together methods from other files to perform
+    active learning based training by the query by dropout committee technique.
+    Mostly passes information between different methods as well as setting
+    core parameters (such as number of active learning loops or the energy
+    grid being trained on). This method can also continue the training of a 
+    previous model.
+
+    Parameters
+    ----------
+    wrk_dir : string
+        pass in the working directory of where you wish to work.
+    device : string, optional
+        This tells each method which cuda device to use. The default is cpu.
+
+    Returns
+    -------
+    None.
+
+    """
     print("Training using query by dropout committee")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
@@ -385,6 +405,24 @@ def queryByDropout(wrk_dir, device = None):
         np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
 
 def grid(wrk_dir,device):
+    """
+    This method collates together methods to train neural networks utilizing a
+    grid based learning strategy. This has less functionality than the active
+    learning method as it is largely a method of comparison between the two
+    strategies rather than a fully implemented method.
+
+    Parameters
+    ----------
+    wrk_dir : string
+        pass in the working directory of where you wish to work.
+    device : string, optional
+        This tells each method which cuda device to use. The default is cpu.
+
+    Returns
+    -------
+    None.
+
+    """
     print("Training using grid")
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
@@ -402,7 +440,7 @@ def grid(wrk_dir,device):
     batch_size = 1024
     num_workers = 4
     
-    modes = ["flux"]
+    modes = ["flux", "lags"]
     
     for (size,fname) in zip(grid_sizes,grid_names):
         print(f"Starting {size} x {size} grid loop")
