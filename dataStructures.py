@@ -202,3 +202,55 @@ class LagsData(FluxData):
         datum, ind = self.standardize(datum)
         return datum, ind, parameters
  
+class LoadFluxData(FluxData):
+    def __init__(self,labels,scaler,scaler_name):
+        super().__init__(labels,scaler,scaler_name)
+        
+    def __getitem__(self,idx):
+        #retrieve location of the spectra to load
+        location = self.labels.iloc[idx,-1]
+        #retrieve parameters used to generate the spectra that we want to train on
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
+        #convert parameters to log space
+        parameters.iloc[[3]] = -parameters.iloc[[3]]
+        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        parameters = torch.tensor(parameters)
+        #load spectra
+        datum = np.loadtxt(location).reshape(1, -1)
+        try:
+            mask = np.where(datum <= 1e-38, 0, 1)
+        except:
+            mask = None
+        if mask is not None:
+            return datum, parameters, mask
+        else:
+            return datum, parameters
+
+class LoadLagsData(LagsData):
+    def __init__(self,labels,scaler,scaler_name):
+        super().__init__(labels,scaler,scaler_name)
+        
+    def __getitem__(self,idx):
+        #retrieve location of the spectra to load
+        location = self.labels.iloc[idx,-1]
+        #retrieve parameters used to generate the spectra that we want to train on
+        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
+        #convert parameters to log space
+        parameters.iloc[[3]] = -parameters.iloc[[3]]
+        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        parameters = torch.tensor(parameters)
+        #load spectra
+        datum = np.loadtxt(location).reshape(1, -1)
+        return datum, parameters
+
+class Residual():
+    
+    def __init__(self,residuals,flat):
+        self.data = residuals
+        self.flat = flat
+
+class Losses():
+    
+    def set_loss(self,residuals,name):
+        super().__setattr__(name, residuals)
+        

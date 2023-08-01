@@ -23,61 +23,9 @@ from tqdm import tqdm
 
 import network
 from generator import lhs_trimmed_gen, pars_conversion, rtdist_flux, rtdist_lags
-from dataStructures import FluxData, LagsData
+from generator import generate_test_set
+from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
 from processing import saveData, nanChecker
-
-class LoadFluxData(FluxData):
-    def __init__(self,labels,scaler,scaler_name):
-        super().__init__(labels,scaler,scaler_name)
-        
-    def __getitem__(self,idx):
-        #retrieve location of the spectra to load
-        location = self.labels.iloc[idx,-1]
-        #retrieve parameters used to generate the spectra that we want to train on
-        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
-        #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
-        parameters = torch.tensor(parameters)
-        #load spectra
-        datum = np.loadtxt(location).reshape(1, -1)
-        try:
-            mask = np.where(datum <= 1e-38, 0, 1)
-        except:
-            mask = None
-        if mask is not None:
-            return datum, parameters, mask
-        else:
-            return datum, parameters
-
-class LoadLagsData(LagsData):
-    def __init__(self,labels,scaler,scaler_name):
-        super().__init__(labels,scaler,scaler_name)
-        
-    def __getitem__(self,idx):
-        #retrieve location of the spectra to load
-        location = self.labels.iloc[idx,-1]
-        #retrieve parameters used to generate the spectra that we want to train on
-        parameters = self.labels.iloc[idx,self.pars_list].astype(float)
-        #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
-        parameters = torch.tensor(parameters)
-        #load spectra
-        datum = np.loadtxt(location).reshape(1, -1)
-        return datum, parameters
-
-class Residual():
-    
-    def __init__(self,residuals,flat):
-        self.data = residuals
-        self.flat = flat
-
-class Losses():
-    
-    def set_loss(self,residuals,name):
-        super().__setattr__(name, residuals)
-        
             
 def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
@@ -197,38 +145,6 @@ def model_load(model_loc,egrid, lags = None):
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
-    
-def generate_test_set(size, egrid, lags_egrid):
-    """
-    
-
-    Parameters
-    ----------
-    size : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    range_all = np.asarray(lhs_trimmed_gen())
-    #pre generate Latin Hypercube samples.
-    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=size)
-    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-
-    #generate physical models of test set
-    theta_lhs_iterate = pars_conversion(theta_lhs)
-    with Parallel(n_jobs=10,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        data_init = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in theta_lhs_iterate)
-        lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                        for pars in theta_lhs_iterate)
-    data_init = np.asarray(data_init)
-    lags = np.asarray(lags)
-    return data_init, lags, theta_lhs_iterate
     
 def residual_sorting(df,indexing):
     df.sort_values(by=indexing,inplace=True,ignore_index=True)
