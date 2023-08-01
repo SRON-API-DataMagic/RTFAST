@@ -48,14 +48,14 @@ def queryByDropout(wrk_dir, device = None):
     #make this true
     first = True
     
-    flux_model = network.SharpNetwork(5,len(egrid))
+    flux_model = network.HeavyFluxNetwork(5,len(egrid))
     flux_model.to(device)
-    lags_model = network.LagsNetwork(5,len(lags_egrid)-1)
+    lags_model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
     lags_model.to(device)
     
-    best_flux_model = network.SharpNetwork(5,len(egrid))
+    best_flux_model = network.HeavyFluxNetwork(5,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.LagsNetwork(5,len(lags_egrid)-1)
+    best_lags_model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -414,13 +414,13 @@ def grid(wrk_dir,device):
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                model = network.SharpNetwork(5,len(egrid))
+                model = network.HeavyFluxNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
                 loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = LagsData
-                model = network.LagsNetwork(5,len(lags_egrid)-1)
+                model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
                 
             else:
                 print("Invalid mode, defaulting to flux modelling")
@@ -428,7 +428,7 @@ def grid(wrk_dir,device):
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxData
-                model = network.SharpNetwork(5,len(egrid))
+                model = network.HeavyFluxNetwork(5,len(egrid))
             
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 0.001)
@@ -473,7 +473,7 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    #queryByDropout(wrk_dir,device)
+    queryByDropout(wrk_dir,device)
     grid(wrk_dir,device)
 
 if __name__ == "__main__":
