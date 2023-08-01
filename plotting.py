@@ -411,7 +411,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             resid = (D-pred)/D
             resid = resid.numpy()
             try:
-                resid[(D <= 1e-37)&(pred <= 1e-37)] = 0
+                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),0,resid)
             except:
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
@@ -423,7 +423,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
             resid = (D-pred)/D
             resid = resid.numpy()
             try:
-                resid[(np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5)] = 0
+                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),0,resid)
             except:
                 pass
             residuals.append(np.absolute(np.asarray(resid)))
