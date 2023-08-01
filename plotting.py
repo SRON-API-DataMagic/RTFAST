@@ -4,7 +4,6 @@ This program serves to visualise a neural network's outputs vs the true values.
 from sherpa.astro.ui import unpack_rmf
 import torch
 import os
-import time
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -14,18 +13,14 @@ import matplotlib.colors as colors
 import numpy as np
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
-from joblib import load, Parallel, delayed
-import scipy.stats
+from joblib import load
 
 import pandas as pd
-import seaborn as sns
 from tqdm import tqdm
 
 import network
-from generator import lhs_trimmed_gen, pars_conversion, rtdist_flux, rtdist_lags
 from generator import generate_test_set
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
-from processing import saveData, nanChecker
             
 def inverse(scaler,data):
     scaled_data = scaler.inverse_transform(data)
