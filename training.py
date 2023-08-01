@@ -49,7 +49,7 @@ class barredMSELoss(nn.Module):
         super(barredMSELoss, self).__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.device = device
-        self.threshold = 1e-38
+        self.threshold = 1e-39
         self.set_scale()
         
     def set_scale(self):
@@ -138,7 +138,7 @@ class lagLoss(nn.Module):
         return result
     
     def forward(self, output, target, index, index_target):
-        threshold = 1e-6
+        threshold = 1e-7
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
