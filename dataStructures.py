@@ -217,14 +217,7 @@ class LoadFluxData(FluxData):
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
-        try:
-            mask = np.where(datum <= 1e-38, 0, 1)
-        except:
-            mask = None
-        if mask is not None:
-            return datum, parameters, mask
-        else:
-            return datum, parameters
+        return datum, parameters
 
 class LoadLagsData(LagsData):
     def __init__(self,labels,scaler,scaler_name):

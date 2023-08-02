@@ -139,6 +139,14 @@ def heatmap_plots(df, indexes, ticks, ticklabels, fname, mode):
         heatmap(df, index, ticks[i], ticklabels[i], fname, mode)
 
 def set_envir_vars(wrk_dir):
+    """
+    Sets environment variables for rtdist plotting
+
+    Parameters
+    ----------
+    wrk_dir : string
+        location of working directory.
+    """
     #set envionmental variables required in xspec with simrtdist
     environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
                     "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
@@ -154,6 +162,20 @@ def set_envir_vars(wrk_dir):
     print("Environmental variables successfully set")
 
 def retrieve_egrid(wrk_dir):
+    """
+    Find the energy grid for plotting of spectra
+
+    Parameters
+    ----------
+    wrk_dir : string
+        location of working directory.
+
+    Returns
+    -------
+    egrid : ndarray
+        energy grid values.
+
+    """
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min
@@ -161,6 +183,26 @@ def retrieve_egrid(wrk_dir):
     return egrid
 
 def model_load(model_loc,egrid, lags = None):
+    """
+    Loads neural network model states from the disk. Can load both the flux and
+    lag neural network model types.
+
+    Parameters
+    ----------
+    model_loc : string
+        location of the file with neural network parameters.
+    egrid : ndarray
+        energy grid values.
+    lags : any, optional
+        If this is not None, assumes loading a time lags model. The default is 
+        None.
+
+    Returns
+    -------
+    model : pytorch model
+        the desired pytorch neural network model.
+
+    """
     if lags == None:
         model = network.SharpNetwork(5,len(egrid))
     else:
@@ -170,6 +212,25 @@ def model_load(model_loc,egrid, lags = None):
     return model
     
 def residual_sorting(df,indexing):
+    """
+    Sorts residual dataframe by the given index and returns the 0.01, 0.25, 
+    0.5, 0.75 percentile values as tick labels
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        dataframe containing residuals and their corresponding parameters.
+    indexing : string
+        name of the column to sort dataframe by.
+
+    Returns
+    -------
+    tick : list
+        list of tick values index.
+    ticklabel : list
+        list of tick values.
+
+    """
     df.sort_values(by=indexing,inplace=True,ignore_index=True)
     percents = [0,0.25,0.5,0.75]
     tick = []
@@ -182,41 +243,30 @@ def residual_sorting(df,indexing):
 def residual_computation(testing_dataloader, model, scaler, mode):
     mass, spin, inc, rin, rout = [], [], [], [], []
     residuals = []
-    if mode == "flux":
-        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
-            spin.append(P[0][0].item())
-            mass.append(10**P[0][1].item())
-            inc.append(P[0][2].item())
-            rin.append(P[0][3].item())
-            rout.append(P[0][4].item())
+    for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+        spin.append(P[0][0].item())
+        mass.append(10**P[0][1].item())
+        inc.append(P[0][2].item())
+        rin.append(P[0][3].item())
+        rout.append(P[0][4].item())
+        if mode == "flux":
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
-            resid = (D-pred)/D
-            resid = resid.numpy()
-            try:
-                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
-            except:
-                pass
-            resid = np.absolute(np.asarray(resid))
-            residuals.append(resid)
-    else:
-        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
-            spin.append(P[0][0].item())
-            mass.append(10**P[0][1].item())
-            inc.append(P[0][2].item())
-            rin.append(P[0][3].item())
-            rout.append(P[0][4].item())
+        else:
             pred, I_pred = model(P)
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
-            resid = (D-pred)/D
-            resid = resid.numpy()
-            try:
+        resid = (D-pred)/D
+        resid = resid.numpy()
+        try:
+            if mode == "flux":
+                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
+            else:
                 resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
-            except:
-                pass
-            resid = np.absolute(np.asarray(resid))
-            residuals.append(resid)
+        except:
+            pass
+        resid = np.absolute(np.asarray(resid))
+        residuals.append(resid)
         
     residuals = np.squeeze(np.asarray(residuals))
     obj_residuals = []
@@ -280,56 +330,19 @@ def residuals_dataframe(residuals,names):
     df = pd.DataFrame(data = d)
     return df
 
-def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
-    if mode == "flux":
-        for batch, (D,P,M) in enumerate(testing_dataloader):
-            M = np.squeeze(M)
-            D = np.squeeze(D)
-            #retrieve relevant data and parameters
-            spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
-                                          10**P[0][2].item(),-10**P[0][3].item(),
-                                          10**P[0][4].item())
-            D[M==0] = 1e-38
+def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
+    for batch, (D,P) in enumerate(testing_dataloader):
+        D = np.squeeze(D)
+        
+        if mode == "flux":
+            D[D<=1e-38] = 1e-38
             da = np.squeeze(D)
             
             #generate neural network prediction and rescale to linear space
             pred = model(P).detach().numpy()
             pred = 10**np.squeeze(inverse(scaler,pred))
-            pred[M==0] = 1e-38
-            
-            fname = f"{batch}"
-            title = "Standard output"
-            
-            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
-            
-            da_log = np.log10(da)
-            pred = model(P).detach().numpy()
-            pred = np.squeeze(inverse(scaler,pred))
-            
-            fname = f"{batch}_log"
-            title = "Log scaled output"
-        
-            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
-            
-            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
-            
-            pred = model(P).detach().numpy()
-            pred = np.squeeze(pred)
-            
-            fname = f"{batch}_scal"
-            title = "Neural network normalised output"
-        
-            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
-            
-            if batch > 5:
-                break
-    else:
-        for batch, (D,P) in enumerate(testing_dataloader):
-            D = np.squeeze(D)
-            #retrieve relevant data and parameters
-            spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
-                                          10**P[0][2].item(),-10**P[0][3].item(),
-                                          10**P[0][4].item())
+            pred[D<=1e-38] = 1e-38
+        else:
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
             D[(D>0)&(np.abs(D)<1e-6)] = 1e-6
             da = np.squeeze(D)
@@ -339,33 +352,33 @@ def model_samples(testing_dataloader,scaler,model,egrid,gr,mode):
             pred = 10**np.squeeze(inverse(scaler,pred.detach().numpy()))
             pred[pred<1e-6] = 1e-6
             pred = np.squeeze(pred*np.where(I_pred > 0.5, 1, -1))
-            
-            fname = f"{batch}"
-            title = "Standard output"
-            
-            residual_plots(egrid, pred, da, spin, mass, fname, title, gr, norm = True, mode = mode)
-            
-            da_log = np.log10(np.abs(da))
-            pred, I_pred = model(P)
-            pred = np.squeeze(inverse(scaler,pred.detach().numpy()))
-            
-            fname = f"{batch}_log"
-            title = "Log scaled output"
         
-            residual_plots(egrid, pred, da_log, spin, mass, fname, title, gr, mode = mode)
-            
-            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
-            
-            pred, I_pred = model(P)
-            pred = np.squeeze(pred.detach().numpy())
-            
-            fname = f"{batch}_scal"
-            title = "Neural network normalised output"
+        fname = f"{batch}"
+        title = "Standard output"
         
-            residual_plots(egrid, pred, da_log_scal, spin, mass, fname, title, gr, mode = mode)
-            
-            if batch > 5:
-                break
+        residual_plots(egrid, pred, da, fname, title, mname, norm = True, mode = mode)
+        
+        da_log = np.log10(np.abs(da))
+        pred = model(P).detach().numpy()
+        pred = np.squeeze(inverse(scaler,pred))
+        
+        fname = f"{batch}_log"
+        title = "Log scaled output"
+    
+        residual_plots(egrid, pred, da_log, fname, title, mname, mode = mode)
+        
+        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+        
+        pred = model(P).detach().numpy()
+        pred = np.squeeze(pred)
+        
+        fname = f"{batch}_scal"
+        title = "Neural network normalised output"
+    
+        residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
+        
+        if batch > 5:
+            break
 
 def heatmap(df, index, ticks, ticklabels, fname, mode):
     zlabel = "Fractional difference between NN model and rtdist"
