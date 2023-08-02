@@ -2,8 +2,8 @@
 This program holds custom pytorch data structures for use in this project.
 """
 from torch.utils.data import Dataset
-    
-from joblib import dump, load, Parallel, delayed
+
+from joblib import dump, load
 import pandas as pd
 import torch
 import numpy as np
@@ -245,12 +245,11 @@ class LoadLagsData(LagsData):
 
 class Residual():
     
-    def __init__(self,residuals,flat):
+    def __init__(self, residuals):
         self.data = residuals
-        self.flat = flat
 
 class Losses():
     
-    def set_loss(self,residuals,name):
+    def set_loss(self, residuals, name):
         super().__setattr__(name, residuals)
         
