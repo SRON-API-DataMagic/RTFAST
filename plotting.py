@@ -454,7 +454,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
 
 def heatmap(df, index, ticks, ticklabels, fname, mode):
     zlabel = "Fractional difference between NN model and rtdist"
-    Z_center = 2.5
+    Z_center = -2.5
     #colormap
     top = cm.get_cmap('autumn', 128)
     middle = cm.get_cmap('winter', 224)
