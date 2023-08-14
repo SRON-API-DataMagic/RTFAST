@@ -386,6 +386,33 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
             pred = model(P).detach().numpy()
             pred = 10**np.squeeze(inverse(scaler,pred))
             pred[D<=1e-38] = 1e-38
+            
+            fname = f"{batch}"
+            title = "Standard output"
+            
+            residual_plots(egrid, pred, da, fname, title, mname, norm = True, mode = mode)
+            
+            da_log = np.log10(np.abs(da))
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(inverse(scaler,pred))
+            
+            fname = f"{batch}_log"
+            title = "Log scaled output"
+        
+            residual_plots(egrid, pred, da_log, fname, title, mname, mode = mode)
+            
+            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+            
+            pred = model(P).detach().numpy()
+            pred = np.squeeze(pred)
+            
+            fname = f"{batch}_scal"
+            title = "Neural network normalised output"
+        
+            residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
+            
+            if batch > 5:
+                break
         else:
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
             D[(D>0)&(np.abs(D)<1e-6)] = 1e-6
@@ -397,32 +424,33 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
             pred[pred<1e-6] = 1e-6
             pred = np.squeeze(pred*np.where(I_pred > 0.5, 1, -1))
         
-        fname = f"{batch}"
-        title = "Standard output"
+            fname = f"{batch}"
+            title = "Standard output"
+            
+            residual_plots(egrid, pred, da, fname, title, mname, norm = True, mode = mode)
+            
+            da_log = np.log10(np.abs(da))
+            pred, I_pred = model(P)
+            pred = np.squeeze(inverse(scaler,pred.detach().numpy()))
+            
+            fname = f"{batch}_log"
+            title = "Log scaled output"
         
-        residual_plots(egrid, pred, da, fname, title, mname, norm = True, mode = mode)
+            residual_plots(egrid, pred, da_log, fname, title, mname, mode = mode)
+            
+            da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+            
+            pred, I_pred = model(P)
+            pred = pred.detach().numpy()
+            pred = np.squeeze(pred)
+            
+            fname = f"{batch}_scal"
+            title = "Neural network normalised output"
         
-        da_log = np.log10(np.abs(da))
-        pred = model(P).detach().numpy()
-        pred = np.squeeze(inverse(scaler,pred))
-        
-        fname = f"{batch}_log"
-        title = "Log scaled output"
-    
-        residual_plots(egrid, pred, da_log, fname, title, mname, mode = mode)
-        
-        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
-        
-        pred = model(P).detach().numpy()
-        pred = np.squeeze(pred)
-        
-        fname = f"{batch}_scal"
-        title = "Neural network normalised output"
-    
-        residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
-        
-        if batch > 5:
-            break
+            residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
+            
+            if batch > 5:
+                break
 
 def heatmap(df, index, ticks, ticklabels, fname, mode):
     zlabel = "Fractional difference between NN model and rtdist"
