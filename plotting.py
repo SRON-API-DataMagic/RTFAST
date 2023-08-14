@@ -392,7 +392,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
             fname = f"{batch}"
             title = "Standard output"
             
-            residual_plots(egrid, pred, da, fname, title, mname, P, norm = True, mode = mode,)
+            residual_plots(egrid, pred, da, fname, title, mname, P, norm = True, mode = mode)
             
             da_log = np.log10(np.abs(da))
             pred = model(P).detach().numpy()
@@ -401,7 +401,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
             fname = f"{batch}_log"
             title = "Log scaled output"
         
-            residual_plots(egrid, pred, da_log, fname, title, mname, mode = mode)
+            residual_plots(egrid, pred, da_log, fname, title, mname, P, mode = mode)
             
             da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
             
@@ -411,7 +411,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
             fname = f"{batch}_scal"
             title = "Neural network normalised output"
         
-            residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
+            residual_plots(egrid, pred, da_log_scal, fname, title, mname, P, mode = mode)
             
             if batch > no_brk:
                 break
