@@ -812,7 +812,7 @@ def main():
     
     train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
     val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
-    model = model_load(model_loc, lags_egrid, lags = True)
+    model = model_load(model_loc, lags_egrid[:-1], lags = True)
     
     batch_size = 1
     mode = "lags"
