@@ -446,9 +446,9 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     fig = plt.figure(figsize=(10,10))
     norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
     ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-    ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+    c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                 10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-    cbar = plt.colorbar(ticks=ticks, format='%.0e', norm=norm)
+    cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
     plt.yticks(ticks,labels=ticklabels)
     if mode == "flux":
         plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
