@@ -377,6 +377,7 @@ def residuals_dataframe(residuals,names):
 
 def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
     for batch, (D,P) in enumerate(testing_dataloader):
+        print(batch)
         D = np.squeeze(D)
         
         if mode == "flux":
