@@ -814,7 +814,6 @@ def main():
     
     train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
     val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
-    print(train_data.labels)
     model = model_load(model_loc, lags_egrid[:-1], lags = True)
     
     batch_size = 1
@@ -826,7 +825,7 @@ def main():
                                     num_workers=1)
     
     mname = "compare/Comparing_val"
-    model_samples(testing_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=1000)
+    model_samples(testing_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=100)
     mname = "compare/Comparing_tra"
     model_samples(training_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=1000)
     
