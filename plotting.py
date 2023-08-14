@@ -823,15 +823,12 @@ def main():
                                     num_workers=1)
     
     mname = "compare/Comparing_val"
-    model_samples(testing_dataloader, scaler, model, egrid, mname, mode, no_brk=True)
+    model_samples(testing_dataloader, scaler, model, lags_egrid, mname, mode, no_brk=True)
     mname = "compare/Comparing_tra"
-    model_samples(training_dataloader, scaler, model, egrid, mname, mode, no_brk=True)
+    model_samples(training_dataloader, scaler, model, lags_egrid, mname, mode, no_brk=True)
     
     
     set_envir_vars(wrk_dir)
-    
-    
-    
     active_v_grid(wrk_dir,egrid, lags_egrid)
     
     
