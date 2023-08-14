@@ -209,7 +209,7 @@ def model_load(model_loc,egrid, lags = None):
     else:
         model = network.HeavyLagsNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
-    model.eval()
+    model.train()
     return model
     
 def residual_sorting(df,indexing):
