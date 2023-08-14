@@ -98,7 +98,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, P, log = False,
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_title(title)
-    axs[0].text(0,0.75,P)
+    axs[0].text(0,0.75,P, transform=axs[0].transAxes)
     if log == True:
         axs[0].set_ylabel(f"Log({mode})")
     else:
