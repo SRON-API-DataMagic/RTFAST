@@ -449,15 +449,15 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                 10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
     cbar = plt.colorbar(ticks=ticks, format='%.0e', norm=norm)
-    ax.yticks(ticks,labels=ticklabels)
+    plt.yticks(ticks,labels=ticklabels)
     if mode == "flux":
-        ax.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
     else:
         egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
         tick_index = np.arange(0,25,24/4).astype(int)
-        ax.xticks(tick_index, labels=egrid[tick_index])
-    ax.xlabel("Energy in keV")
-    ax.ylabel(index)
+        plt.xticks(tick_index, labels=egrid[tick_index])
+    plt.xlabel("Energy in keV")
+    plt.ylabel(index)
     
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
