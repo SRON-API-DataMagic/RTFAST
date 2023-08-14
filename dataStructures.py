@@ -27,6 +27,7 @@ class FluxData(Dataset):
         self.pars_list = [1,13,2,3,4]
         self.scaling = scaling
         self.scaler_name = scaler_name
+        self.threshold = 1e-38
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
@@ -57,7 +58,7 @@ class FluxData(Dataset):
         Filters 0 flux and converts to smallest non-zero value. Then standard
         scales the energy bins.
         """
-        D[D<=1e-38] = 1e-38
+        D[D<=self.threshold] = self.threshold
         D = np.log10(D)
         D = self.scale(D)
         D = torch.from_numpy(D)
@@ -77,7 +78,7 @@ class FluxData(Dataset):
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
-        final_dataset[final_dataset<=1e-38] = 1e-38
+        final_dataset[final_dataset<=self.threshold] = self.threshold
         final_dataset = np.log10(final_dataset)
         data = self.scaler.fit(final_dataset)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)

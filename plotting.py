@@ -338,8 +338,8 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
 
     """
     residuals = []
-    if mode == "flux":
-        for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
+    for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+        if mode == "flux":
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
             resid = (D-pred)/D
@@ -348,9 +348,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
                 resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
             except:
                 pass
-            residuals.append(np.absolute(np.asarray(resid)))
-    else:
-        for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+        else:
             pred, I_pred = model(P)
             pred = 10**(inverse(scaler,pred.detach().numpy()))
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
@@ -360,7 +358,7 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
                 resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
             except:
                 pass
-            residuals.append(np.absolute(np.asarray(resid)))
+        residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
 
@@ -478,8 +476,7 @@ def energy_plots(dataset,scaler,model,egrid,fname,folname):
     index_start = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
     indexes = [int(i*len(egrid)) for i in index_start]
     values = egrid[indexes]
-    for batch, (D,P,M) in enumerate(dataset):
-        M = np.squeeze(M)
+    for batch, (D,P) in enumerate(dataset):
         D = np.squeeze(D)
         #retrieve relevant data and parameters
         spin, mass, inc, rin, rout = (P[0][0].item(),10**P[0][1].item(),
@@ -490,13 +487,13 @@ def energy_plots(dataset,scaler,model,egrid,fname,folname):
         incs.append(inc)
         rins.append(rin)
         routs.append(rout)
-        D[M==0] = 1e-38
+        D[D<=1e-38] = 1e-38
         da = np.squeeze(D)
         
         #generate neural network prediction and rescale to linear space
         pred = model(P).detach().numpy()
         pred = 10**np.squeeze(inverse(scaler,pred))
-        pred[M==0] = 1e-38
+        pred[D<=1e-38] = 1e-38
         
         flux_true.append(pred[indexes].tolist())
         flux_model.append(da[indexes].tolist())
