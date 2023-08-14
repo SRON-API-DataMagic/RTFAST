@@ -204,6 +204,10 @@ class LagsData(FluxData):
         return datum, ind, parameters
  
 class LoadFluxData(FluxData):
+    """
+    A class that inherits from FluxData and instead loads in data in its pure
+    form.
+    """
     def __init__(self,labels,scaler,scaler_name):
         super().__init__(labels,scaler,scaler_name)
         
@@ -221,6 +225,10 @@ class LoadFluxData(FluxData):
         return datum, parameters
 
 class LoadLagsData(LagsData):
+    """
+    A class that inherits from LagsData and instead loads in data in its pure
+    form.
+    """
     def __init__(self,labels,scaler,scaler_name):
         super().__init__(labels,scaler,scaler_name)
         
@@ -238,11 +246,16 @@ class LoadLagsData(LagsData):
         return datum, parameters
 
 class Residual():
-    
+    """
+    Class that holds residuals in an object for manipulation
+    """
     def __init__(self, residuals):
         self.data = residuals
 
 class Losses():
+    """
+    Class that dynamically holds residuals in an object for manipulation
+    """
     
     def set_loss(self, residuals, name):
         super().__setattr__(name, residuals)
