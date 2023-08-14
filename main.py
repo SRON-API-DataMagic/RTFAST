@@ -54,7 +54,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 30
+    active_loops = 40
     range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["a","mass","inc","rin","rout"]
