@@ -237,7 +237,7 @@ def residual_sorting(df,indexing):
     ticklabel = []
     for p in percents:
         tick.append(int(len(df)*p))
-        ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2E}")
+        ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2f}")
     return tick,ticklabel
 
 def residual_computation(dataloader, model, scaler, mode):
