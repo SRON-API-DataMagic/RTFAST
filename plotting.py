@@ -64,7 +64,7 @@ def distributions(data,labels,fname):
         plt.savefig(f"{fname}{labels[i]}.png")
         plt.close()
 
-def residual_plots(egrid, pred, da, fname, title, mname, log = False, 
+def residual_plots(egrid, pred, da, fname, title, mname, P, log = False, 
                    norm = False, mode = "flux"):
     """
     Plots comparison between NN model output and rtdist output with a 
@@ -98,6 +98,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_title(title)
+    axs[0].text(0,0.75,P)
     if log == True:
         axs[0].set_ylabel(f"Log({mode})")
     else:
@@ -390,7 +391,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
             fname = f"{batch}"
             title = "Standard output"
             
-            residual_plots(egrid, pred, da, fname, title, mname, norm = True, mode = mode)
+            residual_plots(egrid, pred, da, fname, title, mname, P, norm = True, mode = mode,)
             
             da_log = np.log10(np.abs(da))
             pred = model(P).detach().numpy()
