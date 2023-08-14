@@ -7,6 +7,7 @@ from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData
 from sklearn.preprocessing import MinMaxScaler
+import scipy
 from dataStructures import FluxData, LagsData
 
 def rtdist_flux(pars, egrid):

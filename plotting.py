@@ -374,7 +374,7 @@ def residuals_dataframe(residuals,names):
     df = pd.DataFrame(data = d)
     return df
 
-def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
+def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=False):
     for batch, (D,P) in enumerate(testing_dataloader):
         D = np.squeeze(D)
         
@@ -411,7 +411,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
         
             residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
             
-            if batch > 5:
+            if batch > 5 and no_brk == False:
                 break
         else:
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
@@ -449,7 +449,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode):
         
             residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
             
-            if batch > 5:
+            if batch > 5 and no_brk == False:
                 break
 
 def heatmap(df, index, ticks, ticklabels, fname, mode):
@@ -794,12 +794,47 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    set_envir_vars(wrk_dir)
-    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
+    scaler_base_loc = os.getcwd()+"/scalers/"
+    scaler_name = "grid_10_lags_scaler.bin"
+    scaler = load(scaler_base_loc+scaler_name)
+    
+    model_base_loc = wrk_dir+"/models/"
+    model_loc = model_base_loc+f"grid_10_lags.pth"
+    
+    
+    train_data = LoadFluxData("data/locations/loc_grid_10_lags.csv",scaler,
+                               scaler_name) #scaler unused but must be parsed
+    val_data = LoadFluxData("data/locations/loc_grid_10_lags_test.csv",scaler,
+                               scaler_name) #scaler unused but must be parsed
+    
+    train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
+    val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
+    model = model_load(model_loc, lags_egrid, lags = True)
+    
+    batch_size = 1
+    mode = "lags"
+    
+    testing_dataloader = DataLoader(val_data,batch_size = batch_size,
+                                    num_workers=1)
+    training_dataloader = DataLoader(train_data,batch_size = batch_size,
+                                    num_workers=1)
+    
+    mname = "compare/Comparing_val"
+    model_samples(testing_dataloader, scaler, model, egrid, mname, mode, no_brk=True)
+    mname = "compare/Comparing_tra"
+    model_samples(training_dataloader, scaler, model, egrid, mname, mode, no_brk=True)
+    
+    
+    set_envir_vars(wrk_dir)
+    
+    
+    
     active_v_grid(wrk_dir,egrid, lags_egrid)
+    
+    
     
 if __name__ == "__main__":
     main()
