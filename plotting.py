@@ -374,7 +374,7 @@ def residuals_dataframe(residuals,names):
     df = pd.DataFrame(data = d)
     return df
 
-def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=False):
+def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
     for batch, (D,P) in enumerate(testing_dataloader):
         D = np.squeeze(D)
         
@@ -411,7 +411,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=False)
         
             residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
             
-            if batch > 5 and no_brk == False:
+            if batch > no_brk:
                 break
         else:
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
@@ -449,7 +449,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=False)
         
             residual_plots(egrid, pred, da_log_scal, fname, title, mname, mode = mode)
             
-            if batch > 5 and no_brk == False:
+            if batch > no_brk:
                 break
 
 def heatmap(df, index, ticks, ticklabels, fname, mode):
@@ -823,9 +823,9 @@ def main():
                                     num_workers=1)
     
     mname = "compare/Comparing_val"
-    model_samples(testing_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=True)
+    model_samples(testing_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=1000)
     mname = "compare/Comparing_tra"
-    model_samples(training_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=True)
+    model_samples(training_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=1000)
     
     
     set_envir_vars(wrk_dir)
