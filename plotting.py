@@ -812,8 +812,8 @@ def main():
     val_data = LoadFluxData("data/locations/loc_grid_10_lags_test.csv",scaler,
                                scaler_name) #scaler unused but must be parsed
     
-    train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
-    val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"])
+    train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
+    val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
     print(train_data.labels)
     model = model_load(model_loc, lags_egrid[:-1], lags = True)
     
