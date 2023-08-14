@@ -204,9 +204,9 @@ def model_load(model_loc,egrid, lags = None):
 
     """
     if lags == None:
-        model = network.SharpNetwork(5,len(egrid))
+        model = network.HeavyFluxNetwork(5,len(egrid))
     else:
-        model = network.LagsNetwork(5,len(egrid))
+        model = network.HeavyLagsNetwork(5,len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -240,10 +240,36 @@ def residual_sorting(df,indexing):
         ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2E}")
     return tick,ticklabel
 
-def residual_computation(testing_dataloader, model, scaler, mode):
+def residual_computation(dataloader, model, scaler, mode):
+    """
+    Computes and records residual differences between neural network outputs
+    and rtdist outputs. Records them with the parameters. For data and model
+    outputs below a threshold, we consider the residual difference to be 0.
+
+    Parameters
+    ----------
+    dataloader : pytorch dataloader
+        contains test data and parameters.
+    model : pytorch model
+        neural network model to compare results to.
+    scaler : scikitlearn MinMaxScaler
+        scaler to change network output back to real output.
+    mode : string
+        signifies if using a time lags or flux model.
+
+    Returns
+    -------
+    dataframe : pandas dataframe
+        contains residuals and parameters.
+    ticks : list
+        list of lists of tick indexes for each parameter.
+    ticklabels : list
+        list of lists of tick values for each parameter.
+
+    """
     mass, spin, inc, rin, rout = [], [], [], [], []
     residuals = []
-    for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+    for batch, (D,P) in enumerate(tqdm(dataloader)):
         spin.append(P[0][0].item())
         mass.append(10**P[0][1].item())
         inc.append(P[0][2].item())
@@ -291,6 +317,26 @@ def residual_computation(testing_dataloader, model, scaler, mode):
     return (dataframe, ticks, ticklabels)
 
 def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
+    """
+    
+
+    Parameters
+    ----------
+    testing_dataloader : TYPE
+        DESCRIPTION.
+    model : TYPE
+        DESCRIPTION.
+    scaler : TYPE
+        DESCRIPTION.
+    mode : TYPE, optional
+        DESCRIPTION. The default is "flux".
+
+    Returns
+    -------
+    residuals : TYPE
+        DESCRIPTION.
+
+    """
     residuals = []
     if mode == "flux":
         for batch, (D,P,M) in enumerate(tqdm(testing_dataloader)):
