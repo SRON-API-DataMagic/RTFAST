@@ -804,7 +804,7 @@ def main():
     scaler = load(scaler_base_loc+scaler_name)
     
     model_base_loc = wrk_dir+"/models/"
-    model_loc = model_base_loc+f"grid_10_lags.pth"
+    model_loc = model_base_loc+f"grid_10_lags_final.pth"
     
     
     train_data = LoadFluxData("data/locations/loc_grid_10_lags.csv",scaler,
