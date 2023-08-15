@@ -812,6 +812,8 @@ def main():
     full_labels = pd.concat([labels_trai,labels_test],ignore_index=True)
     print(full_labels.duplicated())
     print(full_labels.duplicated(subset=["a","inc","Mass","rin","rout"]))
+    print(full_labels.duplicated().value_counts())
+    print(full_labels.duplicated(subset=["a","inc","Mass","rin","rout"]).value_counts())
     
     train_data = LoadFluxData("data/locations/loc_grid_10_lags.csv",scaler,
                                scaler_name) #scaler unused but must be parsed
