@@ -525,7 +525,15 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
+    #queryByDropout(wrk_dir,device)
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    sizes = [5,6,7,8,9,10]
+    for size in sizes:
+        fname = f"grid_{size}"
+        generator.grid_data_gen(size, fname, egrid, lags_egrid)
     grid(wrk_dir,device)
 
 if __name__ == "__main__":
