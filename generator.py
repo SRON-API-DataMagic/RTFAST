@@ -248,7 +248,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
              "data/locations/",f"loc_{fname}_lags.csv")
     saveData(test_data, test_pars, 
              "data/locations/",f"loc_{fname}_flux_test.csv")
-    saveData(test_lags, train_pars, 
+    saveData(test_lags, test_pars, 
              "data/locations/",f"loc_{fname}_lags_test.csv")
     
     scaler = MinMaxScaler()
