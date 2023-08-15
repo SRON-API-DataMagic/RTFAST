@@ -229,8 +229,8 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     idxs = np.arange(0,flux_data_init.shape[0])
     np.random.shuffle(idxs)
-    tra_idx = idxs[:int(len(idxs)-0.1*len(idxs))]
-    tes_idx = idxs[int(-0.1*len(idxs)):]
+    tra_idx = idxs[:int(0.9*len(idxs))]
+    tes_idx = idxs[int(0.9*len(idxs)):]
     
     #Splitting data and parameters into training and testing datasets
     train_data = flux_data_init[tra_idx]

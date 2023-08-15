@@ -477,7 +477,7 @@ def grid(wrk_dir,device):
             optimizer = Adam(model.parameters(),lr = 0.001)
             
             training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                             scaler_name=f"{fname}_{mode}_scaler.bin", scaling=True)
+                             scaler_name=f"{fname}_{mode}_scaler.bin")
         
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)

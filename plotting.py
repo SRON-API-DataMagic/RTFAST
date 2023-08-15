@@ -806,6 +806,12 @@ def main():
     model_base_loc = wrk_dir+"/models/"
     model_loc = model_base_loc+f"grid_10_lags_final.pth"
     
+    labels_trai = pd.read_csv("data/locations/loc_grid_10_lags.csv")
+    labels_test = pd.read_csv("data/locations/loc_grid_10_lags_test.csv")
+    
+    full_labels = pd.concat([labels_trai,labels_test],ignore_index=True)
+    print(full_labels.duplicated())
+    print(full_labels.duplicated(subset=["a","inc","Mass","rin","rout"]))
     
     train_data = LoadFluxData("data/locations/loc_grid_10_lags.csv",scaler,
                                scaler_name) #scaler unused but must be parsed
