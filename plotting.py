@@ -799,49 +799,8 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    scaler_base_loc = os.getcwd()+"/scalers/"
-    scaler_name = "grid_10_lags_scaler.bin"
-    scaler = load(scaler_base_loc+scaler_name)
-    
-    model_base_loc = wrk_dir+"/models/"
-    model_loc = model_base_loc+f"grid_10_lags_final.pth"
-    
-    labels_trai = pd.read_csv("data/locations/loc_grid_10_lags.csv")
-    labels_test = pd.read_csv("data/locations/loc_grid_10_lags_test.csv")
-    
-    full_labels = pd.concat([labels_trai,labels_test],ignore_index=True)
-    print(full_labels.duplicated())
-    print(full_labels.duplicated(subset=["a","inc","Mass","rin","rout"]))
-    print(full_labels.duplicated().value_counts())
-    print(full_labels.duplicated(subset=["a","inc","Mass","rin","rout"]).value_counts())
-    
-    train_data = LoadFluxData("data/locations/loc_grid_10_lags.csv",scaler,
-                               scaler_name) #scaler unused but must be parsed
-    val_data = LoadFluxData("data/locations/loc_grid_10_lags_test.csv",scaler,
-                               scaler_name) #scaler unused but must be parsed
-    
-    train_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
-    val_data.labels.sort_values(by=["a","inc","rin","rout","Mass"],inplace=True)
-    model = model_load(model_loc, lags_egrid[:-1], lags = True)
-    
-    batch_size = 1
-    mode = "lags"
-    
-    testing_dataloader = DataLoader(val_data,batch_size = batch_size,
-                                    num_workers=1)
-    training_dataloader = DataLoader(train_data,batch_size = batch_size,
-                                    num_workers=1)
-    
-    mname = "compare/Comparing_val"
-    model_samples(testing_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=100)
-    mname = "compare/Comparing_tra"
-    model_samples(training_dataloader, scaler, model, lags_egrid[:-1], mname, mode, no_brk=1000)
-    
-    
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir,egrid, lags_egrid)
-    
-    
     
 if __name__ == "__main__":
     main()
