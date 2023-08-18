@@ -86,7 +86,7 @@ def lhs_range_gen():
         in the latin hypercube sampling
 
     """
-    height_range = [np.log10(1.3),np.log10(1e4)]
+    height_range = [np.log10(1.2),np.log10(1e4)]
     spin_range = [0.1,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
@@ -193,7 +193,7 @@ def pars_conversion_full(pars):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = 10**pars[:,0]
+    new_pars[:,0] = -10**pars[:,0]
     new_pars[:,1] = pars[:,1]
     new_pars[:,2] = 10**pars[:,2]
     new_pars[:,3] = -10**pars[:,3]
