@@ -240,7 +240,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             print("Finding top uncertain thetas")
             # sort these thetas from smallest uncertainty to largest and save values
             query_samples = np.asarray(query_samples).flatten()
-            np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
+            np.savetxt(f"dists/loop_{active_loop_num}_full_variances.txt",query_samples)
             query_idx = np.argsort(query_samples)[::-1]
             
             #Plot distribution of variances
