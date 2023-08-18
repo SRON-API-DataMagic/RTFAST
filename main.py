@@ -54,10 +54,11 @@ def queryByDropout(wrk_dir, device = "cpu"):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 40
-    range_all = np.asarray(generator.lhs_trimmed_gen())
+    active_loops = 50
+    range_all = np.asarray(generator.lhs_range_gen())
     
-    labels = ["a","mass","inc","rin","rout"]
+    labels = ["a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
@@ -68,14 +69,23 @@ def queryByDropout(wrk_dir, device = "cpu"):
     #make this true
     first = True
     
-    flux_model = network.HeavyFluxNetwork(5,len(egrid))
+    flux_name = "active_locs_full_flux.csv"
+    flux_test_name = "active_test_locs_full_flux.csv"
+    flux_scaler_name = "active_scaler_full_flux.bin"
+    lags_name = "active_locs_full_lags.csv"
+    lags_test_name = "active_test_locs_full_lags.csv"
+    lags_scaler_name = "active_scaler_full_lags.bin"
+    
+    num_pars = range_all.shape[0]
+    
+    flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
-    lags_model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
+    lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     lags_model.to(device)
     
-    best_flux_model = network.HeavyFluxNetwork(5,len(egrid))
+    best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
+    best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -90,7 +100,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
         #generating a random set of parameters and corresponding data
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
                                        size = (init_data_size,range_all.shape[0]))
-        pars_init = generator.pars_conversion(theta_init)
+        pars_init = generator.pars_conversion_full(theta_init)
         print("Parallelized model generation")
         flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
@@ -101,22 +111,20 @@ def queryByDropout(wrk_dir, device = "cpu"):
         
         #check for and delete parameter sets producing NaN results for flux
         index = nanChecker(flux_data_init, theta_init)
-        flux_data_init = np.delete(flux_data_init,index, axis=0)
-        lags_data_init = np.delete(lags_data_init,index, axis=0)
-        pars_init = np.delete(pars_init,index, axis=0)
+        flux_data_init = np.delete(flux_data_init, index, axis=0)
+        lags_data_init = np.delete(lags_data_init, index, axis=0)
+        pars_init = np.delete(pars_init, index, axis=0)
         
         #check for and delete parameter sets producing NaN results for time lags
         index = nanChecker(lags_data_init, theta_init)
-        flux_data_init = np.delete(flux_data_init,index, axis=0)
-        lags_data_init = np.delete(lags_data_init,index, axis=0)
-        pars_init = np.delete(pars_init,index, axis=0)
+        flux_data_init = np.delete(flux_data_init, index, axis=0)
+        lags_data_init = np.delete(lags_data_init, index, axis=0)
+        pars_init = np.delete(pars_init, index, axis=0)
         
-        pars_init = generator.pars_conversion(theta_init)
+        pars_init = generator.pars_conversion_full(theta_init)
         #save data for the first time in text files
-        saveData(flux_data_init, pars_init, 
-                 "data/locations/","active_locs_flux.csv")
-        saveData(lags_data_init, pars_init, 
-                 "data/locations/","active_locs_lags.csv",
+        saveData(flux_data_init, pars_init, "data/locations/", flux_name)
+        saveData(lags_data_init, pars_init, "data/locations/", lags_name, 
                  lags = True)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
@@ -135,15 +143,15 @@ def queryByDropout(wrk_dir, device = "cpu"):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        flux_dataloader = FluxData("data/locations/active_locs_flux.csv", 
-                                       scaler,"active_scaler_flux.bin",
+        flux_dataloader = FluxData(f"data/locations/{flux_name}", 
+                                       scaler, flux_scaler_name,
                                        scaling=True)
-        lags_dataloader = LagsData("data/locations/active_locs_lags.csv", 
-                                       scaler,"active_scaler_lags.bin",
+        lags_dataloader = LagsData(f"data/locations/{lags_name}", 
+                                       scaler, lags_scaler_name,
                                        scaling=True)
         
-        loss_fn_flux = barredMSELoss("active_scaler_flux.bin",device)
-        loss_fn_lags = lagLoss("active_scaler_lags.bin",device)
+        loss_fn_flux = barredMSELoss(flux_scaler_name, device)
+        loss_fn_lags = lagLoss(lags_scaler_name, device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -185,7 +193,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            data_size = len(pd.read_csv("data/locations/active_locs_flux.csv"))
+            data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
             multiplier = ceil(data_size/100000)
             n_samples = 5000*multiplier
             n_samples_large = 10000*multiplier # number of parameter sets to draw 
@@ -237,7 +245,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             
             #Plot distribution of variances
             plt.hist(query_samples,bins=100)
-            plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
+            plt.savefig(f"dists/loop_{active_loop_num}_full_variances.png")
             plt.close()
             
             print("Top sample mean variance",query_samples[query_idx[0]])
@@ -248,10 +256,10 @@ def queryByDropout(wrk_dir, device = "cpu"):
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
             
-            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
+            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_full_")
             
             # compute the physical model for these thetas
-            theta_query_iterate = generator.pars_conversion(theta_query)
+            theta_query_iterate = generator.pars_conversion_full(theta_query)
             print("Parallelized model generation")
             data_query =  parallel(delayed(generator.rtdist_flux)(pars, egrid)
                                             for pars in theta_query_iterate)
@@ -291,21 +299,18 @@ def queryByDropout(wrk_dir, device = "cpu"):
             theta_query = theta_query[idx_query]
             
             #save to disk
-            saveData(data_query, generator.pars_conversion(theta_query), 
-                     "data/locations/","active_locs_flux.csv", 
-                     current_locs = pd.read_csv("data/locations/active_locs_flux.csv"))
-            saveData(lags_query, generator.pars_conversion(theta_query), 
-                     "data/locations/","active_locs_lags.csv", 
-                     current_locs = pd.read_csv("data/locations/active_locs_lags.csv"),
+            saveData(data_query, generator.pars_conversion_full(theta_query), 
+                     "data/locations/",flux_name, 
+                     current_locs = pd.read_csv(f"data/locations/{flux_name}"))
+            saveData(lags_query, generator.pars_conversion_full(theta_query), 
+                     "data/locations/",lags_name, 
+                     current_locs = pd.read_csv(f"data/locations/{lags_name}"),
                      lags = True)
 
-            saveData(data_test, generator.pars_conversion(theta_test), 
-                     "data/locations/",
-                     "active_test_locs_flux.csv")
-            saveData(lags_test, generator.pars_conversion(theta_test), 
-                     "data/locations/",
-                     "active_test_locs_lags.csv",
-                     lags = True)
+            saveData(data_test, generator.pars_conversion_full(theta_test), 
+                     "data/locations/", flux_test_name)
+            saveData(lags_test, generator.pars_conversion_full(theta_test), 
+                     "data/locations/", lags_test_name, lags = True)
 
             del data_query, data_test, lags_test, lags_query, theta_query, theta_test
             
@@ -317,29 +322,29 @@ def queryByDropout(wrk_dir, device = "cpu"):
             lhs_idx += (n_samples_large)
     
             print("Setting up modeling")
-            Xquery = FluxData("data/locations/active_locs_flux.csv", scaler, 
-                                "active_scaler_flux.bin")
+            Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
+                              flux_scaler_name)
             print("Query data set created")
             flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xquery = LagsData("data/locations/active_locs_lags.csv", scaler, 
-                                "active_scaler_lags.bin")
+            Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
+                              lags_scaler_name)
             print("Query data set created")
             lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xtest = FluxData("data/locations/active_test_locs_flux.csv", scaler, 
-                               "active_scaler_flux.bin")
+            Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
+                              flux_scaler_name)
             print("Test data set created")
             flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            Xtest = LagsData("data/locations/active_test_locs_lags.csv", scaler, 
-                               "active_scaler_lags.bin")
+            Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
+                              lags_scaler_name)
             print("Test data set created")
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
@@ -382,27 +387,27 @@ def queryByDropout(wrk_dir, device = "cpu"):
         print("Completed training")
         print("Final best flux training loss:", last_sig_flux_tr)
         print("Final best flux testing loss:", last_sig_flux_te)
-        torch.save(flux_model.state_dict(), "models/active_flux_final.pth")
-        print("Saved PyTorch Model State to models/active_flux_final.pth")
+        torch.save(flux_model.state_dict(), "models/active_full_flux_final.pth")
+        print("Saved PyTorch Model State to models/active_full_flux_final.pth")
         
         flux_tr_loss_arr = np.asarray(flux_tr_loss_arr)
         flux_te_loss_arr = np.asarray(flux_te_loss_arr)
         
-        np.savetxt("loss/active_flux_te_loss.txt",flux_te_loss_arr)
-        np.savetxt("loss/active_flux_tr_loss.txt",flux_tr_loss_arr)
-        np.savetxt("loss/active_flux_epochs.txt",loop_flux_epochs)
+        np.savetxt("loss/active_full_flux_te_loss.txt",flux_te_loss_arr)
+        np.savetxt("loss/active_full_flux_tr_loss.txt",flux_tr_loss_arr)
+        np.savetxt("loss/active_full_flux_epochs.txt",loop_flux_epochs)
         
         print("Final best lags training loss:", last_sig_lags_tr)
         print("Final best lags testing loss:", last_sig_lags_te)
-        torch.save(lags_model.state_dict(), "models/active_flags_final.pth")
-        print("Saved PyTorch Model State to models/active_lags_final.pth")
+        torch.save(lags_model.state_dict(), "models/active_full_lags_final.pth")
+        print("Saved PyTorch Model State to models/active_full_lags_final.pth")
         
         lags_tr_loss_arr = np.asarray(lags_tr_loss_arr)
         lags_te_loss_arr = np.asarray(lags_te_loss_arr)
         
-        np.savetxt("loss/active_lags_te_loss.txt",lags_te_loss_arr)
-        np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
-        np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
+        np.savetxt("loss/active_full_lags_te_loss.txt",lags_te_loss_arr)
+        np.savetxt("loss/active_full_lags_tr_loss.txt",lags_tr_loss_arr)
+        np.savetxt("loss/active_full_lags_epochs.txt",loop_lags_epochs)
 
 def grid(wrk_dir,device):
     """

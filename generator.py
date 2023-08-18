@@ -88,13 +88,13 @@ def lhs_range_gen():
     """
     height_range = [np.log10(1.3),np.log10(1e4)]
     spin_range = [0.1,0.998]
-    inclination_range = [1,80]
-    r_inner_range = [-400,-1]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
     z_range = [0,4]
     Gamma_range = [1.4,3.4]
     distance_range = [np.log10(0.2),np.log10(1e10)]
-    Afe_range = [0.5,10]
+    Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
     nH_range = [np.log10(1e-22),np.log10(1e6)]
@@ -168,7 +168,51 @@ def pars_conversion(pars):
     new_pars[:,4] = 10**pars[:,4]
     
     return new_pars
+
+def pars_conversion_full(pars):
+    """
+    Converts sampled parameters for neural network training into correct
+    format for use in generating data and adds non-sampled parameters
+    needed by the model
+
+    Parameters
+    ----------
+    pars : np.ndarray
+        large array that contains sampled parameters.
+
+    Returns
+    -------
+    pars : np.ndarray
+        large array that contains correctly formatted parameters ready for 
+        parsing into external model.
+
+    """
+    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+                 0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
+    new_pars = np.asarray(pars_base)
+    new_pars[:,0] = 10**pars[:,0]
+    new_pars[:,1] = pars[:,1]
+    new_pars[:,2] = 10**pars[:,2]
+    new_pars[:,3] = -10**pars[:,3]
+    new_pars[:,4] = 10**pars[:,4]
+    new_pars[:,5] = pars[:,5]
+    new_pars[:,6] = pars[:,6]
+    new_pars[:,7] = 10**pars[:,7]
+    new_pars[:,8] = 10**pars[:,8]
+    new_pars[:,9] = pars[:,9]
+    new_pars[:,10] = 10**pars[:,10]
+    new_pars[:,11] = 10**pars[:,11]
+    new_pars[:,12] = 10**pars[:,12]
+    new_pars[:,13] = 10**pars[:,13]
+    new_pars[:,14] = pars[:,14]
+    new_pars[:,15] = pars[:,15]
+    new_pars[:,16] = pars[:,16]
+    new_pars[:,20] = pars[:,17]
+    new_pars[:,21] = pars[:,18]
+    new_pars[:,22] = 10**pars[:,19]
     
+    return new_pars
+
 def grid_data_gen(size, fname, egrid, lags_egrid):
     """
     Creates a grid of parameter space and then generates spectra and time lags
