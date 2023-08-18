@@ -86,7 +86,7 @@ def lhs_range_gen():
         in the latin hypercube sampling
 
     """
-    height_range = [np.log10(2),np.log10(1e4)]
+    height_range = [np.log10(4),np.log10(1e4)]
     spin_range = [0.1,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
