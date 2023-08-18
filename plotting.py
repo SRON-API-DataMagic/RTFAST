@@ -800,7 +800,7 @@ def main():
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     set_envir_vars(wrk_dir)
-    active_v_grid(wrk_dir,egrid, lags_egrid)
+    active_v_grid(wrk_dir, egrid, lags_egrid)
     
 if __name__ == "__main__":
     main()
