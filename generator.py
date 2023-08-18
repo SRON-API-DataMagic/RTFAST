@@ -207,9 +207,9 @@ def pars_conversion_full(pars):
     new_pars[:,14] = pars[:,14]
     new_pars[:,15] = pars[:,15]
     new_pars[:,16] = pars[:,16]
-    new_pars[:,20] = pars[:,17]
-    new_pars[:,21] = pars[:,18]
-    new_pars[:,22] = 10**pars[:,19]
+    new_pars[:,21] = pars[:,17]
+    new_pars[:,22] = pars[:,18]
+    new_pars[:,23] = 10**pars[:,19]
     
     return new_pars
 
