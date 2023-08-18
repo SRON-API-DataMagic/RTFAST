@@ -459,8 +459,8 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     Z_center = -2.5
     #colormap
     top = cm.get_cmap('autumn', 128)
-    middle = cm.get_cmap('winter', 128)
-    bottom = cm.get_cmap('summer',128)
+    middle = cm.get_cmap('summer',128)
+    bottom = cm.get_cmap('winter', 128)
 
     newcolors = np.vstack((bottom(np.linspace(0, 1/3, 128)),
                            middle(np.linspace(1/3, 2/3, 128)),
