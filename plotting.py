@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
 import matplotlib.colors as colors
+import matplotlib
 
 import numpy as np
 from torch.utils.data import DataLoader
@@ -485,12 +486,13 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     else:
         egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)[:-1]
         tick_index = np.arange(0,25,24/4).astype(int)
-        plt.xticks(tick_index, labels=egrid[tick_index])
+        plt.xticks(tick_index, labels=np.round(egrid[tick_index],2))
     plt.xlabel("Energy in keV")
     plt.ylabel(index)
     
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
+    matplotlib.rcParams.update({'font.size': 22})
     plt.savefig(f"heatmaps/{fname}_{index}.png")
     plt.close()
     return
