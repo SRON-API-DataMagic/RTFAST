@@ -492,7 +492,7 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
-    matplotlib.rcParams.update({'font.size': 22})
+    matplotlib.rcParams.update({'font.size': 16})
     plt.savefig(f"heatmaps/{fname}_{index}.png")
     plt.close()
     return
