@@ -148,11 +148,13 @@ def queryByDropout(wrk_dir, device = "cpu"):
         
         #create initial dataset object to create scaler
         flux_dataloader = FluxData(f"data/locations/{flux_name}", 
-                                       scaler, flux_scaler_name,
+                                       scaler, flux_scaler_name,  
+                                       pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         lags_dataloader = LagsData(f"data/locations/{lags_name}", 
                                        scaler, lags_scaler_name,
+                                       pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         
@@ -329,7 +331,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
             print("Setting up modeling")
             Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
-                              flux_scaler_name, 
+                              flux_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
             flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
@@ -337,7 +339,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             print("Query data loader created")
             
             Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
-                              lags_scaler_name, 
+                              lags_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
             lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
@@ -345,7 +347,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             print("Query data loader created")
             
             Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
-                              flux_scaler_name, 
+                              flux_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
             flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
@@ -353,7 +355,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             print("Test data loader created")
             
             Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
-                              lags_scaler_name, 
+                              lags_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
