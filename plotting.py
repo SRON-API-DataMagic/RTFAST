@@ -661,6 +661,7 @@ def aggregate_dists(files):
     latest_pars = []
     for file in files:
         df = pd.read_csv(file)
+        print(df)
         pars = df.loc[:, df.columns!="Location"].to_numpy()
         print(pars)
         new_pars = np.asarray(np.setdiff1d(pars,latest_pars))
