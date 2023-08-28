@@ -102,7 +102,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                        size = (init_data_size,range_all.shape[0]))
         pars_init = generator.pars_conversion_full(theta_init)
         print("Parallelized model generation")
-        flux_data_init =  Parallel(n_jobs=10,verbose=5,prefer="threads")(delayed(generator.rtdist_flux)(pars, egrid)
+        flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init)
         lags_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_lags)(pars, lags_egrid)
                                         for pars in pars_init)
