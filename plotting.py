@@ -770,11 +770,11 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    loop_dist_files = ["/data/locations/loc_flux_0.csv", 
-                       "/data/locations/loc_flux_10.csv",
-                       "/data/locations/loc_flux_20.csv",
-                       "/data/locations/loc_flux_30.csv",
-                       "/data/locations/loc_flux_40.csv"]
+    loop_dist_files = ["data/locations/loc_flux_0.csv", 
+                       "data/locations/loc_flux_10.csv",
+                       "data/locations/loc_flux_20.csv",
+                       "data/locations/loc_flux_30.csv",
+                       "data/locations/loc_flux_40.csv"]
     
     aggregate_dists(loop_dist_files)
     print("Aggregate distributions plotted")
