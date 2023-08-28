@@ -674,6 +674,7 @@ def aggregate_dists(files):
     
     plt.hist(dists, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
+    plt.yscale("log")
     plt.savefig("dists/stacked_dists.png")
     plt.close()
     
