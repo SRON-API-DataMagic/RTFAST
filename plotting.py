@@ -665,13 +665,14 @@ def aggregate_dists(files):
     dists = []
     last_pars = pd.DataFrame()
     for file in files:
+        print(file)
         df = pd.read_csv(file)
         pars = df.loc[:, df.columns!="Location"]
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
         dists.append(new_pars.loc[:,"rin"])
     
-    plt.hist(dists, nbins, histtype="bar", stacked=True, labels=labels)
+    plt.hist(dists, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.savefig("dists/stacked_dists.png")
     plt.close()
