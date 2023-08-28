@@ -26,6 +26,8 @@ class FluxData(Dataset):
         super().__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = pars_list
+        self.negatives = negatives
+        self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
         self.threshold = 1e-39
