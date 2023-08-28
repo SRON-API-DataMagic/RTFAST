@@ -24,7 +24,7 @@ class FluxData(Dataset):
     def __init__(self,labels, scaler, scaler_name, scaling=False):
         super().__init__()
         self.labels = pd.read_csv(labels)
-        self.pars_list = [1,13,2,3,4]
+        self.pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
         self.scaling = scaling
         self.scaler_name = scaler_name
         self.threshold = 1e-39
@@ -44,8 +44,10 @@ class FluxData(Dataset):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        negatives = [0,3]
+        logged = [0,2,3,4,7,8,10,11,12,13,19]
+        parameters.iloc[negatives] = -parameters.iloc[negatives]
+        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
@@ -123,7 +125,7 @@ class LagsData(FluxData):
     def __init__(self,labels, scaler, scaler_name, scaling=False):
         super(FluxData, self).__init__()
         self.labels = pd.read_csv(labels)
-        self.pars_list = [1,13,2,3,4]
+        self.pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
         self.scaling = scaling
         self.scaler_name = scaler_name
         self.threshold = 1e-7
@@ -194,8 +196,10 @@ class LagsData(FluxData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        negatives = [0,3]
+        logged = [0,2,3,4,7,8,10,11,12,13,19]
+        parameters.iloc[negatives] = -parameters.iloc[negatives]
+        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
@@ -217,8 +221,10 @@ class LoadFluxData(FluxData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        negatives = [0,3]
+        logged = [0,2,3,4,7,8,10,11,12,13,19]
+        parameters.iloc[negatives] = -parameters.iloc[negatives]
+        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
@@ -238,8 +244,10 @@ class LoadLagsData(LagsData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        parameters.iloc[[3]] = -parameters.iloc[[3]]
-        parameters.iloc[[1,2,3,4]] = np.log10(parameters.iloc[[1,2,3,4]])
+        negatives = [0,3]
+        logged = [0,2,3,4,7,8,10,11,12,13,19]
+        parameters.iloc[negatives] = -parameters.iloc[negatives]
+        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
