@@ -60,6 +60,10 @@ def queryByDropout(wrk_dir, device = "cpu"):
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [0,3]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=1000000)
@@ -145,9 +149,11 @@ def queryByDropout(wrk_dir, device = "cpu"):
         #create initial dataset object to create scaler
         flux_dataloader = FluxData(f"data/locations/{flux_name}", 
                                        scaler, flux_scaler_name,
+                                       negatives=negatives,logged=logged,
                                        scaling=True)
         lags_dataloader = LagsData(f"data/locations/{lags_name}", 
                                        scaler, lags_scaler_name,
+                                       negatives=negatives,logged=logged,
                                        scaling=True)
         
         loss_fn_flux = barredMSELoss(flux_scaler_name, device)
@@ -323,28 +329,32 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
             print("Setting up modeling")
             Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
-                              flux_scaler_name)
+                              flux_scaler_name, 
+                              negatives=negatives,logged=logged)
             print("Query data set created")
             flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
             Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
-                              lags_scaler_name)
+                              lags_scaler_name, 
+                              negatives=negatives,logged=logged)
             print("Query data set created")
             lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
             Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
-                              flux_scaler_name)
+                              flux_scaler_name, 
+                              negatives=negatives,logged=logged)
             print("Test data set created")
             flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
             Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
-                              lags_scaler_name)
+                              lags_scaler_name, 
+                              negatives=negatives,logged=logged)
             print("Test data set created")
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
