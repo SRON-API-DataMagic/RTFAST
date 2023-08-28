@@ -652,6 +652,21 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.savefig(f"loss/loss_time_{mode}.png")
     plt.close()
 
+def check_uniques(array1,array2):
+    uniques = []
+    for item in array1:
+        unique = True
+        try:
+            for item2 in array2:
+                if item == item2:
+                    unique = False
+        except:
+            pass
+        if unique == True:
+            uniques.append(item)
+    return np.asarray(uniques)
+                
+
 def aggregate_dists(files):
     nbins = 100
     
@@ -661,11 +676,8 @@ def aggregate_dists(files):
     latest_pars = []
     for file in files:
         df = pd.read_csv(file)
-        print(df)
         pars = df.loc[:, df.columns!="Location"]
-        print(pars)
-        new_pars = np.asarray(np.setdiff1d(pars,latest_pars))
-        print(new_pars)
+        new_pars = check_uniques(pars,latest_pars)
         latest_pars = pars
         dists.append(new_pars[:,3])
     
