@@ -679,6 +679,7 @@ def aggregate_dists(files):
         pars = df.loc[:, df.columns!="Location"]
         new_pars = check_uniques(pars,latest_pars)
         latest_pars = pars
+        print(new_pars)
         dists.append(new_pars[:,3])
     
     plt.hist(dists, nbins, histtype="bar", stacked=True, labels=labels)
