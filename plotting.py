@@ -652,6 +652,25 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.savefig(f"loss/loss_time_{mode}.png")
     plt.close()
 
+def aggregate_dists(files):
+    nbins = 100
+    
+    labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
+    
+    dists = []
+    latest_pars = []
+    for file in files:
+        pars = pd.read_csv(file).to_numpy()
+        new_pars = np.setdiff1d(pars[:,:-1],latest_pars[:,:-1])
+        latest_pars = pars
+        dists.append(new_pars[:,3])
+    
+    plt.hist(dists, nbins, histtype="bar", stacked=True, labels=labels)
+    plt.legend()
+    plt.savefig("dists/stacked_dists.png")
+    plt.close()
+    
+
 def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     if lags != None:
         mode = "lags"
@@ -750,6 +769,15 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
 def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
+    
+    loop_dist_files = ["/data/locations/loc_flux_0.csv", 
+                       "/data/locations/loc_flux_10.csv",
+                       "/data/locations/loc_flux_20.csv",
+                       "/data/locations/loc_flux_30.csv",
+                       "/data/locations/loc_flux_40.csv"]
+    
+    aggregate_dists(loop_dist_files)
+    print("Aggregate distributions plotted")
     
     active_name = [0,1,2,3,4,10,15,20,25,30,35,40]
     active_name = np.array(active_name)
