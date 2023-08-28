@@ -663,7 +663,7 @@ def aggregate_dists(files):
     labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
     
     dists = []
-    last_pars = []
+    last_pars = pd.DataFrame()
     for file in files:
         df = pd.read_csv(file)
         pars = df.loc[:, df.columns!="Location"]
