@@ -27,7 +27,6 @@ def rtdist_flux(pars, egrid):
         outputted simulated data.
 
     """
-    print(pars)
     model = _models.tdrtdist(pars, egrid)
     return model
 
