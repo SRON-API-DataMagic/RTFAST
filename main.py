@@ -57,7 +57,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
     active_loops = 50
     range_all = np.asarray(generator.lhs_range_gen())
     
-    labels = ["a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     #pre generate Latin Hypercube samples.
