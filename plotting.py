@@ -663,8 +663,10 @@ def aggregate_dists(files):
     labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
     
     rins = []
+    routs = []
     masses = []
     spins = []
+    
     last_pars = pd.DataFrame()
     for file in files:
         print(file)
@@ -673,11 +675,11 @@ def aggregate_dists(files):
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
         rins.append(-1*new_pars.loc[:,"rin"])
+        routs.append(new_pars.loc[:,"rout"])
         masses.append(new_pars.loc[:,"Mass"])
         spins.append(new_pars.loc[:,"a"])
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
-    print(cmap)
     
     hist, bins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
@@ -689,8 +691,22 @@ def aggregate_dists(files):
     plt.legend()
     plt.yscale("log")
     plt.xscale("log")
-    plt.xlabel("Inner radius / ISCOs")
+    plt.xlabel("Inner radius / ISCO")
     plt.savefig("dists/stacked_rin.png")
+    plt.close()
+    
+    hist, bins, _ = plt.hist(routs, nbins, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    plt.close()
+    
+    plt.hist(routs, logbins, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    plt.legend()
+    plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel("Outer radius / Rg")
+    plt.savefig("dists/stacked_rout.png")
     plt.close()
     
     hist, bins, _ = plt.hist(masses, nbins, histtype="bar", stacked=True, 
