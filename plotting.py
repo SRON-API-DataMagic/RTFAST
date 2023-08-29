@@ -676,11 +676,11 @@ def aggregate_dists(files):
         masses.append(new_pars.loc[:,"Mass"])
         spins.append(new_pars.loc[:,"a"])
     
-    plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
+    plt.hist(-rins, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
     plt.xscale("log")
-    plt.xlabel("Inner radius / Rh")
+    plt.xlabel("Inner radius / ISCOs")
     plt.savefig("dists/stacked_rin.png")
     plt.close()
     
