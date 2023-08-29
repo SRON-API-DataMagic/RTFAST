@@ -706,6 +706,7 @@ def aggregate_dists(files):
                              color = cmap, label=labels)
     axs[0,1].set_xscale("log")
     axs[0,1].set_xlabel("Outer radius / Rg")
+    axs[0,1].legend()
     
     axs[1,0].hist(masses, logbins_masses, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
@@ -715,7 +716,6 @@ def aggregate_dists(files):
     axs[1,1].hist(spins, nbins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
     axs[1,1].set_xlabel("Spin")
-    plt.legend()
     plt.yscale("log")
     plt.tight_layout()
     plt.savefig("dists/stacked.png")
