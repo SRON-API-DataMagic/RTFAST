@@ -662,7 +662,9 @@ def aggregate_dists(files):
     
     labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
     
-    dists = []
+    rins = []
+    masses = []
+    spins = []
     last_pars = pd.DataFrame()
     for file in files:
         print(file)
@@ -670,12 +672,26 @@ def aggregate_dists(files):
         pars = df.loc[:, df.columns!="Location"]
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
-        dists.append(new_pars.loc[:,"rin"])
+        rins.append(new_pars.loc[:,"rin"])
+        masses.append(new_pars.loc[:,"Mass"])
+        spins.append(new_pars.loc[:,"a"])
     
-    plt.hist(dists, nbins, histtype="bar", stacked=True, label=labels)
+    plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
-    plt.savefig("dists/stacked_dists.png")
+    plt.savefig("dists/stacked_rin.png")
+    plt.close()
+    
+    plt.hist(masses, nbins, histtype="bar", stacked=True, label=labels)
+    plt.legend()
+    plt.yscale("log")
+    plt.savefig("dists/stacked_mass.png")
+    plt.close()
+    
+    plt.hist(spins, nbins, histtype="bar", stacked=True, label=labels)
+    plt.legend()
+    plt.yscale("log")
+    plt.savefig("dists/stacked_spin.png")
     plt.close()
     
 
