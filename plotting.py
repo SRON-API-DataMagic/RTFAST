@@ -681,54 +681,43 @@ def aggregate_dists(files):
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
-    hist, bins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, 
+    hist, bins_rins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
-    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    logbins_rins = np.logspace(np.log10(bins_rins[0]),np.log10(bins_rins[-1]),len(bins_rins))
+    
+    hist, bins_routs, _ = plt.hist(routs, nbins, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    logbins_routs = np.logspace(np.log10(bins_routs[0]),np.log10(bins_routs[-1]),len(bins_routs))
+    
+    hist, bins_masses, _ = plt.hist(masses, nbins, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    logbins_masses = np.logspace(np.log10(bins_masses[0]),np.log10(bins_masses[-1]),len(bins_masses))
     plt.close()
     
-    plt.hist(rins, logbins, histtype="bar", stacked=True, 
+    fig, axs = plt.subplot(2,2,sharey=True)
+    
+    axs[0,0].hist(rins, logbins_rins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
+    axs[0,0].xscale("log")
+    axs[0,0].xlabel("Inner radius / ISCO")
+    
+    axs[0,1].hist(routs, logbins_routs, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    axs[0,1].set_xscale("log")
+    axs[0,1].set_xlabel("Outer radius / Rg")
+    
+    axs[1,0].hist(masses, logbins_masses, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    axs[1,0].xscale("log")
+    axs[1,0].set_xlabel("Masses / Msolar")
+    
+    axs[1,1].hist(spins, nbins, histtype="bar", stacked=True, 
+                             color = cmap, label=labels)
+    axs[1,1].set_xlabel("Spin")
     plt.legend()
     plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Inner radius / ISCO")
-    plt.savefig("dists/stacked_rin.png")
-    plt.close()
-    
-    hist, bins, _ = plt.hist(routs, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
-    plt.close()
-    
-    plt.hist(routs, logbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    plt.legend()
-    plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Outer radius / Rg")
-    plt.savefig("dists/stacked_rout.png")
-    plt.close()
-    
-    hist, bins, _ = plt.hist(masses, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
-    plt.close()
-    
-    plt.hist(masses, logbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    plt.legend()
-    plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Masses / Msolar")
-    plt.savefig("dists/stacked_mass.png")
-    plt.close()
-    
-    plt.hist(spins, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    plt.legend()
-    plt.yscale("log")
-    plt.xlabel("Spin")
-    plt.savefig("dists/stacked_spin.png")
+    plt.tight_layout()
+    plt.savefig("dists/stacked.png")
     plt.close()
     
 
