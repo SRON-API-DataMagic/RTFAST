@@ -672,11 +672,11 @@ def aggregate_dists(files):
         pars = df.loc[:, df.columns!="Location"]
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
-        rins.append(new_pars.loc[:,"rin"])
+        rins.append(-1*new_pars.loc[:,"rin"])
         masses.append(new_pars.loc[:,"Mass"])
         spins.append(new_pars.loc[:,"a"])
     
-    plt.hist(-rins, nbins, histtype="bar", stacked=True, label=labels)
+    plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
     plt.xscale("log")
