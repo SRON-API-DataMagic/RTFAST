@@ -694,7 +694,8 @@ def aggregate_dists(files):
     logbins_masses = np.logspace(np.log10(bins_masses[0]),np.log10(bins_masses[-1]),len(bins_masses))
     plt.close()
     
-    fig, axs = plt.subplots(2,2,sharey=True)
+    fig, axs = plt.subplots(2,2,sharey=True,figsize=(12,9))
+    matplotlib.rcParams.update({'font.size': 16})
     
     axs[0,0].hist(rins, logbins_rins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
