@@ -676,7 +676,11 @@ def aggregate_dists(files):
         masses.append(new_pars.loc[:,"Mass"])
         spins.append(new_pars.loc[:,"a"])
     
-    plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
+    hist, bins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
+    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    plt.close()
+    
+    plt.hist(rins, logbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
     plt.xscale("log")
@@ -684,7 +688,11 @@ def aggregate_dists(files):
     plt.savefig("dists/stacked_rin.png")
     plt.close()
     
-    plt.hist(masses, nbins, histtype="bar", stacked=True, label=labels)
+    hist, bins, _ = plt.hist(masses, nbins, histtype="bar", stacked=True, label=labels)
+    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    plt.close()
+    
+    plt.hist(masses, logbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
     plt.xscale("log")
