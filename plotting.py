@@ -679,18 +679,23 @@ def aggregate_dists(files):
     plt.hist(rins, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel("Inner radius / Rh")
     plt.savefig("dists/stacked_rin.png")
     plt.close()
     
     plt.hist(masses, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel("Masses / Msolar")
     plt.savefig("dists/stacked_mass.png")
     plt.close()
     
     plt.hist(spins, nbins, histtype="bar", stacked=True, label=labels)
     plt.legend()
     plt.yscale("log")
+    plt.xlabel("Spin")
     plt.savefig("dists/stacked_spin.png")
     plt.close()
     
