@@ -676,7 +676,7 @@ def aggregate_dists(files):
         masses.append(new_pars.loc[:,"Mass"])
         spins.append(new_pars.loc[:,"a"])
     
-    cmap = cm.get_cmap("wistia",5)
+    cmap = cm.get_cmap("Wistia",5)
     
     hist, bins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, 
                              color = cmap, label=labels)
