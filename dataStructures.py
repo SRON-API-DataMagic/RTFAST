@@ -214,8 +214,10 @@ class LoadFluxData(FluxData):
     A class that inherits from FluxData and instead loads in data in its pure
     form.
     """
-    def __init__(self, labels, scaler, scaler_name):
-        super().__init__(labels, scaler, scaler_name)
+    def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
+                 logged = []):
+        super().__init__(labels, scaler, scaler_name, pars_list, negatives = [], 
+                     logged = [])
         
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
@@ -223,10 +225,8 @@ class LoadFluxData(FluxData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        negatives = [0,3]
-        logged = [0,2,3,4,7,8,10,11,12,13,19]
-        parameters.iloc[negatives] = -parameters.iloc[negatives]
-        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
+        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
+        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
@@ -237,8 +237,10 @@ class LoadLagsData(LagsData):
     A class that inherits from LagsData and instead loads in data in its pure
     form.
     """
-    def __init__(self, labels, scaler, scaler_name):
-        super().__init__(labels, scaler, scaler_name)
+    def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
+                 logged = []):
+        super().__init__(labels, scaler, scaler_name, pars_list, negatives = [], 
+                     logged = [])
         
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
@@ -246,10 +248,8 @@ class LoadLagsData(LagsData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
-        negatives = [0,3]
-        logged = [0,2,3,4,7,8,10,11,12,13,19]
-        parameters.iloc[negatives] = -parameters.iloc[negatives]
-        parameters.iloc[logged] = np.log10(parameters.iloc[logged])
+        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
+        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)

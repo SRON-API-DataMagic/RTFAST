@@ -743,6 +743,10 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     
     resid_list = []
     
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [0,3]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
     if type(scaler_names) != list:
         tmp = [scaler_names for i in range(len(names))]
         scaler_names = tmp
@@ -753,11 +757,13 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         batch_size = 1
         if lags == None:
             test_data = LoadFluxData("data/locations/loc_full_flux_test.csv",scaler,
-                                       scaler_name) #scaler unused but must be parsed
+                                      scaler_name, pars_list, negatives = negatives, 
+                                      logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid, lags = lags)
         else:
             test_data = LoadLagsData("data/locations/loc_full_lags_test.csv",scaler,
-                                       scaler_name) #scaler unused but must be parsed
+                                       scaler_name, pars_list, negatives = negatives, 
+                                       logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid[:-1], lags = lags)
         
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
