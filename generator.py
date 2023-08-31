@@ -323,14 +323,14 @@ def generate_test_set(size, egrid, lags_egrid):
     None.
 
     """
-    range_all = np.asarray(lhs_trimmed_gen())
+    range_all = np.asarray(lhs_range_gen())
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
 
     #generate physical models of test set
-    theta_lhs_iterate = pars_conversion(theta_lhs)
+    theta_lhs_iterate = pars_conversion_full(theta_lhs)
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)

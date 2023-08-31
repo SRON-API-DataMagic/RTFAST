@@ -21,6 +21,7 @@ from tqdm import tqdm
 import network
 from generator import generate_test_set
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
+from processing import saveData
             
 def inverse(scaler,data):
     """
@@ -631,8 +632,8 @@ def loss_epochs_plot(loss_base_loc,mode):
     train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
     test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
-    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
-    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
+    active_loss = np.loadtxt(loss_base_loc+f"40_full_{mode}_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+f"40_full_{mode}_te_loss.txt")
 
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
@@ -649,7 +650,7 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.ylabel("Loss")
     plt.title(f"Comparison of loss by strategy for {mode}")
     plt.legend()
-    plt.savefig(f"loss/loss_time_{mode}.png")
+    plt.savefig(f"loss/loss_time_full_{mode}.png")
     plt.close()
 
 def check_uniques(array1,array2):
@@ -751,18 +752,18 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         #put test set into dataloader format
         batch_size = 1
         if lags == None:
-            test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
+            test_data = LoadFluxData("data/locations/loc_full_flux_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
             model = model_load(model_loc, egrid, lags = lags)
         else:
-            test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
+            test_data = LoadLagsData("data/locations/loc_full_lags_test.csv",scaler,
                                        scaler_name) #scaler unused but must be parsed
             model = model_load(model_loc, egrid[:-1], lags = lags)
         
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                         num_workers=1)
         #folname = str(fname)
-        fname = f"{fname}_{mode}"
+        fname = f"full_{fname}_{mode}"
         print(fname)
         residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
@@ -821,30 +822,21 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    loop_dist_files = ["data/locations/loc_flux_0.csv", 
-                       "data/locations/loc_flux_10.csv",
-                       "data/locations/loc_flux_20.csv",
-                       "data/locations/loc_flux_30.csv",
-                       "data/locations/loc_flux_40.csv"]
-    
-    aggregate_dists(loop_dist_files)
-    print("Aggregate distributions plotted")
-    
     active_name = [0,1,2,3,4,10,15,20,25,30,35,40]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
     for name in active_name:
-        active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
-        active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
-    active_flux_names = [model_base_loc+str(i)+"_flux_model.pth" for i in active_name]
-    active_lags_names = [model_base_loc+str(i)+"_lags_model.pth" for i in active_name]
+        active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_full_flux_{name}.csv")))
+        active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_full_lags_{name}.csv")))
+    active_flux_names = [model_base_loc+str(i)+"_full_flux_model.pth" for i in active_name]
+    active_lags_names = [model_base_loc+str(i)+"_full_lags_model.pth" for i in active_name]
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
     grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
     grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
-    active_flux_scaler = "active_scaler_flux.bin"
-    active_lags_scaler = "active_scaler_lags.bin"
+    active_flux_scaler = "active_scaler_full_flux.bin"
+    active_lags_scaler = "active_scaler_full_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
     grid_model_flux_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
@@ -852,20 +844,20 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
-    
+    """
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
                             grid_lags_scaler, lags_egrid, lags=True)
-    
+    """
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
     
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                       active_lags_scaler, lags_egrid, lags=True)
     
-    
+    """
     print("Plotting loss by sample size")
     print("Plotting fluxes")
     plot_loss_vs_sample_size(grid_sample_nums, grid_flux,
@@ -873,13 +865,18 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     print("Plotting lags")
     plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
                              active_sample_lags_nums, active_lags, mode="lags")
-  
-
+    """
 def main():
     wrk_dir = os.getcwd()
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    size = 1000
+    
+    flux, lags, pars = generate_test_set(size, egrid, lags_egrid)
+    
+    saveData(flux, pars, "data/locations/", "loc_full_flux_test.csv")
+    saveData(lags, pars, "data/locations/", "loc_full_lags_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
