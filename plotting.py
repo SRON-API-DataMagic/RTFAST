@@ -730,7 +730,8 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     else:
         mode = "flux"
     scaler_base_loc = os.getcwd()+"/scalers/"
-    indexes = ["Mass", "Spin", "Inclination", "Inner R", "Outer R"]
+    indexes = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     median_loss = []
     loss_01_q = []
