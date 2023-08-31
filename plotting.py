@@ -871,12 +871,6 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    size = 1000
-    
-    flux, lags, pars = generate_test_set(size, egrid, lags_egrid)
-    
-    saveData(flux, pars, "data/locations/", "loc_full_flux_test.csv")
-    saveData(lags, pars, "data/locations/", "loc_full_lags_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
