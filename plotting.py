@@ -270,14 +270,17 @@ def residual_computation(dataloader, model, scaler, mode):
         list of lists of tick values for each parameter.
 
     """
-    mass, spin, inc, rin, rout = [], [], [], [], []
+    pars = [[] for i in range(20)]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
-        spin.append(P[0][0].item())
-        mass.append(10**P[0][1].item())
-        inc.append(P[0][2].item())
-        rin.append(P[0][3].item())
-        rout.append(P[0][4].item())
+        for i in range(20):
+            if i in logged:
+                pars[i].append(10**P[0][i].item())
+            else:
+                pars[i].append(P[0][i].item())
         if mode == "flux":
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
@@ -301,21 +304,19 @@ def residual_computation(dataloader, model, scaler, mode):
     obj_residuals = []
     for res in residuals:
         obj_residuals.append(Residual(res))
-
-    dataframe = pd.DataFrame({"Spin":spin,"Mass":mass,"Inclination":inc,
-                              "Inner R":rin,"Outer R":rout,
-                              "Residuals":obj_residuals})
-    del mass,spin,inc,rin,rout,pred,residuals
     
-    mass_tick, mass_ticklabel = residual_sorting(dataframe, "Mass")
-    spin_tick, spin_ticklabel = residual_sorting(dataframe, "Spin")
-    inc_tick, inc_ticklabel = residual_sorting(dataframe, "Inclination")
-    rin_tick, rin_ticklabel = residual_sorting(dataframe, "Inner R")
-    rout_tick, rout_ticklabel = residual_sorting(dataframe, "Outer R")
+    data = {}
+    for i,label in enumerate(pars_list):
+        data[label] = pars[i]
+    data["residuals"] = obj_residuals
     
-    ticks = [mass_tick,spin_tick,inc_tick,rin_tick,rout_tick]
-    ticklabels = [mass_ticklabel,spin_ticklabel,inc_ticklabel,rin_ticklabel,
-                  rout_ticklabel]
+    dataframe = pd.DataFrame.from_dict(data)
+    ticks = []
+    ticklabels = []
+    for label in pars_list:
+        tick, ticklabel = residual_sorting(dataframe, label)
+        ticks.append(tick)
+        ticklabels.append(ticklabel)
     
     return (dataframe, ticks, ticklabels)
 
@@ -828,7 +829,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,1,2,3,4,10,15,20,25,30,35,40]
+    active_name = [0,10,15,20,25,30,35,40]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []

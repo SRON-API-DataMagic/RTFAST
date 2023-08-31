@@ -216,8 +216,8 @@ class LoadFluxData(FluxData):
     """
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
                  logged = []):
-        super().__init__(labels, scaler, scaler_name, pars_list, negatives = [], 
-                     logged = [])
+        super().__init__(labels, scaler, scaler_name, pars_list, negatives, 
+                     logged)
         
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
@@ -239,8 +239,8 @@ class LoadLagsData(LagsData):
     """
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
                  logged = []):
-        super().__init__(labels, scaler, scaler_name, pars_list, negatives = [], 
-                     logged = [])
+        super().__init__(labels, scaler, scaler_name, pars_list, negatives, 
+                     logged)
         
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
