@@ -225,8 +225,10 @@ class LoadFluxData(FluxData):
         #retrieve parameters used to generate the spectra that we want to train on
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
+        print(parameters)
         parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
         parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
+        print(parameters)
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
