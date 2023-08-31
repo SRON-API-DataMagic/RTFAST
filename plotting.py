@@ -343,7 +343,6 @@ def calculate_loss(testing_dataloader,model,scaler, mode = "flux"):
     """
     residuals = []
     for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
-        print(P)
         if mode == "flux":
             pred = model(P).detach().numpy()
             pred = 10**(inverse(scaler,pred))
