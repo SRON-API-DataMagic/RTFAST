@@ -38,6 +38,8 @@ class FluxData(Dataset):
         else:
             self.scaler = load(f'scalers/{self.scaler_name}')
             print(self.scaler.data_range_)
+            print(self.scaler.data_min_)
+            print(self.scaler.data_max_)
     
     def __len__(self):
         return len(self.labels)
