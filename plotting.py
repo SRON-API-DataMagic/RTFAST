@@ -629,17 +629,17 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
 
 def loss_epochs_plot(loss_base_loc,mode):
     
-    train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
-    test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
+    #train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
+    #test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
     active_loss = np.loadtxt(loss_base_loc+f"40_full_{mode}_tr_loss.txt")
     active_test = np.loadtxt(loss_base_loc+f"40_full_{mode}_te_loss.txt")
-
+    """
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
     plt.plot(np.loadtxt(test_names[-1]), label = "Validation loss: 10x10 grid", 
              c = "red", ls = "--")
-    
+    """
     plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
              ls = "-")
     plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
