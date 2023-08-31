@@ -470,7 +470,7 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
                         top(np.linspace(2/3, 1, 128))))
     newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
     
-    residuals = df["Residuals"].apply(returnContinuous)
+    residuals = df["residuals"].apply(returnContinuous)
     resids = []
     for item in residuals:
         resids.append(item)
