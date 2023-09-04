@@ -500,7 +500,7 @@ def grid(wrk_dir,device):
             training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
                              scaler_name=f"{fname}_{mode}_scaler.bin", 
                              pars_list=pars_list,
-                             negatives=negatives,logged=logged)
+                             negatives=negatives, logged=logged, scaling=True)
         
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
@@ -508,7 +508,7 @@ def grid(wrk_dir,device):
             testing_data = dataType(locations+f"loc_{fname}_{mode}_test.csv", scaler, 
                                  scaler_name=f"{fname}_{mode}_scaler.bin", 
                                  pars_list=pars_list,
-                                 negatives=negatives,logged=logged)
+                                 negatives=negatives,logged=logged, scaling=True)
             
             test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
