@@ -448,6 +448,10 @@ def grid(wrk_dir,device):
     
     locations = "data/locations/"
     
+    pars_list = [1,13,2,3,4]
+    negatives = [3]
+    logged = [1,2,3,4]
+    
     grid_sizes = [5,6,7,8,9,10]
     grid_names = []
     for size in grid_sizes:
@@ -494,13 +498,17 @@ def grid(wrk_dir,device):
             optimizer = Adam(model.parameters(),lr = 0.001)
             
             training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
-                             scaler_name=f"{fname}_{mode}_scaler.bin")
+                             scaler_name=f"{fname}_{mode}_scaler.bin", 
+                             pars_list=pars_list,
+                             negatives=negatives,logged=logged)
         
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
             
             testing_data = dataType(locations+f"loc_{fname}_{mode}_test.csv", scaler, 
-                                 scaler_name=f"{fname}_{mode}_scaler.bin")
+                                 scaler_name=f"{fname}_{mode}_scaler.bin", 
+                                 pars_list=pars_list,
+                                 negatives=negatives,logged=logged)
             
             test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
@@ -542,8 +550,8 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    queryByDropout(wrk_dir,device)
-    #grid(wrk_dir,device)
+    #queryByDropout(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()
