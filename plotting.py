@@ -830,7 +830,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,10,15,20,25,30,35,40]
+    active_name = [0,10,15,20,25,30,35,40,49]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
