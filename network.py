@@ -287,16 +287,13 @@ class WideLagsNetwork(HeavyLagsNetwork):
         super().__init__(num_pars,data_len)
         self.p = 0.2
         self.LinearStack1 = nn.Sequential(
-            nn.Linear(num_pars,1024),
-            SharpActivation(1024)
-            ) 
+            nn.Linear(num_pars,2048),
+            SharpActivation(2048)
+            )
         self.LinearStack2 = nn.Sequential(
-            nn.Linear(1024,2048),
-            SharpActivation(2048))
-        self.LinearStack3 = nn.Sequential(
             nn.Linear(2048,4096),
             SharpActivation(4096))
-        self.LinearStack4 = nn.Sequential(
+        self.LinearStack3 = nn.Sequential(
             nn.Linear(4096,8192),
             SharpActivation(8192))
         self.OutputAbsolute = nn.Sequential(
@@ -309,3 +306,14 @@ class WideLagsNetwork(HeavyLagsNetwork):
         self.dropout3 = nn.Dropout(p=self.p)
         self.dropout4 = nn.Dropout(p=self.p)
         self.double()
+    
+    def forward(self,pars):
+        stack1 = self.LinearStack1(pars)
+        stack1 = self.dropout1(stack1)
+        stack2 = self.LinearStack2(stack1)
+        stack2 = self.dropout2(stack2)
+        stack3 = self.LinearStack3(stack2)
+        stack3 = self.dropout3(stack3)
+        result = self.OutputAbsolute(stack3)
+        ind = self.OutputSigmoid(self.OutputIndex(stack3))
+        return result, ind

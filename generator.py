@@ -325,11 +325,11 @@ def readAndRemoveNans(flux_loc,lags_loc):
     lags_df = pd.read_csv(lags_loc)
     index = []
     for i,row in enumerate(flux_df.iterrows()):
-        spec = np.loadtxt(row["Location"])
+        spec = np.loadtxt(row[-1])
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
     for i,row in enumerate(lags_df.iterrows()):
-        spec = np.loadtxt(row["Location"])
+        spec = np.loadtxt(row[-1])
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
     
@@ -343,7 +343,7 @@ def readAndRemoveNans(flux_loc,lags_loc):
         for indice in index:
             print(f"{indice}: {flux_df.iloc[indice]}")
     flux_df.drop(index,inplace=True)
-    flux_df.to_csv(flux_loc)
+    flux_df.to_csv(flux_loc, index=False)
     return
 
 def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 

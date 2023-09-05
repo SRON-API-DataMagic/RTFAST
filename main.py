@@ -83,14 +83,14 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     num_pars = range_all.shape[0]
     
-    flux_model = network.WideFluxNetwork(num_pars,len(egrid))
+    flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
-    lags_model = network.WideLagsNetwork(num_pars,len(lags_egrid)-1)
+    lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     lags_model.to(device)
     
-    best_flux_model = network.WideFluxNetwork(num_pars,len(egrid))
+    best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.WideLagsNetwork(num_pars,len(lags_egrid)-1)
+    best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
