@@ -154,6 +154,32 @@ class HeavyFluxNetwork(SharpNetwork):
         result = self.LinearStack5(stack4)
         return result
     
+class WideFluxNetwork(HeavyFluxNetwork):
+    
+    def __init__(self,num_pars,data_len):
+        super().__init__(num_pars,data_len)
+        self.p = 0.2
+        self.LinearStack1 = nn.Sequential(
+            nn.Linear(num_pars,1024),
+            SharpActivation(1024)
+            ) 
+        self.LinearStack2 = nn.Sequential(
+            nn.Linear(1024,2048),
+            SharpActivation(2048))
+        self.LinearStack3 = nn.Sequential(
+            nn.Linear(2048,4096),
+            SharpActivation(4096))
+        self.LinearStack4 = nn.Sequential(
+            nn.Linear(4096,8192),
+            SharpActivation(8192))
+        self.LinearStack5 = nn.Sequential(
+            nn.Linear(8192,data_len))
+        self.dropout1 = nn.Dropout(p=self.p)
+        self.dropout2 = nn.Dropout(p=self.p)
+        self.dropout3 = nn.Dropout(p=self.p)
+        self.dropout4 = nn.Dropout(p=self.p)
+        self.double()
+    
 class LagsNetwork(nn.Module):
     """
     A class that determines the neural network architecture for learning the 
@@ -255,138 +281,31 @@ class HeavyLagsNetwork(LagsNetwork):
         result = self.OutputAbsolute(stack4)
         ind = self.OutputSigmoid(self.OutputIndex(stack4))
         return result, ind
-    
-class LightSharpNetwork(SharpNetwork):
-    
+
+class WideLagsNetwork(HeavyLagsNetwork):
     def __init__(self,num_pars,data_len):
-        super(SharpNetwork,self).__init__(num_pars,data_len)
+        super().__init__(num_pars,data_len)
         self.p = 0.2
         self.LinearStack1 = nn.Sequential(
-            nn.Linear(num_pars,256),
-            SharpActivation(256)
+            nn.Linear(num_pars,1024),
+            SharpActivation(1024)
             ) 
         self.LinearStack2 = nn.Sequential(
-            nn.Linear(256,512),
-            SharpActivation(512))
+            nn.Linear(1024,2048),
+            SharpActivation(2048))
         self.LinearStack3 = nn.Sequential(
-            nn.Linear(512,data_len))
+            nn.Linear(2048,4096),
+            SharpActivation(4096))
+        self.LinearStack4 = nn.Sequential(
+            nn.Linear(4096,8192),
+            SharpActivation(8192))
+        self.OutputAbsolute = nn.Sequential(
+            nn.Linear(8192,data_len))
+        self.OutputIndex = nn.Sequential(
+            nn.Linear(8192,data_len))
+        self.OutputSigmoid = nn.Sigmoid()
         self.dropout1 = nn.Dropout(p=self.p)
         self.dropout2 = nn.Dropout(p=self.p)
+        self.dropout3 = nn.Dropout(p=self.p)
+        self.dropout4 = nn.Dropout(p=self.p)
         self.double()
-    
-    def forward(self,pars):
-        stack1 = self.LinearStack1(pars)
-        stack1 = self.dropout1(stack1)
-        stack2 = self.LinearStack2(stack1)
-        stack2 = self.dropout2(stack2)
-        result = self.LinearStack3(stack2)
-        return result
-
-class Committee(NeuralNetwork):
-    """
-    A class that determines a variant of the neural network infrastructure
-    that adds a dropout to create a committee format when performing active
-    learning.
-    """
-    
-    def forward(self,pars):
-        stack1 = self.LinearStack1(pars)
-        stack2 = self.dropout1(stack1)
-        stack3 = self.LinearStack2(stack2)
-        stack4 = self.dropout2(stack3)
-        stack5 = self.LinearStack3(stack4)
-        stack6 = self.dropout3(stack5)
-        result = self.LinearStack3(stack6)
-        return result
-    
-class DeepNetwork(nn.Module):
-    """
-    A class that determines a variant neural network structure featuring deeper
-    but narrower layers
-    
-    Attributes
-    ----------
-    LinearStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    HiddenStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    OutputStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    double : method
-        converts all parameters to doubles rather than float
-    """
-    
-    def __init__(self,num_pars,data_len):
-        super().__init__()
-        self.p = 0.2
-        self.LinearStack = nn.Sequential(
-            nn.Linear(num_pars, 100),
-            SharpActivation(100),
-            nn.Dropout(self.p)
-            )
-        self.HiddenStack = nn.Sequential(
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p),
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p),
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p),
-            nn.Linear(100,data_len))
-        self.double()
-    
-    def forward(self,pars):
-        stack1 = self.LinearStack(pars)
-        results = self.HiddenStack(stack1)
-        return results
-
-class DeepResNetwork(nn.Module):
-    """
-    A class that is a variant of the deep neural network that utilises residual
-    strategies in passing data through the network by adding the output of a
-    previous stack to the output of the new stack.
-    
-    Attributes
-    ----------
-    LinearStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    HiddenStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    OutputStack : Sequential neural network layers
-        Feedforward neural network callable in one method
-    double : method
-        converts all parameters to doubles rather than float
-    """
-    
-    def __init__(self,num_pars,data_len):
-        super().__init__()
-        self.p = 0.2
-        self.LinearStack = nn.Sequential(
-            nn.Linear(num_pars, 100),
-            SharpActivation(100),
-            nn.Dropout(self.p)
-            )
-        self.HiddenStack1 = nn.Sequential(
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p))
-        self.HiddenStack2 = nn.Sequential(
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p))
-        self.HiddenStack3 = nn.Sequential(
-            nn.Linear(100,100),
-            SharpActivation(100),
-            nn.Dropout(self.p))
-        self.OutputStack = nn.Sequential(
-            nn.Linear(100,data_len))
-        
-    def forward(self,pars):
-        stack1 = self.LinearStack(pars)
-        stack2 = self.HiddenStack1(stack1) + stack1
-        stack3 = self.HiddenStack2(stack2) + stack2
-        stack4 = self.HiddenStack3(stack3) + stack3
-        result = self.OutputStack(stack4)
-        return result
