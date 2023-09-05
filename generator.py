@@ -5,10 +5,11 @@ for generating sampels for training the emulator for rtdist.
 import numpy as np
 from reltrans import _models
 from joblib import Parallel, delayed
-from processing import nanChecker, saveData
+from processing import nanChecker, saveData, mergeSaveData, renameData
 from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
+import pandas as pd
 
 def rtdist_flux(pars, egrid):
     """
@@ -52,28 +53,6 @@ def rtdist_lags(pars, egrid):
     dE = np.diff(egrid)
     output = y[:-1]/dE
     return output
-
-
-def pregen():
-    """
-    Generates random parameters for the rtdist model to evaluate
-
-    Returns
-    -------
-    pars : list
-        list of parameters for evaluation by rtdist.
-
-    """
-    pars = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,0,0.95,0,
-            -0.8,0.3,2.2e-4,1,1.]
-    uni = np.random.uniform
-    a = uni(0.1,0.998)
-    mass = 10**uni(1,11)
-    
-    pars[1] = a
-    pars[13] = mass
-    
-    return pars
 
 def lhs_range_gen():
     """
@@ -340,3 +319,85 @@ def generate_test_set(size, egrid, lags_egrid):
     data_init = np.asarray(data_init)
     lags = np.asarray(lags)
     return data_init, lags, theta_lhs_iterate
+
+def readAndRemoveNans(flux_loc,lags_loc):
+    flux_df = pd.read_csv(flux_loc)
+    lags_df = pd.read_csv(lags_loc)
+    index = []
+    for i,row in enumerate(flux_df.iterrows()):
+        spec = np.loadtxt(row["Location"])
+        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
+            index.append(i)
+    for i,row in enumerate(lags_df.iterrows()):
+        spec = np.loadtxt(row["Location"])
+        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
+            index.append(i)
+    
+    try:
+        index = np.unique(index).tolist()
+    except:
+        print("No bad models found")
+        index = []
+    if index != []:
+        print("Found bad models, printing parameters...")
+        for indice in index:
+            print(f"{indice}: {flux_df.iloc[indice]}")
+    flux_df.drop(index,inplace=True)
+    flux_df.to_csv(flux_loc)
+    return
+
+def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
+                               flux_name, flux_test_name, lags_name,
+                               lags_test_name):
+    # compute the physical model for these thetas
+    theta_query_iterate = pars_conversion_full(theta_query)
+    print("Generating flux models")
+    data_query =  parallel(delayed(rtdist_flux)(pars, egrid)
+                                    for pars in theta_query_iterate)
+    data_query = np.asarray(data_query)
+    print("Saving flux data")
+    saveData(data_query, theta_query_iterate, 
+             "data/locations/","active_gen_flux.csv")
+    
+    del data_query
+    print("Generating lags models")
+    lags_query =  parallel(delayed(rtdist_lags)(pars, lags_egrid)
+                                    for pars in theta_query_iterate)
+    lags_query = np.asarray(lags_query)
+    print("Saving lags data")
+    saveData(lags_query, theta_query_iterate, 
+             "data/locations/","active_gen_lags.csv", lags=True)
+    del theta_query_iterate, lags_query
+    
+    print("Performing data cleanup")
+    readAndRemoveNans("data/locations/active_gen_flux.csv", 
+                      "data/locations/active_gen_lags.csv")
+    
+    flux = pd.read_csv("data/locations/active_gen_flux.csv")
+    lags = pd.read_csv("data/locations/active_gen_lags.csv")
+    
+    # shuffle indices for neural network training
+    idx_shuffle = np.arange(0, len(flux), dtype=int)
+    np.random.shuffle(idx_shuffle)
+
+    idx_query = idx_shuffle[:len(idx_shuffle)-250]
+    idx_test = idx_shuffle[-250:]
+    
+    #Split data into test and training sets
+    flux_test = flux[idx_test]
+    lags_test = lags[idx_test]
+    
+    flux_query = flux[idx_query]
+    lags_query = lags[idx_query]
+    
+    #save final curated datasets back to disk for use
+    mergeSaveData(flux_query, pd.read_csv("data/locations/{flux_name}"),
+                  "data/locations/", flux_name)
+    mergeSaveData(lags_query, pd.read_csv("data/locations/{lags_name}"),
+                  "data/locations/", lags_name)
+    
+    renameData(flux_test, "data/locations/", 
+               flux_test_name)
+    renameData(lags_test, "data/locations/", 
+               lags_test_name)
+    return

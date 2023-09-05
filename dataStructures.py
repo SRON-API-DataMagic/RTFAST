@@ -208,7 +208,7 @@ class LagsData(FluxData):
         #scale spectra by energy bin to normalized space
         datum, ind = self.standardize(datum)
         return datum, ind, parameters
- 
+
 class LoadFluxData(FluxData):
     """
     A class that inherits from FluxData and instead loads in data in its pure

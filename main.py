@@ -26,6 +26,7 @@ import network
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from plotting import distributions
+from generator import active_learning_generation
 
 def queryByDropout(wrk_dir, device = "cpu"):
     """
@@ -165,7 +166,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
         start_num = 30
         active_loop_num = start_num + 1
         print("Loading previous data")
-        renameData(f"data/locations/loc_{start_num}.csv", "data/locations/", "active_locs.csv")
+        renameData(pd.read_csv(f"data/locations/loc_{start_num}.csv"), 
+                   "data/locations/", "active_locs.csv")
         
         with open(f"loss/{start_num}_tr_loss.txt","r") as f1:
             tr_loss_arr = np.loadtxt(f1)
@@ -266,61 +268,9 @@ def queryByDropout(wrk_dir, device = "cpu"):
             
             distributions(theta_query, labels, f"dists/loop_{active_loop_num}_full_")
             
-            # compute the physical model for these thetas
-            theta_query_iterate = generator.pars_conversion_full(theta_query)
-            print("Parallelized model generation")
-            data_query =  parallel(delayed(generator.rtdist_flux)(pars, egrid)
-                                            for pars in theta_query_iterate)
-            data_query = np.asarray(data_query)
-            lags_query =  parallel(delayed(generator.rtdist_lags)(pars, lags_egrid)
-                                            for pars in theta_query_iterate)
-            lags_query = np.asarray(lags_query)
-            del theta_query_iterate
-            
-            #Remove any broken models
-            #check for and delete parameter sets producing NaN results for flux
-            index = nanChecker(data_query, theta_query)
-            data_query = np.delete(data_query,index, axis=0)
-            lags_query = np.delete(lags_query,index, axis=0)
-            theta_query = np.delete(theta_query,index, axis=0)
-            
-            #check for and delete parameter sets producing NaN results for time lags
-            index = nanChecker(lags_query, theta_query)
-            data_query = np.delete(data_query, index, axis=0)
-            lags_query = np.delete(lags_query, index, axis=0)
-            theta_query = np.delete(theta_query, index, axis=0)
-            
-            # shuffle indices for neural network training
-            idx_shuffle = np.arange(0, len(theta_query), dtype=int)
-            np.random.shuffle(idx_shuffle)
-        
-            idx_query = idx_shuffle[:len(idx_shuffle)-250]
-            idx_test = idx_shuffle[-250:]
-            
-            #Split data and thetas into test and training data
-            data_test = data_query[idx_test]
-            lags_test = lags_query[idx_test]
-            theta_test  = theta_query[idx_test]
-            
-            data_query = data_query[idx_query]
-            lags_query = lags_query[idx_query]
-            theta_query = theta_query[idx_query]
-            
-            #save to disk
-            saveData(data_query, generator.pars_conversion_full(theta_query), 
-                     "data/locations/",flux_name, 
-                     current_locs = pd.read_csv(f"data/locations/{flux_name}"))
-            saveData(lags_query, generator.pars_conversion_full(theta_query), 
-                     "data/locations/",lags_name, 
-                     current_locs = pd.read_csv(f"data/locations/{lags_name}"),
-                     lags = True)
-
-            saveData(data_test, generator.pars_conversion_full(theta_test), 
-                     "data/locations/", flux_test_name)
-            saveData(lags_test, generator.pars_conversion_full(theta_test), 
-                     "data/locations/", lags_test_name, lags = True)
-
-            del data_query, data_test, lags_test, lags_query, theta_query, theta_test
+            active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
+                                           flux_name, flux_test_name, lags_name,
+                                           lags_test_name)
             
             # add rejected parameter sets back to original array for potential 
             # future use:
@@ -471,8 +421,6 @@ def grid(wrk_dir,device):
             scaler = MinMaxScaler()
             #create initial dataset object to create scaler (and then delete object)
             
-            print("Dataloaders created")
-            
             if mode == "flux":
                 train = train_flux
                 test = test_flux
@@ -512,7 +460,9 @@ def grid(wrk_dir,device):
             
             test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
-                
+            
+            print("Dataloaders created")
+            
             grid_training_loop(model, optimizer, train, test, 
                                    train_dataloader, test_dataloader,
                                    loss_fn, device,
@@ -550,8 +500,8 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    #queryByDropout(wrk_dir,device)
-    grid(wrk_dir,device)
+    queryByDropout(wrk_dir,device)
+    #grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()

@@ -106,6 +106,12 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     df.to_csv(destination+fname,index=False)
     return
 
+def removeParameters(df_loc,indexes):
+    df = pd.read_csv(df_loc)
+    df.drop(indexes,inplace=True)
+    df.to_csv(df_loc)
+    return
+
 def removeRedundantData():
     """
     Method that checks if all data currently saved on disk exists as referenced
@@ -148,7 +154,7 @@ def removeRedundantData():
     
     return
 
-def renameData(data_locs,destination,fname):
+def renameData(df,destination,fname):
     """
     Changes the name of a locations file as well as moving it to a new folder
     if wished.
@@ -167,7 +173,6 @@ def renameData(data_locs,destination,fname):
     None.
 
     """
-    df = pd.read_csv(data_locs)
     df.to_csv(destination+fname,index=False)
     return
 
