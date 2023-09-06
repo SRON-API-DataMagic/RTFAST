@@ -116,7 +116,7 @@ def lhs_trimmed_gen():
     
     return range_all
 
-def pars_conversion(pars):
+def pars_conversion(pars,ReIm):
     """
     Converts sampled parameters for neural network training into correct
     format for use in generating data and adds non-sampled parameters
@@ -135,7 +135,7 @@ def pars_conversion(pars):
 
     """
     pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
+                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
     new_pars = []
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
@@ -148,7 +148,7 @@ def pars_conversion(pars):
     
     return new_pars
 
-def pars_conversion_full(pars):
+def pars_conversion_full(pars,ReIm):
     """
     Converts sampled parameters for neural network training into correct
     format for use in generating data and adds non-sampled parameters
@@ -167,7 +167,7 @@ def pars_conversion_full(pars):
 
     """
     pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,0,0,-0.8,0.3,2.2e-4,1,1.]
+                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
     new_pars = []
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
@@ -350,24 +350,25 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                                flux_name, flux_test_name, lags_name,
                                lags_test_name):
     # compute the physical model for these thetas
-    theta_query_iterate = pars_conversion_full(theta_query)
+    theta_flux = pars_conversion_full(theta_query,0)
+    theta_lags = pars_conversion_full(theta_query,4)
     print("Generating flux models")
     data_query =  parallel(delayed(rtdist_flux)(pars, egrid)
-                                    for pars in theta_query_iterate)
+                                    for pars in theta_flux)
     data_query = np.asarray(data_query)
     print("Saving flux data")
-    saveData(data_query, theta_query_iterate, 
+    saveData(data_query, theta_flux, 
              "data/locations/","active_gen_flux.csv")
     
     del data_query
     print("Generating lags models")
     lags_query =  parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                    for pars in theta_query_iterate)
+                                    for pars in theta_lags)
     lags_query = np.asarray(lags_query)
     print("Saving lags data")
-    saveData(lags_query, theta_query_iterate, 
+    saveData(lags_query, theta_lags, 
              "data/locations/","active_gen_lags.csv", lags=True)
-    del theta_query_iterate, lags_query
+    del theta_flux, theta_lags, lags_query
     
     print("Performing data cleanup")
     readAndRemoveNans("data/locations/active_gen_flux.csv", 
