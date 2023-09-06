@@ -109,7 +109,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
 def removeParameters(df_loc,indexes):
     df = pd.read_csv(df_loc)
     df.drop(indexes,inplace=True)
-    df.to_csv(df_loc)
+    df.to_csv(df_loc,index=False)
     return
 
 def removeRedundantData():

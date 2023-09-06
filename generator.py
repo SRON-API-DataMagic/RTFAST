@@ -324,12 +324,12 @@ def readAndRemoveNans(flux_loc,lags_loc):
     flux_df = pd.read_csv(flux_loc)
     lags_df = pd.read_csv(lags_loc)
     index = []
-    for i,row in enumerate(flux_df.iterrows()):
-        spec = np.loadtxt(row[-1])
+    for i,row in flux_df.iterrows():
+        spec = np.loadtxt(row["Location"])
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
-    for i,row in enumerate(lags_df.iterrows()):
-        spec = np.loadtxt(row[-1])
+    for i,row in lags_df.iterrows():
+        spec = np.loadtxt(row["Location"])
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
     
