@@ -351,7 +351,7 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                                lags_test_name):
     # compute the physical model for these thetas
     theta_flux = pars_conversion_full(theta_query,0)
-    theta_lags = pars_conversion_full(theta_query,4)
+    theta_lags = pars_conversion_full(theta_query,6)
     print("Generating flux models")
     data_query =  parallel(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)

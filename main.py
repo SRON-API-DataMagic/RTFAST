@@ -107,7 +107,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
                                        size = (init_data_size,range_all.shape[0]))
         pars_init_flux = generator.pars_conversion_full(theta_init,0)
-        pars_init_lags = generator.pars_conversion_full(theta_init,4)
+        pars_init_lags = generator.pars_conversion_full(theta_init,6)
         print("Parallelized model generation")
         flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init_flux)
