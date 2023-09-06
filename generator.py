@@ -391,9 +391,9 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     lags_query = lags.iloc[idx_query]
     
     #save final curated datasets back to disk for use
-    mergeSaveData(flux_query, pd.read_csv("data/locations/{flux_name}"),
+    mergeSaveData(flux_query, pd.read_csv(f"data/locations/{flux_name}"),
                   "data/locations/", flux_name)
-    mergeSaveData(lags_query, pd.read_csv("data/locations/{lags_name}"),
+    mergeSaveData(lags_query, pd.read_csv(f"data/locations/{lags_name}"),
                   "data/locations/", lags_name)
     
     renameData(flux_test, "data/locations/", 
