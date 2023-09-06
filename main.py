@@ -491,7 +491,6 @@ def main():
     torch.set_default_dtype(torch.double)
     
     wrk_dir = os.getcwd()
-    os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
     
     #set envionmental variables required in xspec with simrtdist
     environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
@@ -509,8 +508,6 @@ def main():
     
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device = "cpu"
-    print(device)
     
     queryByDropout(wrk_dir,device)
     #grid(wrk_dir,device)
