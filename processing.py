@@ -224,7 +224,7 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
 
     """
     print("Saving loop")
-    renameData(data_locs,destination = "data/locations/",
+    renameData(pd.read_csv(data_locs),destination = "data/locations/",
               fname = f"loc_full_{typ}_{num}.csv")
     print("Saved data")
     torch.save(model.state_dict(), f"models/{num}_full_{typ}_model.pth")
