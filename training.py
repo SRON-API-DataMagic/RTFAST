@@ -342,7 +342,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                   test_dataloader,te_loss_arr,tr_loss_arr,
                   last_sig_te,last_sig_tr, active_loop_num,
                   loop_epochs, best_model, train, test,
-                  mode = "flux", stopping = 15):
+                  mode = "flux", stopping = 15, scheduler = None):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
@@ -357,7 +357,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                                              device)
         loss = test(test_dataloader,model,loss_fn,
                          device)
-        #scheduler.step(loss)
+        if scheduler != None:
+            scheduler.step(loss)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         

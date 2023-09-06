@@ -12,7 +12,7 @@ from sherpa.astro.ui import unpack_rmf
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-#from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
 from joblib import Parallel, delayed
 import scipy.stats
@@ -95,7 +95,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
-    #scheduler = ReduceLROnPlateau(optimizer,factor=0.5,patience=30)
+    scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
+    scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
     scaler = MinMaxScaler()
     start_num = 0
     
@@ -329,7 +330,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux", stopping = stopping)
+                                                              mode = "flux", stopping = stopping,
+                                                              scheduler = scheduler_flux)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -342,7 +344,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags", stopping = stopping)
+                                                              mode = "lags", stopping = stopping,
+                                                              scheduler = scheduler_lags)
             #iterate loop number by 1
             active_loop_num += 1
             
