@@ -245,7 +245,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                 dvar_inds = np.var(pred_query_inds,axis=0)
                 mean_var_inds = np.mean(dvar_inds, axis=1)
                 #sum the two
-                mean_var_query = mean_var_lags+mean_var_flux+mean_var_inds
+                mean_var_query = mean_var_flux+0.5*(mean_var_lags+mean_var_inds)
                 # add to uncertainties per theta to list
                 query_samples.append(mean_var_query.tolist())
             
