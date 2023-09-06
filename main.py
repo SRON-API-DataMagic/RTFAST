@@ -222,6 +222,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             sample_dropout = 100
             pred_query_flux = np.zeros((sample_dropout,n_samples_small,len(egrid)))
             pred_query_lags = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)-1))
+            pred_query_inds = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)-1))
             flux_model.train()
             lags_model.train()
             query_samples = []
@@ -233,14 +234,18 @@ def queryByDropout(wrk_dir, device = "cpu"):
                     pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
                     pred_query_flux[i] = pred_flux.detach().cpu().numpy()
                     pred_query_lags[i] = pred_lags.detach().cpu().numpy()
+                    pred_query_inds[i] = ind.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar_flux = np.var(pred_query_flux,axis=0)
                 mean_var_flux = np.mean(dvar_flux, axis=1)
                 # find uncertainty (as measured by relative variance)
                 dvar_lags = np.var(pred_query_lags,axis=0)
                 mean_var_lags = np.mean(dvar_lags, axis=1)
+                # find uncertainty (as measured by relative variance)
+                dvar_inds = np.var(pred_query_inds,axis=0)
+                mean_var_inds = np.mean(dvar_inds, axis=1)
                 #sum the two
-                mean_var_query = mean_var_lags+mean_var_flux
+                mean_var_query = mean_var_lags+mean_var_flux+mean_var_inds
                 # add to uncertainties per theta to list
                 query_samples.append(mean_var_query.tolist())
             
