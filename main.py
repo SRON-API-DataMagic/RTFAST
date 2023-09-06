@@ -484,7 +484,7 @@ def main():
     torch.set_default_dtype(torch.double)
     
     wrk_dir = os.getcwd()
-    os.environ['CUDA_LAUNCH_BLOCKING'] = 1
+    os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
     
     #set envionmental variables required in xspec with simrtdist
     environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
