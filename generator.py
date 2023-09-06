@@ -384,11 +384,11 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     idx_test = idx_shuffle[-250:]
     
     #Split data into test and training sets
-    flux_test = flux[idx_test]
-    lags_test = lags[idx_test]
+    flux_test = flux.iloc[idx_test]
+    lags_test = lags.iloc[idx_test]
     
-    flux_query = flux[idx_query]
-    lags_query = lags[idx_query]
+    flux_query = flux.iloc[idx_query]
+    lags_query = lags.iloc[idx_query]
     
     #save final curated datasets back to disk for use
     mergeSaveData(flux_query, pd.read_csv("data/locations/{flux_name}"),
