@@ -167,7 +167,7 @@ def pars_conversion_full(pars):
 
     """
     pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,0,0.95,-0.8,0.3,2.2e-4,1,1.]
+                 0,0,0,-0.8,0.3,2.2e-4,1,1.]
     new_pars = []
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
