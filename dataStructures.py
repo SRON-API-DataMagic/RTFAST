@@ -205,6 +205,8 @@ class LagsData(FluxData):
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
+        if np.any(np.isnan(datum)) == True:
+            print("Lags data contains NaN values")
         #scale spectra by energy bin to normalized space
         datum, ind = self.standardize(datum)
         return datum, ind, parameters
