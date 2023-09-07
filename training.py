@@ -196,15 +196,6 @@ def train_flux(dataloader,model,optimizer,loss_fn,device):
         optimizer.zero_grad()
         loss.backward()
         
-        threshold = 0
-        vanishing_grads = 0
-        for p in model.parameters():
-            if p.grad.norm() == threshold:
-                vanishing_grads += 1
-        
-        if vanishing_grads != 0:
-            print(f"{vanishing_grads} gradients are approaching 0")
-        
         optimizer.step()
         loss_b = loss.detach().item()
         if batch % 5 == 0:
@@ -252,15 +243,6 @@ def train_lags(dataloader,model,optimizer,loss_fn,device):
         loss = loss_fn(pred, D.to(device), I_pred, I.to(device))
         optimizer.zero_grad()
         loss.backward()
-        
-        threshold = 0
-        vanishing_grads = 0
-        for p in model.parameters():
-            if p.grad.norm() == threshold:
-                vanishing_grads += 1
-        
-        if vanishing_grads != 0:
-            print(f"{vanishing_grads} gradients are approaching 0")
         
         optimizer.step()
         loss_b = loss.detach().item()
