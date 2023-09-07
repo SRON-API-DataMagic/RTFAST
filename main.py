@@ -326,6 +326,18 @@ def queryByDropout(wrk_dir, device = "cpu"):
                 stopping = 15
             
             #Train the flux model first
+            (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
+                    flux_te_loss_arr, flux_tr_loss_arr, 
+                    last_sig_flux_tr, last_sig_flux_te) = active_training_loop(flux_model, flux_dataloader, 
+                                                              optimizer_flux, loss_fn_flux, 
+                                                              device, flux_test_dataloader, 
+                                                              flux_te_loss_arr, flux_tr_loss_arr, 
+                                                              last_sig_flux_te, last_sig_flux_tr, 
+                                                              active_loop_num, loop_flux_epochs, 
+                                                              best_flux_model, 
+                                                              train_flux, test_flux,
+                                                              mode = "flux", stopping = stopping,
+                                                              scheduler = scheduler_flux)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -340,21 +352,6 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               train_lags, test_lags,
                                                               mode = "lags", stopping = stopping,
                                                               scheduler = scheduler_lags)
-            
-            (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
-                    flux_te_loss_arr, flux_tr_loss_arr, 
-                    last_sig_flux_tr, last_sig_flux_te) = active_training_loop(flux_model, flux_dataloader, 
-                                                              optimizer_flux, loss_fn_flux, 
-                                                              device, flux_test_dataloader, 
-                                                              flux_te_loss_arr, flux_tr_loss_arr, 
-                                                              last_sig_flux_te, last_sig_flux_tr, 
-                                                              active_loop_num, loop_flux_epochs, 
-                                                              best_flux_model, 
-                                                              train_flux, test_flux,
-                                                              mode = "flux", stopping = stopping,
-                                                              scheduler = scheduler_flux)
-            
-            
             #iterate loop number by 1
             active_loop_num += 1
             
