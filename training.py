@@ -156,10 +156,6 @@ class lagLoss(nn.Module):
         data = torch.mul(target,mask)
         #calculate loss
         loss = self.criterion(pred,data)
-        print(torch.any((index < 0)|(index > 1)))
-        print(torch.any((index_target < 0)|(index_target > 1)))
-        print(torch.any(torch.isnan(index)))
-        print(torch.any(torch.isnan(index_target)))
         signed_loss = self.binary(index,index_target)
         loss += signed_loss
         return loss 

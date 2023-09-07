@@ -342,8 +342,11 @@ def readAndRemoveNans(flux_loc,lags_loc):
         print("Found bad models, printing parameters...")
         for indice in index:
             print(f"{indice}: {flux_df.iloc[indice]}")
+            print(f"{indice}: {lags_df.iloc[indice]}")
     flux_df.drop(index,inplace=True)
     flux_df.to_csv(flux_loc, index=False)
+    lags_df.drop(index,inplace=True)
+    lags_df.to_csv(lags_loc, index=False)
     return
 
 def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
