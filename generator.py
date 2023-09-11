@@ -286,11 +286,19 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     scaler = MinMaxScaler()
     
+    pars_list = [1,13,2,3,4]
+    negatives = [3]
+    logged = [1,2,3,4]
+    
     flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
                                    scaler,f"{fname}_flux_scaler.bin",
+                                   pars_list=pars_list,
+                                   negatives=negatives, logged=logged, 
                                    scaling=True)
     lags_dataloader = LagsData(f"data/locations/loc_{fname}_lags.csv", 
-                                   scaler,f"{fname}_lags_scaler.bin",
+                                   scaler,f"{fname}_lags_scaler.bin", 
+                                   pars_list=pars_list,
+                                   negatives=negatives, logged=logged, 
                                    scaling=True)
     
     return   
