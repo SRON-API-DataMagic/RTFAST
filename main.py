@@ -26,7 +26,8 @@ import network
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from plotting import distributions
-from generator import active_learning_generation
+from generator import active_learning_generation, pars_conversion, pars_conversion_full
+from generator import grid_data_gen
 
 def queryByDropout(wrk_dir, device = "cpu"):
     """
@@ -65,6 +66,10 @@ def queryByDropout(wrk_dir, device = "cpu"):
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
+    pars_list = [1,13,2,3,4]
+    negatives = [3]
+    logged = [1,2,3,4]
+    
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=1000000)
@@ -95,8 +100,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
-    scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
-    scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
+    #scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
+    #scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
     scaler = MinMaxScaler()
     start_num = 0
     
@@ -278,7 +283,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             
             active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                            flux_name, flux_test_name, lags_name,
-                                           lags_test_name)
+                                           lags_test_name, pars_conversion)
             
             # add rejected parameter sets back to original array for potential 
             # future use:
@@ -336,8 +341,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux", stopping = stopping,
-                                                              scheduler = scheduler_flux)
+                                                              mode = "flux", stopping = stopping)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -350,8 +354,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags", stopping = stopping,
-                                                              scheduler = scheduler_lags)
+                                                              mode = "lags", stopping = stopping)
             #iterate loop number by 1
             active_loop_num += 1
             
@@ -508,8 +511,19 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
+    sizes = [5,6,7,8,9,10]
+    fnames = [f"grid_{i}" for i in sizes]
+    
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    
+    for size, fname in zip(sizes,fnames):
+        grid_data_gen(size, fname, egrid, lags_egrid)
+    
     queryByDropout(wrk_dir,device)
-    #grid(wrk_dir,device)
+    grid(wrk_dir,device)
 
 if __name__ == "__main__":
     main()

@@ -9,6 +9,7 @@ from joblib import load
 import numpy as np
 import pandas as pd
 from processing import mergeSaveData, saveLoop
+from generator import pars_conversion_full
 
 
 class barredMSELoss(nn.Module):

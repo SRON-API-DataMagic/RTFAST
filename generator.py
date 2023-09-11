@@ -233,25 +233,29 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
                         theta_init.append([a,m,i,r_i,r_o])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
-    pars_init = pars_conversion(theta_init)
+    theta_flux = pars_conversion(theta_init,0)
+    theta_lags = pars_conversion(theta_init,6)
+    
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in pars_init)
+                                        for pars in theta_flux)
         lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                        for pars in pars_init)
+                                        for pars in theta_lags)
     flux_data_init = np.array(flux_data_init)
     lags_data_init = np.array(lags_data_init)
     
-    indexes = nanChecker(flux_data_init, pars_init)
+    indexes = nanChecker(flux_data_init, theta_flux)
     flux_data_init = np.delete(flux_data_init,indexes, axis=0)
     lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-    pars_init = np.delete(pars_init,indexes, axis=0)
+    theta_flux = np.delete(theta_flux,indexes, axis=0)
+    theta_lags = np.delete(theta_lags,indexes, axis=0)
     
-    indexes = nanChecker(lags_data_init, pars_init)
+    indexes = nanChecker(lags_data_init, theta_lags)
     flux_data_init = np.delete(flux_data_init,indexes, axis=0)
     lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-    pars_init = np.delete(pars_init,indexes, axis=0)
+    theta_flux = np.delete(theta_flux,indexes, axis=0)
+    theta_lags = np.delete(theta_lags,indexes, axis=0)
     
     idxs = np.arange(0,flux_data_init.shape[0])
     np.random.shuffle(idxs)
@@ -261,20 +265,23 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     #Splitting data and parameters into training and testing datasets
     train_data = flux_data_init[tra_idx]
     train_lags = lags_data_init[tra_idx]
-    train_pars = pars_init[tra_idx]
+    train_flux_pars = theta_flux[tra_idx]
+    train_lags_pars = theta_lags[tra_idx]
+    
     test_data = flux_data_init[tes_idx]
     test_lags = lags_data_init[tes_idx]
-    test_pars = pars_init[tes_idx]
+    test_flux_pars = theta_flux[tes_idx]
+    test_lags_pars = theta_lags[tes_idx]
     
     print("Saving to disk")
     #save data for the first time in text files
-    saveData(train_data, train_pars, 
+    saveData(train_data, train_flux_pars, 
              "data/locations/",f"loc_{fname}_flux.csv")
-    saveData(train_lags, train_pars, 
+    saveData(train_lags, train_lags_pars, 
              "data/locations/",f"loc_{fname}_lags.csv")
-    saveData(test_data, test_pars, 
+    saveData(test_data, test_flux_pars, 
              "data/locations/",f"loc_{fname}_flux_test.csv")
-    saveData(test_lags, test_pars, 
+    saveData(test_lags, test_lags_pars, 
              "data/locations/",f"loc_{fname}_lags_test.csv")
     
     scaler = MinMaxScaler()
@@ -351,10 +358,10 @@ def readAndRemoveNans(flux_loc,lags_loc):
 
 def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                flux_name, flux_test_name, lags_name,
-                               lags_test_name):
+                               lags_test_name,pars_conversion = pars_conversion_full):
     # compute the physical model for these thetas
-    theta_flux = pars_conversion_full(theta_query,0)
-    theta_lags = pars_conversion_full(theta_query,6)
+    theta_flux = pars_conversion(theta_query,0)
+    theta_lags = pars_conversion(theta_query,6)
     print("Generating flux models")
     data_query =  parallel(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
