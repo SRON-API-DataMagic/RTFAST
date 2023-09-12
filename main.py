@@ -26,7 +26,7 @@ import network
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from plotting import distributions
-from generator import active_learning_generation, pars_conversion, pars_conversion_full
+from generator import active_learning_generation, pars_conversion, pars_conversion
 from generator import grid_data_gen
 
 def queryByDropout(wrk_dir, device = "cpu"):
@@ -79,12 +79,12 @@ def queryByDropout(wrk_dir, device = "cpu"):
     #make this true
     first = True
     
-    flux_name = "active_locs_full_flux.csv"
-    flux_test_name = "active_test_locs_full_flux.csv"
-    flux_scaler_name = "active_scaler_full_flux.bin"
-    lags_name = "active_locs_full_lags.csv"
-    lags_test_name = "active_test_locs_full_lags.csv"
-    lags_scaler_name = "active_scaler_full_lags.bin"
+    flux_name = "active_locs_flux.csv"
+    flux_test_name = "active_test_locs_flux.csv"
+    flux_scaler_name = "active_scaler_flux.bin"
+    lags_name = "active_locs_lags.csv"
+    lags_test_name = "active_test_locs_lags.csv"
+    lags_scaler_name = "active_scaler_lags.bin"
     
     num_pars = range_all.shape[0]
     
@@ -111,8 +111,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
         #generating a random set of parameters and corresponding data
         theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
                                        size = (init_data_size,range_all.shape[0]))
-        pars_init_flux = generator.pars_conversion_full(theta_init,0)
-        pars_init_lags = generator.pars_conversion_full(theta_init,6)
+        pars_init_flux = generator.pars_conversion(theta_init,0)
+        pars_init_lags = generator.pars_conversion(theta_init,6)
         print("Parallelized model generation")
         flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
                                         for pars in pars_init_flux)
@@ -263,12 +263,12 @@ def queryByDropout(wrk_dir, device = "cpu"):
             print("Finding top uncertain thetas")
             # sort these thetas from smallest uncertainty to largest and save values
             query_samples = np.asarray(query_samples).flatten()
-            np.savetxt(f"dists/loop_{active_loop_num}_full_variances.txt",query_samples)
+            np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
             query_idx = np.argsort(query_samples)[::-1]
             
             #Plot distribution of variances
             plt.hist(query_samples,bins=100)
-            plt.savefig(f"dists/loop_{active_loop_num}_full_variances.png")
+            plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
             plt.close()
             
             print("Top sample mean variance",query_samples[query_idx[0]])
@@ -279,7 +279,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             # get out the top `nsamples` values of theta_query
             theta_query = theta_query_large[query_idx[:n_samples]]
             
-            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_full_")
+            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
             
             active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                            flux_name, flux_test_name, lags_name,
@@ -361,27 +361,27 @@ def queryByDropout(wrk_dir, device = "cpu"):
         print("Completed training")
         print("Final best flux training loss:", last_sig_flux_tr)
         print("Final best flux testing loss:", last_sig_flux_te)
-        torch.save(flux_model.state_dict(), "models/active_full_flux_final.pth")
-        print("Saved PyTorch Model State to models/active_full_flux_final.pth")
+        torch.save(flux_model.state_dict(), "models/active_flux_final.pth")
+        print("Saved PyTorch Model State to models/active_flux_final.pth")
         
         flux_tr_loss_arr = np.asarray(flux_tr_loss_arr)
         flux_te_loss_arr = np.asarray(flux_te_loss_arr)
         
-        np.savetxt("loss/active_full_flux_te_loss.txt",flux_te_loss_arr)
-        np.savetxt("loss/active_full_flux_tr_loss.txt",flux_tr_loss_arr)
-        np.savetxt("loss/active_full_flux_epochs.txt",loop_flux_epochs)
+        np.savetxt("loss/active_flux_te_loss.txt",flux_te_loss_arr)
+        np.savetxt("loss/active_flux_tr_loss.txt",flux_tr_loss_arr)
+        np.savetxt("loss/active_flux_epochs.txt",loop_flux_epochs)
         
         print("Final best lags training loss:", last_sig_lags_tr)
         print("Final best lags testing loss:", last_sig_lags_te)
-        torch.save(lags_model.state_dict(), "models/active_full_lags_final.pth")
-        print("Saved PyTorch Model State to models/active_full_lags_final.pth")
+        torch.save(lags_model.state_dict(), "models/active_lags_final.pth")
+        print("Saved PyTorch Model State to models/active_lags_final.pth")
         
         lags_tr_loss_arr = np.asarray(lags_tr_loss_arr)
         lags_te_loss_arr = np.asarray(lags_te_loss_arr)
         
-        np.savetxt("loss/active_full_lags_te_loss.txt",lags_te_loss_arr)
-        np.savetxt("loss/active_full_lags_tr_loss.txt",lags_tr_loss_arr)
-        np.savetxt("loss/active_full_lags_epochs.txt",loop_lags_epochs)
+        np.savetxt("loss/active_lags_te_loss.txt",lags_te_loss_arr)
+        np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
+        np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
 
 def grid(wrk_dir,device):
     """
@@ -511,19 +511,9 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    sizes = [5,6,7,8,9,10]
-    fnames = [f"grid_{i}" for i in sizes]
-    
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    
-    for size, fname in zip(sizes,fnames):
-        grid_data_gen(size, fname, egrid, lags_egrid)
-    
-    queryByDropout(wrk_dir,device)
     grid(wrk_dir,device)
+    queryByDropout(wrk_dir,device)
+    
 
 if __name__ == "__main__":
     main()
