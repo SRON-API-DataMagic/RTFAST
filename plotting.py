@@ -272,6 +272,7 @@ def residual_computation(dataloader, model, scaler, mode):
     """
     pars = [[] for i in range(5)]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
+    logged = [1,2,3,4]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     residuals = []
