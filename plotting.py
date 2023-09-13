@@ -778,7 +778,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
                                         num_workers=1)
         #folname = str(fname)
-        fname = f"full_{fname}_{mode}"
+        fname = f"{fname}_{mode}"
         print(fname)
         residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
