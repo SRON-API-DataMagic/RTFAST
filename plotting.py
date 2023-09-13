@@ -270,13 +270,13 @@ def residual_computation(dataloader, model, scaler, mode):
         list of lists of tick values for each parameter.
 
     """
-    pars = [[] for i in range(20)]
+    pars = [[] for i in range(5)]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
-        for i in range(20):
+        for i in range(len(pars)):
             if i in logged:
                 pars[i].append(10**P[0][i].item())
             else:
