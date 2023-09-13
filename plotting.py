@@ -275,6 +275,7 @@ def residual_computation(dataloader, model, scaler, mode):
     logged = [1,2,3,4]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    pars_list = ["a","inc","mass","rin","rout"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
         for i in range(len(pars)):
@@ -733,6 +734,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     scaler_base_loc = os.getcwd()+"/scalers/"
     indexes = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    indexes = ["a","inc","mass","rin","rout"]
     
     median_loss = []
     loss_01_q = []
