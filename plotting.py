@@ -632,17 +632,17 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
 
 def loss_epochs_plot(loss_base_loc,mode):
     
-    #train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
-    #test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
+    train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
+    test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
     active_loss = np.loadtxt(loss_base_loc+f"40_{mode}_tr_loss.txt")
     active_test = np.loadtxt(loss_base_loc+f"40_{mode}_te_loss.txt")
-    """
+    
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
     plt.plot(np.loadtxt(test_names[-1]), label = "Validation loss: 10x10 grid", 
              c = "red", ls = "--")
-    """
+    
     plt.plot(active_loss,label = "Training loss: active learning", c = "blue",
              ls = "-")
     plt.plot(active_test,label = "Validation loss: active learning", c = "blue",
@@ -837,7 +837,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,10,15,20,25,30,35,40]
+    active_name = [0,5,10,15,20,25,30,35,40]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
