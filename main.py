@@ -56,8 +56,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 50
-    range_all = np.asarray(generator.lhs_range_gen())
+    active_loops = 40
+    range_all = np.asarray(generator.lhs_trimmed_gen())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -511,7 +511,7 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    grid(wrk_dir,device)
+    #grid(wrk_dir,device)
     queryByDropout(wrk_dir,device)
     
 
