@@ -12,7 +12,7 @@ from sherpa.astro.ui import unpack_rmf
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+#from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
 from joblib import Parallel, delayed
 import scipy.stats
@@ -26,8 +26,8 @@ import network
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from plotting import distributions
-from generator import active_learning_generation, pars_conversion, pars_conversion
-from generator import grid_data_gen
+from generator import active_learning_generation, pars_conversion, pars_conversion_full
+#from generator import grid_data_gen
 
 def queryByDropout(wrk_dir, device = "cpu"):
     """
