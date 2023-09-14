@@ -15,7 +15,7 @@ from generator import pars_conversion_full
 class barredMSELoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
-    a given range (0.5%) of the original data
+    a given range (0.05%) of the original data
     
     -------------
     Parameters:
@@ -82,6 +82,166 @@ class barredMSELoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
+class magDecFluxLoss(nn.Module):
+    """
+    Class of loss functon that produces weighted mean square error loss for
+    NN outputs with outputs x and y where the true data is of the form 
+    x * 10^y.
+    
+    -------------
+    Parameters:
+        dec_scaler:
+            loads a MinMaxScaler from scikitlearn that allows retrieval of
+            original decimal values
+        mag_scaler:
+            loads a MinMaxScaler that allows scaling of magnitudes to original
+            values
+        device:
+            pytorch device to load tensors into for manipulation
+        min:
+            minimum value of non-normalized form of data
+        max:
+            maximum value of non-normalized form of data
+        scale:
+            range of non-normalized form of data
+    
+    -------------
+    Methods:
+        __init__():
+            initalizes key parameters
+        
+        set_scale():
+            used in intializing to calculate rescaling method
+        
+        scaling(dec, mag):
+            dec is the decimal value of the output to be scaled while mag
+            is the corresponding order of magnitude
+        
+        forward(output, target):
+            forward pass that returns a loss value based on the weighted mean 
+            squared error and masking where outputs are below the threshold
+            value.
+    """
+    def __init__(self,dec_scaler,mag_scaler,device):
+        super().__init__()
+        self.dec_scaler = load(f'scalers/{dec_scaler}')
+        self.mag_scaler = load(f'scalers/{mag_scaler}')
+        self.device = device
+        self.threshold = 1e-39
+        self.set_scale()
+        
+    def set_scale(self):
+        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
+        self.dec_max = torch.tensor(self.dec_scaler.data_max_)
+        self.dec_scale = self.dec_max - self.dec_min
+        self.mag_min = torch.tensor(self.mag_scaler.data_min_)
+        self.mag_max = torch.tensor(self.mag_scaler.data_max_)
+        self.mag_scale = self.mag_max - self.mag_min
+        
+    def scaling(self,dec,mag):
+        dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
+        mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
+        result = dec_sca * 10**mag_sca
+        return result
+        
+    def forward(self, output_dec, output_mag, target_dec, target_mag):
+        #scale to real space
+        scaled_tar = self.scaling(target_dec, target_mag)
+        scaled_out = self.scaling(output_dec, output_mag)
+        mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
+        #set both values in tensors to 1 where mask is equal to 0
+        scaled_tar = torch.where(mask == 0,1,scaled_tar)
+        scaled_out = torch.where(mask == 0,1,scaled_out)
+        #calculate loss
+        criterion = weightedMSELoss()
+        loss = criterion(scaled_out,scaled_tar)
+        return loss 
+
+class magDecLagsLoss(nn.Module):
+    """
+    Class of loss functon that produces weighted mean square error loss for
+    NN outputs with outputs x, y and i where the true data is of the form 
+    i*x * 10^y.
+    
+    -------------
+    Parameters:
+        dec_scaler:
+            loads a MinMaxScaler from scikitlearn that allows retrieval of
+            original decimal values
+        mag_scaler:
+            loads a MinMaxScaler that allows scaling of magnitudes to original
+            values
+        device:
+            pytorch device to load tensors into for manipulation
+    
+    -------------
+    Methods:
+        __init__():
+            initalizes key parameters
+        
+        set_scale():
+            used in intializing to calculate rescaling method
+        
+        scaling(dec, mag):
+            dec is the decimal value of the output to be scaled while mag
+            is the corresponding order of magnitude
+        
+        forward(output_dec, output_mag, target_dec, target_mag, 
+                    output_ind, target_ind):
+            forward pass that returns a loss value. This loss is based on the 
+            weighted mean squared error of the true data vs NN output 
+            and masking where outputs are below the threshold as well as adding
+            the binary cross entropy loss for whether the NN correctly 
+            identified the lag as negative or positive with 1 representing
+            positive lags and 0 representing negative lags.
+    """
+    def __init__(self,dec_scaler,mag_scaler,device):
+        super().__init__()
+        self.dec_scaler = load(f'scalers/{dec_scaler}')
+        self.mag_scaler = load(f'scalers/{mag_scaler}')
+        self.device = device
+        self.threshold = 1e-7
+        self.binary = nn.BCELoss()
+        self.criterion = weightedMSELoss()
+        self.set_scale()
+        
+    def set_scale(self):
+        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
+        self.dec_max = torch.tensor(self.dec_scaler.data_max_)
+        self.dec_scale = self.dec_max - self.dec_min
+        self.mag_min = torch.tensor(self.mag_scaler.data_min_)
+        self.mag_max = torch.tensor(self.mag_scaler.data_max_)
+        self.mag_scale = self.mag_max - self.mag_min
+        
+    def scaling(self,dec, mag):
+        dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
+        mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
+        result = dec_sca * 10**mag_sca
+        return result
+        
+    def forward(self, output_dec, output_mag, target_dec, target_mag, 
+                output_ind, target_ind):
+        #scale to real space
+        scaled_tar = self.scaling(target_dec, target_mag)
+        scaled_out = self.scaling(output_dec, output_mag)
+        mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
+        #set both values in tensors to 1 where mask is equal to 0
+        scaled_tar = torch.where(mask == 0,1,scaled_tar)
+        scaled_out = torch.where(mask == 0,1,scaled_out)
+        #calculate loss
+        loss = self.criterion(scaled_out,scaled_tar)
+        signed_loss = self.binary(output_ind,target_ind)
+        loss += signed_loss
+        return loss
+
+class weightedMSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, pred, target):
+        return torch.mean(((pred-target)**2)/target)
+
+    
 class lagLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
