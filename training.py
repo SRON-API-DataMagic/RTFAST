@@ -10,6 +10,12 @@ import numpy as np
 import pandas as pd
 from processing import mergeSaveData, saveLoop
 
+class weightedMSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, pred, target):
+        return torch.mean(((pred-target)**2)/target)
 
 class barredMSELoss(nn.Module):
     """
@@ -81,6 +87,85 @@ class barredMSELoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
+class lagLoss(nn.Module):
+    """
+    Class of loss functon that only induces loss for values extending outside
+    a given range (0.5%) of the original data. Features a threshold value that 
+    all data below must be within the threshold.
+    
+    -------------
+    Parameters:
+        scaler:
+            loads a MinMaxScaler from scikitlearn that allows retrieval of
+            original data
+        device:
+            pytorch device to load tensors into for manipulation
+        min:
+            minimum value of non-normalized form of data
+        max:
+            maximum value of non-normalized form of data
+        scale:
+            range of non-normalized form of data
+    
+    -------------
+    Methods:
+        __init__():
+            initalizes key parameters
+        
+        set_scale():
+            used in intializing to calculate rescaling method
+        
+        scaling(a):
+            a is data vector to be rescaled
+        
+        forward(output, target, index, index_target):
+            forward pass that returns a loss value based on mean squared error
+            and masking. Loss value is the sum of the binary criterion loss of
+            getting the signed value of outputs correct and the mean squared
+            error of the output, once again masked when within a certain 
+            boundary.
+    """
+    def __init__(self,scaler,device):
+        super().__init__()
+        self.scaler = load(f'scalers/{scaler}')
+        self.device = device
+        self.set_scale()
+        self.criterion = nn.MSELoss()
+        self.binary = nn.BCELoss()
+    
+    def set_scale(self):
+        self.min = torch.tensor(self.scaler.data_min_)
+        self.max = torch.tensor(self.scaler.data_max_)
+        self.scale = self.max - self.min
+    
+    def scaling(self,a):
+        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+        result = 10**result
+        return result
+    
+    def forward(self, output, index, target, index_target):
+        threshold = 1e-7
+        #scale to real space
+        scaled_tar = self.scaling(target)
+        scaled_out = self.scaling(output)
+        #find desired boundaries of the original data
+        data_low = 0.995*scaled_tar
+        data_high = 1.005*scaled_tar
+        #create mask where prediction is within boundaries
+        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
+        #create mask where output is too small to measure
+        small_mask = torch.where((scaled_tar <= threshold)&(scaled_out<=threshold)&(0<=scaled_out),0,1)
+        #create overall mask
+        mask = mask*small_mask
+        #multiply with mask to only consider where network is out of bounds
+        pred = torch.mul(output,mask)
+        data = torch.mul(target,mask)
+        #calculate loss
+        loss = self.criterion(pred,data)
+        signed_loss = self.binary(index,index_target)
+        loss += signed_loss
+        return loss 
+    
 class magDecFluxLoss(nn.Module):
     """
     Class of loss functon that produces weighted mean square error loss for
@@ -143,7 +228,9 @@ class magDecFluxLoss(nn.Module):
         result = dec_sca * 10**mag_sca
         return result
         
-    def forward(self, output_dec, output_mag, target_dec, target_mag):
+    def forward(self, output_dec, output_mag, target):
+        target_mag = torch.floor(torch.log10(target))
+        target_dec = target/10**target_mag
         #scale to real space
         scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
@@ -218,8 +305,9 @@ class magDecLagsLoss(nn.Module):
         result = dec_sca * 10**mag_sca
         return result
         
-    def forward(self, output_dec, output_mag, target_dec, target_mag, 
-                output_ind, target_ind):
+    def forward(self, output_dec, output_mag, output_ind, target, target_ind):
+        target_mag = torch.floor(torch.log10(target))
+        target_dec = target/10**target_mag
         #scale to real space
         scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
@@ -232,95 +320,8 @@ class magDecLagsLoss(nn.Module):
         signed_loss = self.binary(output_ind,target_ind)
         loss += signed_loss
         return loss
-
-class weightedMSELoss(nn.Module):
-    def __init__(self):
-        super().__init__()
     
-    def forward(self, pred, target):
-        return torch.mean(((pred-target)**2)/target)
-
-    
-class lagLoss(nn.Module):
-    """
-    Class of loss functon that only induces loss for values extending outside
-    a given range (0.5%) of the original data. Features a threshold value that 
-    all data below must be within the threshold.
-    
-    -------------
-    Parameters:
-        scaler:
-            loads a MinMaxScaler from scikitlearn that allows retrieval of
-            original data
-        device:
-            pytorch device to load tensors into for manipulation
-        min:
-            minimum value of non-normalized form of data
-        max:
-            maximum value of non-normalized form of data
-        scale:
-            range of non-normalized form of data
-    
-    -------------
-    Methods:
-        __init__():
-            initalizes key parameters
-        
-        set_scale():
-            used in intializing to calculate rescaling method
-        
-        scaling(a):
-            a is data vector to be rescaled
-        
-        forward(output, target, index, index_target):
-            forward pass that returns a loss value based on mean squared error
-            and masking. Loss value is the sum of the binary criterion loss of
-            getting the signed value of outputs correct and the mean squared
-            error of the output, once again masked when within a certain 
-            boundary.
-    """
-    def __init__(self,scaler,device):
-        super().__init__()
-        self.scaler = load(f'scalers/{scaler}')
-        self.device = device
-        self.set_scale()
-        self.criterion = nn.MSELoss()
-        self.binary = nn.BCELoss()
-    
-    def set_scale(self):
-        self.min = torch.tensor(self.scaler.data_min_)
-        self.max = torch.tensor(self.scaler.data_max_)
-        self.scale = self.max - self.min
-    
-    def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-        result = 10**result
-        return result
-    
-    def forward(self, output, target, index, index_target):
-        threshold = 1e-7
-        #scale to real space
-        scaled_tar = self.scaling(target)
-        scaled_out = self.scaling(output)
-        #find desired boundaries of the original data
-        data_low = 0.995*scaled_tar
-        data_high = 1.005*scaled_tar
-        #create mask where prediction is within boundaries
-        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
-        #create mask where output is too small to measure
-        small_mask = torch.where((scaled_tar <= threshold)&(scaled_out<=threshold)&(0<=scaled_out),0,1)
-        #create overall mask
-        mask = mask*small_mask
-        #multiply with mask to only consider where network is out of bounds
-        pred = torch.mul(output,mask)
-        data = torch.mul(target,mask)
-        #calculate loss
-        loss = self.criterion(pred,data)
-        signed_loss = self.binary(index,index_target)
-        loss += signed_loss
-        return loss 
-    
-def train_flux(dataloader,model,optimizer,loss_fn,device):
+def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     """
     
 
@@ -351,8 +352,12 @@ def train_flux(dataloader,model,optimizer,loss_fn,device):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
-        pred = model(P.to(device))[:,None,:]
-        loss = loss_fn(pred,D.to(device))
+        if dec_mag == False:
+            pred = model(P.to(device))[:,None,:]
+            loss = loss_fn(pred,D.to(device))
+        else:
+            dec_pred, mag_pred = model(P.to(device))[:,None,:]
+            loss = loss_fn(dec_pred, mag_pred, D.to(device))
         optimizer.zero_grad()
         loss.backward()
         
@@ -367,7 +372,7 @@ def train_flux(dataloader,model,optimizer,loss_fn,device):
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
-def train_lags(dataloader,model,optimizer,loss_fn,device):
+def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     """
     
 
@@ -398,9 +403,14 @@ def train_lags(dataloader,model,optimizer,loss_fn,device):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
-        pred, I_pred = model(P.to(device))
-        pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-        loss = loss_fn(pred, D.to(device), I_pred, I.to(device))
+        if dec_mag == False:
+            pred, I_pred = model(P.to(device))
+            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+            loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
+        else:
+            dec_pred, mag_pred, I_pred = model(P.to(device))
+            pred, mag_pred, I_pred = pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
+            loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
         optimizer.zero_grad()
         loss.backward()
         
@@ -415,7 +425,7 @@ def train_lags(dataloader,model,optimizer,loss_fn,device):
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
-def test_flux(dataloader,model,loss_fn,device):
+def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
     """
     
 
@@ -440,14 +450,18 @@ def test_flux(dataloader,model,loss_fn,device):
     
     with torch.no_grad():
         for batch, (D,P) in enumerate(dataloader):
-            pred = model(P.to(device))[:,None,:]
-            test_loss += loss_fn(pred, D.to(device)).detach().item()
+            if dec_mag == False:
+                pred = model(P.to(device))[:,None,:]
+                test_loss += loss_fn(pred,D.to(device))
+            else:
+                dec_pred, mag_pred = model(P.to(device))[:,None,:]
+                test_loss += loss_fn(dec_pred, mag_pred, D.to(device))
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
     return test_loss
 
-def test_lags(dataloader,model,loss_fn,device):
+def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
     """
     
 
@@ -472,9 +486,14 @@ def test_lags(dataloader,model,loss_fn,device):
     
     with torch.no_grad():
         for batch, (D,I,P) in enumerate(dataloader):
-            pred, I_pred = model(P.to(device))
-            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-            test_loss += loss_fn(pred, D.to(device), I_pred, I.to(device)).detach().item()
+            if dec_mag == False:
+                pred, I_pred = model(P.to(device))
+                pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+                test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device))
+            else:
+                dec_pred, mag_pred, I_pred = model(P.to(device))
+                pred, mag_pred, I_pred = pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
+                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
@@ -484,7 +503,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                   test_dataloader,te_loss_arr,tr_loss_arr,
                   last_sig_te,last_sig_tr, active_loop_num,
                   loop_epochs, best_model, train, test,
-                  mode = "flux", stopping = 15, scheduler = None):
+                  mode = "flux", stopping = 15, scheduler = None,
+                  dec_mag=False):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
@@ -496,9 +516,9 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         
         model, optimizer, train_loss = train(dataloader,model,
                                              optimizer,loss_fn,
-                                             device)
+                                             device,dec_mag)
         loss = test(test_dataloader,model,loss_fn,
-                         device)
+                         device,dec_mag)
         if scheduler != None:
             scheduler.step(loss)
         te_loss_arr.append(loss)
