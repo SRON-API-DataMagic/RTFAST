@@ -500,11 +500,11 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
     return test_loss
 
 def active_training_loop(model,dataloader,optimizer,loss_fn,device,
-                  test_dataloader,te_loss_arr,tr_loss_arr,
-                  last_sig_te,last_sig_tr, active_loop_num,
-                  loop_epochs, best_model, train, test,
-                  mode = "flux", stopping = 15, scheduler = None,
-                  dec_mag=False):
+                        test_dataloader,te_loss_arr,tr_loss_arr,
+                        last_sig_te,last_sig_tr, active_loop_num,
+                        loop_epochs, best_model, train, test,
+                        mode = "flux", stopping = 15, scheduler = None,
+                        dec_mag=False):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
@@ -514,11 +514,10 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
     while (imp_te < stopping or imp_tr < stopping):
         print(f"Epoch {epoch+1} \n -----------------------")
         
-        model, optimizer, train_loss = train(dataloader,model,
-                                             optimizer,loss_fn,
-                                             device,dec_mag)
-        loss = test(test_dataloader,model,loss_fn,
-                         device,dec_mag)
+        model, optimizer, train_loss = train(dataloader, model,
+                                             optimizer, loss_fn,
+                                             device, dec_mag)
+        loss = test(test_dataloader, model, loss_fn, device, dec_mag)
         if scheduler != None:
             scheduler.step(loss)
         te_loss_arr.append(loss)
@@ -577,10 +576,9 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
     return (model, best_model, optimizer, loop_epochs, 
             te_loss_arr, tr_loss_arr, last_sig_tr, last_sig_te)
 
-def grid_training_loop(model, optimizer, train, test, 
-                       train_dataloader, test_dataloader,
-                       loss_fn, device,
-                       size, mode, epochs = 400):
+def grid_training_loop(model, optimizer, train, test, train_dataloader, 
+                       test_dataloader, loss_fn, device, size, mode, 
+                       epochs = 400):
     
     last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
     last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
