@@ -884,14 +884,13 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
+    nums = [0,10,20,30,40]
+    files = [f"loop_{loop}_variances.txt" for loop in nums]
+    aggregate_dists(files)
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     set_envir_vars(wrk_dir)
-    flux, lags, theta_flux, theta_lags = generate_test_set(500, egrid, lags_egrid)
-    
-    saveData(lags, theta_lags, "data/locations/","loc_lags_test.csv", lags=True)
-    saveData(flux, theta_flux, "data/locations/","loc_flux_test.csv")
-    
     active_v_grid(wrk_dir, egrid, lags_egrid)
     
 if __name__ == "__main__":
