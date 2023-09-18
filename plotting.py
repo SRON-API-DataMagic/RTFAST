@@ -885,7 +885,7 @@ def main():
     wrk_dir = os.getcwd()
     
     nums = [0,10,20,30,40]
-    files = [f"dists/loop_{loop}_variances.txt" for loop in nums]
+    files = [f"data/locations/loc_flux_{loop}.txt" for loop in nums]
     aggregate_dists(files)
     
     egrid = retrieve_egrid(wrk_dir)
