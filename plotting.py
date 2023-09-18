@@ -20,6 +20,8 @@ from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
+from generator import generate_test_set
+from processing import saveData
             
 def inverse(scaler,data):
     """
@@ -863,6 +865,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
                             grid_lags_scaler, lags_egrid, lags=True)
+    
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
     
@@ -883,6 +886,11 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    
+    flux, lags, theta_flux, theta_lags = generate_test_set(500, egrid, lags_egrid)
+    
+    saveData(lags, theta_lags, "data/locations/","loc_lags_test.csv", lags=True)
+    saveData(flux, theta_flux, "data/locations/","loc_flux_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)

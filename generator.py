@@ -317,23 +317,25 @@ def generate_test_set(size, egrid, lags_egrid):
     None.
 
     """
-    range_all = np.asarray(lhs_range_gen())
+    range_all = np.asarray(lhs_trimmed_gen())
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
 
     #generate physical models of test set
-    theta_lhs_iterate = pars_conversion_full(theta_lhs)
+    theta_flux = pars_conversion(theta_lhs,0)
+    theta_lags = pars_conversion(theta_lhs,6)
+    
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         data_init = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in theta_lhs_iterate)
+                                        for pars in theta_flux)
         lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                        for pars in theta_lhs_iterate)
+                                        for pars in theta_lags)
     data_init = np.asarray(data_init)
     lags = np.asarray(lags)
-    return data_init, lags, theta_lhs_iterate
+    return data_init, lags, theta_flux, theta_lags
 
 def readAndRemoveNans(flux_loc,lags_loc):
     flux_df = pd.read_csv(flux_loc)
