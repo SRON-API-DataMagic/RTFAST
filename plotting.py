@@ -734,7 +734,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     scaler_base_loc = os.getcwd()+"/scalers/"
     indexes = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    indexes = ["a","inc","mass","rin","rout"]
+    indexes = ["a","mass","inc","rin","rout"]
     
     median_loss = []
     loss_01_q = []

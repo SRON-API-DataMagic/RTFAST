@@ -61,6 +61,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["a","mass","inc","rin","rout"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [0,3]
