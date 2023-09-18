@@ -776,7 +776,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
             model = model_load(model_loc, egrid[:-1], lags = lags)
         
         testing_dataloader = DataLoader(test_data,batch_size = batch_size,
-                                        num_workers=1)
+                                        num_workers=1,shuffle=True)
         #folname = str(fname)
         fname = f"{fname}_{mode}"
         print(fname)
