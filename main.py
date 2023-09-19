@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 from joblib import Parallel, delayed
 import scipy.stats
 
-from dataStructures import FluxData, LagsData
+from dataStructures import FluxDecData, LagsDecData
 
 from processing import nanChecker, saveData, renameData
 import generator
@@ -25,6 +25,7 @@ import network
 
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
+from training import magDecFluxLoss, magDecLagsLoss
 from plotting import distributions
 from generator import active_learning_generation, pars_conversion, pars_conversion_full
 #from generator import grid_data_gen
@@ -89,14 +90,14 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     num_pars = range_all.shape[0]
     
-    flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
+    flux_model = network.MagFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
-    lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
+    lags_model = network.MagLagsNetwork(num_pars,len(lags_egrid)-1)
     lags_model.to(device)
     
-    best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
+    best_flux_model = network.MagFluxNetwork(num_pars,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
+    best_lags_model = network.MagLagsNetwork(num_pars,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -157,19 +158,21 @@ def queryByDropout(wrk_dir, device = "cpu"):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        flux_dataloader = FluxData(f"data/locations/{flux_name}", 
+        flux_dataloader = FluxDecData(f"data/locations/{flux_name}", 
                                        scaler, flux_scaler_name,  
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
-        lags_dataloader = LagsData(f"data/locations/{lags_name}", 
+        lags_dataloader = LagsDecData(f"data/locations/{lags_name}", 
                                        scaler, lags_scaler_name,
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         
-        loss_fn_flux = barredMSELoss(flux_scaler_name, device)
-        loss_fn_lags = lagLoss(lags_scaler_name, device)
+        loss_fn_flux = magDecFluxLoss(f"dec_{flux_scaler_name}",
+                                      f"mag_{flux_scaler_name}", device)
+        loss_fn_lags = magDecLagsLoss(f"dec_{lags_scaler_name}",
+                                      f"mag_{lags_scaler_name}", device)
         
     else: #load previously generated data as initial data and parameter set
         start_num = 30
@@ -294,7 +297,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
             lhs_idx += (n_samples_large)
     
             print("Setting up modeling")
-            Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
+            Xquery = FluxDecData(f"data/locations/{flux_name}", scaler, 
                               flux_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -302,7 +305,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
+            Xquery = LagsDecData(f"data/locations/{lags_name}", scaler, 
                               lags_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -310,7 +313,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
+            Xtest = FluxDecData(f"data/locations/{flux_test_name}", scaler, 
                               flux_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
@@ -318,15 +321,13 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
+            Xtest = LagsDecData(f"data/locations/{lags_test_name}", scaler, 
                               lags_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
-            
-            stopping = 15
             
             #Train the flux model first
             (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
@@ -339,7 +340,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux", stopping = stopping)
+                                                              mode = "flux", dec_mag=True)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -352,7 +353,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags", stopping = stopping)
+                                                              mode = "lags", dec_mag=True)
             #iterate loop number by 1
             active_loop_num += 1
             
@@ -435,13 +436,13 @@ def grid(wrk_dir,device):
                 train = train_flux
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
-                dataType = FluxData
+                dataType = FluxDecData
                 model = network.HeavyFluxNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
                 loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
-                dataType = LagsData
+                dataType = LagsDecData
                 model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
                 
             else:
@@ -449,7 +450,7 @@ def grid(wrk_dir,device):
                 train = train_flux
                 test = test_flux
                 loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
-                dataType = FluxData
+                dataType = FluxDecData
                 model = network.HeavyFluxNetwork(5,len(egrid))
             
             model.to(device)
