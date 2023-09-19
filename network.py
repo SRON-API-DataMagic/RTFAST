@@ -301,3 +301,32 @@ class HeavyLagsNetwork(LagsNetwork):
         result = self.OutputAbsolute(stack4)
         ind = self.OutputSigmoid(self.OutputIndex(stack4))
         return result, ind
+
+class MagLagsNetwork(LagsNetwork):
+    def __init__(self,num_pars,data_len):
+        super().__init__(num_pars,data_len)
+        self.LinearStack4 = nn.Sequential(
+            nn.Linear(1024,2048),
+            SharpActivation(2048))
+        self.MagnitudeOutputs = nn.Sequential(
+            nn.Linear(2048,data_len))
+        self.DecimalOutputs = nn.Sequential(
+            nn.Linear(2048,data_len))
+        self.OutputIndex = nn.Sequential(
+            nn.Linear(2048,data_len))
+        self.dropout4 = nn.Dropout(p=self.p)
+        self.double()
+    
+    def forward(self,pars):
+        stack1 = self.LinearStack1(pars)
+        stack1 = self.dropout1(stack1)
+        stack2 = self.LinearStack2(stack1)
+        stack2 = self.dropout2(stack2)
+        stack3 = self.LinearStack3(stack2)
+        stack3 = self.dropout3(stack3)
+        stack4 = self.LinearStack4(stack3)
+        stack4 = self.dropout4(stack4)
+        mag = self.MagnitudeOutputs(stack4)
+        dec = self.DecimalOutputs(stack4)
+        ind = self.OutputSigmoid(self.OutputIndex(stack4))
+        return mag, dec, ind
