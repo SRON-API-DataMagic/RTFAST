@@ -813,7 +813,6 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
         
     resid_list = np.asarray(resid_list)
     df = residuals_dataframe(resid_list, nums)
-    print(df["Sample Size"].max())
     large_resid = df[df["Sample Size"] == df["Sample Size"].max()].max()[0]
     print(f"The largest residual was {large_resid}")
     over = len(df[(df["Sample Size"] == df["Sample Size"].max())&(df["Residuals"] >= 0.01)])
@@ -885,7 +884,7 @@ def main():
     wrk_dir = os.getcwd()
     
     nums = [0,10,20,30,40]
-    files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
+    files = [f"data/locations/loc_full_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
     
     egrid = retrieve_egrid(wrk_dir)
