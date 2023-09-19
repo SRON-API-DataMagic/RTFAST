@@ -326,10 +326,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            if active_loop_num == active_loops:
-                stopping = 30
-            else:
-                stopping = 15
+            stopping = 15
             
             #Train the flux model first
             (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 

@@ -125,7 +125,7 @@ def removeRedundantData():
     locations = "./data/locations/"
     labels = ["loc_flux_40.csv","loc_flux_test.csv",
               "loc_lags_40.csv","loc_lags_test.csv",
-              "loc_full_flux_49.csv","loc_full_lags_49.csv",
+              "loc_flux_49.csv","loc_lags_49.csv",
               "loc_grid_5_lags.csv","loc_grid_5_lags_test.csv",
               "loc_grid_6_lags.csv","loc_grid_6_lags_test.csv",
               "loc_grid_7_lags.csv","loc_grid_7_lags_test.csv",
@@ -226,15 +226,15 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
     """
     print("Saving loop")
     renameData(pd.read_csv(data_locs),destination = "data/locations/",
-              fname = f"loc_full_{typ}_{num}.csv")
+              fname = f"loc_{typ}_{num}.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_full_{typ}_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_{typ}_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_full_{typ}_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_{typ}_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_full_{typ}_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_full_{typ}_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_full_{typ}_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_{typ}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_{typ}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_{typ}_epochs.txt",epochs)
     print("Saved losses")
     return
 
