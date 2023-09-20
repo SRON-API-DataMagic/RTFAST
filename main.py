@@ -175,39 +175,6 @@ def queryByDropout(wrk_dir, device = "cpu"):
         loss_fn_lags = magDecLagsLoss(f"dec_{lags_scaler_name}",
                                       f"mag_{lags_scaler_name}", device)
         
-    else: #load previously generated data as initial data and parameter set
-        start_num = 30
-        active_loop_num = start_num + 1
-        print("Loading previous data")
-        renameData(pd.read_csv(f"data/locations/loc_{start_num}.csv"), 
-                   "data/locations/", "active_locs.csv")
-        
-        with open(f"loss/{start_num}_tr_loss.txt","r") as f1:
-            tr_loss_arr = np.loadtxt(f1)
-        f1.close()
-        
-        with open(f"loss/{start_num}_te_loss.txt","r") as f1:
-            te_loss_arr = np.loadtxt(f1)
-        f1.close()
-        
-        with open(f"loss/{start_num}_epochs.txt","r") as f1:
-            loop_epochs = np.loadtxt(f1)
-        f1.close()
-        
-        last_sig_best_tr = tr_loss_arr.min()
-        last_sig_best_te = te_loss_arr.min()
-        print("Best training loss:",last_sig_best_tr)
-        print("Best testing loss:",last_sig_best_te)
-        
-        tr_loss_arr = tr_loss_arr.tolist()
-        te_loss_arr = te_loss_arr.tolist()
-        loop_epochs = loop_epochs.tolist()
-        
-        flux_model.load_state_dict(torch.load(f"models/{start_num}_model.pth"))
-        optimizer_flux.load_state_dict(torch.load(f"models/{start_num}_optimizer.pth"))
-        #use different loss function
-        loss_fn_flux = barredMSELoss("active_scaler.bin",device)
-        
     batch_size = 1024
     num_workers = 4
     
