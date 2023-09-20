@@ -25,7 +25,7 @@ from training import magDecFluxLoss, magDecLagsLoss
 from training import QBDC
 #from generator import grid_data_gen
 
-def queryByDropout(wrk_dir, device = "cpu"):
+def active_learning(wrk_dir, device = "cpu"):
     """
     Core method that collates together methods from other files to perform
     active learning based training by the query by dropout committee technique.
@@ -271,7 +271,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
         np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
         np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
 
-def grid(wrk_dir,device):
+def grid_learning(wrk_dir,device):
     """
     This method collates together methods to train neural networks utilizing a
     grid based learning strategy. This has less functionality than the active
@@ -399,8 +399,8 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    #grid(wrk_dir,device)
-    queryByDropout(wrk_dir,device)
+    #grid_learning(wrk_dir,device)
+    active_learning(wrk_dir,device)
     
 
 if __name__ == "__main__":

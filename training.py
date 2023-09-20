@@ -11,9 +11,8 @@ import pandas as pd
 from processing import mergeSaveData, saveLoop
 from math import ceil
 from tqdm import tqdm
-import torch
 from plotting import distributions, variances
-from generator import active_learning_generation
+from generator import active_learning_generation, pars_conversion
 
 class weightedMSELoss(nn.Module):
     def __init__(self):
