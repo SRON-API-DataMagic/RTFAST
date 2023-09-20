@@ -268,9 +268,6 @@ def queryByDropout(wrk_dir, device = "cpu"):
                 query_samples.append(mean_var_query.tolist())
             
             #Performing manual memory cleanup
-            del pred_flux, pred_lags, pred_query_flux, pred_query_lags 
-            del theta_query_small, mean_var_flux, mean_var_lags, mean_var_query
-            del dvar_flux, dvar_lags
             print("Successfully finished generating thetas")
             
             print("Finding top uncertain thetas")

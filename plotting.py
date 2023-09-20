@@ -606,6 +606,8 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
     
     axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
     axs[1].axhline(y=1e-2, ls = "--",zorder=6,color="green")
+    axs[0].axhline(y=1e-3, ls = "dashdot",label="0.1% error",zorder=7,color="red")
+    axs[1].axhline(y=1e-3, ls = "dashdot",zorder=7,color="red")
     
     plt.yscale("log")
     plt.xscale("log")
