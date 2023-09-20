@@ -538,8 +538,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         loss = test(test_dataloader, model, loss_fn, device, dec_mag)
         if scheduler != None:
             scheduler.step(loss)
-        te_loss_arr.append(loss.cpu())
-        tr_loss_arr.append(train_loss.cpu())
+        te_loss_arr.append(loss)
+        tr_loss_arr.append(train_loss)
         
         tr_bet = (0.9*last_sig_tr) - train_loss
         te_bet = (0.9*last_sig_te) - loss
