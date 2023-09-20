@@ -229,6 +229,9 @@ class FluxDecData(Dataset):
             self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
             self.mag_scaler = load(f'scalers/mag_{self.scaler_name}')
             
+    def __len__(self):
+        return len(self.labels)
+    
     def __getitem__(self, idx):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,-1]
@@ -301,8 +304,10 @@ class LagsDecData(Dataset):
         else:
             self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
             self.mag_scaler = load(f'scalers/mag_{self.scaler_name}')
-            self.minimums = (10**(self.scaler.min_))/0.9
             
+    def __len__(self):
+        return len(self.labels)
+    
     def standardize(self, D):
         """
         Returns signed indices and normalized values of time lags. Lags are 
