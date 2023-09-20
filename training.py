@@ -231,9 +231,13 @@ class magDecFluxLoss(nn.Module):
     def forward(self, output_dec, output_mag, target):
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
+        print("There are NaNs in target mag:",torch.any(torch.isnan(target_mag)))
+        print("There are NaNs in target dec:",torch.any(torch.isnan(target_dec)))
         #scale to real space
         scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
+        print("There are NaNs in scaled target:",torch.any(torch.isnan(scaled_tar)))
+        print("There are NaNs in scaled output:",torch.any(torch.isnan(scaled_out)))
         mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
         scaled_tar = torch.where(mask == 0,1,scaled_tar)
@@ -522,8 +526,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         loss = test(test_dataloader, model, loss_fn, device, dec_mag)
         if scheduler != None:
             scheduler.step(loss)
-        te_loss_arr.append(loss)
-        tr_loss_arr.append(train_loss)
+        te_loss_arr.append(loss.cpu())
+        tr_loss_arr.append(train_loss.cpu())
         
         tr_bet = (0.9*last_sig_tr) - train_loss
         te_bet = (0.9*last_sig_te) - loss
@@ -547,7 +551,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         else:
             imp_te += 1
             imp_tr += 1
-        if loss == np.asarray(te_loss_arr).min():
+        if loss.cpu() == np.asarray(te_loss_arr).min():
             torch.save(model.state_dict(), f"models/active_best_{mode}.pth")
         
         epoch += 1
