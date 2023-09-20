@@ -230,18 +230,21 @@ class magDecFluxLoss(nn.Module):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
         mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
         result = dec_sca * 10**mag_sca
+        if torch.any(torch.isnan(result)) == True:
+            if torch.any(torch.isnan(mag_sca)) == True:
+                print("Mag_sca contains NaN")
+            elif torch.any(torch.isnan(dec_sca)) == True:
+                print("dec_sca contains NaN")
         return result
         
     def forward(self, output_dec, output_mag, target):
+        if torch.any(torch.isnan(target)) == True:
+            print("Data contains NaNs")
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
-        print("There are NaNs in target mag:",torch.any(torch.isnan(target_mag)))
-        print("There are NaNs in target dec:",torch.any(torch.isnan(target_dec)))
         #scale to real space
         scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
-        print("There are NaNs in scaled target:",torch.any(torch.isnan(scaled_tar)))
-        print("There are NaNs in scaled output:",torch.any(torch.isnan(scaled_out)))
         mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
         scaled_tar = torch.where(mask == 0,1,scaled_tar)
@@ -311,6 +314,11 @@ class magDecLagsLoss(nn.Module):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
         mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
         result = dec_sca * 10**mag_sca
+        if torch.any(torch.isnan(result)) == True:
+            if torch.any(torch.isnan(mag_sca)) == True:
+                print("Mag_sca contains NaN")
+            elif torch.any(torch.isnan(dec_sca)) == True:
+                print("dec_sca contains NaN")
         return result
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
@@ -465,7 +473,7 @@ def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
             else:
                 dec_pred, mag_pred = model(P.to(device))
                 dec_pred, mag_pred = dec_pred[:,None,:], mag_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, D.to(device))
+                test_loss += loss_fn(dec_pred, mag_pred, D.to(device)).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
@@ -503,7 +511,7 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
             else:
                 dec_pred, mag_pred, I_pred = model(P.to(device))
                 pred, mag_pred, I_pred = pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
+                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device)).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")

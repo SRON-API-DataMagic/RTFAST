@@ -100,7 +100,6 @@ def active_learning(wrk_dir, device = "cpu"):
     #scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
     #scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
     scaler = MinMaxScaler()
-    start_num = 0
     
     if first == True: 
         print("Generating first time dataset")
