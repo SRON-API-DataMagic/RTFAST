@@ -28,6 +28,7 @@ from training import active_training_loop, grid_training_loop, lagLoss
 from training import magDecFluxLoss, magDecLagsLoss
 from plotting import distributions
 from generator import active_learning_generation, pars_conversion, pars_conversion_full
+from generator import QBDC
 #from generator import grid_data_gen
 
 def queryByDropout(wrk_dir, device = "cpu"):
@@ -217,90 +218,11 @@ def queryByDropout(wrk_dir, device = "cpu"):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
-            multiplier = ceil(data_size/100000)
-            n_samples = 5000*multiplier
-            n_samples_large = 10000*multiplier # number of parameter sets to draw 
-            divider = 100*multiplier
-            n_samples_small = int(n_samples_large/divider)
-            print(f"I am in active learning loop {active_loop_num}")
-            # randomly generate points in parameter space
-            print("Generating random samples of theta")
-            theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
-            
-            print("computing neural network predictions with dropout for each theta")
-            # compute 100 neural network predictions with dropout
-            sample_dropout = 100
-            pred_query_flux = np.zeros((sample_dropout,n_samples_small,len(egrid)))
-            pred_query_lags = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)-1))
-            pred_query_inds = np.zeros((sample_dropout,n_samples_small,len(lags_egrid)-1))
-            flux_model.train()
-            lags_model.train()
-            query_samples = []
-            
-            for j in tqdm(range(divider),desc="Sample dropout loops"):
-                theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
-                for i in range(sample_dropout):
-                    if dec_mag == True:
-                        mag_flux, dec_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                        mag_lags, dec_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                        pred_query_flux[i] = mag_flux.detach().cpu().numpy() + dec_flux.detach().cpu().numpy()
-                        pred_query_lags[i] = mag_lags.detach().cpu().numpy() + dec_lags.detach().cpu().numpy()
-                        pred_query_inds[i] = ind.detach().cpu().numpy()
-                    else:
-                        pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                        pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                        pred_query_flux[i] = pred_flux.detach().cpu().numpy()
-                        pred_query_lags[i] = pred_lags.detach().cpu().numpy()
-                        pred_query_inds[i] = ind.detach().cpu().numpy()
-                # find uncertainty (as measured by relative variance)
-                dvar_flux = np.var(pred_query_flux,axis=0)
-                mean_var_flux = np.mean(dvar_flux, axis=1)
-                # find uncertainty (as measured by relative variance)
-                dvar_lags = np.var(pred_query_lags,axis=0)
-                mean_var_lags = np.mean(dvar_lags, axis=1)
-                # find uncertainty (as measured by relative variance)
-                dvar_inds = np.var(pred_query_inds,axis=0)
-                mean_var_inds = np.mean(dvar_inds, axis=1)
-                #sum the two
-                mean_var_query = mean_var_flux+0.5*(mean_var_lags+mean_var_inds)
-                # add to uncertainties per theta to list
-                query_samples.append(mean_var_query.tolist())
-            
-            #Performing manual memory cleanup
-            print("Successfully finished generating thetas")
-            
-            print("Finding top uncertain thetas")
-            # sort these thetas from smallest uncertainty to largest and save values
-            query_samples = np.asarray(query_samples).flatten()
-            np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
-            query_idx = np.argsort(query_samples)[::-1]
-            
-            #Plot distribution of variances
-            plt.hist(query_samples,bins=100)
-            plt.savefig(f"dists/loop_{active_loop_num}_variances.png")
-            plt.close()
-            
-            print("Top sample mean variance",query_samples[query_idx[0]])
-            print("Bottom sample mean variance",query_samples[query_idx[-1]])
-            print("Range of mean variance",np.ptp(query_samples))
-            
-            print("Generating data for these samples")
-            # get out the top `nsamples` values of theta_query
-            theta_query = theta_query_large[query_idx[:n_samples]]
-            
-            distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
-            
-            active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
-                                           flux_name, flux_test_name, lags_name,
-                                           lags_test_name, pars_conversion)
-            
-            # add rejected parameter sets back to original array for potential 
-            # future use:
-            theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
-            
-            # increment the index for reading parameters from theta_lhs
-            lhs_idx += (n_samples_large)
+            theta_lhs, lhs_idx = QBDC(flux_name, flux_test_name, lags_name, 
+                                      lags_test_name, active_loop_num, 
+                                      theta_lhs, lhs_idx, egrid, lags_egrid, 
+                                      flux_model, lags_model, dec_mag, device, 
+                                      labels, parallel)
     
             print("Setting up modeling")
             Xquery = FluxDecData(f"data/locations/{flux_name}", scaler, 
