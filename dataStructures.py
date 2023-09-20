@@ -258,7 +258,7 @@ class FluxDecData(Dataset):
             data.append(np.loadtxt(file).reshape(1, -1))
         final_dataset = np.concatenate(data,axis=0)
         final_dataset[final_dataset<=self.threshold] = self.threshold
-        mag_dataset = np.floor(np.log10(final_dataset))
+        mag_dataset = np.log10(final_dataset)
         dec_dataset = final_dataset/10**mag_dataset
         self.dec_scaler.fit(dec_dataset)
         self.mag_scaler.fit(mag_dataset)

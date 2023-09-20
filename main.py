@@ -212,6 +212,8 @@ def queryByDropout(wrk_dir, device = "cpu"):
     
     lhs_idx = 0
     
+    dec_mag = True
+    
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
@@ -239,11 +241,18 @@ def queryByDropout(wrk_dir, device = "cpu"):
             for j in tqdm(range(divider),desc="Sample dropout loops"):
                 theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
                 for i in range(sample_dropout):
-                    pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                    pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                    pred_query_flux[i] = pred_flux.detach().cpu().numpy()
-                    pred_query_lags[i] = pred_lags.detach().cpu().numpy()
-                    pred_query_inds[i] = ind.detach().cpu().numpy()
+                    if dec_mag == True:
+                        mag_flux, dec_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
+                        mag_lags, dec_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+                        pred_query_flux[i] = mag_flux.detach().cpu().numpy() + dec_flux.detach().cpu().numpy()
+                        pred_query_lags[i] = mag_lags.detach().cpu().numpy() + dec_lags.detach().cpu().numpy()
+                        pred_query_inds[i] = ind.detach().cpu().numpy()
+                    else:
+                        pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
+                        pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+                        pred_query_flux[i] = pred_flux.detach().cpu().numpy()
+                        pred_query_lags[i] = pred_lags.detach().cpu().numpy()
+                        pred_query_inds[i] = ind.detach().cpu().numpy()
                 # find uncertainty (as measured by relative variance)
                 dvar_flux = np.var(pred_query_flux,axis=0)
                 mean_var_flux = np.mean(dvar_flux, axis=1)
@@ -340,7 +349,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux", dec_mag=True)
+                                                              mode = "flux", dec_mag=dec_mag)
             
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
@@ -353,7 +362,7 @@ def queryByDropout(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags", dec_mag=True)
+                                                              mode = "lags", dec_mag=dec_mag)
             #iterate loop number by 1
             active_loop_num += 1
             
