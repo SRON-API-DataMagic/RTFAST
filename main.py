@@ -3,10 +3,6 @@ This is the main program that trains the neural network.
 """
 import numpy as np
 import os
-from tqdm import tqdm
-import pandas as pd
-from math import ceil
-import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -19,16 +15,14 @@ import scipy.stats
 
 from dataStructures import FluxDecData, LagsDecData
 
-from processing import nanChecker, saveData, renameData
+from processing import nanChecker, saveData
 import generator
 import network
 
 from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
 from training import active_training_loop, grid_training_loop, lagLoss
 from training import magDecFluxLoss, magDecLagsLoss
-from plotting import distributions
-from generator import active_learning_generation, pars_conversion, pars_conversion_full
-from generator import QBDC
+from training import QBDC
 #from generator import grid_data_gen
 
 def queryByDropout(wrk_dir, device = "cpu"):
