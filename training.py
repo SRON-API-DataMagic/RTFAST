@@ -228,7 +228,10 @@ class magDecFluxLoss(nn.Module):
         
     def scaling(self,dec,mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
-        mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
+        mag_sca_mid = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
+        if torch.any(torch.isnan(mag_sca_mid)) == True:
+            print("Before flooring, NaNs exist")
+        mag_sca = torch.floor(mag_sca_mid)
         result = dec_sca * 10**mag_sca
         if torch.any(torch.isnan(result)) == True:
             if torch.any(torch.isnan(mag_sca)) == True:
