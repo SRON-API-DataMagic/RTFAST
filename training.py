@@ -229,32 +229,15 @@ class magDecFluxLoss(nn.Module):
     def scaling(self,dec,mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
         mag_sca_mid = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
-        if torch.any(torch.isnan(mag_sca_mid)) == True:
-            print("Before flooring, NaNs exist")
-            print(mag)
-            print(mag_sca_mid)
         mag_sca = torch.floor(mag_sca_mid)
         result = dec_sca * 10**mag_sca
-        if torch.any(torch.isnan(result)) == True:
-            if torch.any(torch.isnan(mag_sca)) == True:
-                print("Mag_sca contains NaN")
-            elif torch.any(torch.isnan(dec_sca)) == True:
-                print("dec_sca contains NaN")
         return result
         
     def forward(self, output_dec, output_mag, target):
-        if torch.any(torch.isnan(target)) == True:
-            print("Data contains NaNs")
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
-        if torch.any(torch.isnan(target_mag)) == True:
-            print("Data mags contains NaNs")
         #scale to real space
-        print("Scaling targets")
         scaled_tar = self.scaling(target_dec, target_mag)
-        print("Scaling NN output")
-        print(output_dec)
-        print(output_mag)
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0

@@ -243,6 +243,7 @@ class FluxDecData(Dataset):
         parameters = torch.tensor(parameters)
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
+        datum[datum<=self.threshold] = self.threshold
         datum = torch.from_numpy(datum)
         cor_datum = datum.double()
         return cor_datum, parameters
