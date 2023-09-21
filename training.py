@@ -247,8 +247,14 @@ class magDecFluxLoss(nn.Module):
             print("Data contains NaNs")
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
+        if torch.any(torch.isnan(target_mag)) == True:
+            print("Data mags contains NaNs")
         #scale to real space
+        print("Scaling targets")
         scaled_tar = self.scaling(target_dec, target_mag)
+        print("Scaling NN output")
+        print(output_dec)
+        print(output_mag)
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
