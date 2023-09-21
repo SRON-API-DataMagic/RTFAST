@@ -326,11 +326,13 @@ class LagsDecData(Dataset):
         ind : torch.Tensor
             signed indices (0 indicates a negative value, 1 a positive value)
         """
-        ind = torch.where(D >= 0, 1, 0)
-        D = torch.abs(D)
+        ind = np.where(D >= 0, 1, 0)
+        D = np.abs(D)
         #set all values lower than the threshold to threshold to avoid 0s
         #becoming infinities
         D[D<self.threshold] = self.threshold
+        ind = torch.from_numpy(ind)
+        D = torch.from_numpy(D)
         norm_D = D.double()
         ind = ind.double()
         return norm_D, ind
