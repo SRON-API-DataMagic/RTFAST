@@ -216,6 +216,7 @@ class magDecFluxLoss(nn.Module):
         self.mag_scaler = load(f'scalers/{mag_scaler}')
         self.device = device
         self.threshold = 1e-39
+        self.criterion = weightedMSELoss()
         self.set_scale()
         
     def set_scale(self):
@@ -234,18 +235,14 @@ class magDecFluxLoss(nn.Module):
         return result
         
     def forward(self, output_dec, output_mag, target):
-        target_mag = torch.floor(torch.log10(target))
-        target_dec = target/10**target_mag
         #scale to real space
-        scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
-        mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
+        mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
-        scaled_tar = torch.where(mask == 0,1,scaled_tar)
-        scaled_out = torch.where(mask == 0,1,scaled_out)
+        scaled_tar = torch.mul(target,mask)
+        scaled_out = torch.mul(scaled_out,mask)
         #calculate loss
-        criterion = weightedMSELoss()
-        loss = criterion(scaled_out,scaled_tar)
+        loss = self.criterion(scaled_out,scaled_tar)
         return loss 
 
 class magDecLagsLoss(nn.Module):
@@ -316,15 +313,12 @@ class magDecLagsLoss(nn.Module):
         return result
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
-        target_mag = torch.floor(torch.log10(target))
-        target_dec = target/10**target_mag
         #scale to real space
-        scaled_tar = self.scaling(target_dec, target_mag)
         scaled_out = self.scaling(output_dec, output_mag)
-        mask = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
+        mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
-        scaled_tar = torch.where(mask == 0,1,scaled_tar)
-        scaled_out = torch.where(mask == 0,1,scaled_out)
+        scaled_tar = torch.mul(target,mask)
+        scaled_out = torch.mul(scaled_out,mask)
         #calculate loss
         loss = self.criterion(scaled_out,scaled_tar)
         signed_loss = self.binary(output_ind,target_ind)
