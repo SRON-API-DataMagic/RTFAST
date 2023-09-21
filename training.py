@@ -19,7 +19,7 @@ class weightedMSELoss(nn.Module):
         super().__init__()
     
     def forward(self, pred, target):
-        return torch.mean(((pred-target)**2)/target)
+        return torch.mean(((pred-target)/target)**2)
 
 class barredMSELoss(nn.Module):
     """
