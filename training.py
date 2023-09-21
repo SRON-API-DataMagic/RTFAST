@@ -504,7 +504,7 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
                 test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device))
             else:
                 dec_pred, mag_pred, I_pred = model(P.to(device))
-                pred, mag_pred, I_pred = pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
+                dec_pred, mag_pred, I_pred = dec_pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
                 test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device)).detach().item()
     test_loss /= batches
     
