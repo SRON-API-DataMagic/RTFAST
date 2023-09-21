@@ -563,7 +563,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         else:
             imp_te += 1
             imp_tr += 1
-        if loss.cpu() == np.asarray(te_loss_arr).min():
+        if loss == np.asarray(te_loss_arr).min():
             torch.save(model.state_dict(), f"models/active_best_{mode}.pth")
         
         epoch += 1
