@@ -263,7 +263,8 @@ class FluxDecData(Dataset):
         final_dataset = np.concatenate(data,axis=0)
         final_dataset[final_dataset<=self.threshold] = self.threshold
         mag_dataset = np.log10(final_dataset)
-        dec_dataset = final_dataset/10**mag_dataset
+        mag = np.floor(mag_dataset)
+        dec_dataset = final_dataset/10**mag
         self.dec_scaler.fit(dec_dataset)
         self.mag_scaler.fit(mag_dataset)
         dump(self.dec_scaler, f'scalers/dec_{self.scaler_name}', compress=True)
@@ -355,10 +356,11 @@ class LagsDecData(Dataset):
         D = np.concatenate(data,axis=0)
         D = np.abs(D)
         D[D<self.threshold] = self.threshold
+        mag_scals = np.log10(D)
         mag = np.floor(np.log10(D))
         dec = D/10**mag
         self.dec_scaler.fit(dec)
-        self.mag_scaler.fit(mag)
+        self.mag_scaler.fit(mag_scals)
         dump(self.dec_scaler, f'scalers/dec_{self.scaler_name}', compress=True)
         dump(self.mag_scaler, f'scalers/mag_{self.scaler_name}', compress=True)
         return
