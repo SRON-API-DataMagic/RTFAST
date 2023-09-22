@@ -217,6 +217,7 @@ class magDecFluxLoss(nn.Module):
         self.device = device
         self.threshold = 1e-39
         self.criterion = nn.MSELoss()
+        self.set_scale()
         
     def set_scale(self):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
@@ -302,6 +303,7 @@ class magDecLagsLoss(nn.Module):
         self.threshold = 1e-7
         self.binary = nn.BCELoss()
         self.criterion = nn.MSELoss()
+        self.set_scale()
         
     def set_scale(self):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
