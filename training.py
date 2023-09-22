@@ -239,7 +239,7 @@ class magDecFluxLoss(nn.Module):
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
-        target_mag = np.floor(np.log10(target))
+        target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
         #scale to real space
@@ -324,7 +324,7 @@ class magDecLagsLoss(nn.Module):
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
-        target_mag = np.floor(np.log10(target))
+        target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
         #scale to real space
