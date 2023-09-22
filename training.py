@@ -216,17 +216,26 @@ class magDecFluxLoss(nn.Module):
         self.mag_scaler = load(f'scalers/{mag_scaler}')
         self.device = device
         self.threshold = 1e-39
-        self.criterion = nn.MSELoss()
+        self.criterion = weightedMSELoss()
+        self.set_scale()
+        
+    def set_scale(self):
+        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
+        self.dec_max = torch.tensor(self.dec_scaler.data_max_)
+        self.dec_scale = self.dec_max - self.dec_min
+        self.mag_min = torch.tensor(self.mag_scaler.data_min_)
+        self.mag_max = torch.tensor(self.mag_scaler.data_max_)
+        self.mag_scale = self.mag_max - self.mag_min
         
     def scaling(self,dec,mag):
-        dec_sca = self.dec_scaler.inverse_transform(dec)
-        mag_sca = self.mag_scaler.inverse_transform(mag)
+        dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
+        mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
     
     def normalize(self,dec,mag):
-        dec = self.dec_scaler.transform(dec)
-        mag = self.mag_scaler.transform(mag)
+        dec = (dec - self.dec_min.to(self.device)/self.dec_scale.to(self.device))
+        mag = (mag - self.mag_min.to(self.device)/self.mag_scale.to(self.device))
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
@@ -296,15 +305,23 @@ class magDecLagsLoss(nn.Module):
         self.binary = nn.BCELoss()
         self.criterion = nn.MSELoss()
         
-    def scaling(self,dec,mag):
-        dec_sca = self.dec_scaler.inverse_transform(dec)
-        mag_sca = self.mag_scaler.inverse_transform(mag)
+    def set_scale(self):
+        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
+        self.dec_max = torch.tensor(self.dec_scaler.data_max_)
+        self.dec_scale = self.dec_max - self.dec_min
+        self.mag_min = torch.tensor(self.mag_scaler.data_min_)
+        self.mag_max = torch.tensor(self.mag_scaler.data_max_)
+        self.mag_scale = self.mag_max - self.mag_min
+        
+    def scaling(self,dec, mag):
+        dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
+        mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
     
     def normalize(self,dec,mag):
-        dec = self.dec_scaler.transform(dec)
-        mag = self.mag_scaler.transform(mag)
+        dec = (dec - self.dec_min.to(self.device)/self.dec_scale.to(self.device))
+        mag = (mag - self.mag_min.to(self.device)/self.mag_scale.to(self.device))
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
