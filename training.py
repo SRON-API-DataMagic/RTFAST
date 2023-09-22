@@ -244,13 +244,13 @@ class magDecFluxLoss(nn.Module):
         if torch.any(torch.isnan(target_mag)) == True:
             print("NaNs in target_mag")
             print(target_mag)
-        elif torch.any(torch.isnan(target_dec)) == True:
+        if torch.any(torch.isnan(target_dec)) == True:
             print("NaNs in target_dec")
             print(target_dec)
-        elif torch.any(torch.isnan(output_mag)) == True:
+        if torch.any(torch.isnan(output_mag)) == True:
             print("NaNs in output_mag")
             print(output_mag)
-        elif torch.any(torch.isnan(output_dec)) == True:
+        if torch.any(torch.isnan(output_dec)) == True:
             print("NaNs in output_dec")
             print(output_dec)
         target_dec, target_mag = self.normalize(target_dec, target_mag)
@@ -389,8 +389,8 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
             pred = model(P.to(device))[:,None,:]
             loss = loss_fn(pred,D.to(device))
         else:
-            dec_pred, mag_pred = model(P.to(device))
-            dec_pred, mag_pred = dec_pred[:,None,:], mag_pred[:,None,:]
+            mag_pred, dec_pred  = model(P.to(device))
+            mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
         optimizer.zero_grad()
         loss.backward()
@@ -442,8 +442,8 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
             pred, I_pred = pred[:,None,:], I_pred[:,None,:]
             loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
         else:
-            dec_pred, mag_pred, I_pred = model(P.to(device))
-            dec_pred, mag_pred, I_pred = dec_pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
+            mag_pred, dec_pred, I_pred = model(P.to(device))
+            mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
         optimizer.zero_grad()
         loss.backward()
