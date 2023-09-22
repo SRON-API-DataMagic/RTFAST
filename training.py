@@ -229,20 +229,25 @@ class magDecFluxLoss(nn.Module):
         
     def scaling(self,dec,mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
-        mag_sca_mid = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
-        mag_sca = torch.floor(mag_sca_mid)
+        mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
         
     def forward(self, output_dec, output_mag, target):
+        target_mag = np.floor(np.log10(target))
+        target_dec = target/10**target_mag
         #scale to real space
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
-        scaled_tar = torch.mul(target,mask)
-        scaled_out = torch.mul(scaled_out,mask)
+        target_mag = torch.mul(target_mag,mask)
+        target_dec = torch.mul(target_dec,mask)
+        output_mag = torch.mul(output_mag,mask)
+        output_dec = torch.mul(output_dec,mask)
         #calculate loss
-        loss = self.criterion(scaled_out,scaled_tar)
+        mag_loss = self.criterion(output_mag,target_mag)
+        dec_loss = self.criterion(output_dec,target_dec)
+        loss = mag_loss + dec_loss
         return loss 
 
 class magDecLagsLoss(nn.Module):
@@ -290,7 +295,7 @@ class magDecLagsLoss(nn.Module):
         self.device = device
         self.threshold = 1e-7
         self.binary = nn.BCELoss()
-        self.criterion = weightedMSELoss()
+        self.criterion = nn.MSELoss()
         self.set_scale()
         
     def set_scale(self):
@@ -303,26 +308,26 @@ class magDecLagsLoss(nn.Module):
         
     def scaling(self,dec, mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
-        mag_sca = torch.floor((mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device))
+        mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
-        if torch.any(torch.isnan(result)) == True:
-            if torch.any(torch.isnan(mag_sca)) == True:
-                print("Mag_sca contains NaN")
-            elif torch.any(torch.isnan(dec_sca)) == True:
-                print("dec_sca contains NaN")
         return result
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
+        target_mag = np.floor(np.log10(target))
+        target_dec = target/10**target_mag
         #scale to real space
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
-        scaled_tar = torch.mul(target,mask)
-        scaled_out = torch.mul(scaled_out,mask)
+        target_mag = torch.mul(target_mag,mask)
+        target_dec = torch.mul(target_dec,mask)
+        output_mag = torch.mul(output_mag,mask)
+        output_dec = torch.mul(output_dec,mask)
         #calculate loss
-        loss = self.criterion(scaled_out,scaled_tar)
+        mag_loss = self.criterion(output_mag,target_mag)
+        dec_loss = self.criterion(output_dec,target_dec)
         signed_loss = self.binary(output_ind,target_ind)
-        loss += signed_loss
+        loss = signed_loss + mag_loss + dec_loss
         return loss
     
 def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
