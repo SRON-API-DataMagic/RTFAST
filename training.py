@@ -232,10 +232,16 @@ class magDecFluxLoss(nn.Module):
         mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
+    
+    def normalize(self,dec,mag):
+        dec = (dec - self.dec_min.to(self.device)/self.dec_scale.to(self.device))
+        mag = (mag - self.mag_min.to(self.device)/self.mag_scale.to(self.device))
+        return dec, mag
         
     def forward(self, output_dec, output_mag, target):
         target_mag = np.floor(np.log10(target))
         target_dec = target/10**target_mag
+        target_dec, target_mag = self.normalize(target_dec, target_mag)
         #scale to real space
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
@@ -311,10 +317,16 @@ class magDecLagsLoss(nn.Module):
         mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
+    
+    def normalize(self,dec,mag):
+        dec = (dec - self.dec_min.to(self.device)/self.dec_scale.to(self.device))
+        mag = (mag - self.mag_min.to(self.device)/self.mag_scale.to(self.device))
+        return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
         target_mag = np.floor(np.log10(target))
         target_dec = target/10**target_mag
+        target_dec, target_mag = self.normalize(target_dec, target_mag)
         #scale to real space
         scaled_out = self.scaling(output_dec, output_mag)
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
