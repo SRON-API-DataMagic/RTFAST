@@ -293,7 +293,6 @@ class magDecLagsLoss(nn.Module):
         self.threshold = 1e-7
         self.binary = nn.BCELoss()
         self.criterion = nn.MSELoss()
-        self.set_scale()
         
     def scaling(self,dec,mag):
         dec_sca = self.dec_scaler.inverse_transform(dec)
