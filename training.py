@@ -241,6 +241,18 @@ class magDecFluxLoss(nn.Module):
     def forward(self, output_dec, output_mag, target):
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
+        if torch.any(torch.isnan(target_mag)) == True:
+            print("NaNs in target_mag")
+            print(target_mag)
+        elif torch.any(torch.isnan(target_dec)) == True:
+            print("NaNs in target_dec")
+            print(target_dec)
+        elif torch.any(torch.isnan(output_mag)) == True:
+            print("NaNs in output_mag")
+            print(output_mag)
+        elif torch.any(torch.isnan(output_dec)) == True:
+            print("NaNs in output_dec")
+            print(output_dec)
         target_dec, target_mag = self.normalize(target_dec, target_mag)
         #scale to real space
         scaled_out = self.scaling(output_dec,output_mag)
