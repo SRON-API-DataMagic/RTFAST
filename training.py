@@ -230,11 +230,13 @@ class magDecFluxLoss(nn.Module):
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
-        target_mag = torch.floor(torch.log10(target))
+        target_mag = np.floor(np.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
+        target_dec, target_mag = torch.Tensor(target_dec), torch.Tensor(target_mag)
         #scale to real space
-        scaled_out = self.scaling(output_dec, output_mag)
+        scaled_out = torch.tensor(self.scaling(np.asarray(output_dec), 
+                                               np.asarray(output_mag)))
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
         target_mag = torch.mul(target_mag,mask)
@@ -306,11 +308,13 @@ class magDecLagsLoss(nn.Module):
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
-        target_mag = torch.floor(torch.log10(target))
+        target_mag = np.floor(np.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
+        target_dec, target_mag = torch.Tensor(target_dec), torch.Tensor(target_mag)
         #scale to real space
-        scaled_out = self.scaling(output_dec, output_mag)
+        scaled_out = torch.tensor(self.scaling(np.asarray(output_dec), 
+                                               np.asarray(output_mag)))
         mask = torch.where((target < self.threshold)&(scaled_out<self.threshold),0,1)
         #set both values in tensors to 1 where mask is equal to 0
         target_mag = torch.mul(target_mag,mask)
