@@ -236,8 +236,8 @@ class magDecFluxLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask
-        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask
+        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask.to(self.device)
+        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask.to(self.device)
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
@@ -362,8 +362,8 @@ class magDecLagsLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask
-        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask
+        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask.to(self.device)
+        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask.to(self.device)
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
