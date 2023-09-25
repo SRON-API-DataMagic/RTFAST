@@ -391,6 +391,8 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
         else:
             mag_pred, dec_pred  = model(P.to(device))
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
+            print(mag_pred)
+            print(dec_pred)
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
         optimizer.zero_grad()
         loss.backward()
