@@ -266,14 +266,26 @@ class magDecFluxLoss(nn.Module):
         if torch.any(torch.isnan(target_mag)) == True:
             print("NaNs in target_mag after normalizing")
             print(target_mag)
+        elif torch.any(torch.isinf(target_mag)) == True:
+            print("Infs in target_mag after normalizing")
+            print(target_mag)
         if torch.any(torch.isnan(target_dec)) == True:
             print("NaNs in target_dec after normalizing")
+            print(target_dec)
+        elif torch.any(torch.isinf(target_dec)) == True:
+            print("Infs in target_dec after normalizing")
             print(target_dec)
         if torch.any(torch.isnan(output_mag)) == True:
             print("NaNs in output_mag after normalizing")
             print(output_mag)
+        elif torch.any(torch.isinf(output_mag)) == True:
+            print("Infs in output_mag after normalizing")
+            print(output_mag)
         if torch.any(torch.isnan(output_dec)) == True:
             print("NaNs in output_dec after normalizing")
+            print(output_dec)
+        elif torch.any(torch.isinf(output_dec)) == True:
+            print("Infs in output_dec after normalizing")
             print(output_dec)
         
         mag_loss = self.criterion(output_mag,target_mag)
