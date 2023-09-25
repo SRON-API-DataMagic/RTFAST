@@ -223,11 +223,11 @@ class magDecFluxLoss(nn.Module):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
         self.dec_max = torch.tensor(self.dec_scaler.data_max_)
         self.dec_scale = self.dec_max - self.dec_min
-        self.dec_scale[self.dec_scale == np.inf] = 0
+        self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_max = torch.tensor(self.mag_scaler.data_max_)
         self.mag_scale = self.mag_max - self.mag_min
-        self.mag_scale[self.mag_scale == np.inf] = 0
+        self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
         
     def scaling(self,dec,mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
@@ -236,8 +236,8 @@ class magDecFluxLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        dec = (dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device)
-        mag = (mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device)
+        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask
+        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
@@ -349,21 +349,21 @@ class magDecLagsLoss(nn.Module):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
         self.dec_max = torch.tensor(self.dec_scaler.data_max_)
         self.dec_scale = self.dec_max - self.dec_min
-        self.dec_scale[self.dec_scale == np.inf] = 0
+        self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_max = torch.tensor(self.mag_scaler.data_max_)
         self.mag_scale = self.mag_max - self.mag_min
-        self.mag_scale[self.mag_scale == np.inf] = 0
+        self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
         
-    def scaling(self,dec, mag):
+    def scaling(self,dec,mag):
         dec_sca = (dec * self.dec_scale.to(self.device)) + self.dec_min.to(self.device)
         mag_sca = (mag * self.mag_scale.to(self.device)) + self.mag_min.to(self.device)
         result = dec_sca * 10**mag_sca
         return result
     
     def normalize(self,dec,mag):
-        dec = (dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device)
-        mag = (mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device)
+        dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))*self.dec_scale_mask
+        mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))*self.mag_scale_mask
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
