@@ -220,9 +220,8 @@ class magDecFluxLoss(nn.Module):
         self.set_scale()
         
     def set_scale(self):
-        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
-        self.dec_scale = torch.tensor(self.dec_scaler.data_range_)
-        self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
+        self.dec_min = 1
+        self.dec_scale = 9
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
@@ -235,7 +234,6 @@ class magDecFluxLoss(nn.Module):
     
     def normalize(self,dec,mag):
         dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))
-        dec[:,:,self.dec_scale_mask.to(self.device)==0] = 0
         mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
         return dec, mag
@@ -307,9 +305,8 @@ class magDecLagsLoss(nn.Module):
         self.set_scale()
         
     def set_scale(self):
-        self.dec_min = torch.tensor(self.dec_scaler.data_min_)
-        self.dec_scale = torch.tensor(self.dec_scaler.data_range_)
-        self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
+        self.dec_min = 1
+        self.dec_scale = 9
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
@@ -322,7 +319,6 @@ class magDecLagsLoss(nn.Module):
     
     def normalize(self,dec,mag):
         dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))
-        dec[:,:,self.dec_scale_mask.to(self.device)==0] = 0
         mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
         return dec, mag
