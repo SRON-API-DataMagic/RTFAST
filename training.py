@@ -219,8 +219,8 @@ class magDecFluxLoss(nn.Module):
         self.set_scale()
         
     def set_scale(self):
-        self.dec_min = 1
-        self.dec_scale = 9
+        self.dec_min = torch.tensor(1)
+        self.dec_scale = torch.tensor(9)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
@@ -303,8 +303,8 @@ class magDecLagsLoss(nn.Module):
         self.set_scale()
         
     def set_scale(self):
-        self.dec_min = 1
-        self.dec_scale = 9
+        self.dec_min = torch.tensor(1)
+        self.dec_scale = torch.tensor(9)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
