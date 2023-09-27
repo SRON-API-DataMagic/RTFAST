@@ -605,7 +605,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
 
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        test_dataloader, loss_fn, device, size, mode, 
-                       epochs = 400):
+                       epochs = 400, dec_mag = False):
     
     last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
     last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -619,9 +619,10 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     print("Beginning training")
     while epoch < epochs:
         print(f"Epoch {epoch+1} \n -----------------------")
-        model, optimizer, train_loss = train(train_dataloader,model,
-                                             optimizer,loss_fn,device)
-        loss = test(test_dataloader,model,loss_fn,device)
+        model, optimizer, train_loss = train(train_dataloader, model,
+                                             optimizer, loss_fn, device,
+                                             dec_mag=dec_mag)
+        loss = test(test_dataloader, model, loss_fn, device, dec_mag=dec_mag)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         tr_bet = (0.9*last_sig_best_tr) - train_loss

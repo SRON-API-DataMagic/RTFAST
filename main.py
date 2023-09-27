@@ -323,7 +323,6 @@ def grid_learning(wrk_dir,device):
             if mode == "flux":
                 train = train_flux
                 test = test_flux
-                loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxDecData
                 model = network.HeavyFluxNetwork(5,len(egrid))
             elif mode == "lags":
@@ -360,12 +359,21 @@ def grid_learning(wrk_dir,device):
             test_dataloader = DataLoader(testing_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
             
+            if mode == "flux":
+                loss_fn = magDecFluxLoss(f"dec_{fname}_{mode}_scaler.bin",
+                                         f"mag_{fname}_{mode}_scaler.bin", 
+                                         device)
+            elif mode == "lags":
+                loss_fn = magDecLagsLoss(f"dec_{fname}_{mode}_scaler.bin", 
+                                         f"mag_{fname}_{mode}_scaler.bin", 
+                                         device)
+            
             print("Dataloaders created")
             
             grid_training_loop(model, optimizer, train, test, 
                                    train_dataloader, test_dataloader,
                                    loss_fn, device,
-                                   size, mode)
+                                   size, mode, dec_mag = True)
         
 def main():
     """
