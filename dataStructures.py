@@ -7,6 +7,7 @@ from joblib import dump, load
 import pandas as pd
 import torch
 import numpy as np
+import copy
 
 class FluxData(Dataset):
     """
@@ -223,7 +224,7 @@ class FluxDecData(Dataset):
         if scaling == True:
             print(f"Creating two scaler with name dec_{scaler_name} and mag_{scaler_name}")
             self.dec_scaler = scaler
-            self.mag_scaler = scaler
+            self.mag_scaler = copy.copy(scaler)
             self.scaler_create()
         else:
             self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
@@ -300,7 +301,7 @@ class LagsDecData(Dataset):
         if scaling == True:
             print(f"Creating two scaler with name dec_{scaler_name} and mag_{scaler_name}")
             self.dec_scaler = scaler
-            self.mag_scaler = scaler
+            self.mag_scaler = copy.copy(scaler)
             self.scaler_create()
         else:
             self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
