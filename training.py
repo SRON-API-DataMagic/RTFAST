@@ -222,13 +222,9 @@ class magDecFluxLoss(nn.Module):
     def set_scale(self):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
         self.dec_scale = torch.tensor(self.dec_scaler.data_range_)
-        print(self.dec_min)
-        print(self.dec_scale)
         self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
-        print(self.mag_min)
-        print(self.mag_scale)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
         
     def scaling(self,dec,mag):
@@ -238,14 +234,10 @@ class magDecFluxLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        print("dec before:",dec)
         dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))
         dec[:,:,self.dec_scale_mask.to(self.device)==0] = 0
-        print("dec after:",dec)
-        print("mag before:", mag)
         mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
-        print("mag after:", mag)
         return dec, mag
         
     def forward(self, output_dec, output_mag, target):
@@ -317,13 +309,9 @@ class magDecLagsLoss(nn.Module):
     def set_scale(self):
         self.dec_min = torch.tensor(self.dec_scaler.data_min_)
         self.dec_scale = torch.tensor(self.dec_scaler.data_range_)
-        print(self.dec_min)
-        print(self.dec_scale)
         self.dec_scale_mask = torch.where(self.dec_scale == 0,0,1)
         self.mag_min = torch.tensor(self.mag_scaler.data_min_)
         self.mag_scale = torch.tensor(self.mag_scaler.data_range_)
-        print(self.mag_min)
-        print(self.mag_scale)
         self.mag_scale_mask = torch.where(self.mag_scale == 0,0,1)
         
     def scaling(self,dec,mag):
@@ -333,14 +321,10 @@ class magDecLagsLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        print("dec before:",dec)
         dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))
         dec[:,:,self.dec_scale_mask.to(self.device)==0] = 0
-        print("dec after:",dec)
-        print("mag before:", mag)
         mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
-        print("mag after:", mag)
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
