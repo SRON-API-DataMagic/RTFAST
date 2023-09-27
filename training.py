@@ -329,12 +329,14 @@ class magDecLagsLoss(nn.Module):
         return result
     
     def normalize(self,dec,mag):
-        print(dec)
+        print("dec before:",dec)
         dec = ((dec - self.dec_min.to(self.device))/self.dec_scale.to(self.device))
         dec[:,:,self.dec_scale_mask.to(self.device)==0] = 0
-        print(dec_sca)
+        print("dec after:",dec)
+        print("mag before:", mag)
         mag = ((mag - self.mag_min.to(self.device))/self.mag_scale.to(self.device))
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
+        print("mag after:", mag)
         return dec, mag
         
     def forward(self, output_dec, output_mag, output_ind, target, target_ind):
