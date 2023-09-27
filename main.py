@@ -163,10 +163,8 @@ def active_learning(wrk_dir, device = "cpu"):
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         
-        loss_fn_flux = magDecFluxLoss(f"dec_{flux_scaler_name}",
-                                      f"mag_{flux_scaler_name}", device)
-        loss_fn_lags = magDecLagsLoss(f"dec_{lags_scaler_name}",
-                                      f"mag_{lags_scaler_name}", device)
+        loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
+        loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
         
     batch_size = 1024
     num_workers = 4
@@ -360,12 +358,10 @@ def grid_learning(wrk_dir,device):
                                           num_workers = num_workers, shuffle=True)
             
             if mode == "flux":
-                loss_fn = magDecFluxLoss(f"dec_{fname}_{mode}_scaler.bin",
-                                         f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = magDecFluxLoss(f"mag_{fname}_{mode}_scaler.bin", 
                                          device)
             elif mode == "lags":
-                loss_fn = magDecLagsLoss(f"dec_{fname}_{mode}_scaler.bin", 
-                                         f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = magDecLagsLoss(f"mag_{fname}_{mode}_scaler.bin", 
                                          device)
             
             print("Dataloaders created")

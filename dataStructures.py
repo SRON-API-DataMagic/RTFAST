@@ -222,12 +222,10 @@ class FluxDecData(Dataset):
         self.scaler_name = scaler_name
         self.threshold = 1e-39
         if scaling == True:
-            print(f"Creating two scaler with name dec_{scaler_name} and mag_{scaler_name}")
-            self.dec_scaler = scaler
-            self.mag_scaler = copy.copy(scaler)
+            print(f"Creating scaler with name: mag_{scaler_name}")
+            self.mag_scaler = scaler
             self.scaler_create()
         else:
-            self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
             self.mag_scaler = load(f'scalers/mag_{self.scaler_name}')
             
     def __len__(self):
@@ -264,10 +262,7 @@ class FluxDecData(Dataset):
         final_dataset = np.concatenate(data,axis=0)
         final_dataset[final_dataset<=self.threshold] = self.threshold
         mag_dataset = np.floor(np.log10(final_dataset))
-        dec_dataset = final_dataset/10**mag_dataset
-        self.dec_scaler.fit(dec_dataset)
         self.mag_scaler.fit(mag_dataset)
-        dump(self.dec_scaler, f'scalers/dec_{self.scaler_name}', compress=True)
         dump(self.mag_scaler, f'scalers/mag_{self.scaler_name}', compress=True)
         return
 
@@ -299,12 +294,10 @@ class LagsDecData(Dataset):
         self.scaler_name = scaler_name
         self.threshold = 1e-7
         if scaling == True:
-            print(f"Creating two scaler with name dec_{scaler_name} and mag_{scaler_name}")
-            self.dec_scaler = scaler
-            self.mag_scaler = copy.copy(scaler)
+            print(f"Creating scaler with name: mag_{scaler_name}")
+            self.mag_scaler = scaler
             self.scaler_create()
         else:
-            self.dec_scaler = load(f'scalers/dec_{self.scaler_name}')
             self.mag_scaler = load(f'scalers/mag_{self.scaler_name}')
             
     def __len__(self):
@@ -357,10 +350,7 @@ class LagsDecData(Dataset):
         D = np.abs(D)
         D[D<self.threshold] = self.threshold
         mag = np.floor(np.log10(D))
-        dec = D/10**mag
-        self.dec_scaler.fit(dec)
         self.mag_scaler.fit(mag)
-        dump(self.dec_scaler, f'scalers/dec_{self.scaler_name}', compress=True)
         dump(self.mag_scaler, f'scalers/mag_{self.scaler_name}', compress=True)
         return
     

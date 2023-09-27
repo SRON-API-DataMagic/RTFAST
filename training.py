@@ -210,9 +210,8 @@ class magDecFluxLoss(nn.Module):
             squared error and masking where outputs are below the threshold
             value.
     """
-    def __init__(self,dec_scaler,mag_scaler,device):
+    def __init__(self,mag_scaler,device):
         super().__init__()
-        self.dec_scaler = load(f'scalers/{dec_scaler}')
         self.mag_scaler = load(f'scalers/{mag_scaler}')
         self.device = device
         self.threshold = 1e-39
@@ -294,9 +293,8 @@ class magDecLagsLoss(nn.Module):
             identified the lag as negative or positive with 1 representing
             positive lags and 0 representing negative lags.
     """
-    def __init__(self,dec_scaler,mag_scaler,device):
+    def __init__(self,mag_scaler,device):
         super().__init__()
-        self.dec_scaler = load(f'scalers/{dec_scaler}')
         self.mag_scaler = load(f'scalers/{mag_scaler}')
         self.device = device
         self.threshold = 1e-7
