@@ -184,7 +184,6 @@ class MagFluxNetwork(SharpNetwork):
             nn.Linear(2048,data_len))
         self.DecimalOutputs = nn.Sequential(
             nn.Linear(2048,data_len))
-        self.dropout4 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
@@ -313,7 +312,6 @@ class MagLagsNetwork(LagsNetwork):
             nn.Linear(2048,data_len))
         self.OutputIndex = nn.Sequential(
             nn.Linear(2048,data_len))
-        self.dropout4 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
