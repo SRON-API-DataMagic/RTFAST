@@ -237,7 +237,7 @@ class magDecFluxLoss(nn.Module):
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
         return dec, mag
         
-    def forward(self, output_dec, output_mag, target):
+    def forward(self, output_dec, output_mag, target, test = False):
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
@@ -250,12 +250,11 @@ class magDecFluxLoss(nn.Module):
         output_mag = torch.mul(output_mag,mask)
         output_dec = torch.mul(output_dec,mask)
         #calculate loss
-        print("outdec:", output_dec)
-        print("outmag:", output_mag)
-        print("tardec:", target_dec)
-        print("tarmag:", target_mag)
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
+        if test == True:
+            print(f"mag loss: {mag_loss}")
+            print(f"dec loss: {dec_loss}")
         loss = mag_loss + dec_loss
         return loss 
 
@@ -325,7 +324,8 @@ class magDecLagsLoss(nn.Module):
         mag[:,:,self.mag_scale_mask.to(self.device)==0] = 0
         return dec, mag
         
-    def forward(self, output_dec, output_mag, output_ind, target, target_ind):
+    def forward(self, output_dec, output_mag, output_ind, target, target_ind, 
+                test = False):
         target_mag = torch.floor(torch.log10(target))
         target_dec = target/10**target_mag
         target_dec, target_mag = self.normalize(target_dec, target_mag)
@@ -341,6 +341,10 @@ class magDecLagsLoss(nn.Module):
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         signed_loss = self.binary(output_ind,target_ind)
+        if test == True:
+            print(f"mag loss: {mag_loss}")
+            print(f"dec loss: {dec_loss}")
+            print(f"signed loss: {signed_loss}")
         loss = signed_loss + mag_loss + dec_loss
         return loss
     
@@ -480,7 +484,7 @@ def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
             else:
                 dec_pred, mag_pred = model(P.to(device))
                 dec_pred, mag_pred = dec_pred[:,None,:], mag_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, D.to(device)).detach().item()
+                test_loss += loss_fn(dec_pred, mag_pred, D.to(device), test=True).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
@@ -518,7 +522,8 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
             else:
                 dec_pred, mag_pred, I_pred = model(P.to(device))
                 dec_pred, mag_pred, I_pred = dec_pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device)).detach().item()
+                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), 
+                                     I.to(device), test=True).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
