@@ -95,8 +95,8 @@ def active_learning(wrk_dir, device = "cpu"):
     best_lags_model = network.MagLagsNetwork(num_pars,len(lags_egrid)-1)
     best_lags_model.to(device)
     
-    optimizer_flux = Adam(flux_model.parameters(),lr = 1e-3)
-    optimizer_lags = Adam(lags_model.parameters(),lr = 1e-3)
+    optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
+    optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
     #scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
     #scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
     scaler = MinMaxScaler()
