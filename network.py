@@ -184,6 +184,7 @@ class MagFluxNetwork(SharpNetwork):
             nn.Linear(2048,data_len))
         self.DecimalOutputs = nn.Sequential(
             nn.Linear(2048,data_len))
+        self.dropout4 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
@@ -194,6 +195,7 @@ class MagFluxNetwork(SharpNetwork):
         stack3 = self.LinearStack3(stack2)
         stack3 = self.dropout3(stack3)
         stack4 = self.LinearStack4(stack3)
+        stack4 = self.dropout4(stack4)
         mag_result = self.MagnitudeOutputs(stack4)
         dec_result = self.DecimalOutputs(stack4)
         return mag_result, dec_result
@@ -312,6 +314,7 @@ class MagLagsNetwork(LagsNetwork):
             nn.Linear(2048,data_len))
         self.OutputIndex = nn.Sequential(
             nn.Linear(2048,data_len))
+        self.dropout4 = nn.Dropout(p=self.p)
         self.double()
     
     def forward(self,pars):
@@ -322,6 +325,7 @@ class MagLagsNetwork(LagsNetwork):
         stack3 = self.LinearStack3(stack2)
         stack3 = self.dropout3(stack3)
         stack4 = self.LinearStack4(stack3)
+        stack4 = self.dropout4(stack4)
         mag = self.MagnitudeOutputs(stack4)
         dec = self.DecimalOutputs(stack4)
         ind = self.OutputSigmoid(self.OutputIndex(stack4))

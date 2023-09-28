@@ -250,6 +250,10 @@ class magDecFluxLoss(nn.Module):
         output_mag = torch.mul(output_mag,mask)
         output_dec = torch.mul(output_dec,mask)
         #calculate loss
+        print("outdec:", output_dec)
+        print("outmag:", output_mag)
+        print("tardec:", target_dec)
+        print("tarmag:", target_mag)
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         loss = mag_loss + dec_loss
