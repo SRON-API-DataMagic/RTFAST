@@ -255,6 +255,8 @@ class magDecFluxLoss(nn.Module):
         if test == True:
             print(f"mag loss: {mag_loss}")
             print(f"dec loss: {dec_loss}")
+            print("Example of dec outputs:", output_dec)
+            print("Example of mag outputs:", output_mag)
         loss = mag_loss + dec_loss
         return loss 
 
