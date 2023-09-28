@@ -213,9 +213,9 @@ def model_load(model_loc, egrid, lags = None):
 
     """
     if lags == None:
-        model = network.HeavyFluxNetwork(5, len(egrid))
+        model = network.MagFluxNetwork(5, len(egrid))
     else:
-        model = network.HeavyLagsNetwork(5, len(egrid))
+        model = network.MagLagsNetwork(5, len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -892,7 +892,7 @@ def main():
     wrk_dir = os.getcwd()
     
     nums = [0,10,20,30,40]
-    files = [f"data/locations/loc_full_flux_{loop}.csv" for loop in nums]
+    files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
     
     egrid = retrieve_egrid(wrk_dir)
