@@ -760,8 +760,8 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,13,2,3,4]
-    negatives = [3]
+    pars_list = [1,2,3,4,7]
+    negatives = [2]
     logged = [1,2,3,4]
     
     if type(scaler_names) != list:

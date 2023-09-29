@@ -107,12 +107,13 @@ def lhs_trimmed_gen():
 
     """
     spin_range = [0.1,0.998]
-    mass_range = [np.log10(3),np.log10(1e11)]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
+    distance_range = [np.log10(0.2),np.log10(1e10)]
     
-    range_all = [spin_range,mass_range,inclination_range,r_inner_range,r_outer_range]
+    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
+                 distance_range]
     
     return range_all
 
@@ -141,10 +142,10 @@ def pars_conversion(pars,ReIm):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
     new_pars[:,1] = pars[:,0]
-    new_pars[:,13] = 10**pars[:,1]
-    new_pars[:,2] = 10**pars[:,2]
-    new_pars[:,3] = -10**pars[:,3]
-    new_pars[:,4] = 10**pars[:,4]
+    new_pars[:,2] = 10**pars[:,1]
+    new_pars[:,3] = -10**pars[:,2]
+    new_pars[:,4] = 10**pars[:,3]
+    new_pars[:,7] = 10**pars[:,4]
     
     return new_pars
 
@@ -218,19 +219,19 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     """
    
     spin = np.linspace(0.1,1.0,size)
-    mass = np.linspace(np.log10(3.3),np.log10(1e11),size)
     inc = np.linspace(np.log10(1),np.log10(80),size)
     r_in = np.linspace(np.log10(1),np.log10(400),size)
     r_out = np.linspace(np.log10(400),np.log10(1e5),size)
+    distance = [np.log10(0.2),np.log10(1e10)]
     
     #create parameter grid
     theta_init = []
     for a in spin:
-        for m in mass:
-            for i in inc:
+        for i in inc:
                 for r_i in r_in:
                     for r_o in r_out:
-                        theta_init.append([a,m,i,r_i,r_o])
+                        for d in distance:
+                            theta_init.append([a,i,r_i,r_o,d])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     theta_flux = pars_conversion(theta_init,0)
@@ -286,8 +287,8 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     scaler = MinMaxScaler()
     
-    pars_list = [1,13,2,3,4]
-    negatives = [3]
+    pars_list = [1,2,3,4,7]
+    negatives = [2]
     logged = [1,2,3,4]
     
     flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
