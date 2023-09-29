@@ -322,21 +322,18 @@ def grid_learning(wrk_dir,device):
                 train = train_flux
                 test = test_flux
                 dataType = FluxDecData
-                model = network.HeavyFluxNetwork(5,len(egrid))
+                model = network.MagFluxNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
-                loss_fn = lagLoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = LagsDecData
-                model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
-                
+                model = network.MagLagsNetwork(5,len(lags_egrid)-1)
             else:
                 print("Invalid mode, defaulting to flux modelling")
                 train = train_flux
                 test = test_flux
-                loss_fn = barredMSELoss(f"{fname}_{mode}_scaler.bin",device)
                 dataType = FluxDecData
-                model = network.HeavyFluxNetwork(5,len(egrid))
+                model = network.MagFluxNetwork(5,len(egrid))
             
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 0.001)
@@ -402,8 +399,8 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    #grid_learning(wrk_dir,device)
-    active_learning(wrk_dir,device)
+    grid_learning(wrk_dir,device)
+    #active_learning(wrk_dir,device)
     
 
 if __name__ == "__main__":

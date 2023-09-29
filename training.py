@@ -249,22 +249,23 @@ class magDecFluxLoss(nn.Module):
         target_dec = torch.mul(target_dec,mask)
         output_mag = torch.mul(output_mag,mask)
         output_dec = torch.mul(output_dec,mask)
-        print("Example of dec differences:", output_dec-target_dec)
-        print("Example of mag differences:", output_mag-target_mag)
-        print("Mean outputs per bin of dec output:", torch.mean(output_dec,
-                                                                axis = 0))
-        print("Mean outputs per bin of dec target:", torch.mean(target_dec,
-                                                                axis = 0))
-        print("Mean outputs per bin of mag output:", torch.mean(output_mag,
-                                                                axis = 0))
-        print("Mean outputs per bin of mag target:", torch.mean(target_mag,
-                                                                axis = 0))
         #calculate loss
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         if test == True:
             print(f"mag loss: {mag_loss}")
             print(f"dec loss: {dec_loss}")
+            print("Example of dec differences:", output_dec-target_dec)
+            print("Example of mag differences:", output_mag-target_mag)
+            print("Mean outputs per bin of dec output:", torch.mean(output_dec,
+                                                                    axis = 0))
+            print("Mean outputs per bin of dec target:", torch.mean(target_dec,
+                                                                    axis = 0))
+            print("Mean outputs per bin of mag output:", torch.mean(output_mag,
+                                                                    axis = 0))
+            print("Mean outputs per bin of mag target:", torch.mean(target_mag,
+                                                                    axis = 0))
+            
         loss = mag_loss + dec_loss
         return loss 
 
