@@ -255,17 +255,6 @@ class magDecFluxLoss(nn.Module):
         if test == True:
             print(f"mag loss: {mag_loss}")
             print(f"dec loss: {dec_loss}")
-            print("Example of dec differences:", output_dec-target_dec)
-            print("Example of mag differences:", output_mag-target_mag)
-            print("Mean outputs per bin of dec output:", torch.mean(output_dec,
-                                                                    axis = 0))
-            print("Mean outputs per bin of dec target:", torch.mean(target_dec,
-                                                                    axis = 0))
-            print("Mean outputs per bin of mag output:", torch.mean(output_mag,
-                                                                    axis = 0))
-            print("Mean outputs per bin of mag target:", torch.mean(target_mag,
-                                                                    axis = 0))
-            
         loss = mag_loss + dec_loss
         return loss 
 
