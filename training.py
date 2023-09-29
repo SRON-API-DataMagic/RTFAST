@@ -493,8 +493,8 @@ def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
                 pred = model(P.to(device))[:,None,:]
                 test_loss += loss_fn(pred,D.to(device))
             else:
-                dec_pred, mag_pred = model(P.to(device))
-                dec_pred, mag_pred = dec_pred[:,None,:], mag_pred[:,None,:]
+                mag_pred, dec_pred = model(P.to(device))
+                mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
                 test_loss += loss_fn(dec_pred, mag_pred, D.to(device), test=True).detach().item()
     test_loss /= batches
     
@@ -531,8 +531,8 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
                 pred, I_pred = pred[:,None,:], I_pred[:,None,:]
                 test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device))
             else:
-                dec_pred, mag_pred, I_pred = model(P.to(device))
-                dec_pred, mag_pred, I_pred = dec_pred[:,None,:], mag_pred[:,None,:], I_pred[:,None,:]
+                mag_pred, dec_pred, I_pred = model(P.to(device))
+                mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
                 test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), 
                                      I.to(device), test=True).detach().item()
     test_loss /= batches
