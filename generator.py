@@ -222,7 +222,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     inc = np.linspace(np.log10(1),np.log10(80),size)
     r_in = np.linspace(np.log10(1),np.log10(400),size)
     r_out = np.linspace(np.log10(400),np.log10(1e5),size)
-    distance = [np.log10(0.2),np.log10(1e10)]
+    distance = np.linspace(np.log10(400),np.log10(1e5),size)
     
     #create parameter grid
     theta_init = []
