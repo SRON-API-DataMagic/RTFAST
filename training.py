@@ -252,9 +252,6 @@ class magDecFluxLoss(nn.Module):
         #calculate loss
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
-        if test == True:
-            print(f"mag loss: {mag_loss}")
-            print(f"dec loss: {dec_loss}")
         loss = mag_loss + dec_loss
         return loss 
 
@@ -341,10 +338,6 @@ class magDecLagsLoss(nn.Module):
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         signed_loss = self.binary(output_ind,target_ind)
-        if test == True:
-            print(f"mag loss: {mag_loss}")
-            print(f"dec loss: {dec_loss}")
-            print(f"signed loss: {signed_loss}")
         loss = signed_loss + mag_loss + dec_loss
         return loss
     
