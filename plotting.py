@@ -868,18 +868,17 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
     
-    grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
-                            grid_flux_scaler, egrid)
-    
-    grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, lags=True)
-    
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
                       active_flux_scaler, egrid)
     
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                       active_lags_scaler, lags_egrid, lags=True)
     
+    grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
+                            grid_flux_scaler, egrid)
+    
+    grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
+                            grid_lags_scaler, lags_egrid, lags=True)
     
     print("Plotting loss by sample size")
     print("Plotting fluxes")
