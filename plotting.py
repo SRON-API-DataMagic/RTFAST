@@ -119,6 +119,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, P, log = False,
     max_res = np.absolute((da-pred)/da).max()
     if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
+    plt.tight_layout()
     plt.savefig(f"samples/{mname}_{fname}.png")
     plt.close()
     
