@@ -214,9 +214,9 @@ def model_load(model_loc, egrid, lags = None):
 
     """
     if lags == None:
-        model = network.MagFluxNetwork(5, len(egrid))
+        model = network.HeavyFluxNetwork(5, len(egrid))
     else:
-        model = network.MagLagsNetwork(5, len(egrid))
+        model = network.HeavyLagsNetwork(5, len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -852,8 +852,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     for name in active_name:
         active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
         active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
-    active_flux_names = [f"{model_base_loc}{i}_full_flux_model.pth" for i in active_name]
-    active_lags_names = [f"{model_base_loc}{i}_full_lags_model.pth" for i in active_name]
+    active_flux_names = [f"{model_base_loc}{i}_flux_model.pth" for i in active_name]
+    active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
     grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
