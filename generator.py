@@ -353,6 +353,7 @@ def readAndRemoveNans(flux_loc,lags_loc):
     
     try:
         index = np.unique(index).tolist()
+        print("Found bad models:", index)
     except:
         print("No bad models found")
         index = []
@@ -361,6 +362,8 @@ def readAndRemoveNans(flux_loc,lags_loc):
         for indice in index:
             print(f"{indice}: {flux_df.iloc[indice]}")
             print(f"{indice}: {lags_df.iloc[indice]}")
+    else:
+        print("No bad models")
     flux_df.drop(index,inplace=True)
     flux_df.to_csv(flux_loc, index=False)
     lags_df.drop(index,inplace=True)
