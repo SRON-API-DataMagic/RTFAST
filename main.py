@@ -3,6 +3,7 @@ This is the main program that trains the neural network.
 """
 import numpy as np
 import os
+import pandas as pd
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -15,7 +16,7 @@ import scipy.stats
 
 from dataStructures import FluxDecData, LagsDecData
 
-from processing import nanChecker, saveData
+from processing import nanChecker, saveData, renameData
 import generator
 import network
 
@@ -74,7 +75,7 @@ def active_learning(wrk_dir, device = "cpu"):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     flux_name = "active_locs_flux.csv"
     flux_test_name = "active_test_locs_flux.csv"
@@ -165,6 +166,21 @@ def active_learning(wrk_dir, device = "cpu"):
         
         loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
         loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
+    else:
+        name_num = 16
+        active_loop_num = name_num+1
+        flux_model.load_state_dict(f"models/{name_num}_flux_model.pth")
+        lags_model.load_state_dict(f"models/{name_num}_lags_model.pth")
+        
+        optimizer_flux.load_state_dict("models/{name_num}_flux_optimizer.pth")
+        optimizer_lags.load_state_dict("models/{name_num}_lags_optimizer.pth")
+        
+        loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
+        loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
+        
+        renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}"),"data/locations/",flux_name)
+        renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}"),"data/locations/",lags_name)
+        
         
     batch_size = 1024
     num_workers = 4
