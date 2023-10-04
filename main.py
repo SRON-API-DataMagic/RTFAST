@@ -320,7 +320,6 @@ def grid_learning(wrk_dir,device):
     for size in grid_sizes:
         grid_names.append(f"grid_{size}")
     print(grid_names)
-    grid_sizes = [10]
         
     batch_size = 1024
     num_workers = 4
@@ -416,7 +415,7 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    grid_learning(wrk_dir,device)
+    #grid_learning(wrk_dir,device)
     active_learning(wrk_dir,device)
     
 
