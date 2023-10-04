@@ -169,11 +169,11 @@ def active_learning(wrk_dir, device = "cpu"):
     else:
         name_num = 16
         active_loop_num = name_num+1
-        flux_model.load_state_dict(f"models/{name_num}_flux_model.pth")
-        lags_model.load_state_dict(f"models/{name_num}_lags_model.pth")
+        flux_model.load_state_dict(torch.load(f"models/{name_num}_flux_model.pth"))
+        lags_model.load_state_dict(torch.load(f"models/{name_num}_lags_model.pth"))
         
-        optimizer_flux.load_state_dict("models/{name_num}_flux_optimizer.pth")
-        optimizer_lags.load_state_dict("models/{name_num}_lags_optimizer.pth")
+        optimizer_flux.load_state_dict(torch.load("models/{name_num}_flux_optimizer.pth"))
+        optimizer_lags.load_state_dict(torch.load("models/{name_num}_lags_optimizer.pth"))
         
         loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
         loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
