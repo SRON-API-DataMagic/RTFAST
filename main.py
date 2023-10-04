@@ -186,6 +186,11 @@ def active_learning(wrk_dir, device = "cpu"):
         lags_tr_loss_arr = np.loadtxt(f"loss/{name_num}_lags_tr_loss.txt")
         lags_te_loss_arr = np.loadtxt(f"loss/{name_num}_lags_te_loss.txt")
         
+        last_sig_flux_tr = np.min(flux_tr_loss_arr)
+        last_sig_flux_te = np.min(flux_te_loss_arr)
+        last_sig_lags_tr = np.min(lags_tr_loss_arr)
+        last_sig_lags_te = np.min(lags_te_loss_arr)
+        
         loop_flux_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt")
         loop_lags_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt")
         
