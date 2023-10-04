@@ -181,6 +181,13 @@ def active_learning(wrk_dir, device = "cpu"):
         renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}.csv"),"data/locations/",flux_name)
         renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}.csv"),"data/locations/",lags_name)
         
+        flux_tr_loss_arr = np.loadtxt(f"{name_num}_flux_tr_loss.txt")
+        flux_te_loss_arr = np.loadtxt(f"{name_num}_flux_te_loss.txt")
+        lags_tr_loss_arr = np.loadtxt(f"{name_num}_lags_tr_loss.txt")
+        lags_te_loss_arr = np.loadtxt(f"{name_num}_lags_te_loss.txt")
+        
+        loop_flux_epochs = np.loadtxt(f"{name_num}_flux_epochs.txt")
+        loop_lags_epochs = np.loadtxt(f"{name_num}_flux_epochs.txt")
         
     batch_size = 1024
     num_workers = 4
