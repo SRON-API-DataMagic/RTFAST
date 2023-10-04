@@ -178,8 +178,8 @@ def active_learning(wrk_dir, device = "cpu"):
         loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
         loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
         
-        renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}"),"data/locations/",flux_name)
-        renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}"),"data/locations/",lags_name)
+        renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}.csv"),"data/locations/",flux_name)
+        renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}.csv"),"data/locations/",lags_name)
         
         
     batch_size = 1024
