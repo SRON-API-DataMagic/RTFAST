@@ -181,10 +181,10 @@ def active_learning(wrk_dir, device = "cpu"):
         renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}.csv"),"data/locations/",flux_name)
         renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}.csv"),"data/locations/",lags_name)
         
-        flux_tr_loss_arr = np.loadtxt(f"loss/{name_num}_flux_tr_loss.txt").to_list()
-        flux_te_loss_arr = np.loadtxt(f"loss/{name_num}_flux_te_loss.txt").to_list()
-        lags_tr_loss_arr = np.loadtxt(f"loss/{name_num}_lags_tr_loss.txt").to_list()
-        lags_te_loss_arr = np.loadtxt(f"loss/{name_num}_lags_te_loss.txt").to_list()
+        flux_tr_loss_arr = np.loadtxt(f"loss/{name_num}_flux_tr_loss.txt").tolist()
+        flux_te_loss_arr = np.loadtxt(f"loss/{name_num}_flux_te_loss.txt").tolist()
+        lags_tr_loss_arr = np.loadtxt(f"loss/{name_num}_lags_tr_loss.txt").tolist()
+        lags_te_loss_arr = np.loadtxt(f"loss/{name_num}_lags_te_loss.txt").tolist()
         
         last_sig_flux_tr = np.min(flux_tr_loss_arr)
         last_sig_flux_te = np.min(flux_te_loss_arr)
