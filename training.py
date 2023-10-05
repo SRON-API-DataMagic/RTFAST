@@ -388,6 +388,10 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
             pred = model(P.to(device))[:,None,:]
             loss = loss_fn(pred,D.to(device))
         else:
+            if torch.any(torch.isnan(P)) == True:
+                print("Parameters have NaNs")
+            if torch.any(torch.isnan(D)) == True:
+                print("Data has NaNs")
             mag_pred, dec_pred  = model(P.to(device))
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
