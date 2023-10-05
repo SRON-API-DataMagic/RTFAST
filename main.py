@@ -167,7 +167,7 @@ def active_learning(wrk_dir, device = "cpu"):
         loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
         loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
     else:
-        name_num = 17
+        name_num = 18
         active_loop_num = name_num+1
         flux_model.load_state_dict(torch.load(f"models/{name_num}_flux_model.pth"))
         lags_model.load_state_dict(torch.load(f"models/{name_num}_lags_model.pth"))

@@ -339,6 +339,14 @@ class magDecLagsLoss(nn.Module):
             print("NaNs appearing in target indices")
         if torch.any(torch.isnan(output_ind)) == True:
             print("NaNs appearing in output indices")
+        if torch.any(torch.isnan(target_mag)) == True:
+            print("NaNs appearing in target mag")
+        if torch.any(torch.isnan(output_mag)) == True:
+            print("NaNs appearing in output mag")
+        if torch.any(torch.isnan(target_dec)) == True:
+            print("NaNs appearing in target dec")
+        if torch.any(torch.isnan(output_dec)) == True:
+            print("NaNs appearing in output dec")
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         signed_loss = self.binary(output_ind,target_ind)
