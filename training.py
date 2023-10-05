@@ -337,16 +337,28 @@ class magDecLagsLoss(nn.Module):
         #calculate loss
         if torch.any(torch.isnan(target_ind)) == True:
             print("NaNs appearing in target indices")
+        elif torch.any(torch.isinf(target_ind)) == True:
+            print("Infinites appearing in target indices")
         if torch.any(torch.isnan(output_ind)) == True:
             print("NaNs appearing in output indices")
+        elif torch.any(torch.isinf(output_ind)) == True:
+            print("Infinites appearing in output indices")
         if torch.any(torch.isnan(target_mag)) == True:
             print("NaNs appearing in target mag")
+        elif torch.any(torch.isinf(target_mag)) == True:
+            print("Infinites appearing in target mag")
         if torch.any(torch.isnan(output_mag)) == True:
             print("NaNs appearing in output mag")
+        elif torch.any(torch.isinf(output_mag)) == True:
+            print("Infinites appearing in output mag")
         if torch.any(torch.isnan(target_dec)) == True:
             print("NaNs appearing in target dec")
+        elif torch.any(torch.isinf(target_dec)) == True:
+            print("Infinites appearing in target dec")
         if torch.any(torch.isnan(output_dec)) == True:
             print("NaNs appearing in output dec")
+        elif torch.any(torch.isinf(output_dec)) == True:
+            print("Infs appearing in output dec")
         mag_loss = self.criterion(output_mag,target_mag)
         dec_loss = self.criterion(output_dec,target_dec)
         signed_loss = self.binary(output_ind,target_ind)
@@ -390,8 +402,12 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
         else:
             if torch.any(torch.isnan(P)) == True:
                 print("Parameters have NaNs")
+            elif torch.any(torch.isinf(P)) == True:
+                print("Parameters have infs")
             if torch.any(torch.isnan(D)) == True:
                 print("Data has NaNs")
+            elif torch.any(torch.isinf(D)) == True:
+                print("Data has infs")
             mag_pred, dec_pred  = model(P.to(device))
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
