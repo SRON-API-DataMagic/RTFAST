@@ -191,8 +191,8 @@ def active_learning(wrk_dir, device = "cpu"):
         last_sig_lags_tr = np.min(lags_tr_loss_arr)
         last_sig_lags_te = np.min(lags_te_loss_arr)
         
-        loop_flux_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt")
-        loop_lags_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt")
+        loop_flux_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt").tolist()
+        loop_lags_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt").tolist()
         
     batch_size = 1024
     num_workers = 4
