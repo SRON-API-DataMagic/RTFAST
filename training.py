@@ -5,7 +5,6 @@ training.
 
 import torch
 from torch import nn
-from torch import autograd
 
 from joblib import load
 import numpy as np
@@ -435,24 +434,24 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
-        with autograd.detect_anomaly():
-            if dec_mag == False:
-                pred, I_pred = model(P.to(device))
-                pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-                loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
-            else:
-                mag_pred, dec_pred, I_pred = model(P.to(device))
-                mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
-                loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
-            optimizer.zero_grad()
-            loss.backward()
-            
-            optimizer.step()
-            loss_b = loss.detach().item()
-            if batch % 5 == 0:
-                current = (batch*P.shape[0] + 1)
-                print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
-            loss_arr += loss_b
+        if dec_mag == False:
+            pred, I_pred = model(P.to(device))
+            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+            loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
+        else:
+            mag_pred, dec_pred, I_pred = model(P.to(device))
+            mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
+            loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
+        optimizer.zero_grad()
+        loss.backward()
+        #prevents exploding gradients
+        nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step()
+        loss_b = loss.detach().item()
+        if batch % 5 == 0:
+            current = (batch*P.shape[0] + 1)
+            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
+        loss_arr += loss_b
         
     avg_loss = loss_arr/len(dataloader)
     print(f"Average training loss: {avg_loss:>8f}")
