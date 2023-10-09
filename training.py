@@ -5,9 +5,12 @@ training.
 
 import torch
 from torch import nn
+from torch import autograd
+
 from joblib import load
 import numpy as np
 import pandas as pd
+
 from processing import mergeSaveData, saveLoop
 from math import ceil
 from tqdm import tqdm
@@ -432,28 +435,25 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
-        if dec_mag == False:
-            pred, I_pred = model(P.to(device))
-            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-            loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
-        else:
-            if torch.any(torch.isnan(model.parameters())) == True:
-                print("Model contains NaN parameters")
-            elif torch.any(torch.isinf(model.parameters())) == True:
-                print("Model contains Inf parameters")
-            mag_pred, dec_pred, I_pred = model(P.to(device))
-            mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
-            loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
-        optimizer.zero_grad()
-        loss.backward()
+        with autograd.detect_anomaly():
+            if dec_mag == False:
+                pred, I_pred = model(P.to(device))
+                pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+                loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
+            else:
+                mag_pred, dec_pred, I_pred = model(P.to(device))
+                mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
+                loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
+            optimizer.zero_grad()
+            loss.backward()
+            
+            optimizer.step()
+            loss_b = loss.detach().item()
+            if batch % 5 == 0:
+                current = (batch*P.shape[0] + 1)
+                print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
+            loss_arr += loss_b
         
-        optimizer.step()
-        loss_b = loss.detach().item()
-        if batch % 5 == 0:
-            current = (batch*P.shape[0] + 1)
-            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr += loss_b
-    
     avg_loss = loss_arr/len(dataloader)
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
