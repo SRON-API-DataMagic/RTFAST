@@ -376,22 +376,14 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     for batch, (D,P) in enumerate(dataloader):
         optimizer.zero_grad()
         for name, param in model.named_parameters():
-            if np.isnan(param.data) == True:
+            if np.any(np.isnan(param.data)) == True:
                 print(f"Param is {param.data}")
-            elif np.isinf(param.data) == True:
+            elif np.any(np.isinf(param.data)) == True:
                 print(f"Param is {param.data}")
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
             loss = loss_fn(pred,D.to(device))
         else:
-            if torch.any(torch.isnan(P)) == True:
-                print("Parameters have NaNs")
-            elif torch.any(torch.isinf(P)) == True:
-                print("Parameters have infs")
-            if torch.any(torch.isnan(D)) == True:
-                print("Data has NaNs")
-            elif torch.any(torch.isinf(D)) == True:
-                print("Data has infs")
             mag_pred, dec_pred  = model(P.to(device))
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
@@ -442,9 +434,9 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
         for name, param in model.named_parameters():
-            if np.isnan(param.data) == True:
+            if np.any(np.isnan(param.data)) == True:
                 print(f"Param is {param.data}")
-            elif np.isinf(param.data) == True:
+            elif np.any(np.isinf(param.data)) == True:
                 print(f"Param is {param.data}")
         optimizer.zero_grad()
         if dec_mag == False:
