@@ -374,6 +374,7 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
+        optimizer.zero_grad()
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
             loss = loss_fn(pred,D.to(device))
@@ -389,7 +390,6 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
             mag_pred, dec_pred  = model(P.to(device))
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
-        optimizer.zero_grad()
         loss.backward()
         
         optimizer.step()
@@ -434,6 +434,7 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
+        optimizer.zero_grad()
         if dec_mag == False:
             pred, I_pred = model(P.to(device))
             pred, I_pred = pred[:,None,:], I_pred[:,None,:]
@@ -442,7 +443,6 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
             mag_pred, dec_pred, I_pred = model(P.to(device))
             mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
-        optimizer.zero_grad()
         loss.backward()
         #prevents exploding gradients
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
