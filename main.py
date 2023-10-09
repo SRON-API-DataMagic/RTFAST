@@ -242,7 +242,18 @@ def active_learning(wrk_dir, device = "cpu"):
             lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
-            
+            #train the lags model second
+            (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
+                    lags_te_loss_arr, lags_tr_loss_arr, 
+                    last_sig_lags_tr, last_sig_lags_te) = active_training_loop(lags_model, lags_dataloader, 
+                                                              optimizer_lags, loss_fn_lags, 
+                                                              device, lags_test_dataloader, 
+                                                              lags_te_loss_arr, lags_tr_loss_arr, 
+                                                              last_sig_lags_te, last_sig_lags_tr, 
+                                                              active_loop_num, loop_lags_epochs, 
+                                                              best_lags_model, 
+                                                              train_lags, test_lags,
+                                                              mode = "lags", dec_mag=dec_mag)
             #Train the flux model first
             (flux_model, best_flux_model, optimizer_flux, loop_flux_epochs, 
                     flux_te_loss_arr, flux_tr_loss_arr, 
@@ -256,18 +267,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                                               train_flux, test_flux,
                                                               mode = "flux", dec_mag=dec_mag)
             
-            #train the lags model second
-            (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
-                    lags_te_loss_arr, lags_tr_loss_arr, 
-                    last_sig_lags_tr, last_sig_lags_te) = active_training_loop(lags_model, lags_dataloader, 
-                                                              optimizer_lags, loss_fn_lags, 
-                                                              device, lags_test_dataloader, 
-                                                              lags_te_loss_arr, lags_tr_loss_arr, 
-                                                              last_sig_lags_te, last_sig_lags_tr, 
-                                                              active_loop_num, loop_lags_epochs, 
-                                                              best_lags_model, 
-                                                              train_lags, test_lags,
-                                                              mode = "lags", dec_mag=dec_mag)
+            
             #iterate loop number by 1
             active_loop_num += 1
             
