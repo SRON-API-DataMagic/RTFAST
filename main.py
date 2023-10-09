@@ -426,6 +426,7 @@ def main():
     
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = 'cpu'
     
     #grid_learning(wrk_dir,device)
     active_learning(wrk_dir,device)
