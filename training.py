@@ -391,6 +391,8 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
             mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
             loss = loss_fn(dec_pred, mag_pred, D.to(device))
         loss.backward()
+        #prevents exploding gradients
+        nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         
         optimizer.step()
         loss_b = loss.detach().item()
