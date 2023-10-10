@@ -770,7 +770,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         print(dec_mag)
         if lags == None:
             model_samples(testing_dataloader, scaler, model, egrid, fname, 
-                          mode, dec_mag)
+                          mode, dec_mag=dec_mag)
         else:
             model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, 
                           mode, dec_mag)
