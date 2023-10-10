@@ -864,6 +864,8 @@ def main():
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     flux, lags, theta_flux, theta_lags = generate_test_set(500, egrid, lags_egrid)
     
+    print(theta_flux)
+    print(theta_lags)
     saveData(flux, theta_flux, "data/locations", "loc_flux_test.csv")
     saveData(lags, theta_lags, "data/locations", "loc_lags_test.csv")
     
