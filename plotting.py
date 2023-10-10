@@ -421,7 +421,6 @@ def residuals_dataframe(residuals,names):
 
 def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                   dec_mag=False):
-    print(dec_mag)
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
         D = np.squeeze(D)
@@ -441,7 +440,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
             else:
                 pred, I_pred = model(P)
             log_pred = inverse(scaler,pred.detach().numpy())
-            sca_pred = 10**(log_pred)
+            sca_pred = np.squeeze(10**(log_pred))
         else:
             da_mag = np.floor(np.log10(da))
             da_dec = da/10**da_mag
@@ -451,8 +450,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                 mag_pred, dec_pred, I_pred = model(P)
             sca_dec_pred = (dec_pred*9) + 1
             sca_mag_pred = inverse(scaler, mag_pred.detach().numpy())
-            sca_pred = (sca_dec_pred.detach().numpy() * 
-                    (10**np.floor(sca_mag_pred)))
+            sca_pred = np.squeeze((sca_dec_pred.detach().numpy() * 
+                    (10**np.floor(sca_mag_pred))))
         #generate neural network prediction and rescale to linear space
         if mode == "flux":
             sca_pred[D<=1e-38] = 1e-38
@@ -766,18 +765,16 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::filt]
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
-        print(mode)
-        print(dec_mag)
         if lags == None:
             model_samples(testing_dataloader, scaler, model, egrid, fname, 
                           mode, dec_mag=dec_mag)
         else:
             model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, 
-                          mode, dec_mag)
+                          mode, dec_mag=dec_mag)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
                                                      model, scaler, mode,
-                                                     dec_mag)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode, dec_mag)
+                                                     dec_mag=dec_mag)
+        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode, dec_mag=dec_mag)
         del df, ticks, ticklabels
         
     resid_list = np.asarray(resid_list)
