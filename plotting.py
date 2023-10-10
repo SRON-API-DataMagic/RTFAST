@@ -741,7 +741,8 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         #folname = str(fname)
         fname = f"{fname}_{mode}"
         print(fname)
-        residuals = calculate_loss(testing_dataloader, model, scaler, mode)
+        residuals = calculate_loss(testing_dataloader, model, scaler, mode,
+                                   dec_mag)
         resid_list.append(residuals)
         median = np.median(residuals)
         q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
@@ -763,13 +764,15 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
         if lags == None:
-            model_samples(testing_dataloader, scaler, model, egrid, fname, mode)
+            model_samples(testing_dataloader, scaler, model, egrid, fname, 
+                          mode, dec_mag)
         else:
-            model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, mode)
+            model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, 
+                          mode, dec_mag)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
-                                                     model, scaler, mode)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
-        #energy_plots(testing_dataloader, scaler, model, egrid, fname, folname)
+                                                     model, scaler, mode,
+                                                     dec_mag)
+        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode, dec_mag)
         del df, ticks, ticklabels
         
     resid_list = np.asarray(resid_list)
@@ -819,18 +822,21 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
-    
-    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
-                      active_flux_scaler, egrid)
-    
-    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
-                      active_lags_scaler, lags_egrid, lags=True)
-    
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
-                            grid_flux_scaler, egrid)
+                            grid_flux_scaler, egrid,
+                            dec_mag = True)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, lags=True)
+                            grid_lags_scaler, lags_egrid, lags=True,
+                            dec_mag = True)
+    
+    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
+                      active_flux_scaler, egrid, dec_mag = True)
+    
+    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
+                      active_lags_scaler, lags_egrid, lags=True, dec_mag = True)
+    
+    
     
     print("Plotting loss by sample size")
     print("Plotting fluxes")
