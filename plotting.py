@@ -295,9 +295,9 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
                 pred = model(P).detach().numpy()
                 pred = 10**(inverse(scaler,pred))
             else:
-                mag_pred, dec_pred = model(P).detach().numpy()
+                mag_pred, dec_pred = model(P)
                 dec_pred = (dec_pred*9) + 1
-                pred = dec_pred * (10**np.floor(inverse(scaler,
+                pred = dec_pred.detach().numpy() * (10**np.floor(inverse(scaler,
                                                         mag_pred.detach().numpy())))
         else:
             if dec_mag == False:
