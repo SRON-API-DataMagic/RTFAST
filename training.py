@@ -376,9 +376,9 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     for batch, (D,P) in enumerate(dataloader):
         optimizer.zero_grad()
         for name, param in model.named_parameters():
-            if np.any(np.isnan(param.data)) == True:
+            if torch.any(torch.isnan(param.data)) == True:
                 print(f"Param is {param.data}")
-            elif np.any(np.isinf(param.data)) == True:
+            elif torch.any(torch.isinf(param.data)) == True:
                 print(f"Param is {param.data}")
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
@@ -434,9 +434,9 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
         for name, param in model.named_parameters():
-            if np.any(np.isnan(param.data)) == True:
+            if torch.any(torch.isnan(param.data)) == True:
                 print(f"Param is {param.data}")
-            elif np.any(np.isinf(param.data)) == True:
+            elif torch.any(torch.isinf(param.data)) == True:
                 print(f"Param is {param.data}")
         optimizer.zero_grad()
         if dec_mag == False:
