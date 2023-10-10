@@ -861,6 +861,7 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    generate_test_set(500, egrid, lags_egrid)
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
     
