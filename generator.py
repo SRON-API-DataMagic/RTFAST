@@ -147,6 +147,8 @@ def pars_conversion(pars,ReIm):
     new_pars[:,4] = 10**pars[:,3]
     new_pars[:,7] = 10**pars[:,4]
     
+    print(new_pars)
+    
     return new_pars
 
 def pars_conversion_full(pars,ReIm):
@@ -327,16 +329,18 @@ def generate_test_set(size, egrid, lags_egrid):
     #generate physical models of test set
     theta_flux = pars_conversion(theta_lhs,0)
     theta_lags = pars_conversion(theta_lhs,6)
+    print(theta_flux)
+    print(theta_lags)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        data_init = parallel(delayed(rtdist_flux)(pars, egrid)
+        flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
         lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                         for pars in theta_lags)
-    data_init = np.asarray(data_init)
+    flux = np.asarray(flux)
     lags = np.asarray(lags)
-    return data_init, lags, theta_flux, theta_lags
+    return flux, lags, theta_flux, theta_lags
 
 def readAndRemoveNans(flux_loc,lags_loc):
     flux_df = pd.read_csv(flux_loc)
