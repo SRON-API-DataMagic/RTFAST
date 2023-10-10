@@ -444,7 +444,6 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         else:
             da_mag = np.floor(np.log10(da))
             da_dec = da/10**da_mag
-            da_mag = scaler.transform(da_mag)
             if mode == "flux":
                 mag_pred, dec_pred = model(P)
             else:
