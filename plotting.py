@@ -285,6 +285,7 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
     pars_list = ["a","inc","rin","rout","distance"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
+        print(P)
         for i in range(len(pars)):
             if i in logged:
                 pars[i].append(10**P[0][i].item())
