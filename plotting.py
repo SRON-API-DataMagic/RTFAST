@@ -849,9 +849,11 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
+    """
     nums = [0,10,20,30,40]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
+    """
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
