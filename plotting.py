@@ -776,7 +776,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
                                                      model, scaler, mode,
                                                      dec_mag=dec_mag)
-        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode, dec_mag=dec_mag)
+        heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
         del df, ticks, ticklabels
         
     resid_list = np.asarray(resid_list)
