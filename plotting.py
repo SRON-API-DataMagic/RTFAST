@@ -307,7 +307,7 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
                 mag_pred, dec_pred, I_pred = model(P)
                 dec_pred = (dec_pred*9) + 1
                 pred = (dec_pred.detach().numpy() * 
-                        (10**np.floor(inverse(scaler,
+                        (10**np.round(inverse(scaler,
                                               mag_pred.detach().numpy()))))
         resid = (D-pred)/D
         resid = resid.numpy()
@@ -389,7 +389,7 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
                 mag_pred, dec_pred, I_pred = model(P)
             
             dec_pred = (dec_pred.detach().numpy()*9) + 1
-            pred = dec_pred * (10**np.floor(inverse(scaler,mag_pred.detach().numpy())))
+            pred = dec_pred * (10**np.round(inverse(scaler,mag_pred.detach().numpy())))
             if mode != "flux":
                 pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
             resid = (D-pred)/D
@@ -444,6 +444,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         else:
             da_mag = np.floor(np.log10(da))
             da_dec = da/10**da_mag
+            da_mag = scaler.transform(da_mag)
             if mode == "flux":
                 mag_pred, dec_pred = model(P)
             else:
@@ -451,7 +452,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
             sca_dec_pred = (dec_pred*9) + 1
             sca_mag_pred = inverse(scaler, mag_pred.detach().numpy())
             sca_pred = np.squeeze((sca_dec_pred.detach().numpy() * 
-                    (10**np.floor(sca_mag_pred))))
+                    (10**np.round(sca_mag_pred))))
         #generate neural network prediction and rescale to linear space
         if mode == "flux":
             sca_pred[D<=1e-38] = 1e-38
@@ -474,11 +475,11 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         else:
             fname = f"{batch}_mag"
             title = "NN mag output"
-            residual_plots(egrid, np.squeeze(mag_pred.detach().numpy()), da_mag, 
+            residual_plots(egrid, np.squeeze(sca_mag_pred), da_mag, 
                            fname, title, mname, P, mode = mode)
             fname = f"{batch}_dec"
             title = "NN dec output"
-            residual_plots(egrid, np.squeeze(dec_pred.detach().numpy()), da_dec, 
+            residual_plots(egrid, np.squeeze(sca_dec_pred.detach().numpy()), da_dec, 
                            fname, title, mname, P, mode = mode)
             
         if batch > no_brk:
