@@ -425,7 +425,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         print(batch)
         D = np.squeeze(D)
         if mode == "flux":
-            D[D<=1e-38] = 1e-38
+            D[D<=1e-12] = 1e-12
             da = np.squeeze(D)
         else:
             D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
@@ -454,7 +454,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                     (10**np.round(sca_mag_pred))))
         #generate neural network prediction and rescale to linear space
         if mode == "flux":
-            sca_pred[D<=1e-38] = 1e-38
+            sca_pred[D<=1e-12] = 1e-12
         else:
             sca_pred[sca_pred<1e-6] = 1e-6
             sca_pred = np.squeeze(sca_pred*np.where(I_pred > 0.5, 1, -1))
