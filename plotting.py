@@ -474,10 +474,10 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         else:
             fname = f"{batch}_mag"
             title = "NN mag output"
-            residual_plots(egrid, mag_pred, da_mag, fname, title, mname, P, mode = mode)
+            residual_plots(egrid, np.squeeze(mag_pred), da_mag, fname, title, mname, P, mode = mode)
             fname = f"{batch}_dec"
             title = "NN dec output"
-            residual_plots(egrid, dec_pred, da_dec, fname, title, mname, P, mode = mode)
+            residual_plots(egrid, np.squeeze(dec_pred), da_dec, fname, title, mname, P, mode = mode)
             
         if batch > no_brk:
             break
