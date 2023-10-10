@@ -285,7 +285,6 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
     pars_list = ["a","inc","rin","rout","distance"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
-        print(P)
         for i in range(len(pars)):
             if i in logged:
                 pars[i].append(10**P[0][i].item())
@@ -864,10 +863,8 @@ def main():
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     flux, lags, theta_flux, theta_lags = generate_test_set(500, egrid, lags_egrid)
     
-    print(theta_flux)
-    print(theta_lags)
-    saveData(flux, theta_flux, "data/locations", "loc_flux_test.csv")
-    saveData(lags, theta_lags, "data/locations", "loc_lags_test.csv")
+    saveData(flux, theta_flux, "data/locations/", "loc_flux_test.csv")
+    saveData(lags, theta_lags, "data/locations/", "loc_lags_test.csv")
     
     
     set_envir_vars(wrk_dir)
