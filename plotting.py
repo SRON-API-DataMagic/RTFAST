@@ -765,6 +765,8 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         low_outliers = residuals[residuals <= np.percentile(residuals, 1)][::filt]
         loss_low_out.append(low_outliers)
         loss_high_out.append(high_outliers)
+        print(mode)
+        print(dec_mag)
         if lags == None:
             model_samples(testing_dataloader, scaler, model, egrid, fname, 
                           mode, dec_mag)
