@@ -815,8 +815,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
-    grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
-    grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
+    grid_flux_scaler = [f"mag_grid_{i}_flux_scaler.bin" for i in range(5,11)]
+    grid_lags_scaler = [f"mag_grid_{i}_lags_scaler.bin" for i in range(5,11)]
     active_flux_scaler = "active_scaler_flux.bin"
     active_lags_scaler = "active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
