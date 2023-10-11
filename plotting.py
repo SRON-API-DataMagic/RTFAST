@@ -456,7 +456,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         fname = f"{batch}"
         title = "Direct comparison"
         
-        residual_plots(egrid, sca_pred, da, fname, title, mname, P, norm = True, mode = mode)
+        residual_plots(egrid, sca_pred, da, fname, title, mname, norm = True, mode = mode)
         
         if dec_mag == False:
             fname = f"{batch}_log"
