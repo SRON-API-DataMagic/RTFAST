@@ -590,7 +590,6 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
         labels.extend(Label)
         
     fig.legend(lines, labels, loc='upper right')
-    fig.tight_layout()
     matplotlib.rcParams.update({'font.size': 16})
     plt.savefig(f"loss/loss_size_{mode}.png")
     plt.close()
