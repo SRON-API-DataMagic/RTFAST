@@ -533,6 +533,10 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
         print("outliers below 0 in grid")
     if np.any(np.asarray(active.low) < 0) == True:
         print("outliers below 0 in active")
+    if np.any(np.asarray(grid_sample_nums) < 0) == True:
+        print("grid sample nums contain negative numbers")
+    if np.any(np.asarray(active_sample_nums) < 0) == True:
+        print("grid sample nums contain negative numbers")
     
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
     
