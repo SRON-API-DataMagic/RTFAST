@@ -871,7 +871,8 @@ def main():
     saveData(flux, theta_flux, "data/locations/", "loc_flux_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_test.csv")
     
-    readAndRemoveNans("data/locations/loc_flux_test.csv","data/locations/loc_flux_test.csv")
+    readAndRemoveNans("data/locations/loc_flux_test.csv",
+                      "data/locations/loc_lags_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)

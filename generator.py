@@ -361,7 +361,6 @@ def readAndRemoveNans(flux_loc,lags_loc):
         print("Found bad models, printing parameters...")
         for indice in index:
             print(f"{indice}: {flux_df.iloc[indice]}")
-            print(f"{indice}: {lags_df.iloc[indice]}")
     else:
         print("No bad models")
     flux_df.drop(index,inplace=True)
