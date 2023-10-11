@@ -581,8 +581,8 @@ def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
     axs[0].axhline(y=1e-3, ls = "dashdot",label="0.1% error",zorder=7,color="red")
     axs[1].axhline(y=1e-3, ls = "dashdot",zorder=7,color="red")
     
-    plt.yscale("log")
-    plt.xscale("log")
+    plt.yscale("symlog")
+    plt.xscale("symlog")
     
     plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
     fig.suptitle(f"Loss by sample size for {mode}")
