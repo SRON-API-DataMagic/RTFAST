@@ -529,9 +529,9 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
 def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
                              mode):
     
-    if np.any(grid.low < 0) == True:
+    if np.any(np.asarray(grid.low) < 0) == True:
         print("outliers below 0 in grid")
-    if np.any(active.low < 0) == True:
+    if np.any(np.asarray(active.low) < 0) == True:
         print("outliers below 0 in active")
     
     fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
