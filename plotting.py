@@ -72,7 +72,7 @@ def distributions(data,labels,fname):
         plt.savefig(f"{fname}{labels[i]}.png")
         plt.close()
 
-def residual_plots(egrid, pred, da, fname, title, mname, P, log = False, 
+def residual_plots(egrid, pred, da, fname, title, mname, log = False, 
                    norm = False, mode = "flux"):
     """
     Plots comparison between NN model output and rtdist output with a 
@@ -106,9 +106,9 @@ def residual_plots(egrid, pred, da, fname, title, mname, P, log = False,
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_title(title)
-    #axs[0].text(0,0.75,P, transform=axs[0].transAxes)
     if log == True:
         axs[0].set_ylabel(f"Log({mode})")
+        axs[0].set_yscale("log")
     else:
         axs[0].set_ylabel(f"{mode}")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
@@ -417,6 +417,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
         D = np.squeeze(D)
+        print(D)
         if mode == "flux":
             D[D<=1e-38] = 1e-38
             da = np.squeeze(D)
@@ -460,19 +461,21 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         if dec_mag == False:
             fname = f"{batch}_log"
             title = "Log scaled output"
-            residual_plots(egrid, log_pred, da_log, fname, title, mname, P, mode = mode)
+            residual_plots(egrid, log_pred, da_log, fname, title, mname, 
+                           mode = mode)
             fname = f"{batch}_scal"
             title = "Neural network normalised output"
-            residual_plots(egrid, pred, da_log_scal, fname, title, mname, P, mode = mode)
+            residual_plots(egrid, pred, da_log_scal, fname, title, mname, 
+                           mode = mode)
         else:
             fname = f"{batch}_mag"
             title = "NN mag output"
             residual_plots(egrid, np.squeeze(sca_mag_pred), da_mag, 
-                           fname, title, mname, P, mode = mode)
+                           fname, title, mname, mode = mode)
             fname = f"{batch}_dec"
             title = "NN dec output"
             residual_plots(egrid, np.squeeze(sca_dec_pred.detach().numpy()), da_dec, 
-                           fname, title, mname, P, mode = mode)
+                           fname, title, mname, mode = mode)
             
         if batch > no_brk:
             break
