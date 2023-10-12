@@ -16,13 +16,6 @@ from tqdm import tqdm
 from plotting import distributions, variances
 from generator import active_learning_generation, pars_conversion
 
-class weightedMSELoss(nn.Module):
-    def __init__(self):
-        super().__init__()
-    
-    def forward(self, pred, target):
-        return torch.mean(((pred-target)/target)**2)
-
 class FluxLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
@@ -80,10 +73,10 @@ class FluxLoss(nn.Module):
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
         #create mask where prediction is within boundaries
-        mask_lo_thresh = torch.where(((scaled_tar <= self.lower_threshold)&
+        mask_lo_thresh = torch.where(((scaled_tar<=self.lower_threshold)&
                                       (scaled_out<=self.lower_threshold)),
                                   0,1)
-        mask_up_thresh = torch.where(((scaled_tar >= self.upper_threshold)&
+        mask_up_thresh = torch.where(((scaled_tar>=self.upper_threshold)&
                                       (scaled_out>=self.upper_threshold)),
                                   0,1)
         mask = torch.mul(mask_lo_thresh,mask_up_thresh)

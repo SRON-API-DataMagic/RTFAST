@@ -164,8 +164,8 @@ def active_learning(wrk_dir, device = "cpu"):
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         
-        loss_fn_flux = FluxLoss(f"mag_{flux_scaler_name}", device)
-        loss_fn_lags = LagLoss(f"mag_{lags_scaler_name}", device)
+        loss_fn_flux = FluxLoss(f"{flux_scaler_name}", device)
+        loss_fn_lags = LagLoss(f"{lags_scaler_name}", device)
     else:
         name_num = 19
         active_loop_num = name_num+1
@@ -175,8 +175,8 @@ def active_learning(wrk_dir, device = "cpu"):
         optimizer_flux.load_state_dict(torch.load(f"models/{name_num}_flux_optimizer.pth"))
         optimizer_lags.load_state_dict(torch.load(f"models/{name_num}_lags_optimizer.pth"))
         
-        loss_fn_flux = FluxLoss(f"mag_{flux_scaler_name}", device)
-        loss_fn_lags = LagLoss(f"mag_{lags_scaler_name}", device)
+        loss_fn_flux = FluxLoss(f"{flux_scaler_name}", device)
+        loss_fn_lags = LagLoss(f"{lags_scaler_name}", device)
         
         renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}.csv"),"data/locations/",flux_name)
         renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}.csv"),"data/locations/",lags_name)
@@ -383,10 +383,10 @@ def grid_learning(wrk_dir,device):
                                           num_workers = num_workers, shuffle=True)
             
             if mode == "flux":
-                loss_fn = FluxLoss(f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = FluxLoss(f"{fname}_{mode}_scaler.bin", 
                                          device)
             elif mode == "lags":
-                loss_fn = LagLoss(f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = LagLoss(f"{fname}_{mode}_scaler.bin", 
                                          device)
             
             print("Dataloaders created")
@@ -427,7 +427,7 @@ def main():
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    #grid_learning(wrk_dir,device)
+    grid_learning(wrk_dir,device)
     active_learning(wrk_dir,device)
     
 

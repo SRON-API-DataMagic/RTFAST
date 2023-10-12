@@ -31,7 +31,8 @@ class FluxData(Dataset):
         self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.threshold = 1e-39
+        self.lower_threshold = 1e-13
+        self.upper_threshold = 1e-2
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
@@ -62,7 +63,8 @@ class FluxData(Dataset):
         Filters 0 flux and converts to smallest non-zero value. Then standard
         scales the energy bins.
         """
-        D[D<=self.threshold] = self.threshold
+        D[D<=self.lower_threshold] = self.lower_threshold
+        D[D<=self.upper_threshold] = self.upper_threshold
         D = np.log10(D)
         D = self.scale(D)
         D = torch.from_numpy(D)
@@ -81,10 +83,11 @@ class FluxData(Dataset):
         data = []
         for file in self.labels.iloc[:,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
-        final_dataset = np.concatenate(data,axis=0)
-        final_dataset[final_dataset<=self.threshold] = self.threshold
-        final_dataset = np.log10(final_dataset)
-        data = self.scaler.fit(final_dataset)
+        D = np.concatenate(data,axis=0)
+        D[D<=self.lower_threshold] = self.lower_threshold
+        D[D>=self.upper_threshold] = self.upper_threshold
+        D = np.log10(D)
+        data = self.scaler.fit(D)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
     
@@ -133,14 +136,13 @@ class LagsData(FluxData):
         self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.threshold = 1e-7
+        self.threshold = 1e-4
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
             self.scaler_create()
         else:
             self.scaler = load(f'scalers/{self.scaler_name}')
-            self.minimums = (10**(self.scaler.min_))/0.9
             
     def standardize(self, D):
         """
