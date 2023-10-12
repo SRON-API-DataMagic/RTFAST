@@ -23,7 +23,7 @@ class weightedMSELoss(nn.Module):
     def forward(self, pred, target):
         return torch.mean(((pred-target)/target)**2)
 
-class barredMSELoss(nn.Module):
+class FluxLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
     a given range (0.05%) of the original data
@@ -58,10 +58,11 @@ class barredMSELoss(nn.Module):
             and masking.
     """
     def __init__(self,scaler,device):
-        super(barredMSELoss, self).__init__()
+        super().__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.device = device
-        self.threshold = 1e-39
+        self.lower_threshold = 1e-13
+        self.upper_threshold = 1e-2
         self.set_scale()
         
     def set_scale(self):
@@ -78,13 +79,14 @@ class barredMSELoss(nn.Module):
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
-        #find desired boundaries of the original data
-        data_low = 0.995*scaled_tar
-        data_high = 1.005*scaled_tar
         #create mask where prediction is within boundaries
-        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
-        mask_thresh = torch.where((scaled_tar < self.threshold)&(scaled_out<self.threshold),0,1)
-        mask = torch.mul(mask,mask_thresh)
+        mask_lo_thresh = torch.where(((scaled_tar <= self.lower_threshold)&
+                                      (scaled_out<=self.lower_threshold)),
+                                  0,1)
+        mask_up_thresh = torch.where(((scaled_tar >= self.upper_threshold)&
+                                      (scaled_out>=self.upper_threshold)),
+                                  0,1)
+        mask = torch.mul(mask_lo_thresh,mask_up_thresh)
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
@@ -138,6 +140,7 @@ class lagLoss(nn.Module):
         self.set_scale()
         self.criterion = nn.MSELoss()
         self.binary = nn.BCELoss()
+        self.threshold = 1e-4
     
     def set_scale(self):
         self.min = torch.tensor(self.scaler.data_min_)
@@ -150,19 +153,13 @@ class lagLoss(nn.Module):
         return result
     
     def forward(self, output, index, target, index_target):
-        threshold = 1e-7
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
-        #find desired boundaries of the original data
-        data_low = 0.995*scaled_tar
-        data_high = 1.005*scaled_tar
-        #create mask where prediction is within boundaries
-        mask = torch.where((data_low < scaled_out)&(data_high>scaled_out),0,1)
         #create mask where output is too small to measure
-        small_mask = torch.where((scaled_tar <= threshold)&(scaled_out<=threshold)&(0<=scaled_out),0,1)
+        mask = torch.where(((scaled_tar<=self.threshold)&
+                            (scaled_out<=self.threshold)),0,1)
         #create overall mask
-        mask = mask*small_mask
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
