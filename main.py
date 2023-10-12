@@ -14,15 +14,15 @@ from sklearn.preprocessing import MinMaxScaler
 from joblib import Parallel, delayed
 import scipy.stats
 
-from dataStructures import FluxDecData, LagsDecData
+from dataStructures import FluxData, LagsData
 
 from processing import nanChecker, saveData, renameData
 import generator
 import network
 
-from training import train_flux, train_lags, test_flux, test_lags, barredMSELoss
-from training import active_training_loop, grid_training_loop, lagLoss
-from training import magDecFluxLoss, magDecLagsLoss
+from training import train_flux, train_lags, test_flux, test_lags
+from training import active_training_loop, grid_training_loop
+from training import FluxLoss, LagLoss
 from training import QBDC
 from generator import grid_data_gen
 
@@ -75,7 +75,7 @@ def active_learning(wrk_dir, device = "cpu"):
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     flux_name = "active_locs_flux.csv"
     flux_test_name = "active_test_locs_flux.csv"
@@ -86,14 +86,14 @@ def active_learning(wrk_dir, device = "cpu"):
     
     num_pars = range_all.shape[0]
     
-    flux_model = network.MagFluxNetwork(num_pars,len(egrid))
+    flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
-    lags_model = network.MagLagsNetwork(num_pars,len(lags_egrid)-1)
+    lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     lags_model.to(device)
     
-    best_flux_model = network.MagFluxNetwork(num_pars,len(egrid))
+    best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     best_flux_model.to(device)
-    best_lags_model = network.MagLagsNetwork(num_pars,len(lags_egrid)-1)
+    best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
@@ -153,19 +153,19 @@ def active_learning(wrk_dir, device = "cpu"):
         active_loop_num = 0
         
         #create initial dataset object to create scaler
-        flux_dataloader = FluxDecData(f"data/locations/{flux_name}", 
+        flux_dataloader = FluxData(f"data/locations/{flux_name}", 
                                        scaler, flux_scaler_name,  
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
-        lags_dataloader = LagsDecData(f"data/locations/{lags_name}", 
+        lags_dataloader = LagsData(f"data/locations/{lags_name}", 
                                        scaler, lags_scaler_name,
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
         
-        loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
-        loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
+        loss_fn_flux = FluxLoss(f"mag_{flux_scaler_name}", device)
+        loss_fn_lags = LagLoss(f"mag_{lags_scaler_name}", device)
     else:
         name_num = 19
         active_loop_num = name_num+1
@@ -175,8 +175,8 @@ def active_learning(wrk_dir, device = "cpu"):
         optimizer_flux.load_state_dict(torch.load(f"models/{name_num}_flux_optimizer.pth"))
         optimizer_lags.load_state_dict(torch.load(f"models/{name_num}_lags_optimizer.pth"))
         
-        loss_fn_flux = magDecFluxLoss(f"mag_{flux_scaler_name}", device)
-        loss_fn_lags = magDecLagsLoss(f"mag_{lags_scaler_name}", device)
+        loss_fn_flux = FluxLoss(f"mag_{flux_scaler_name}", device)
+        loss_fn_lags = LagLoss(f"mag_{lags_scaler_name}", device)
         
         renameData(pd.read_csv(f"data/locations/loc_flux_{name_num}.csv"),"data/locations/",flux_name)
         renameData(pd.read_csv(f"data/locations/loc_lags_{name_num}.csv"),"data/locations/",lags_name)
@@ -211,7 +211,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                       labels, parallel)
     
             print("Setting up modeling")
-            Xquery = FluxDecData(f"data/locations/{flux_name}", scaler, 
+            Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
                               flux_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -219,7 +219,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xquery = LagsDecData(f"data/locations/{lags_name}", scaler, 
+            Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
                               lags_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -227,7 +227,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xtest = FluxDecData(f"data/locations/{flux_test_name}", scaler, 
+            Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
                               flux_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
@@ -235,7 +235,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            Xtest = LagsDecData(f"data/locations/{lags_test_name}", scaler, 
+            Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
                               lags_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
@@ -349,18 +349,18 @@ def grid_learning(wrk_dir,device):
             if mode == "flux":
                 train = train_flux
                 test = test_flux
-                dataType = FluxDecData
-                model = network.MagFluxNetwork(5,len(egrid))
+                dataType = FluxData
+                model = network.HeavyFluxNetwork(5,len(egrid))
             elif mode == "lags":
                 train = train_lags
                 test = test_lags
-                dataType = LagsDecData
-                model = network.MagLagsNetwork(5,len(lags_egrid)-1)
+                dataType = LagsData
+                model = network.HeavyLagsNetwork(5,len(lags_egrid)-1)
             else:
                 print("Invalid mode, defaulting to flux modelling")
                 train = train_flux
                 test = test_flux
-                dataType = FluxDecData
+                dataType = FluxData
                 model = network.MagFluxNetwork(5,len(egrid))
             
             model.to(device)
@@ -383,10 +383,10 @@ def grid_learning(wrk_dir,device):
                                           num_workers = num_workers, shuffle=True)
             
             if mode == "flux":
-                loss_fn = magDecFluxLoss(f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = FluxLoss(f"mag_{fname}_{mode}_scaler.bin", 
                                          device)
             elif mode == "lags":
-                loss_fn = magDecLagsLoss(f"mag_{fname}_{mode}_scaler.bin", 
+                loss_fn = LagLoss(f"mag_{fname}_{mode}_scaler.bin", 
                                          device)
             
             print("Dataloaders created")
@@ -426,7 +426,6 @@ def main():
     
     print(torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device = 'cpu'
     
     #grid_learning(wrk_dir,device)
     active_learning(wrk_dir,device)

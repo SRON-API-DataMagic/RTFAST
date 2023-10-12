@@ -95,7 +95,7 @@ class FluxLoss(nn.Module):
         loss = criterion(pred,data)
         return loss 
 
-class lagLoss(nn.Module):
+class LagLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
     a given range (0.5%) of the original data. Features a threshold value that 
