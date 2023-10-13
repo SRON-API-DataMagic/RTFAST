@@ -6,6 +6,7 @@ import numpy as np
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
+from processing import readAndRemoveNans
 from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
@@ -338,37 +339,6 @@ def generate_test_set(size, egrid, lags_egrid):
     lags = np.asarray(lags)
     return flux, lags, theta_flux, theta_lags
 
-def readAndRemoveNans(flux_loc,lags_loc):
-    flux_df = pd.read_csv(flux_loc)
-    lags_df = pd.read_csv(lags_loc)
-    index = []
-    for i,row in flux_df.iterrows():
-        spec = np.loadtxt(row["Location"])
-        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
-            index.append(i)
-    for i,row in lags_df.iterrows():
-        spec = np.loadtxt(row["Location"])
-        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
-            index.append(i)
-    
-    try:
-        index = np.unique(index).tolist()
-        print("Found bad models:", index)
-    except:
-        print("No bad models found")
-        index = []
-    if index != []:
-        print("Found bad models, printing parameters...")
-        for indice in index:
-            print(f"{indice}: {flux_df.iloc[indice]}")
-    else:
-        print("No bad models")
-    flux_df.drop(index,inplace=True)
-    flux_df.to_csv(flux_loc, index=False)
-    lags_df.drop(index,inplace=True)
-    lags_df.to_csv(lags_loc, index=False)
-    return
-
 def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                flux_name, flux_test_name, lags_name,
                                lags_test_name,pars_conversion = pars_conversion_full):
@@ -426,3 +396,47 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                lags_test_name)
     return
 
+def lhs_generation(size,range_all):
+    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
+    sample = sampler.random(n=size)
+    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    high_mass_indexes = np.where(((10**theta_lhs[:,7] <  3.5e6)&
+                                  (10**theta_lhs[:,13] > 1e4)))
+    low_mass_indexes = np.where(((10**theta_lhs[:,7] >  30e3)&
+                                  (10**theta_lhs[:,13] < 40)))
+    invalid_indexes = np.concatenate(low_mass_indexes,high_mass_indexes)
+    np.delete(theta_lhs,invalid_indexes,0)
+    shape = theta_lhs.shape
+    print(f"After deleting non-physical parameter sets, shape of thetalhs is {shape}")
+    return theta_lhs
+
+def intialize_dataset(range_all,egrid,lags_egrid,flux_name,lags_name):
+    print("Generating first time dataset")
+    init_data_size = 5000
+    #generating a random set of parameters and corresponding data
+    theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
+                                   size = (init_data_size,range_all.shape[0]))
+    theta_flux = pars_conversion(theta_init,0)
+    theta_lags = pars_conversion(theta_init,6)
+    print("Parallelized model generation")
+    
+    print("Generating flux models")
+    data_query =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+                                    for pars in theta_flux)
+    data_query = np.asarray(data_query)
+    print("Saving flux data")
+    saveData(data_query, theta_flux, 
+             "data/locations/",flux_name)
+    
+    del data_query
+    print("Generating lags models")
+    lags_query =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)
+                                    for pars in theta_lags)
+    lags_query = np.asarray(lags_query)
+    print("Saving lags data")
+    saveData(lags_query, theta_lags,"data/locations/",lags_name, lags=True)
+    del theta_flux, theta_lags, lags_query
+    
+    print("Performing data cleanup")
+    readAndRemoveNans(f"data/locations/{flux_name}", 
+                      f"data/locations/{lags_name}")

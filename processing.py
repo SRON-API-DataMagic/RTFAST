@@ -266,6 +266,79 @@ def nanChecker(data,pars):
             print(f"{indice}: {pars[indice]}")
     return index
 
+def spectra_checker(flux_loc,lags_loc,upper_threshold, lower_threshold):
+    """
+    
+
+    Parameters
+    ----------
+    flux_loc : string
+        location of flux spectra table.
+    lags_loc : ndarray
+        location of lags table.
+    upper_threshold: float
+        number of photons/s/cm^2 that 25% or less of the spectra should be under
+    lower_threshold: float
+        number of photons/s/cm^2 that 25% or less of the spectra should be over
+    Returns
+    -------
+    indexes: list
+        list of indices of parameters to be removed
+
+    """
+    flux_df = pd.read_csv(flux_loc)
+    lags_df = pd.read_csv(lags_loc)
+    indexes = []
+    for i, row in flux_df.iterrows():
+        spec = np.loadtxt(row["Location"])
+        if np.count_nonzero(np.where(spec > upper_threshold,0,1)) < len(spec)*0.25:
+            indexes.append(i)
+        elif np.count_nonzero(np.where(spec > lower_threshold,0,1)) < len(spec)*0.75:
+            indexes.append(i)
+    if indexes != []:
+        print(f"A total of {len(indexes)} spectra where either over or under the flux thresholds.")
+    try:
+        index = np.unique(indexes).tolist()
+    except:
+        print("All spectra okay")
+        index = []
+    flux_df.drop(index,inplace=True)
+    flux_df.to_csv(flux_loc, index=False)
+    lags_df.drop(index,inplace=True)
+    lags_df.to_csv(lags_loc, index=False)
+    return
+
+def readAndRemoveNans(flux_loc,lags_loc):
+    flux_df = pd.read_csv(flux_loc)
+    lags_df = pd.read_csv(lags_loc)
+    index = []
+    for i,row in flux_df.iterrows():
+        spec = np.loadtxt(row["Location"])
+        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
+            index.append(i)
+    for i,row in lags_df.iterrows():
+        spec = np.loadtxt(row["Location"])
+        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
+            index.append(i)
+    
+    try:
+        index = np.unique(index).tolist()
+        print("Found bad models:", index)
+    except:
+        print("No bad models found")
+        index = []
+    if index != []:
+        print("Found bad models, printing parameters...")
+        for indice in index:
+            print(f"{indice}: {flux_df.iloc[indice]}")
+    else:
+        print("No bad models")
+    flux_df.drop(index,inplace=True)
+    flux_df.to_csv(flux_loc, index=False)
+    lags_df.drop(index,inplace=True)
+    lags_df.to_csv(lags_loc, index=False)
+    return
+
 def main():
     removeRedundantData()
     

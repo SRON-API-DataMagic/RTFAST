@@ -11,12 +11,11 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 #from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
-from joblib import Parallel, delayed
-import scipy.stats
+from joblib import Parallel
 
 from dataStructures import FluxData, LagsData
 
-from processing import nanChecker, saveData, renameData
+from processing import renameData
 import generator
 import network
 
@@ -24,7 +23,7 @@ from training import train_flux, train_lags, test_flux, test_lags
 from training import active_training_loop, grid_training_loop
 from training import FluxLoss, LagLoss
 from training import QBDC
-from generator import grid_data_gen
+from generator import grid_data_gen, intialize_dataset
 
 def active_learning(wrk_dir, device = "cpu"):
     """
@@ -69,9 +68,7 @@ def active_learning(wrk_dir, device = "cpu"):
     logged = [1,2,3,4]
     
     #pre generate Latin Hypercube samples.
-    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=1000000)
-    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    theta_lhs = generator.lhs_generation(1e8, range_all)
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
@@ -103,39 +100,7 @@ def active_learning(wrk_dir, device = "cpu"):
     scaler = MinMaxScaler()
     
     if first == True: 
-        print("Generating first time dataset")
-        init_data_size = 5000
-        #generating a random set of parameters and corresponding data
-        theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
-                                       size = (init_data_size,range_all.shape[0]))
-        pars_init_flux = generator.pars_conversion(theta_init,0)
-        pars_init_lags = generator.pars_conversion(theta_init,6)
-        print("Parallelized model generation")
-        flux_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
-                                        for pars in pars_init_flux)
-        lags_data_init =  Parallel(n_jobs=10,verbose=5)(delayed(generator.rtdist_lags)(pars, lags_egrid)
-                                        for pars in pars_init_lags)
-        flux_data_init = np.array(flux_data_init)
-        lags_data_init = np.array(lags_data_init)
-        
-        #check for and delete parameter sets producing NaN results for flux
-        index = nanChecker(flux_data_init, theta_init)
-        flux_data_init = np.delete(flux_data_init, index, axis=0)
-        lags_data_init = np.delete(lags_data_init, index, axis=0)
-        pars_init_flux = np.delete(pars_init_flux, index, axis=0)
-        pars_init_lags = np.delete(pars_init_lags, index, axis=0)
-        
-        #check for and delete parameter sets producing NaN results for time lags
-        index = nanChecker(lags_data_init, theta_init)
-        flux_data_init = np.delete(flux_data_init, index, axis=0)
-        lags_data_init = np.delete(lags_data_init, index, axis=0)
-        pars_init_flux = np.delete(pars_init_flux, index, axis=0)
-        pars_init_lags = np.delete(pars_init_lags, index, axis=0)
-        
-        #save data for the first time in text files
-        saveData(flux_data_init, pars_init_flux, "data/locations/", flux_name)
-        saveData(lags_data_init, pars_init_lags, "data/locations/", lags_name, 
-                 lags = True)
+        intialize_dataset(range_all, egrid, lags_egrid, flux_name, lags_name)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
@@ -199,7 +164,7 @@ def active_learning(wrk_dir, device = "cpu"):
     
     lhs_idx = 0
     
-    dec_mag = True
+    dec_mag = False
     
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
