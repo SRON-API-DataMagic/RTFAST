@@ -266,7 +266,7 @@ def nanChecker(data,pars):
             print(f"{indice}: {pars[indice]}")
     return index
 
-def spectra_checker(flux_loc,lags_loc,upper_threshold, lower_threshold):
+def spectraChecker(flux_loc,lags_loc,upper_threshold, lower_threshold):
     """
     
 

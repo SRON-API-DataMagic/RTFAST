@@ -6,7 +6,7 @@ import numpy as np
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
-from processing import readAndRemoveNans
+from processing import readAndRemoveNans, spectraChecker
 from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
@@ -366,6 +366,9 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     print("Performing data cleanup")
     readAndRemoveNans("data/locations/active_gen_flux.csv", 
                       "data/locations/active_gen_lags.csv")
+    
+    spectraChecker("data/locations/active_gen_flux.csv",
+                   "data/locations/active_gen_lags.csv")
     
     flux = pd.read_csv("data/locations/active_gen_flux.csv")
     lags = pd.read_csv("data/locations/active_gen_lags.csv")

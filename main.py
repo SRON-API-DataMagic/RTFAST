@@ -389,19 +389,8 @@ def main():
     
     print("Environmental variables successfully set")
     
-    print(torch.cuda.is_available())
+    print("Cuda is available:",torch.cuda.is_available())
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
-    sizes = [5,6,7,8,9,10]
-    fnames = [f"grid_{s}" for s in sizes]
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
-    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    
-    for size, fname in zip(sizes,fnames):
-        grid_data_gen(size, fname, egrid, lags_egrid)
-    
     grid_learning(wrk_dir,device)
     active_learning(wrk_dir,device)
     
