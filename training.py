@@ -54,8 +54,8 @@ class FluxLoss(nn.Module):
         super().__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.device = device
-        self.lower_threshold = 1e-13
-        self.upper_threshold = 1e-2
+        self.lower_threshold = 1e-22
+        self.upper_threshold = 1e-13
         self.set_scale()
         
     def set_scale(self):
@@ -133,7 +133,7 @@ class LagLoss(nn.Module):
         self.set_scale()
         self.criterion = nn.MSELoss()
         self.binary = nn.BCELoss()
-        self.threshold = 1e-4
+        self.threshold = 1e-5
     
     def set_scale(self):
         self.min = torch.tensor(self.scaler.data_min_)
