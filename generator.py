@@ -27,13 +27,9 @@ def rtdist_erg_flux(pars, egrid):
         return energy flux between 2-10keV.
 
     """
-    glo, ghi = (2, 10)
     model = _models.tdrtdist(pars, egrid)
-    y = model(glo,ghi)
-    #conversion from keV to erg
     gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
-    #integrate energy flux
-    flux = (gmid * y).sum()
+    flux = (gmid * model).sum()
     return flux
 
 def rtdist_flux(pars, egrid):
