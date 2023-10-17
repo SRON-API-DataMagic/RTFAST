@@ -4,6 +4,8 @@ This is the main program that trains the neural network.
 import numpy as np
 import os
 import pandas as pd
+import scipy
+import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 import torch
@@ -11,7 +13,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 #from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.preprocessing import MinMaxScaler
-from joblib import Parallel
+from joblib import Parallel, delayed
 
 from dataStructures import FluxData, LagsData
 
@@ -23,7 +25,7 @@ from training import train_flux, train_lags, test_flux, test_lags
 from training import active_training_loop, grid_training_loop
 from training import FluxLoss, LagLoss
 from training import QBDC
-from generator import grid_data_gen, intialize_dataset
+from generator import intialize_dataset
 
 def active_learning(wrk_dir, device = "cpu"):
     """
@@ -53,22 +55,59 @@ def active_learning(wrk_dir, device = "cpu"):
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 40
-    range_all = np.asarray(generator.lhs_trimmed_gen())
+    range_BH = np.asarray(generator.lhs_BH())
+    range_AGN = np.asarray(generator.lhs_AGN())
+    range_all = np.asarray(generator.lhs_all())
+    
+    theta_bh = generator.lhs_generation(10000, range_BH)
+    theta_agn = generator.lhs_generation(10000, range_AGN)
+
+    #generate physical models of test set
+    theta_bh = generator.pars_conversion(theta_bh,0)
+    theta_agn = generator.pars_conversion(theta_agn,0)
+    
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        flux_bh = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_bh)
+        flux_agn = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_agn)
+    flux_bh = np.asarray(flux_bh)
+    flux_agn = np.asarray(flux_agn)
+    
+    plt.hist(flux_bh)
+    plt.axvline(2.4e-6, ls = "--")
+    plt.axvline(1e-15, ls = "--")
+    plt.title("Black hole flux distributions")
+    plt.savefig("bh_dists.png")
+    plt.close()
+    
+    plt.hist(flux_agn)
+    plt.axvline(2.4e-6, ls = "--")
+    plt.axvline(1e-15, ls = "--")
+    plt.title("AGN flux distributions")
+    plt.savefig("agn_dists.png")
+    plt.close()
+    
+    quit()
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    labels = ["a","mass","inc","rin","rout"]
+    labels = ["a","inc","rin","rout","mass"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,4,7]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     
     #pre generate Latin Hypercube samples.
-    theta_lhs = generator.lhs_generation(1e8, range_all)
+    theta_bh = generator.lhs_generation(5e7, range_BH)
+    theta_agn = generator.lhs_generation(5e7, range_AGN)
+    
+    theta_lhs = np.concat(theta_bh,theta_agn,axis=0)
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
@@ -81,7 +120,7 @@ def active_learning(wrk_dir, device = "cpu"):
     lags_test_name = "active_test_locs_lags.csv"
     lags_scaler_name = "active_scaler_lags.bin"
     
-    num_pars = range_all.shape[0]
+    num_pars = range_BH.shape[0]
     
     flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
@@ -359,7 +398,7 @@ def grid_learning(wrk_dir,device):
             grid_training_loop(model, optimizer, train, test, 
                                    train_dataloader, test_dataloader,
                                    loss_fn, device,
-                                   size, mode, dec_mag = True)
+                                   size, mode)
         
 def main():
     """

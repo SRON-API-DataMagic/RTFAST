@@ -11,6 +11,28 @@ from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
+from sherpa.astro.ui import calc_energy_flux
+
+def rtdist_erg_flux(pars, egrid):
+    """
+    
+
+    Parameters
+    ----------
+    model : sherpa model
+        model that you wish to integrate energy flux over 2-10keV.
+
+    Returns
+    -------
+    flux : float
+        return energy flux between 2-10keV.
+
+    """
+    model = _models.tdrtdist(pars, egrid)
+    low = 2
+    high = 10
+    flux = calc_energy_flux(low,high,model=model)
+    return flux
 
 def rtdist_flux(pars, egrid):
     """
@@ -55,16 +77,16 @@ def rtdist_lags(pars, egrid):
     output = y[:-1]/dE
     return output
 
-def lhs_range_gen():
+def lhs_all():
     """
-    Generates valid ranges of parameters to be trained on
-
+    Generates valid ranges of parameters of AGN to be trained on
+    
     Returns
     -------
     range_all : list
         gives parameter ranges for each of the given parameters listed. Used 
         in the latin hypercube sampling
-
+    
     """
     height_range = [np.log10(1.5),np.log10(1e4)]
     spin_range = [0,0.998]
@@ -95,6 +117,85 @@ def lhs_range_gen():
     
     return range_all
 
+def lhs_BH():
+    """
+    Generates valid ranges of parameters of stellar mass BHs to be trained on
+
+    Returns
+    -------
+    range_all : list
+        gives parameter ranges for each of the given parameters listed. Used 
+        in the latin hypercube sampling
+
+    """
+    height_range = [np.log10(1.5),np.log10(1e4)]
+    spin_range = [0,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    z_range = [0,4]
+    Gamma_range = [1.4,3.4]
+    distance_range = [np.log10(0.2),np.log10(3e4)]
+    Afe_range = [np.log10(0.5),np.log10(10)]
+    logNe_range = [15,20]
+    kte_range = [np.log10(5),np.log10(500)]
+    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    boost_range = [np.log10(1e-2),np.log10(10)]
+    mass_range = [np.log10(3),np.log10(40)]
+    honr_range = [0,0.176]
+    b1_range = [0,2]
+    b2_range = [-4,4]
+    phiAB_range = [-3.14,3.14]
+    g_range = [0,0.5]
+    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
+    
+    
+    range_all = [height_range,spin_range,inclination_range,r_inner_range,
+                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
+                 logNe_range,kte_range,nH_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
+    
+    return range_all
+
+def lhs_AGN():
+    """
+    Generates valid ranges of parameters of AGN to be trained on
+    
+    Returns
+    -------
+    range_all : list
+        gives parameter ranges for each of the given parameters listed. Used 
+        in the latin hypercube sampling
+    
+    """
+    height_range = [np.log10(1.5),np.log10(1e4)]
+    spin_range = [0,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    z_range = [0,4]
+    Gamma_range = [1.4,3.4]
+    distance_range = [np.log10(3.5e6),np.log10(1e10)]
+    Afe_range = [np.log10(0.5),np.log10(10)]
+    logNe_range = [15,20]
+    kte_range = [np.log10(5),np.log10(500)]
+    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    boost_range = [np.log10(1e-2),np.log10(10)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
+    honr_range = [0,0.176]
+    b1_range = [0,2]
+    b2_range = [-4,4]
+    phiAB_range = [-3.14,3.14]
+    g_range = [0,0.5]
+    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
+    
+    
+    range_all = [height_range,spin_range,inclination_range,r_inner_range,
+                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
+                 logNe_range,kte_range,nH_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
+    
+    return range_all
 def lhs_trimmed_gen():
     """
     Limited form of lhs_range_gen that returns ranges for only a limited amount
@@ -403,14 +504,6 @@ def lhs_generation(size,range_all):
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-    high_mass_indexes = np.where(((10**theta_lhs[:,7] <  3.5e6)&
-                                  (10**theta_lhs[:,13] > 1e4)))
-    low_mass_indexes = np.where(((10**theta_lhs[:,7] >  30e3)&
-                                  (10**theta_lhs[:,13] < 40)))
-    invalid_indexes = np.concatenate(low_mass_indexes,high_mass_indexes)
-    np.delete(theta_lhs,invalid_indexes,0)
-    shape = theta_lhs.shape
-    print(f"After deleting non-physical parameter sets, shape of thetalhs is {shape}")
     return theta_lhs
 
 def intialize_dataset(range_all,egrid,lags_egrid,flux_name,lags_name):
