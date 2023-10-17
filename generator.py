@@ -29,9 +29,10 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    low = 2
-    high = 10
-    flux = calc_energy_flux(low,high,model=model)
+    def func(x, model, egrid):
+        i = np.argmin(np.abs(egrid-x))
+        return model[i]
+    flux = scipy.integrate.quad(func, 2, 10, args=(model,egrid))
     return flux
 
 def rtdist_flux(pars, egrid):
