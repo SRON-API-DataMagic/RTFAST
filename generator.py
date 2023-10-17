@@ -28,8 +28,8 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    interp = scipy.interpolate.LinearNDInterpolator(egrid, model)
-    flux = scipy.integrate.trapz(interp, 2, 10, args=(model,egrid))
+    interp = scipy.interpolate.InterpolatedUnivariateSpline(egrid, model, k=1)
+    flux = interp.integral(2, 10)
     return flux
 
 def rtdist_flux(pars, egrid):
