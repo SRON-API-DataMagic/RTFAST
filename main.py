@@ -63,8 +63,8 @@ def active_learning(wrk_dir, device = "cpu"):
     theta_agn = generator.lhs_generation(10000, range_AGN)
 
     #generate physical models of test set
-    theta_bh = generator.pars_conversion(theta_bh,0)
-    theta_agn = generator.pars_conversion(theta_agn,0)
+    theta_bh = generator.pars_conversion_full(theta_bh,0)
+    theta_agn = generator.pars_conversion_full(theta_agn,0)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
