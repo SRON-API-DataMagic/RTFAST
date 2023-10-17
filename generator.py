@@ -247,7 +247,7 @@ def pars_conversion(pars,ReIm):
     new_pars[:,2] = 10**pars[:,1]
     new_pars[:,3] = -10**pars[:,2]
     new_pars[:,4] = 10**pars[:,3]
-    new_pars[:,7] = 10**pars[:,4]
+    new_pars[:,13] = 10**pars[:,4]
     
     return new_pars
 
