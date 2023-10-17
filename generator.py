@@ -11,7 +11,6 @@ from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
-from sherpa.astro.ui import calc_energy_flux
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -29,10 +28,8 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    def func(x, model, egrid):
-        i = np.argmin(np.abs(egrid-x))
-        return model[i]
-    flux = scipy.integrate.quad(func, 2, 10, args=(model,egrid))
+    interp = scipy.interpolate.LinearNDInterpolator(egrid, model)
+    flux = scipy.integrate.trapz(interp, 2, 10, args=(model,egrid))
     return flux
 
 def rtdist_flux(pars, egrid):
