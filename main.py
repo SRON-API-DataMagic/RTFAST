@@ -70,10 +70,10 @@ def active_learning(wrk_dir, device = "cpu"):
         #generate rtdist models for the correlated grid
         flux_bh = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
                                         for pars in theta_bh)
+        flux_bh = np.asarray(flux_bh)
         flux_agn = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
                                         for pars in theta_agn)
-    flux_bh = np.asarray(flux_bh)
-    flux_agn = np.asarray(flux_agn)
+        flux_agn = np.asarray(flux_agn)
     
     plt.hist(flux_bh, bins=100)
     plt.axvline(2.4e-6, ls = "--")

@@ -28,7 +28,8 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    gmid = 1.60217653e-09  * (egrid[:-1] + egrid[0:]) / 2
+    print("Model evaled")
+    gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
     flux = (gmid * model).sum()
     return flux
 
