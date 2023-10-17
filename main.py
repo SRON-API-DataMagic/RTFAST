@@ -75,17 +75,19 @@ def active_learning(wrk_dir, device = "cpu"):
     flux_bh = np.asarray(flux_bh)
     flux_agn = np.asarray(flux_agn)
     
-    plt.hist(flux_bh)
+    plt.hist(flux_bh, bins=100)
     plt.axvline(2.4e-6, ls = "--")
     plt.axvline(1e-15, ls = "--")
     plt.title("Black hole flux distributions")
+    plt.xscale("log")
     plt.savefig("bh_dists.png")
     plt.close()
     
-    plt.hist(flux_agn)
-    plt.axvline(2.4e-6, ls = "--")
-    plt.axvline(1e-15, ls = "--")
+    plt.hist(flux_agn, bins=100)
+    plt.axvline(2.4e-6,ls = "--",c="b")
+    plt.axvline(1e-15,ls = "--",c="g")
     plt.title("AGN flux distributions")
+    plt.xscale("log")
     plt.savefig("agn_dists.png")
     plt.close()
     
