@@ -71,9 +71,10 @@ def active_learning(wrk_dir, device = "cpu"):
     
     flux_bh = flux_bh[np.isnan(flux_bh)==False]
     flux_agn = flux_agn[np.isnan(flux_agn)==False]
-    
-    bh_bins = np.logspace(np.min(flux_bh),np.max(flux_bh),100)
-    agn_bins = np.logspace(np.min(flux_agn),np.max(flux_agn),100)
+    print(np.min(flux_bh),np.max(flux_bh))
+    print(np.min(flux_agn),np.max(flux_agn))
+    bh_bins = np.logspace(np.log10(np.min(flux_bh)),np.log10(np.max(flux_bh)),100)
+    agn_bins = np.logspace(np.log10(np.min(flux_agn)),np.log10(np.max(flux_agn)),100)
     
     print(bh_bins)
     print(agn_bins)
