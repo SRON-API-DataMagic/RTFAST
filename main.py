@@ -75,7 +75,13 @@ def active_learning(wrk_dir, device = "cpu"):
                                         for pars in theta_agn)
         flux_agn = np.asarray(flux_agn)
     
-    plt.hist(flux_bh, bins=100)
+    np.savetxt("data/flux/bh_flux.txt",flux_bh)
+    np.savetxt("data/flux/agn_flux.txt",flux_agn)
+    
+    bh_bins = np.logspace(flux_bh.min(),flux_bh.max(),100)
+    agn_bins = np.logspace(flux_agn.min(),flux_agn.max(),100)
+    
+    plt.hist(flux_bh, bins=bh_bins)
     plt.axvline(2.4e-6, ls = "--")
     plt.axvline(1e-15, ls = "--")
     plt.title("Black hole flux distributions")
@@ -83,7 +89,7 @@ def active_learning(wrk_dir, device = "cpu"):
     plt.savefig("bh_dists.png")
     plt.close()
     
-    plt.hist(flux_agn, bins=100)
+    plt.hist(flux_agn, bins=agn_bins)
     plt.axvline(2.4e-6,ls = "--",c="b")
     plt.axvline(1e-15,ls = "--",c="g")
     plt.title("AGN flux distributions")
