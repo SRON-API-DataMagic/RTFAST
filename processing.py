@@ -266,7 +266,7 @@ def nanChecker(data,pars):
             print(f"{indice}: {pars[indice]}")
     return index
 
-def spectraChecker(flux_loc,lags_loc,upper_threshold, lower_threshold):
+def spectraChecker(flux,pars_flux,pars_lags,threshold):
     """
     
 
@@ -286,27 +286,22 @@ def spectraChecker(flux_loc,lags_loc,upper_threshold, lower_threshold):
         list of indices of parameters to be removed
 
     """
-    flux_df = pd.read_csv(flux_loc)
-    lags_df = pd.read_csv(lags_loc)
     indexes = []
-    for i, row in flux_df.iterrows():
+    for i, row in enumerate(flux):
         spec = np.loadtxt(row["Location"])
-        if np.count_nonzero(np.where(spec > upper_threshold,0,1)) < len(spec)*0.25:
-            indexes.append(i)
-        elif np.count_nonzero(np.where(spec > lower_threshold,0,1)) < len(spec)*0.75:
+        if np.count_nonzero(np.where(spec > threshold,0,1)) > 0:
             indexes.append(i)
     if indexes != []:
-        print(f"A total of {len(indexes)} spectra where either over or under the flux thresholds.")
+        print(f"A total of {len(indexes)} spectra were under the flux thresholds.")
     try:
         index = np.unique(indexes).tolist()
     except:
         print("All spectra okay")
         index = []
-    flux_df.drop(index,inplace=True)
-    flux_df.to_csv(flux_loc, index=False)
-    lags_df.drop(index,inplace=True)
-    lags_df.to_csv(lags_loc, index=False)
-    return
+    np.delete(flux,index,axis=0)
+    np.delete(pars_flux,index,axis=0)
+    np.delete(pars_lags,index,axis=0)
+    return flux, pars_flux, pars_lags
 
 def readAndRemoveNans(flux_loc,lags_loc):
     flux_df = pd.read_csv(flux_loc)

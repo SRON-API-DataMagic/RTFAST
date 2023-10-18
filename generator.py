@@ -447,29 +447,28 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     theta_flux = pars_conversion(theta_query,0)
     theta_lags = pars_conversion(theta_query,6)
     print("Generating flux models")
-    data_query =  parallel(delayed(rtdist_flux)(pars, egrid)
+    flux =  parallel(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
-    data_query = np.asarray(data_query)
+    flux = np.asarray(flux)
+    print("Checking flux models are valid")
+    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                  1e-11)
     print("Saving flux data")
-    saveData(data_query, theta_flux, 
+    saveData(flux, theta_flux, 
              "data/locations/","active_gen_flux.csv")
-    
-    del data_query
+    del flux
     print("Generating lags models")
-    lags_query =  parallel(delayed(rtdist_lags)(pars, lags_egrid)
+    lags =  parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                     for pars in theta_lags)
-    lags_query = np.asarray(lags_query)
+    lags = np.asarray(lags)
     print("Saving lags data")
-    saveData(lags_query, theta_lags, 
+    saveData(lags, theta_lags, 
              "data/locations/","active_gen_lags.csv", lags=True)
-    del theta_flux, theta_lags, lags_query
+    del theta_flux, theta_lags, lags
     
     print("Performing data cleanup")
     readAndRemoveNans("data/locations/active_gen_flux.csv", 
                       "data/locations/active_gen_lags.csv")
-    
-    spectraChecker("data/locations/active_gen_flux.csv",
-                   "data/locations/active_gen_lags.csv")
     
     flux = pd.read_csv("data/locations/active_gen_flux.csv")
     lags = pd.read_csv("data/locations/active_gen_lags.csv")
