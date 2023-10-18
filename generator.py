@@ -32,7 +32,7 @@ def rtdist_erg_flux(pars, egrid):
     gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
     model = model[:-1]*gmid
     interp = scipy.interpolate.InterpolatedUnivariateSpline(egrid[:-1], model, k=1)
-    flux = interp.integral(interp, 2, 10, args=(model,egrid))
+    flux = interp.integral(interp, 2, 10)
     return flux
 
 def rtdist_flux(pars, egrid):
