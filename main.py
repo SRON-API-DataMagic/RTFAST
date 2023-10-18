@@ -69,16 +69,11 @@ def active_learning(wrk_dir, device = "cpu"):
     flux_bh = np.loadtxt("data/flux/bh_flux.txt")
     flux_agn = np.loadtxt("data/flux/agn_flux.txt")
     
-    print(flux_bh.min())
-    print(flux_bh.max())
-    print(flux_agn.min())
-    print(flux_agn.max())
+    flux_bh = flux_bh[flux_bh!=np.nan]
+    flux_agn = flux_agn[flux_agn!=np.nan]
     
     bh_bins = np.logspace(np.min(flux_bh),np.max(flux_bh),100)
     agn_bins = np.logspace(np.min(flux_agn),np.max(flux_agn),100)
-    
-    print(bh_bins)
-    print(agn_bins)
     
     plt.hist(flux_bh, bins=bh_bins)
     plt.axvline(2.4e-6, ls = "--")
