@@ -28,10 +28,11 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    print(model)
+    #take middle energy and multiply all photon counts by said energy
     gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
-    print(gmid)
-    flux = (gmid * model).sum()
+    model = model*gmid
+    interp = scipy.interpolate.InterpolatedUnivariateSpline(egrid, model, k=1)
+    flux = interp.integral(interp, 2, 10, args=(model,egrid))
     return flux
 
 def rtdist_flux(pars, egrid):
