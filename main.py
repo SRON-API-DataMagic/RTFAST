@@ -73,26 +73,22 @@ def active_learning(wrk_dir, device = "cpu"):
     flux_bh = flux_bh[(flux_bh>1e-18)]
     flux_agn = flux_agn[np.isnan(flux_agn)==False]
     flux_agn = flux_agn[(flux_agn>1e-18)]
-    print(np.min(flux_bh),np.max(flux_bh))
-    print(np.min(flux_agn),np.max(flux_agn))
+    
     bh_bins = np.logspace(np.log10(np.min(flux_bh)),np.log10(np.max(flux_bh)),
                           100, endpoint=True)
     agn_bins = np.logspace(np.log10(np.min(flux_agn)),np.log10(np.max(flux_agn)),
                            100, endpoint=True)
     
-    print(bh_bins)
-    print(agn_bins)
-    
     plt.hist(flux_bh, bins=bh_bins)
-    plt.axvline(2.4e-6, ls = "--")
-    plt.axvline(1e-15, ls = "--")
+    plt.axvline(2.4e-6, ls = "--", c="g")
+    plt.axvline(1e-15, ls = "--", c="g")
     plt.title("Black hole flux distributions")
     plt.xscale("log")
     plt.savefig("bh_dists.png")
     plt.close()
     
     plt.hist(flux_agn, bins=agn_bins)
-    plt.axvline(2.4e-6,ls = "--",c="b")
+    plt.axvline(2.4e-6,ls = "--",c="g")
     plt.axvline(1e-15,ls = "--",c="g")
     plt.title("AGN flux distributions")
     plt.xscale("log")
