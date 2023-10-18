@@ -68,9 +68,8 @@ def active_learning(wrk_dir, device = "cpu"):
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        flux_bh = []
-        for pars in theta_bh:
-            flux_bh.append(generator.rtdist_erg_flux(pars, egrid))
+        flux_bh = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_bh)
         flux_bh = np.asarray(flux_bh)
         flux_agn = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
                                         for pars in theta_agn)
