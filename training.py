@@ -54,8 +54,7 @@ class FluxLoss(nn.Module):
         super().__init__()
         self.scaler = load(f'scalers/{scaler}')
         self.device = device
-        self.lower_threshold = 1e-22
-        self.upper_threshold = 1e-13
+        self.lower_threshold = 1e-11
         self.set_scale()
         
     def set_scale(self):
@@ -73,13 +72,9 @@ class FluxLoss(nn.Module):
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
         #create mask where prediction is within boundaries
-        mask_lo_thresh = torch.where(((scaled_tar<=self.lower_threshold)&
-                                      (scaled_out<=self.lower_threshold)),
-                                  0,1)
-        mask_up_thresh = torch.where(((scaled_tar>=self.upper_threshold)&
-                                      (scaled_out>=self.upper_threshold)),
-                                  0,1)
-        mask = torch.mul(mask_lo_thresh,mask_up_thresh)
+        mask = torch.where(((scaled_tar<=self.lower_threshold)&
+                            (scaled_out<=self.lower_threshold)),
+                           0,1)
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)

@@ -31,8 +31,7 @@ class FluxData(Dataset):
         self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.lower_threshold = 1e-13
-        self.upper_threshold = 1e-2
+        self.lower_threshold = 1e-11
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
@@ -64,7 +63,6 @@ class FluxData(Dataset):
         scales the energy bins.
         """
         D[D<=self.lower_threshold] = self.lower_threshold
-        D[D<=self.upper_threshold] = self.upper_threshold
         D = np.log10(D)
         D = self.scale(D)
         D = torch.from_numpy(D)
@@ -85,7 +83,6 @@ class FluxData(Dataset):
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[D<=self.lower_threshold] = self.lower_threshold
-        D[D>=self.upper_threshold] = self.upper_threshold
         D = np.log10(D)
         data = self.scaler.fit(D)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
