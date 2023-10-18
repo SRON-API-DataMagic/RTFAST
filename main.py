@@ -70,25 +70,8 @@ def active_learning(wrk_dir, device = "cpu"):
     negatives = [2]
     logged = [1,2,3,4]
     
-    theta_bh = generator.lhs_generation(10000, range_BH)
-    theta_agn = generator.lhs_generation(10000, range_AGN)
-
-    #generate physical models of test set
-    theta_bh = generator.pars_conversion_full(theta_bh,0)
-    theta_agn = generator.pars_conversion_full(theta_agn,0)
-    
-    with Parallel(n_jobs=10,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        flux_bh = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
-                                        for pars in theta_bh)
-        flux_agn = parallel(delayed(generator.rtdist_erg_flux)(pars, lags_egrid)
-                                        for pars in theta_agn)
-    
-    np.savetxt("data/flux/bh_flux.txt",flux_bh)
-    np.savetxt("data/flux/agn_flux.txt",flux_agn)
-    
-    print(flux_bh)
-    print(flux_agn)
+    flux_bh = np.loadtxt("data/flux/bh_flux.txt")
+    flux_agn = np.loadtxt("data/flux/agn_flux.txt")
     
     flux_bh = flux_bh[np.isnan(flux_bh)==False]
     flux_bh = flux_bh[(flux_bh>1e-18)]
