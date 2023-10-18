@@ -57,7 +57,18 @@ def active_learning(wrk_dir, device = "cpu"):
     active_loops = 40
     range_BH = np.asarray(generator.lhs_BH())
     range_AGN = np.asarray(generator.lhs_AGN())
-    range_all = np.asarray(generator.lhs_all())
+    
+    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["a","inc","rin","rout","mass"]
+    
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [0,3]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
+    pars_list = [1,2,3,4,13]
+    negatives = [2]
+    logged = [1,2,3,4]
     
     theta_bh = generator.lhs_generation(10000, range_BH)
     theta_agn = generator.lhs_generation(10000, range_AGN)
@@ -66,8 +77,15 @@ def active_learning(wrk_dir, device = "cpu"):
     theta_bh = generator.pars_conversion_full(theta_bh,0)
     theta_agn = generator.pars_conversion_full(theta_agn,0)
     
-    flux_bh = np.loadtxt("data/flux/bh_flux.txt")
-    flux_agn = np.loadtxt("data/flux/agn_flux.txt")
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        flux_bh = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_bh)
+        flux_agn = parallel(delayed(generator.rtdist_erg_flux)(pars, lags_egrid)
+                                        for pars in theta_agn)
+    
+    np.savetxt("data/flux/bh_flux.txt",flux_bh)
+    np.savetxt("data/flux/agn_flux.txt",flux_agn)
     
     flux_bh = flux_bh[np.isnan(flux_bh)==False]
     flux_bh = flux_bh[(flux_bh>1e-18)]
@@ -102,23 +120,14 @@ def active_learning(wrk_dir, device = "cpu"):
     
     quit()
     
-    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    labels = ["a","inc","rin","rout","mass"]
-    
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [0,3]
-    logged = [0,2,3,4,7,8,10,11,12,13,19]
-    
-    pars_list = [1,2,3,4,13]
-    negatives = [2]
-    logged = [1,2,3,4]
-    
     #pre generate Latin Hypercube samples.
     theta_bh = generator.lhs_generation(5e7, range_BH)
     theta_agn = generator.lhs_generation(5e7, range_AGN)
     
     theta_lhs = np.concat(theta_bh,theta_agn,axis=0)
+    lhs_idx = 0
+    #shuffle bhs and agn together
+    np.random.shuffle(theta_lhs)
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
@@ -150,7 +159,7 @@ def active_learning(wrk_dir, device = "cpu"):
     scaler = MinMaxScaler()
     
     if first == True: 
-        intialize_dataset(range_all, egrid, lags_egrid, flux_name, lags_name)
+        lhs_idx = intialize_dataset(theta_lhs, egrid, lags_egrid, flux_name, lags_name)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
@@ -211,8 +220,6 @@ def active_learning(wrk_dir, device = "cpu"):
         
     batch_size = 1024
     num_workers = 4
-    
-    lhs_idx = 0
     
     dec_mag = False
     
@@ -338,7 +345,7 @@ def grid_learning(wrk_dir,device):
     
     locations = "data/locations/"
     
-    pars_list = [1,2,3,4,7]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     

@@ -99,7 +99,7 @@ def lhs_all():
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    nH_range = [0,0]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(3),np.log10(1e11)]
     honr_range = [0,0.176]
@@ -506,12 +506,12 @@ def lhs_generation(size,range_all):
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     return theta_lhs
 
-def intialize_dataset(range_all,egrid,lags_egrid,flux_name,lags_name):
+def intialize_dataset(theta_lhs,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")
     init_data_size = 5000
+    lhs_idx = init_data_size
     #generating a random set of parameters and corresponding data
-    theta_init = np.random.uniform(range_all[:,0],range_all[:,1],
-                                   size = (init_data_size,range_all.shape[0]))
+    theta_init = theta_lhs[:init_data_size]
     theta_flux = pars_conversion(theta_init,0)
     theta_lags = pars_conversion(theta_init,6)
     print("Parallelized model generation")
@@ -536,3 +536,4 @@ def intialize_dataset(range_all,egrid,lags_egrid,flux_name,lags_name):
     print("Performing data cleanup")
     readAndRemoveNans(f"data/locations/{flux_name}", 
                       f"data/locations/{lags_name}")
+    return lhs_idx
