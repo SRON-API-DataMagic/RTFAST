@@ -87,6 +87,9 @@ def active_learning(wrk_dir, device = "cpu"):
     np.savetxt("data/flux/bh_flux.txt",flux_bh)
     np.savetxt("data/flux/agn_flux.txt",flux_agn)
     
+    print(flux_bh)
+    print(flux_agn)
+    
     flux_bh = flux_bh[np.isnan(flux_bh)==False]
     flux_bh = flux_bh[(flux_bh>1e-18)]
     flux_agn = flux_agn[np.isnan(flux_agn)==False]
