@@ -75,6 +75,9 @@ def active_learning(wrk_dir, device = "cpu"):
     bh_bins = np.logspace(flux_bh.min(),flux_bh.max(),100)
     agn_bins = np.logspace(flux_agn.min(),flux_agn.max(),100)
     
+    print(bh_bins)
+    print(agn_bins)
+    
     plt.hist(flux_bh, bins=bh_bins)
     plt.axvline(2.4e-6, ls = "--")
     plt.axvline(1e-15, ls = "--")
