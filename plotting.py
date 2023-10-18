@@ -192,6 +192,41 @@ def retrieve_egrid(wrk_dir):
     
     return egrid
 
+def plot_flux_dists():
+    flux_bh = np.loadtxt("data/flux/bh_flux.txt")
+    flux_agn = np.loadtxt("data/flux/agn_flux.txt")
+    
+    flux_bh = flux_bh[np.isnan(flux_bh)==False]
+    flux_bh = flux_bh[(flux_bh>1e-18)]
+    flux_agn = flux_agn[np.isnan(flux_agn)==False]
+    flux_agn = flux_agn[(flux_agn>1e-18)]
+    
+    print(len(flux_bh[(flux_bh > 1e-15)& (flux_bh < 2.4e-6)]))
+    print(len(flux_agn[(flux_agn > 1e-15)& (flux_agn < 2.4e-6)]))
+    
+    bh_bins = np.logspace(np.log10(np.min(flux_bh)),np.log10(np.max(flux_bh)),
+                          100, endpoint=True)
+    agn_bins = np.logspace(np.log10(np.min(flux_agn)),np.log10(np.max(flux_agn)),
+                           100, endpoint=True)
+    
+    plt.hist(flux_bh, bins=bh_bins)
+    plt.axvline(2.4e-6, ls = "--", c="orange")
+    plt.axvline(1e-15, ls = "--", c="orange")
+    plt.title("Black hole flux distributions")
+    plt.xlabel("Total flux in ergs/s/cm^2")
+    plt.xscale("log")
+    plt.savefig("bh_dists.png")
+    plt.close()
+    
+    plt.hist(flux_agn, bins=agn_bins)
+    plt.axvline(2.4e-6,ls = "--",c="orange")
+    plt.axvline(1e-15,ls = "--",c="orange")
+    plt.xlabel("Total flux in ergs/s/cm^2")
+    plt.title("AGN flux distributions")
+    plt.xscale("log")
+    plt.savefig("agn_dists.png")
+    plt.close()
+
 def model_load(model_loc, egrid, lags = None):
     """
     Loads neural network model states from the disk. Can load both the flux and
