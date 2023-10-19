@@ -208,15 +208,15 @@ def plot_flux_dists():
     theta_bh = generator.lhs_generation(5000, range_BH)
     theta_agn = generator.lhs_generation(5000, range_AGN)
     
-    theta_bh = generator.pars_conversion_full(theta_bh,0)
-    theta_agn = generator.pars_conversion_full(theta_agn,0)
+    theta_bh_conv = generator.pars_conversion_full(theta_bh,0)
+    theta_agn_conv = generator.pars_conversion_full(theta_agn,0)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux_BH = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
-                                        for pars in theta_bh)
+                                        for pars in theta_bh_conv)
         flux_AGN = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
-                                        for pars in theta_agn)
+                                        for pars in theta_agn_conv)
     flux_BH = np.array(flux_BH)
     flux_AGN = np.array(flux_AGN)
     
