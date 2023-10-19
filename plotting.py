@@ -14,13 +14,15 @@ import matplotlib
 import numpy as np
 from torch.utils.data import DataLoader
 from joblib import load
+from joblib import Parallel, delayed
 
 import pandas as pd
 from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
-from generator import generate_test_set, readAndRemoveNans
+from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux
+import generator
 from processing import saveData, nanChecker
             
 def inverse(scaler,data):
@@ -193,23 +195,54 @@ def retrieve_egrid(wrk_dir):
     return egrid
 
 def plot_flux_dists():
-    flux_bh = np.loadtxt("data/flux/bh_flux.txt")
-    flux_agn = np.loadtxt("data/flux/agn_flux.txt")
+    wrk_dir = os.getcwd()
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    flux_bh = flux_bh[np.isnan(flux_bh)==False]
-    flux_bh = flux_bh[(flux_bh>1e-18)]
-    flux_agn = flux_agn[np.isnan(flux_agn)==False]
-    flux_agn = flux_agn[(flux_agn>1e-18)]
+    range_BH = np.asarray(generator.lhs_BH())
+    range_AGN = np.asarray(generator.lhs_AGN())
     
-    print(len(flux_bh[(flux_bh > 1e-15)& (flux_bh < 2.4e-6)]))
-    print(len(flux_agn[(flux_agn > 1e-15)& (flux_agn < 2.4e-6)]))
+    theta_bh = generator.lhs_generation(5e7, range_BH)
+    theta_agn = generator.lhs_generation(5e7, range_AGN)
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        flux_BH = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_bh)
+        flux_AGN = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
+                                        for pars in theta_agn)
+    flux_BH = np.array(flux_BH)
+    flux_AGN = np.array(flux_AGN)
     
-    bh_bins = np.logspace(np.log10(np.min(flux_bh)),np.log10(np.max(flux_bh)),
+    BHs = pd.Dataframe(data=theta_bh,columns=labels)
+    BHs["flux"] = flux_BH
+    AGN = pd.Dataframe(data=theta_agn,columns=labels)
+    AGN["flux"] = flux_AGN
+    
+    for label in labels:
+        plt.scatter(BHs[label],BHs["flux"])
+        plt.xlabel(label)
+        plt.ylabel("Flux in erg/s/cm^2")
+        plt.title(f"How flux trends with {label}")
+        plt.savefig(f"data/flux/{label}.png")
+        plt.close()
+    
+    flux_BH = flux_BH[np.isnan(flux_BH)==False]
+    flux_BH = flux_BH[(flux_BH>1e-18)]
+    flux_AGN = flux_AGN[np.isnan(flux_AGN)==False]
+    flux_AGN = flux_AGN[(flux_AGN>1e-18)]
+    
+    print(len(flux_BH[(flux_BH > 1e-15)& (flux_BH < 2.4e-6)]))
+    print(len(flux_AGN[(flux_AGN > 1e-15)& (flux_AGN < 2.4e-6)]))
+    
+    bh_bins = np.logspace(np.log10(np.min(flux_BH)),np.log10(np.max(flux_BH)),
                           100, endpoint=True)
-    agn_bins = np.logspace(np.log10(np.min(flux_agn)),np.log10(np.max(flux_agn)),
+    agn_bins = np.logspace(np.log10(np.min(flux_AGN)),np.log10(np.max(flux_AGN)),
                            100, endpoint=True)
     
-    plt.hist(flux_bh, bins=bh_bins)
+    plt.hist(flux_BH, bins=bh_bins)
     plt.axvline(2.4e-6, ls = "--", c="orange")
     plt.axvline(1e-15, ls = "--", c="orange")
     plt.title("Black hole flux distributions")
@@ -218,7 +251,7 @@ def plot_flux_dists():
     plt.savefig("bh_dists.png")
     plt.close()
     
-    plt.hist(flux_agn, bins=agn_bins)
+    plt.hist(flux_AGN, bins=agn_bins)
     plt.axvline(2.4e-6,ls = "--",c="orange")
     plt.axvline(1e-15,ls = "--",c="orange")
     plt.xlabel("Total flux in ergs/s/cm^2")
