@@ -195,51 +195,31 @@ def retrieve_egrid(wrk_dir):
     return egrid
 
 def plot_flux_dists():
-    wrk_dir = os.getcwd()
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    range_BH = np.asarray(generator.lhs_BH())
-    range_AGN = np.asarray(generator.lhs_AGN())
-    
-    theta_bh = generator.lhs_generation(5000, range_BH)
-    theta_agn = generator.lhs_generation(5000, range_AGN)
-    
-    theta_bh_conv = generator.pars_conversion_full(theta_bh,0)
-    theta_agn_conv = generator.pars_conversion_full(theta_agn,0)
-    
-    with Parallel(n_jobs=10,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        flux_BH = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
-                                        for pars in theta_bh_conv)
-        flux_AGN = parallel(delayed(generator.rtdist_erg_flux)(pars, egrid)
-                                        for pars in theta_agn_conv)
-    flux_BH = np.array(flux_BH)
-    flux_AGN = np.array(flux_AGN)
-    
-    BHs = pd.DataFrame(data=theta_bh,columns=labels)
-    BHs["flux"] = flux_BH
-    AGN = pd.DataFrame(data=theta_agn,columns=labels)
-    AGN["flux"] = flux_AGN
-    
-    BHs.to_csv("data/flux/bh_fluxs.csv",index=False)
-    AGN.to_csv("data/flux/AGN_fluxs.csv",index=False)
+    BHs = pd.read_csv("data/flux/bh_fluxs.csv")
+    AGN = pd.read_csv("data/flux/AGN_fluxs.csv")
     
     for label in labels:
         plt.scatter(BHs[label],BHs["flux"])
         plt.xlabel(label)
         plt.ylabel("Flux in erg/s/cm^2")
-        plt.title(f"How flux trends with {label}")
+        plt.title(f"How flux trends with {label} for BHs")
         plt.yscale("log")
-        plt.savefig(f"data/flux/{label}.png")
+        plt.savefig(f"data/flux/{label}_bhs.png")
+        plt.close()
+        plt.scatter(AGN[label],AGN["flux"])
+        plt.xlabel(label)
+        plt.ylabel("Flux in erg/s/cm^2")
+        plt.title(f"How flux trends with {label} for AGN")
+        plt.yscale("log")
+        plt.savefig(f"data/flux/{label}_agn.png")
         plt.close()
     
-    flux_BH = flux_BH[np.isnan(flux_BH)==False]
+    flux_BH = BHs["flux"][np.isnan(BHs["flux"])==False]
     flux_BH = flux_BH[(flux_BH>1e-18)]
-    flux_AGN = flux_AGN[np.isnan(flux_AGN)==False]
+    flux_AGN = AGN["flux"][np.isnan(AGN["flux"])==False]
     flux_AGN = flux_AGN[(flux_AGN>1e-18)]
     
     print(len(flux_BH[(flux_BH > 1e-15)& (flux_BH < 2.4e-6)]))
