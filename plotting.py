@@ -921,6 +921,9 @@ def main():
     aggregate_dists(files)
     """
     
+    plot_flux_dists()
+    quit()
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
