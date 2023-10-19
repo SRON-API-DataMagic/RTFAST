@@ -225,11 +225,15 @@ def plot_flux_dists():
     AGN = pd.DataFrame(data=theta_agn,columns=labels)
     AGN["flux"] = flux_AGN
     
+    BHs.to_csv("data/flux/bh_fluxs.csv",index=False)
+    AGN.to_csv("data/flux/AGN_fluxs.csv",index=False)
+    
     for label in labels:
         plt.scatter(BHs[label],BHs["flux"])
         plt.xlabel(label)
         plt.ylabel("Flux in erg/s/cm^2")
         plt.title(f"How flux trends with {label}")
+        plt.yscale("log")
         plt.savefig(f"data/flux/{label}.png")
         plt.close()
     
