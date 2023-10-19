@@ -220,9 +220,9 @@ def plot_flux_dists():
     flux_BH = np.array(flux_BH)
     flux_AGN = np.array(flux_AGN)
     
-    BHs = pd.Dataframe(data=theta_bh,columns=labels)
+    BHs = pd.DataFrame(data=theta_bh,columns=labels)
     BHs["flux"] = flux_BH
-    AGN = pd.Dataframe(data=theta_agn,columns=labels)
+    AGN = pd.DataFrame(data=theta_agn,columns=labels)
     AGN["flux"] = flux_AGN
     
     for label in labels:
