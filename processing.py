@@ -288,7 +288,7 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
     """
     indexes = []
     for i, spec in enumerate(flux):
-        if np.count_nonzero(np.where(spec > threshold,0,1)) > 0:
+        if np.any(spec > threshold) != True:
             indexes.append(i)
     if indexes != []:
         print(f"A total of {len(indexes)} spectra were under the flux thresholds.")
