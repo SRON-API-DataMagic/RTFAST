@@ -277,7 +277,7 @@ def pars_conversion_full(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = 5               #height
+    new_pars[:,0] = 30              #height
     new_pars[:,1] = pars[:,1]       #spin
     new_pars[:,2] = 10**pars[:,2]   #inclination
     new_pars[:,3] = -10**pars[:,3]  #inner radius

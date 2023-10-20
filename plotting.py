@@ -202,9 +202,9 @@ def plot_flux_dists():
     labels = ["a","inc","rin","rout","z","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    BH_name = "5h_3G_BH"
-    AGN_name = "5h_3G_AGN"
-    #generator.generate_flux_dists(BH_name, AGN_name)
+    BH_name = "30h_3G_BH"
+    AGN_name = "30h_3G_AGN"
+    generator.generate_flux_dists(BH_name, AGN_name)
     
     BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
@@ -217,7 +217,7 @@ def plot_flux_dists():
         plt.ylabel("Flux in erg/s/cm^2")
         plt.title(f"How flux trends with {label} for BHs")
         plt.yscale("log")
-        plt.savefig(f"data/flux/{label}_bhs.png")
+        plt.savefig(f"data/flux/{label}_{BH_name}.png")
         plt.close()
         plt.scatter(AGN[label],AGN["flux"])
         plt.axhline(1e-11, ls="--", c ="orange")
@@ -226,7 +226,7 @@ def plot_flux_dists():
         plt.ylabel("Flux in erg/s/cm^2")
         plt.title(f"How flux trends with {label} for AGN")
         plt.yscale("log")
-        plt.savefig(f"data/flux/{label}_agn.png")
+        plt.savefig(f"data/flux/{label}_{AGN_name}.png")
         plt.close()
     
     flux_BH = BHs["flux"][np.isnan(BHs["flux"])==False]
