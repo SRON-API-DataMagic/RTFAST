@@ -287,8 +287,7 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
 
     """
     indexes = []
-    for i, row in enumerate(flux):
-        spec = np.loadtxt(row["Location"])
+    for i, spec in enumerate(flux):
         if np.count_nonzero(np.where(spec > threshold,0,1)) > 0:
             indexes.append(i)
     if indexes != []:
