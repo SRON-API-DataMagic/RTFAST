@@ -484,8 +484,8 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                                flux_name, flux_test_name, lags_name,
                                lags_test_name,pars_conversion = pars_conversion_full):
     # compute the physical model for these thetas
-    theta_flux = pars_conversion(theta_query,0)
-    theta_lags = pars_conversion(theta_query,6)
+    theta_flux = pars_conversion_full(theta_query,0)
+    theta_lags = pars_conversion_full(theta_query,6)
     print("Generating flux models")
     flux =  parallel(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
@@ -551,8 +551,8 @@ def intialize_dataset(theta_lhs,egrid,lags_egrid,flux_name,lags_name):
     lhs_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhs[:init_data_size]
-    theta_flux = pars_conversion(theta_init,0)
-    theta_lags = pars_conversion(theta_init,6)
+    theta_flux = pars_conversion_full(theta_init,0)
+    theta_lags = pars_conversion_full(theta_init,6)
     print("Parallelized model generation")
     
     print("Generating flux models")
