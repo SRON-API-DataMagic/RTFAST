@@ -194,12 +194,20 @@ def retrieve_egrid(wrk_dir):
     
     return egrid
 
+
+
 def plot_flux_dists():
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["a","inc","rin","rout","z","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    BHs = pd.read_csv("data/flux/bh_fluxs.csv")
-    AGN = pd.read_csv("data/flux/AGN_fluxs.csv")
+    BH_name = "5h_3G_BH"
+    AGN_name = "5h_3G_AGN"
+    generator.generate_flux_dists(BH_name, AGN_name)
+    
+    BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
+    AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     
     for label in labels:
         plt.scatter(BHs[label],BHs["flux"])

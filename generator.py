@@ -3,6 +3,7 @@ This program deals with generating rtdist models with given parameters. For use
 for generating sampels for training the emulator for rtdist.
 """
 import numpy as np
+import os
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
@@ -11,6 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
+from sherpa.astro.ui import unpack_rmf
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -179,7 +181,7 @@ def lhs_AGN():
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    nH_range = [np.log10(1e-3),np.log10(1e3)]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(1e4),np.log10(1e11)]
     honr_range = [0,0.176]
@@ -275,21 +277,21 @@ def pars_conversion_full(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = -10**pars[:,0]
-    new_pars[:,1] = pars[:,1]
-    new_pars[:,2] = 10**pars[:,2]
-    new_pars[:,3] = -10**pars[:,3]
-    new_pars[:,4] = 10**pars[:,4]
-    new_pars[:,5] = pars[:,5]
-    new_pars[:,6] = pars[:,6]
-    new_pars[:,7] = 10**pars[:,7]
-    new_pars[:,8] = 10**pars[:,8]
-    new_pars[:,9] = pars[:,9]
-    new_pars[:,10] = 10**pars[:,10]
-    new_pars[:,11] = 10**pars[:,11]
-    new_pars[:,12] = 10**pars[:,12]
-    new_pars[:,13] = 10**pars[:,13]
-    new_pars[:,14] = pars[:,14]
+    new_pars[:,0] = 5               #height
+    new_pars[:,1] = pars[:,1]       #spin
+    new_pars[:,2] = 10**pars[:,2]   #inclination
+    new_pars[:,3] = -10**pars[:,3]  #inner radius
+    new_pars[:,4] = 10**pars[:,4]   #outer radius
+    new_pars[:,5] = pars[:,5]       #redshift (z)
+    new_pars[:,6] = 3               #Gamma
+    new_pars[:,7] = 10**pars[:,7]   #distance
+    new_pars[:,8] = 10**pars[:,8]   #Afe
+    new_pars[:,9] = pars[:,9]       #logNe
+    new_pars[:,10] = 10**pars[:,10] #kTe
+    new_pars[:,11] = 10**pars[:,11] #nH
+    new_pars[:,12] = 10**pars[:,12] #boost
+    new_pars[:,13] = 10**pars[:,13] #mass
+    new_pars[:,14] = pars[:,14]     #scale height of disk
     new_pars[:,15] = pars[:,15]
     new_pars[:,16] = pars[:,16]
     new_pars[:,21] = pars[:,17]
@@ -406,6 +408,44 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     return   
 
+def generate_flux_dists(BH_name,AGN_name):
+    wrk_dir = os.getcwd()
+    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
+    rmf = unpack_rmf(rmf_name)
+    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    
+    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
+              "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
+              "Anorm"]
+    
+    range_BH = np.asarray(lhs_BH())
+    range_AGN = np.asarray(lhs_AGN())
+    
+    #pre generate Latin Hypercube samples.
+    theta_bh = lhs_generation(5e3, range_BH)
+    theta_agn = lhs_generation(5e3, range_AGN)
+    
+    iter_bh = pars_conversion_full(theta_bh, 0)
+    iter_agn = pars_conversion_full(theta_agn, 0)
+    
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        #generate rtdist models for the correlated grid
+        BHs_flux = parallel(delayed(rtdist_flux)(pars, egrid)
+                                        for pars in iter_bh)
+        AGN_flux = parallel(delayed(rtdist_lags)(pars, egrid)
+                                        for pars in iter_agn)
+    BHs_flux = np.asarray(BHs_flux)
+    AGN_flux = np.asarray(AGN_flux)
+    
+    BHs = pd.DataFrame(data=theta_bh,columns=labels)
+    AGN = pd.DataFrame(data=theta_agn,columns=labels)
+    BHs["flux"] = BHs_flux
+    AGN["flux"] = AGN_flux
+    
+    BHs.to_csv(f"data/flux/{BH_name}.csv")
+    AGN.to_csv(f"data/flux/{AGN_name}.csv")
+    return
+    
 def generate_test_set(size, egrid, lags_egrid):
     """
     
