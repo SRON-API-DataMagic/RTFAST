@@ -101,7 +101,7 @@ def lhs_all():
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    nH_range = [np.log10(1e-3),np.log10(1e3)]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(3),np.log10(1e11)]
     honr_range = [0,0.176]
@@ -141,7 +141,7 @@ def lhs_BH():
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-22),np.log10(1e6)]
+    nH_range = [np.log10(1e-3),np.log10(1e3)]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(3),np.log10(40)]
     honr_range = [0,0.176]
@@ -277,13 +277,13 @@ def pars_conversion_full(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = 30              #height
+    new_pars[:,0] = -10**pars[:,0]  #height
     new_pars[:,1] = pars[:,1]       #spin
     new_pars[:,2] = 10**pars[:,2]   #inclination
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 10**pars[:,4]   #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = 1.4             #Gamma
+    new_pars[:,6] = 10**pars[:,6]   #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 10**pars[:,8]   #Afe
     new_pars[:,9] = pars[:,9]       #logNe
@@ -556,14 +556,17 @@ def intialize_dataset(theta_lhs,egrid,lags_egrid,flux_name,lags_name):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    data_query =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+    flux =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
-    data_query = np.asarray(data_query)
+    flux = np.asarray(flux)
+    print("Checking for spectra below threshold")
+    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                  1e-11)
     print("Saving flux data")
-    saveData(data_query, theta_flux, 
+    saveData(flux, theta_flux, 
              "data/locations/",flux_name)
     
-    del data_query
+    del flux
     print("Generating lags models")
     lags_query =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)
                                     for pars in theta_lags)

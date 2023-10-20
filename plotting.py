@@ -221,7 +221,7 @@ def plot_flux_dists():
                 plt.ylabel("Flux in erg/s/cm^2")
                 plt.title(f"How flux trends with {label} for BHs with fixed h={h}Rg and Gamma={g}")
                 plt.yscale("log")
-                plt.savefig(f"data/flux/{label}_{BH_name}_{h}_{g}.png")
+                plt.savefig(f"data/flux/{label}_{BH_name}.png")
                 plt.close()
                 plt.scatter(AGN[label],AGN["flux"])
                 plt.axhline(1e-11, ls="--", c ="orange")
@@ -230,7 +230,7 @@ def plot_flux_dists():
                 plt.ylabel("Flux in erg/s/cm^2")
                 plt.title(f"How flux trends with {label} for AGN with fixed h={h}Rg and Gamma={g}")
                 plt.yscale("log")
-                plt.savefig(f"data/flux/{label}_{AGN_name}_{h}_{g}.png")
+                plt.savefig(f"data/flux/{label}_{AGN_name}.png")
                 plt.close()
     
     flux_BH = BHs["flux"][np.isnan(BHs["flux"])==False]
