@@ -473,7 +473,7 @@ def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
         for batch, (D,P) in enumerate(dataloader):
             if dec_mag == False:
                 pred = model(P.to(device))[:,None,:]
-                test_loss += loss_fn(pred,D.to(device))
+                test_loss += loss_fn(pred,D.to(device)).detach().item()
             else:
                 mag_pred, dec_pred = model(P.to(device))
                 mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
@@ -511,7 +511,7 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
             if dec_mag == False:
                 pred, I_pred = model(P.to(device))
                 pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-                test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device))
+                test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device)).detach().item()
             else:
                 mag_pred, dec_pred, I_pred = model(P.to(device))
                 mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
