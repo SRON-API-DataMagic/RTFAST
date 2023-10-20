@@ -202,32 +202,36 @@ def plot_flux_dists():
     labels = ["a","inc","rin","rout","z","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    BH_name = "30h_14G_BH"
-    AGN_name = "30h_14G_AGN"
-    generator.generate_flux_dists(BH_name, AGN_name)
-    
-    BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
-    AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
-    
-    for label in labels:
-        plt.scatter(BHs[label],BHs["flux"])
-        plt.axhline(1e-11, ls="--", c ="orange")
-        plt.axhline(1e-6, ls="--", c ="orange")
-        plt.xlabel(label)
-        plt.ylabel("Flux in erg/s/cm^2")
-        plt.title(f"How flux trends with {label} for BHs")
-        plt.yscale("log")
-        plt.savefig(f"data/flux/{label}_{BH_name}.png")
-        plt.close()
-        plt.scatter(AGN[label],AGN["flux"])
-        plt.axhline(1e-11, ls="--", c ="orange")
-        plt.axhline(1e-6, ls="--", c ="orange")
-        plt.xlabel(label)
-        plt.ylabel("Flux in erg/s/cm^2")
-        plt.title(f"How flux trends with {label} for AGN")
-        plt.yscale("log")
-        plt.savefig(f"data/flux/{label}_{AGN_name}.png")
-        plt.close()
+    gammas = ["14","3"]
+    heights = ["5","30"]
+    for h in heights:
+        for g in gammas:
+            BH_name = f"{h}h_{g}G_BH"
+            AGN_name = f"{h}h_{g}G_AGN"
+            #generator.generate_flux_dists(BH_name, AGN_name)
+            
+            BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
+            AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
+            
+            for label in labels:
+                plt.scatter(BHs[label],BHs["flux"])
+                plt.axhline(1e-11, ls="--", c ="orange")
+                plt.axhline(1e-6, ls="--", c ="orange")
+                plt.xlabel(label)
+                plt.ylabel("Flux in erg/s/cm^2")
+                plt.title(f"How flux trends with {label} for BHs with fixed h={h}Rg and Gamma={g}")
+                plt.yscale("log")
+                plt.savefig(f"data/flux/{label}_{BH_name}_{h}_{g}.png")
+                plt.close()
+                plt.scatter(AGN[label],AGN["flux"])
+                plt.axhline(1e-11, ls="--", c ="orange")
+                plt.axhline(1e-6, ls="--", c ="orange")
+                plt.xlabel(label)
+                plt.ylabel("Flux in erg/s/cm^2")
+                plt.title(f"How flux trends with {label} for AGN with fixed h={h}Rg and Gamma={g}")
+                plt.yscale("log")
+                plt.savefig(f"data/flux/{label}_{AGN_name}_{h}_{g}.png")
+                plt.close()
     
     flux_BH = BHs["flux"][np.isnan(BHs["flux"])==False]
     flux_BH = flux_BH[(flux_BH>1e-18)]
