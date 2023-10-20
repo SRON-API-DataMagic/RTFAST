@@ -422,8 +422,8 @@ def generate_flux_dists(BH_name,AGN_name):
     range_AGN = np.asarray(lhs_AGN())
     
     #pre generate Latin Hypercube samples.
-    theta_bh = lhs_generation(5e3, range_BH)
-    theta_agn = lhs_generation(5e3, range_AGN)
+    theta_bh = lhs_generation(int(5e3), range_BH)
+    theta_agn = lhs_generation(int(5e3), range_AGN)
     
     iter_bh = pars_conversion_full(theta_bh, 0)
     iter_agn = pars_conversion_full(theta_agn, 0)
