@@ -202,9 +202,9 @@ def plot_flux_dists():
     labels = ["a","inc","rin","rout","z","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    BH_name = "30h_3G_BH"
-    AGN_name = "30h_3G_AGN"
-    generator.generate_flux_dists(BH_name, AGN_name)
+    BH_name = "5h_3G_BH"
+    AGN_name = "5h_3G_AGN"
+    #generator.generate_flux_dists(BH_name, AGN_name)
     
     BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
