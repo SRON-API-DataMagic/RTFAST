@@ -60,22 +60,17 @@ def active_learning(wrk_dir, device = "cpu"):
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    labels = ["a","inc","rin","rout","mass"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,4,13]
-    negatives = [2]
-    logged = [1,2,3,4]
-    
     #pre generate Latin Hypercube samples.
-    theta_bh = generator.lhs_generation(int(5e7), range_BH)
-    theta_agn = generator.lhs_generation(int(5e7), range_AGN)
+    theta_bh = generator.lhs_generation(int(5e6), range_BH)
+    theta_agn = generator.lhs_generation(int(5e6), range_AGN)
     
     #shuffle bhs and agn together
-    theta_lhs = np.concat(theta_bh,theta_agn,axis=0)
+    theta_lhs = np.concatenate(theta_bh,theta_agn,axis=0)
     np.random.shuffle(theta_lhs)
     lhs_idx = 0
     
