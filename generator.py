@@ -430,9 +430,9 @@ def generate_flux_dists(BH_name,AGN_name):
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        BHs_flux = parallel(delayed(rtdist_flux)(pars, egrid)
+        BHs_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
                                         for pars in iter_bh)
-        AGN_flux = parallel(delayed(rtdist_lags)(pars, egrid)
+        AGN_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
                                         for pars in iter_agn)
     BHs_flux = np.asarray(BHs_flux)
     AGN_flux = np.asarray(AGN_flux)
