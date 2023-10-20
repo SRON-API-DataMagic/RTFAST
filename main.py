@@ -71,8 +71,8 @@ def active_learning(wrk_dir, device = "cpu"):
     logged = [1,2,3,4]
     
     #pre generate Latin Hypercube samples.
-    theta_bh = generator.lhs_generation(5e7, range_BH)
-    theta_agn = generator.lhs_generation(5e7, range_AGN)
+    theta_bh = generator.lhs_generation(int(5e7), range_BH)
+    theta_agn = generator.lhs_generation(int(5e7), range_AGN)
     
     #shuffle bhs and agn together
     theta_lhs = np.concat(theta_bh,theta_agn,axis=0)
