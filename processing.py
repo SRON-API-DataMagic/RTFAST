@@ -297,9 +297,9 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
     except:
         print("All spectra okay")
         index = []
-    np.delete(flux,index,axis=0)
-    np.delete(pars_flux,index,axis=0)
-    np.delete(pars_lags,index,axis=0)
+    flux = np.delete(flux,index,axis=0)
+    pars_flux = np.delete(pars_flux,index,axis=0)
+    pars_lags = np.delete(pars_lags,index,axis=0)
     return flux, pars_flux, pars_lags
 
 def readAndRemoveNans(flux_loc,lags_loc):
