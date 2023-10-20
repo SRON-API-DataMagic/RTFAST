@@ -70,7 +70,7 @@ def active_learning(wrk_dir, device = "cpu"):
     theta_agn = generator.lhs_generation(int(5e6), range_AGN)
     
     #shuffle bhs and agn together
-    theta_lhs = np.concatenate(theta_bh,theta_agn,axis=0)
+    theta_lhs = np.concatenate([theta_bh,theta_agn],axis=0)
     np.random.shuffle(theta_lhs)
     lhs_idx = 0
     
