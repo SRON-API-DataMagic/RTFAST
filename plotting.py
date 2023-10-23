@@ -354,6 +354,14 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
     pars = [[] for i in range(len(pars_list))]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
+        D = np.squeeze(D)
+        if mode == "flux":
+            D[D<=1e-11] = 1e-11
+            D = np.squeeze(D)
+        else:
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
+            D = np.squeeze(D)
         for i in range(len(pars)):
             if i in logged:
                 pars[i].append(10**P[0][i].item())
@@ -434,6 +442,14 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
     """
     residuals = []
     for batch, (D,P) in enumerate(tqdm(testing_dataloader)):
+        D = np.squeeze(D)
+        if mode == "flux":
+            D[D<=1e-11] = 1e-11
+            D = np.squeeze(D)
+        else:
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
+            D = np.squeeze(D)
         if dec_mag == False:
             if mode == "flux":
                 pred = model(P)
