@@ -103,6 +103,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
         The default is "flux".
 
     """
+    pred = np.squeeze(pred)
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -383,7 +384,7 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
         resid = resid.numpy()
         try:
             if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),0,resid)
+                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),0,resid)
             else:
                 resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
         except:
@@ -456,10 +457,10 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
         
         try:
             if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-38)&(np.abs(pred)<=1e-38),
+                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
                                  0,resid)
             else:
-                resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),
+                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
                                  0,resid)
         except:
             print("Thresholds failed")
@@ -487,11 +488,11 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
         D = np.squeeze(D)
         print(D)
         if mode == "flux":
-            D[D<=1e-38] = 1e-38
+            D[D<=1e-11] = 1e-11
             da = np.squeeze(D)
         else:
-            D[(D<0)&(np.abs(D)<1e-6)] = -1e-6
-            D[(D>0)&(np.abs(D)<1e-6)] = 1e-6
+            D[(D<0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>0)&(np.abs(D)<1e-5)] = 1e-5
             da = np.squeeze(D)
         
         if dec_mag == False:
@@ -516,9 +517,9 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                     (10**np.round(sca_mag_pred))))
         #generate neural network prediction and rescale to linear space
         if mode == "flux":
-            sca_pred[sca_pred<=1e-38] = 1e-38
+            sca_pred[sca_pred<=1e-11] = 1e-11
         else:
-            sca_pred[sca_pred<1e-6] = 1e-6
+            sca_pred[sca_pred<1e-5] = 1e-5
             sca_pred = np.squeeze(sca_pred*np.where(I_pred > 0.5, 1, -1))
         
         fname = f"{batch}"
