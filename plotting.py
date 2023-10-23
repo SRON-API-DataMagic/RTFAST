@@ -348,10 +348,10 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
         list of lists of tick values for each parameter.
 
     """
-    pars = [[] for i in range(20)]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    pars = [[] for i in range(len(pars_list))]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
         for i in range(len(pars)):
@@ -463,7 +463,6 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
                 resid = np.where((np.abs(D)<=1e-4)&(np.abs(pred)<=1e-4),
                                  0,resid)
         except:
-            print("Thresholds failed")
             pass
         residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
