@@ -348,7 +348,7 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
         list of lists of tick values for each parameter.
 
     """
-    pars = [[] for i in range(5)]
+    pars = [[] for i in range(20)]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
