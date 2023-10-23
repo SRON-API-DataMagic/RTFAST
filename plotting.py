@@ -457,10 +457,10 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
         
         try:
             if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
+                resid = np.where((np.abs(D)<=1e-10)&(np.abs(pred)<=1e-10),
                                  0,resid)
             else:
-                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
+                resid = np.where((np.abs(D)<=1e-4)&(np.abs(pred)<=1e-4),
                                  0,resid)
         except:
             print("Thresholds failed")
@@ -486,7 +486,6 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
         D = np.squeeze(D)
-        print(D)
         if mode == "flux":
             D[D<=1e-11] = 1e-11
             da = np.squeeze(D)
@@ -503,6 +502,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
             else:
                 pred, I_pred = model(P)
             log_pred = inverse(scaler,pred.detach().numpy())
+            pred = pred.detach().numpy()
             sca_pred = np.squeeze(10**(log_pred))
         else:
             da_mag = np.floor(np.log10(da))
