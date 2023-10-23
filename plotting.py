@@ -884,17 +884,17 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
+
+    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
+                           active_flux_scaler, egrid)
+    
+    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
+                           active_lags_scaler, lags_egrid, lags=True)
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
                             grid_lags_scaler, lags_egrid, lags=True)
-    
-    active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
-                      active_flux_scaler, egrid)
-    
-    active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
-                      active_lags_scaler, lags_egrid, lags=True)
     
     
     
@@ -917,7 +917,7 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(1600, egrid, 
+    flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
                                                            lags_egrid, lhs_BH)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_BH_test.csv")
@@ -926,7 +926,7 @@ def main():
     readAndRemoveNans("data/locations/loc_flux_BH_test.csv",
                       "data/locations/loc_lags_BH_test.csv")
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(1600, egrid, 
+    flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
                                                            lags_egrid, lhs_AGN)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
