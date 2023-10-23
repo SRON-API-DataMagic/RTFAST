@@ -452,7 +452,7 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
         resid = (D-pred)/D
         resid = resid.detach().numpy()
         if mode == "flux":
-            resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
+            resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred.detach().numpy())<=1e-11),
                              0,resid)
         else:
             resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
