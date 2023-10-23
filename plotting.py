@@ -199,8 +199,6 @@ def retrieve_egrid(wrk_dir):
 def plot_flux_dists():
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    labels = ["a","inc","rin","rout","z","distance","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     gammas = ["14","3"]
     heights = ["5","30"]
