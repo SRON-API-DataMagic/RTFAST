@@ -451,16 +451,12 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
             pred = pred.detach().numpy()*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
         resid = (D-pred)/D
         resid = resid.detach().numpy()
-        
-        try:
-            if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
-                                 0,resid)
-            else:
-                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
-                                 0,resid)
-        except:
-            pass
+        if mode == "flux":
+            resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
+                             0,resid)
+        else:
+            resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
+                             0,resid)
         residuals.append(np.absolute(np.asarray(resid)))
     residuals = np.asarray(residuals)
     return residuals
@@ -745,7 +741,6 @@ def aggregate_dists(files):
                              color = cmap, label=labels)
     axs[1,1].set_xlabel("Spin")
     plt.yscale("log")
-    plt.tight_layout()
     plt.savefig("dists/stacked.png")
     plt.close()
     
