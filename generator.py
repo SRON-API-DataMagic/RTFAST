@@ -467,8 +467,8 @@ def generate_test_set(size, egrid, lags_egrid, lhs_gen):
     theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
 
     #generate physical models of test set
-    theta_flux = pars_conversion(theta_lhs,0)
-    theta_lags = pars_conversion(theta_lhs,6)
+    theta_flux = pars_conversion_full(theta_lhs,0)
+    theta_lags = pars_conversion_full(theta_lhs,6)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
