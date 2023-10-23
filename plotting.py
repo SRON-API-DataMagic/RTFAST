@@ -284,9 +284,9 @@ def model_load(model_loc, egrid, lags = None):
 
     """
     if lags == None:
-        model = network.HeavyFluxNetwork(5, len(egrid))
+        model = network.HeavyFluxNetwork(20, len(egrid))
     else:
-        model = network.HeavyLagsNetwork(5, len(egrid))
+        model = network.HeavyLagsNetwork(20, len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
