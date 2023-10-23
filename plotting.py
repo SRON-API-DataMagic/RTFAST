@@ -197,7 +197,7 @@ def retrieve_egrid(wrk_dir):
 
 
 def plot_flux_dists():
-    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     gammas = ["14","3"]
@@ -707,7 +707,7 @@ def aggregate_dists(files):
         last_pars = pars
         rins.append(-1*new_pars.loc[:,"rin"])
         routs.append(new_pars.loc[:,"rout"])
-        distances.append(new_pars.loc[:,"distance"])
+        distances.append(new_pars.loc[:,"Dkpc"])
         spins.append(new_pars.loc[:,"a"])
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
