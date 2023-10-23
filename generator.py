@@ -446,7 +446,7 @@ def generate_flux_dists(BH_name,AGN_name):
     AGN.to_csv(f"data/flux/{AGN_name}.csv")
     return
     
-def generate_test_set(size, egrid, lags_egrid):
+def generate_test_set(size, egrid, lags_egrid, lhs_gen):
     """
     
 
@@ -460,7 +460,7 @@ def generate_test_set(size, egrid, lags_egrid):
     None.
 
     """
-    range_all = np.asarray(lhs_trimmed_gen())
+    range_all = np.asarray(lhs_gen())
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
@@ -474,6 +474,8 @@ def generate_test_set(size, egrid, lags_egrid):
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
+        flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                      1e-11)
         lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                         for pars in theta_lags)
     flux = np.asarray(flux)

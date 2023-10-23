@@ -21,9 +21,9 @@ from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
-from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux
+from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhs_AGN, lhs_BH
 import generator
-from processing import saveData, nanChecker
+from processing import saveData, nanChecker, spectraChecker
             
 def inverse(scaler,data):
     """
@@ -286,9 +286,9 @@ def model_load(model_loc, egrid, lags = None):
 
     """
     if lags == None:
-        model = network.MagFluxNetwork(5, len(egrid))
+        model = network.HeavyFluxNetwork(5, len(egrid))
     else:
-        model = network.MagLagsNetwork(5, len(egrid))
+        model = network.HeavyLagsNetwork(5, len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -351,10 +351,8 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
     """
     pars = [[] for i in range(5)]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
-    logged = [1,2,3,4]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    pars_list = ["a","inc","rin","rout","distance"]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
         for i in range(len(pars)):
@@ -783,10 +781,6 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,4,7]
-    negatives = [2]
-    logged = [1,2,3,4]
-    
     if type(scaler_names) != list:
         tmp = [scaler_names for i in range(len(names))]
         scaler_names = tmp
@@ -796,12 +790,12 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         #put test set into dataloader format
         batch_size = 1
         if lags == None:
-            test_data = LoadFluxData("data/locations/loc_flux_test.csv",scaler,
+            test_data = LoadFluxData("data/locations/loc_flux_BH_test.csv",scaler,
                                       scaler_name, pars_list, negatives = negatives, 
                                       logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid, lags = lags)
         else:
-            test_data = LoadLagsData("data/locations/loc_lags_test.csv",scaler,
+            test_data = LoadLagsData("data/locations/loc_lags_BH_test.csv",scaler,
                                        scaler_name, pars_list, negatives = negatives, 
                                        logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid[:-1], lags = lags)
@@ -870,7 +864,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,5,10,15,20]
+    active_name = [0,5,10,15,20,25,30,35,40]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
@@ -881,8 +875,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
-    grid_flux_scaler = [f"mag_grid_{i}_flux_scaler.bin" for i in range(5,11)]
-    grid_lags_scaler = [f"mag_grid_{i}_lags_scaler.bin" for i in range(5,11)]
+    grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
+    grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
     active_flux_scaler = "active_scaler_flux.bin"
     active_lags_scaler = "active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
@@ -893,18 +887,16 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot(loss_base_loc,"flux")
     loss_epochs_plot(loss_base_loc,"lags")
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
-                            grid_flux_scaler, egrid,
-                            dec_mag = True)
+                            grid_flux_scaler, egrid)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
-                            grid_lags_scaler, lags_egrid, lags=True,
-                            dec_mag = True)
+                            grid_lags_scaler, lags_egrid, lags=True)
     
     active_flux = analysis(active_name, active_flux_names, active_sample_flux_nums, 
-                      active_flux_scaler, egrid, dec_mag = True)
+                      active_flux_scaler, egrid)
     
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
-                      active_lags_scaler, lags_egrid, lags=True, dec_mag = True)
+                      active_lags_scaler, lags_egrid, lags=True)
     
     
     
@@ -919,25 +911,31 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    """
     nums = [0,10,20,30,40]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
-    """
     
-    plot_flux_dists()
-    quit()
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(1000, egrid, lags_egrid)
+    flux, lags, theta_flux, theta_lags = generate_test_set(1600, egrid, 
+                                                           lags_egrid, lhs_BH)
     
-    saveData(flux, theta_flux, "data/locations/", "loc_flux_test.csv")
-    saveData(lags, theta_lags, "data/locations/", "loc_lags_test.csv")
+    saveData(flux, theta_flux, "data/locations/", "loc_flux_BH_test.csv")
+    saveData(lags, theta_lags, "data/locations/", "loc_lags_BH_test.csv")
     
-    readAndRemoveNans("data/locations/loc_flux_test.csv",
-                      "data/locations/loc_lags_test.csv")
+    readAndRemoveNans("data/locations/loc_flux_BH_test.csv",
+                      "data/locations/loc_lags_BH_test.csv")
+    
+    flux, lags, theta_flux, theta_lags = generate_test_set(1600, egrid, 
+                                                           lags_egrid, lhs_AGN)
+    
+    saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
+    saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
+    
+    readAndRemoveNans("data/locations/loc_flux_AGN_test.csv",
+                      "data/locations/loc_lags_AGN_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
