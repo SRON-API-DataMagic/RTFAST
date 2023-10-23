@@ -382,13 +382,10 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
             pred = pred*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
         resid = (D-pred)/D
         resid = resid.numpy()
-        try:
-            if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),0,resid)
-            else:
-                resid = np.where((np.abs(D)<=1e-6)&(np.abs(pred)<=1e-6),0,resid)
-        except:
-            pass
+        if mode == "flux":
+            resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),0,resid)
+        else:
+            resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),0,resid)
         resid = np.absolute(np.asarray(resid))
         residuals.append(resid)
         
@@ -457,10 +454,10 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
         
         try:
             if mode == "flux":
-                resid = np.where((np.abs(D)<=1e-10)&(np.abs(pred)<=1e-10),
+                resid = np.where((np.abs(D)<=1e-11)&(np.abs(pred)<=1e-11),
                                  0,resid)
             else:
-                resid = np.where((np.abs(D)<=1e-4)&(np.abs(pred)<=1e-4),
+                resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
                                  0,resid)
         except:
             pass
