@@ -489,8 +489,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
             D[D<=1e-11] = 1e-11
             da = np.squeeze(D)
         else:
-            D[(D<0)&(np.abs(D)<1e-5)] = -1e-5
-            D[(D>0)&(np.abs(D)<1e-5)] = 1e-5
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
             da = np.squeeze(D)
         
         if dec_mag == False:
