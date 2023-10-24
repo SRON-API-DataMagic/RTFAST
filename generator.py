@@ -30,6 +30,7 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
+    print(model)
     #take middle energy and multiply all photon counts by said energy
     gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
     model = model[:-1]*gmid
