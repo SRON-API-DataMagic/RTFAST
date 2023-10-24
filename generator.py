@@ -35,6 +35,7 @@ def rtdist_erg_flux(pars, egrid):
     model = model[:-1]*gmid
     start = np.argmin(np.abs(egrid-2))
     end = np.argmin(np.abs(egrid-10))
+    print(start,end)
     flux = model[start:end].sum()
     return flux
 
