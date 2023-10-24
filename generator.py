@@ -37,7 +37,6 @@ def rtdist_erg_flux(pars, egrid):
     start = np.argmin(np.abs(egrid-2))
     end = np.argmin(np.abs(egrid-10))
     flux = model[start:end].sum()
-    print(flux)
     return flux
 
 def rtdist_flux(pars, egrid):
@@ -245,55 +244,6 @@ def lhs_explor():
     
     return range_all
 
-def pars_conversion_explor(pars,ReIm):
-    """
-    Converts sampled parameters for neural network training into correct
-    format for use in generating data and adds non-sampled parameters
-    needed by the model. This is primarily used for exploring the effects
-    of parameter ranges on flux so as to further restrict the parameter space.
-    Not intended for use in training of the emulator.
-
-    Parameters
-    ----------
-    pars : np.ndarray
-        large array that contains sampled parameters.
-
-    Returns
-    -------
-    pars : np.ndarray
-        large array that contains correctly formatted parameters ready for 
-        parsing into external model.
-
-    """
-    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
-    new_pars = []
-    for i in range(pars.shape[0]):
-        new_pars.append(pars_base)
-    new_pars = np.asarray(new_pars)
-    new_pars[:,0] = -10**pars[:,0]  #height
-    new_pars[:,1] = pars[:,1]       #spin
-    new_pars[:,2] = 10**pars[:,2]   #inclination
-    new_pars[:,3] = -10**pars[:,3]  #inner radius
-    new_pars[:,4] = 1e4             #outer radius
-    new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = 10**pars[:,6]   #Gamma
-    new_pars[:,7] = 10**pars[:,7]   #distance
-    new_pars[:,8] = 10**pars[:,8]   #Afe
-    new_pars[:,9] = pars[:,9]       #logNe
-    new_pars[:,10] = 50             #kTe
-    new_pars[:,11] = 10**pars[:,11] #nH
-    new_pars[:,12] = 0              #boost
-    new_pars[:,13] = 10**pars[:,13] #mass
-    new_pars[:,14] = pars[:,14]     #scale height of disk
-    new_pars[:,15] = pars[:,15]     #b1
-    new_pars[:,16] = pars[:,16]     #b2
-    new_pars[:,21] = pars[:,17]     #phiAB
-    new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 1              #Anorm
-    
-    return new_pars
-
 def lhs_trimmed_gen():
     """
     Limited form of lhs_range_gen that returns ranges for only a limited amount
@@ -393,6 +343,55 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,21] = pars[:,17]     #phiAB
     new_pars[:,22] = pars[:,18]     #coherence
     new_pars[:,23] = 10**pars[:,19] #Anorm
+    
+    return new_pars
+
+def pars_conversion_explor(pars,ReIm):
+    """
+    Converts sampled parameters for neural network training into correct
+    format for use in generating data and adds non-sampled parameters
+    needed by the model. This is primarily used for exploring the effects
+    of parameter ranges on flux so as to further restrict the parameter space.
+    Not intended for use in training of the emulator.
+
+    Parameters
+    ----------
+    pars : np.ndarray
+        large array that contains sampled parameters.
+
+    Returns
+    -------
+    pars : np.ndarray
+        large array that contains correctly formatted parameters ready for 
+        parsing into external model.
+
+    """
+    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
+    new_pars = []
+    for i in range(pars.shape[0]):
+        new_pars.append(pars_base)
+    new_pars = np.asarray(new_pars)
+    new_pars[:,0] = -10**pars[:,0]  #height
+    new_pars[:,1] = pars[:,1]       #spin
+    new_pars[:,2] = 10**pars[:,2]   #inclination
+    new_pars[:,3] = -10**pars[:,3]  #inner radius
+    new_pars[:,4] = 1e4             #outer radius
+    new_pars[:,5] = pars[:,5]       #redshift (z)
+    new_pars[:,6] = 10**pars[:,6]   #Gamma
+    new_pars[:,7] = 10**pars[:,7]   #distance
+    new_pars[:,8] = 10**pars[:,8]   #Afe
+    new_pars[:,9] = pars[:,9]       #logNe
+    new_pars[:,10] = 50             #kTe
+    new_pars[:,11] = 10**pars[:,11] #nH
+    new_pars[:,12] = 0              #boost
+    new_pars[:,13] = 10**pars[:,13] #mass
+    new_pars[:,14] = pars[:,14]     #scale height of disk
+    new_pars[:,15] = pars[:,15]     #b1
+    new_pars[:,16] = pars[:,16]     #b2
+    new_pars[:,21] = pars[:,17]     #phiAB
+    new_pars[:,22] = pars[:,18]     #coherence
+    new_pars[:,23] = 1              #Anorm
     
     return new_pars
 
@@ -519,6 +518,7 @@ def generate_flux_dists(AGN_name):
     theta_agn = lhs_generation(int(1e3), range_AGN)
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
+    print(iter_agn)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
