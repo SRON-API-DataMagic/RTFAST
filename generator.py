@@ -508,7 +508,7 @@ def generate_flux_dists(AGN_name):
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     
-    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
               "Anorm"]
     range_AGN = np.asarray(lhs_explor())
