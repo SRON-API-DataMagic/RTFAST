@@ -201,67 +201,26 @@ def plot_flux_dists():
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    gammas = ["14","3"]
-    heights = ["5","30"]
-    for h in heights:
-        for g in gammas:
-            BH_name = f"{h}h_{g}G_BH"
-            AGN_name = f"{h}h_{g}G_AGN"
-            #generator.generate_flux_dists(BH_name, AGN_name)
-            
-            BHs = pd.read_csv(f"data/flux/{BH_name}.csv")
-            AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
-            
-            for label in labels:
-                plt.scatter(BHs[label],BHs["flux"])
-                plt.axhline(1e-11, ls="--", c ="orange")
-                plt.axhline(1e-6, ls="--", c ="orange")
-                plt.xlabel(label)
-                plt.ylabel("Flux in erg/s/cm^2")
-                plt.title(f"How flux trends with {label} for BHs with fixed h={h}Rg and Gamma={g}")
-                plt.yscale("log")
-                plt.savefig(f"data/flux/{label}_{BH_name}.png")
-                plt.close()
-                plt.scatter(AGN[label],AGN["flux"])
-                plt.axhline(1e-11, ls="--", c ="orange")
-                plt.axhline(1e-6, ls="--", c ="orange")
-                plt.xlabel(label)
-                plt.ylabel("Flux in erg/s/cm^2")
-                plt.title(f"How flux trends with {label} for AGN with fixed h={h}Rg and Gamma={g}")
-                plt.yscale("log")
-                plt.savefig(f"data/flux/{label}_{AGN_name}.png")
-                plt.close()
+    AGN_name = "restricted_AGN"
+    generator.generate_flux_dists(AGN_name)
     
-    flux_BH = BHs["flux"][np.isnan(BHs["flux"])==False]
-    flux_BH = flux_BH[(flux_BH>1e-18)]
+    AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
+    
+    for label in labels:
+        plt.scatter(AGN[label],AGN["flux"])
+        plt.axhline(1e-11, ls="--", c ="orange")
+        plt.axhline(1e-6, ls="--", c ="orange")
+        plt.xlabel(label)
+        plt.ylabel("Flux in erg/s/cm^2")
+        plt.title(f"How flux trends with {label} for AGN")
+        plt.yscale("log")
+        plt.savefig(f"data/flux/{label}_{AGN_name}.png")
+        plt.close()
+    
     flux_AGN = AGN["flux"][np.isnan(AGN["flux"])==False]
     flux_AGN = flux_AGN[(flux_AGN>1e-18)]
     
-    print(len(flux_BH[(flux_BH > 1e-15)& (flux_BH < 2.4e-6)]))
     print(len(flux_AGN[(flux_AGN > 1e-15)& (flux_AGN < 2.4e-6)]))
-    
-    bh_bins = np.logspace(np.log10(np.min(flux_BH)),np.log10(np.max(flux_BH)),
-                          100, endpoint=True)
-    agn_bins = np.logspace(np.log10(np.min(flux_AGN)),np.log10(np.max(flux_AGN)),
-                           100, endpoint=True)
-    
-    plt.hist(flux_BH, bins=bh_bins)
-    plt.axvline(2.4e-6, ls = "--", c="orange")
-    plt.axvline(1e-15, ls = "--", c="orange")
-    plt.title("Black hole flux distributions")
-    plt.xlabel("Total flux in ergs/s/cm^2")
-    plt.xscale("log")
-    plt.savefig("bh_dists.png")
-    plt.close()
-    
-    plt.hist(flux_AGN, bins=agn_bins)
-    plt.axvline(2.4e-6,ls = "--",c="orange")
-    plt.axvline(1e-15,ls = "--",c="orange")
-    plt.xlabel("Total flux in ergs/s/cm^2")
-    plt.title("AGN flux distributions")
-    plt.xscale("log")
-    plt.savefig("agn_dists.png")
-    plt.close()
 
 def model_load(model_loc, egrid, lags = None):
     """
@@ -918,6 +877,9 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
 def main():
     wrk_dir = os.getcwd()
+    
+    plot_flux_dists()
+    quit()
     
     nums = [0,10,20,30,40]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]

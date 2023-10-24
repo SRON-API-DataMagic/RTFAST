@@ -161,7 +161,7 @@ def lhs_BH():
 
 def lhs_AGN():
     """
-    Generates valid ranges of parameters of AGN to be trained on
+    Generates valid ranges of parameters of AGN to be trained on.
     
     Returns
     -------
@@ -198,6 +198,98 @@ def lhs_AGN():
                  honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
     
     return range_all
+
+def lhs_explor():
+    """
+    Generates valid ranges of parameters of AGN to be trained on. This is
+    a function purely used for exploring parameter ranges and generally not
+    intended for use in training of the emulator.
+    
+    Returns
+    -------
+    range_all : list
+        gives parameter ranges for each of the given parameters listed. Used 
+        in the latin hypercube sampling
+    
+    """
+    height_range = [np.log10(1.5),np.log10(100)]
+    spin_range = [0,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(100)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    z_range = [0,4]
+    Gamma_range = [1.4,3.4]
+    distance_range = [np.log10(3.5e6),np.log10(1e10)]
+    Afe_range = [np.log10(0.5),np.log10(10)]
+    logNe_range = [15,20]
+    kte_range = [np.log10(5),np.log10(500)]
+    nH_range = [np.log10(1e-3),np.log10(1e3)]
+    boost_range = [np.log10(1e-2),np.log10(10)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
+    honr_range = [0,0.176]
+    b1_range = [0,2]
+    b2_range = [-4,4]
+    phiAB_range = [-3.14,3.14]
+    g_range = [0,0.5]
+    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
+    
+    
+    range_all = [height_range,spin_range,inclination_range,r_inner_range,
+                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
+                 logNe_range,kte_range,nH_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
+    
+    return range_all
+
+def pars_conversion_explor(pars,ReIm):
+    """
+    Converts sampled parameters for neural network training into correct
+    format for use in generating data and adds non-sampled parameters
+    needed by the model. This is primarily used for exploring the effects
+    of parameter ranges on flux so as to further restrict the parameter space.
+    Not intended for use in training of the emulator.
+
+    Parameters
+    ----------
+    pars : np.ndarray
+        large array that contains sampled parameters.
+
+    Returns
+    -------
+    pars : np.ndarray
+        large array that contains correctly formatted parameters ready for 
+        parsing into external model.
+
+    """
+    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
+    new_pars = []
+    for i in range(pars.shape[0]):
+        new_pars.append(pars_base)
+    new_pars = np.asarray(new_pars)
+    new_pars[:,0] = -10**pars[:,0]  #height
+    new_pars[:,1] = pars[:,1]       #spin
+    new_pars[:,2] = 10**pars[:,2]   #inclination
+    new_pars[:,3] = -10**pars[:,3]  #inner radius
+    new_pars[:,4] = 1e4             #outer radius
+    new_pars[:,5] = pars[:,5]       #redshift (z)
+    new_pars[:,6] = 10**pars[:,6]   #Gamma
+    new_pars[:,7] = 10**pars[:,7]   #distance
+    new_pars[:,8] = 10**pars[:,8]   #Afe
+    new_pars[:,9] = pars[:,9]       #logNe
+    new_pars[:,10] = 50             #kTe
+    new_pars[:,11] = 10**pars[:,11] #nH
+    new_pars[:,12] = 0              #boost
+    new_pars[:,13] = 10**pars[:,13] #mass
+    new_pars[:,14] = pars[:,14]     #scale height of disk
+    new_pars[:,15] = pars[:,15]     #b1
+    new_pars[:,16] = pars[:,16]     #b2
+    new_pars[:,21] = pars[:,17]     #phiAB
+    new_pars[:,22] = pars[:,18]     #coherence
+    new_pars[:,23] = 1              #Anorm
+    
+    return new_pars
+
 def lhs_trimmed_gen():
     """
     Limited form of lhs_range_gen that returns ranges for only a limited amount
@@ -292,11 +384,11 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,12] = 10**pars[:,12] #boost
     new_pars[:,13] = 10**pars[:,13] #mass
     new_pars[:,14] = pars[:,14]     #scale height of disk
-    new_pars[:,15] = pars[:,15]
-    new_pars[:,16] = pars[:,16]
-    new_pars[:,21] = pars[:,17]
-    new_pars[:,22] = pars[:,18]
-    new_pars[:,23] = 10**pars[:,19]
+    new_pars[:,15] = pars[:,15]     #b1
+    new_pars[:,16] = pars[:,16]     #b2
+    new_pars[:,21] = pars[:,17]     #phiAB
+    new_pars[:,22] = pars[:,18]     #coherence
+    new_pars[:,23] = 10**pars[:,19] #Anorm
     
     return new_pars
 
@@ -408,7 +500,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     return   
 
-def generate_flux_dists(BH_name,AGN_name):
+def generate_flux_dists(AGN_name):
     wrk_dir = os.getcwd()
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
@@ -417,32 +509,22 @@ def generate_flux_dists(BH_name,AGN_name):
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
               "Anorm"]
-    
-    range_BH = np.asarray(lhs_BH())
-    range_AGN = np.asarray(lhs_AGN())
+    range_AGN = np.asarray(lhs_explor())
     
     #pre generate Latin Hypercube samples.
-    theta_bh = lhs_generation(int(5e3), range_BH)
-    theta_agn = lhs_generation(int(5e3), range_AGN)
+    theta_agn = lhs_generation(int(1e4), range_AGN)
     
-    iter_bh = pars_conversion_full(theta_bh, 0)
-    iter_agn = pars_conversion_full(theta_agn, 0)
+    iter_agn = pars_conversion_explor(theta_agn, 0)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        BHs_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
-                                        for pars in iter_bh)
         AGN_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
                                         for pars in iter_agn)
-    BHs_flux = np.asarray(BHs_flux)
     AGN_flux = np.asarray(AGN_flux)
     
-    BHs = pd.DataFrame(data=theta_bh,columns=labels)
     AGN = pd.DataFrame(data=theta_agn,columns=labels)
-    BHs["flux"] = BHs_flux
     AGN["flux"] = AGN_flux
     
-    BHs.to_csv(f"data/flux/{BH_name}.csv")
     AGN.to_csv(f"data/flux/{AGN_name}.csv")
     return
     
