@@ -384,7 +384,7 @@ def pars_conversion_explor(pars,ReIm):
     new_pars[:,9] = pars[:,9]       #logNe
     new_pars[:,10] = 50             #kTe
     new_pars[:,11] = 10**pars[:,11] #nH
-    new_pars[:,12] = 0              #boost
+    new_pars[:,12] = 10**pars[:,12] #boost
     new_pars[:,13] = 10**pars[:,13] #mass
     new_pars[:,14] = pars[:,14]     #scale height of disk
     new_pars[:,15] = pars[:,15]     #b1
