@@ -207,7 +207,12 @@ def plot_flux_dists():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     
     for label in labels:
-        plt.scatter(AGN[label],AGN["flux"])
+        if label == "Gamma":
+            plt.scatter(AGN[label],AGN["flux"], c= AGN["height"], cmap="plasma")
+        elif label == "height" or label =="rin":
+            plt.scatter(AGN[label],AGN["flux"], c= AGN["Gamma"], cmap="plasma")
+        else:
+            plt.scatter(AGN[label],AGN["flux"])
         plt.axhline(1e-11, ls="--", c ="orange")
         plt.axhline(1e-6, ls="--", c ="orange")
         plt.xlabel(label)

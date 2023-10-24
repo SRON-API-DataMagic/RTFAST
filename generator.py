@@ -518,7 +518,6 @@ def generate_flux_dists(AGN_name):
     theta_agn = lhs_generation(int(1e3), range_AGN)
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
-    print(iter_agn)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
