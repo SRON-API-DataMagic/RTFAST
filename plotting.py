@@ -196,8 +196,42 @@ def retrieve_egrid(wrk_dir):
     
     return egrid
 
+def plot_flux_corner():
+    """
+    Generates corner plot of all parameters vs other parameters and colours if
+    the parameter set is above or below threshold (red and blue respectively)
 
+    Returns
+    -------
+    None.
 
+    """
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    
+    AGN_name = "restricted_AGN"
+    #generator.generate_flux_dists(AGN_name)
+    
+    AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
+    AGN["flux"] = np.log10(AGN["flux"])
+    
+    fig, axs = plt.subplots(len(labels),len(labels))
+    for i, label_i in enumerate(labels):
+        for j, label_j in enumerate(labels):
+            x_bad = AGN[label_j][AGN["flux"]>1e6]
+            y_bad = AGN[label_i][AGN["flux"]>1e6]
+            x_good = AGN[label_j][AGN["flux"]<1e6]
+            y_good = AGN[label_i][AGN["flux"]<1e6]
+            axs[i,j].scatter(x_good,y_good,c = "b")
+            axs[i,j].scatter(x_bad,y_bad,c = "r")
+    
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            if j>i:
+                fig.delaxes(axs[i,j])
+    fig.title("Corner plot of parameters colored by flux")
+    plt.savefig("data/flux/pngs/corner.png")
+    
 def plot_flux_dists():
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -213,6 +247,23 @@ def plot_flux_dists():
     label_3 = "rout"
     
     def create_frame(angle,elev,label_1,label_2,label_3):
+        """
+        Plots individual frames of a gif of 3D scatter plots of two parameters
+        and flux coloured by the value of another parameter.
+
+        Parameters
+        ----------
+        angle : int
+            angle of viewing camera.
+        elev : int
+            elevation of viewing camera.
+        label_1 : string
+            Dataframe column name of parameter to plot on x-axis.
+        label_2 : string
+            Dataframe column name of parameter to plot on y-axis.
+        label_3 : string
+            Dataframe column name of parameter to plot scatter by colour.
+        """
         
         fig = plt.figure()
         ax = fig.add_subplot(projection="3d")
@@ -956,7 +1007,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    plot_flux_dists()
+    plot_flux_corner()
+    #plot_flux_dists()
     quit()
     
     nums = [0,10,20,30,40]
