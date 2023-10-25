@@ -206,6 +206,7 @@ def plot_flux_corner():
     None.
 
     """
+    matplotlib.rcParams['figure.dpi'] = 300
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
@@ -224,9 +225,10 @@ def plot_flux_corner():
             y_good = AGN[label_i][AGN["flux"]<6]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad,y_bad,c = "r")
-            
-    plt.setp(axs[-1, :], xlabel=labels)
-    plt.setp(axs[:, 0], ylabel=labels)
+    
+    for i in range(len(labels)):
+        plt.setp(axs[-1, i], xlabel=labels[i])
+        plt.setp(axs[i, 0], ylabel=labels[i])
     
     for i in range(len(labels)):
         for j in range(len(labels)):
