@@ -202,9 +202,22 @@ def plot_flux_dists():
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     AGN_name = "restricted_AGN"
-    generator.generate_flux_dists(AGN_name)
+    #generator.generate_flux_dists(AGN_name)
     
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d")
+    
+    ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
+               cmap = "plasma")
+    ax.colorbar(label="Photon index")
+    ax.set_xlabel("log(height)")
+    ax.set_ylabel("log(inner radius)")
+    ax.set_zlabel("flux in erg/cm^2/s")
+    plt.savefig("data/flux/rin_h_gamma_AGN.png")
+    plt.close()
+    
     
     for label in labels:
         if label == "Gamma":
