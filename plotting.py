@@ -247,7 +247,7 @@ def plot_flux_dists():
             plt.colorbar(label="Photon index")
         else:
             plt.scatter(AGN[label],AGN["flux"])
-        plt.axhline(-11, ls="--", c ="orange")
+        plt.axhline(-15, ls="--", c ="orange")
         plt.axhline(-6, ls="--", c ="orange")
         plt.xlabel(label)
         plt.ylabel("Flux in log(erg/s/cm^2)")
@@ -257,9 +257,9 @@ def plot_flux_dists():
         plt.close()
     
     flux_AGN = AGN["flux"][np.isnan(AGN["flux"])==False]
-    flux_AGN = flux_AGN[(flux_AGN>1e-18)]
+    flux_AGN = flux_AGN[(flux_AGN>-18)]
     
-    print(len(flux_AGN[(flux_AGN > 1e-15)& (flux_AGN < 2.4e-6)]))
+    print(len(flux_AGN[(flux_AGN > -15)& (flux_AGN < -6)]))
 
 def model_load(model_loc, egrid, lags = None):
     """
