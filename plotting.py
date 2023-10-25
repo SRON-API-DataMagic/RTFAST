@@ -343,14 +343,7 @@ def plot_flux_dists():
                     loop = 1)        
         
     for label in labels:
-        if label == "Gamma":
-            plt.scatter(AGN[label],AGN["flux"], c= AGN["height"], cmap="plasma")
-            plt.colorbar(label="height")
-        elif label == "height" or label =="rin":
-            plt.scatter(AGN[label],AGN["flux"], c= AGN["Gamma"], cmap="plasma")
-            plt.colorbar(label="Photon index")
-        else:
-            plt.scatter(AGN[label],AGN["flux"])
+        plt.scatter(AGN[label],AGN["flux"])
         plt.axhline(-15, ls="--", c ="orange")
         plt.axhline(-6, ls="--", c ="orange")
         plt.xlabel(label)
