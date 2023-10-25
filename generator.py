@@ -373,19 +373,19 @@ def pars_conversion_explor(pars,ReIm):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
     new_pars[:,0] = -10**pars[:,0]  #height
-    new_pars[:,1] = pars[:,1]       #spin
+    new_pars[:,1] = 0.9             #spin
     new_pars[:,2] = 10**pars[:,2]   #inclination
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 1e4             #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
     new_pars[:,6] = 10**pars[:,6]   #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
-    new_pars[:,8] = 10**pars[:,8]   #Afe
+    new_pars[:,8] = 1               #Afe
     new_pars[:,9] = pars[:,9]       #logNe
     new_pars[:,10] = 50             #kTe
-    new_pars[:,11] = 10**pars[:,11] #nH
+    new_pars[:,11] = 0              #nH
     new_pars[:,12] = 10**pars[:,12] #boost
-    new_pars[:,13] = 10**pars[:,13] #mass
+    new_pars[:,13] = 3e6            #mass
     new_pars[:,14] = pars[:,14]     #scale height of disk
     new_pars[:,15] = pars[:,15]     #b1
     new_pars[:,16] = pars[:,16]     #b2
