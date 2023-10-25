@@ -352,7 +352,7 @@ def plot_flux_dists():
         plt.ylabel("Flux in log(erg/s/cm^2)")
         plt.title(f"How flux trends with {label} for AGN")
         plt.yscale("log")
-        plt.savefig(f"data/flux/{label}_{AGN_name}.png")
+        plt.savefig(f"data/flux/pngs/{label}_{AGN_name}.png")
         plt.close()
     
     flux_AGN = AGN["flux"][np.isnan(AGN["flux"])==False]
