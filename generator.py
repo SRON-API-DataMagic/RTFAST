@@ -515,7 +515,7 @@ def generate_flux_dists(AGN_name):
     range_AGN = np.asarray(lhs_explor())
     
     #pre generate Latin Hypercube samples.
-    theta_agn = lhs_generation(int(5e3), range_AGN)
+    theta_agn = lhs_generation(int(1e3), range_AGN)
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
     
