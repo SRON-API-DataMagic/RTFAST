@@ -207,7 +207,7 @@ def plot_flux_corner():
 
     """
     matplotlib.rcParams['figure.dpi'] = 100
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","mass"]
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","mass","Anorm"]
     
     AGN_name = "restricted_AGN"
     generator.generate_flux_dists(AGN_name)

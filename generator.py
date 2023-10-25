@@ -30,7 +30,6 @@ def rtdist_erg_flux(pars, egrid):
 
     """
     model = _models.tdrtdist(pars, egrid)
-    print(model)
     #take middle energy and multiply all photon counts by said energy
     gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
     model = model[:-1]*gmid
@@ -391,7 +390,7 @@ def pars_conversion_explor(pars,ReIm):
     new_pars[:,16] = pars[:,16]     #b2
     new_pars[:,21] = pars[:,17]     #phiAB
     new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 1              #Anorm
+    new_pars[:,23] = 10**pars[:,19] #Anorm
     
     return new_pars
 
