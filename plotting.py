@@ -253,13 +253,14 @@ def plot_flux_dists():
         plt.close()
     
     angles = [0,10,20,30,40,50,60,70,80,90]
-    elevs = [0,10,20,30,40,50,60.70,80,90]
+    elevs = [0,10,20,30,40,50,60,70,80,90]
     for angle in angles:
         for elev in elevs:
             create_frame(angle,elev)
     print("All frames generated")
     angles = [0,10,20,30,40,50,60,70,80,90]
-    frames = [[] for i in range(len(elevs))]
+    frames = [[] for i in range(len(angles))]
+    print(frames)
     for i, angle in enumerate(angles):
         for elev in elevs:
             image = imageio.v2.imread(f'./data/flux/frames/frame_{angle}.png')
