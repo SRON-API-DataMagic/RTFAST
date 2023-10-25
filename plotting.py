@@ -243,10 +243,11 @@ def plot_flux_dists():
                     transparent = False)
         plt.close()
     
-    angles = [0,10,20,30,40,50,60,70,80,90,-80,-70,-60,-50,-40,-30,-20,-10,-0]
+    angles = [0,10,20,30,40,50,60,70,80,90]
     for angle in angles:
         create_frame(angle)
     
+    angles = [0,10,20,30,40,50,60,70,80,90,80,70,60,50,40,30,20,10,0]
     frames = []
     for angle in angles:
         image = imageio.v2.imread(f'./data/flux/frames/frame_{angle}.png')
