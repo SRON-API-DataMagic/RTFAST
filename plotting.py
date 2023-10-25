@@ -263,7 +263,7 @@ def plot_flux_dists():
     print(frames)
     for i, angle in enumerate(angles):
         for elev in elevs:
-            image = imageio.v2.imread(f'./data/flux/frames/frame_{angle}.png')
+            image = imageio.v2.imread(f'./data/flux/frames/frame_{angle}_{elev}.png')
             frames[i].append(image)
     
     for i, angle in enumerate(angles):
