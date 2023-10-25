@@ -232,6 +232,7 @@ def plot_flux_dists():
     ax.plot(x_1,y_0,zs=1e-11,c="orange",ls="--")
     ax.plot(x_2,y_0,zs=1e-11,c="orange",ls="--")
     fig.colorbar(p, label="Photon index")
+    fig.tight_layout()
     plt.savefig("data/flux/rin_h_gamma_AGN.png")
     plt.close()
     
