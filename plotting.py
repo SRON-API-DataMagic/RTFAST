@@ -10,6 +10,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap
 import matplotlib.colors as colors
 import matplotlib
+import imageio
 
 import numpy as np
 from torch.utils.data import DataLoader
@@ -207,37 +208,55 @@ def plot_flux_dists():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    fig = plt.figure()
-    ax = fig.add_subplot(projection="3d")
+    def create_frame(angle):
     
-    p = ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
-               cmap = "plasma")
+        fig = plt.figure()
+        ax = fig.add_subplot(projection="3d")
+        
+        p = ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
+                   cmap = "plasma")
+        
+        ax.set_xlabel("log(height)")
+        ax.set_ylabel("log(inner radius)")
+        ax.set_zlabel("flux in log(erg/cm^2/s)")
+        x_0 = np.linspace(AGN["height"].min(),AGN["height"].max(),50)
+        x_1 = np.ones(50)*AGN["height"].min()
+        x_2 = np.ones(50)*AGN["height"].max()
+        y_0 = np.linspace(AGN["rin"].min(),AGN["rin"].max(),50)
+        y_1 = np.ones(50)*AGN["rin"].min()
+        y_2 = np.ones(50)*AGN["rin"].max()
+        #plot flux upper threshold
+        ax.plot(x_0,y_1,zs=-6,c="orange",ls="--")
+        ax.plot(x_0,y_2,zs=-6,c="orange",ls="--")
+        ax.plot(x_1,y_0,zs=-6,c="orange",ls="--")
+        ax.plot(x_2,y_0,zs=-6,c="orange",ls="--")
+        #plot flux lower threshold
+        ax.plot(x_0,y_1,zs=-11,c="orange",ls="--")
+        ax.plot(x_0,y_2,zs=-11,c="orange",ls="--")
+        ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
+        ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
+        ax.view_init(azim=angle)
+        fig.colorbar(p, label="Photon index")
+        plt.title("Flux as a function of height and inner radius")
+        fig.tight_layout()
+        plt.savefig(f"data/flux/frames/frame_{angle}.png",
+                    transparent = False)
+        plt.close()
     
-    ax.set_xlabel("log(height)")
-    ax.set_ylabel("log(inner radius)")
-    ax.set_zlabel("flux in log(erg/cm^2/s)")
-    x_0 = np.linspace(AGN["height"].min(),AGN["height"].max(),50)
-    x_1 = np.ones(50)*AGN["height"].min()
-    x_2 = np.ones(50)*AGN["height"].max()
-    y_0 = np.linspace(AGN["rin"].min(),AGN["rin"].max(),50)
-    y_1 = np.ones(50)*AGN["rin"].min()
-    y_2 = np.ones(50)*AGN["rin"].max()
-    #plot flux upper threshold
-    ax.plot(x_0,y_1,zs=-6,c="orange",ls="--")
-    ax.plot(x_0,y_2,zs=-6,c="orange",ls="--")
-    ax.plot(x_1,y_0,zs=-6,c="orange",ls="--")
-    ax.plot(x_2,y_0,zs=-6,c="orange",ls="--")
-    #plot flux lower threshold
-    ax.plot(x_0,y_1,zs=-11,c="orange",ls="--")
-    ax.plot(x_0,y_2,zs=-11,c="orange",ls="--")
-    ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
-    ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
-    fig.colorbar(p, label="Photon index")
-    fig.tight_layout()
-    plt.savefig("data/flux/rin_h_gamma_AGN.png")
-    plt.close()
+    angles = [0,10,20,30,40,50,60,70,80,90,-80,-70,-60,-50,-40,-30,-20,-10,-0]
+    for angle in angles:
+        create_frame(angle)
     
+    frames = []
+    for angle in angles:
+        image = imageio.v2.imread(f'./data/flux/frames/frame_{angle}.png')
+        frames.append(image)
     
+    imageio.mimsave('./data/flux/angles.gif', # output gif
+                frames,          # array of input frames
+                fps = 5,         # optional: frames per second
+                loop = 1)        
+        
     for label in labels:
         if label == "Gamma":
             plt.scatter(AGN[label],AGN["flux"], c= AGN["height"], cmap="plasma")
