@@ -273,7 +273,7 @@ def plot_flux_dists():
         fig = plt.figure()
         ax = fig.add_subplot(projection="3d")
         
-        p = ax.scatter(AGN[label_1],AGN[label_2],AGN["flux"], c = AGN[label_3],
+        p = ax.scatter(AGN[label_1],AGN[label_2],AGN[label_3], c = AGN["flux"],
                    cmap = "plasma")
         
         ax.set_xlabel(label_1)
@@ -305,8 +305,8 @@ def plot_flux_dists():
         ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
         ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
         ax.view_init(elev=elev,azim=angle)
-        fig.colorbar(p, label=label_3)
-        plt.title("Flux as a function of height and inner radius")
+        fig.colorbar(p, label="flux")
+        plt.title("Flux as a function of height, inner radius and photon index")
         fig.tight_layout()
         plt.savefig(f"data/flux/frames/frame_{angle}_{elev}.png",
                     transparent = False)
