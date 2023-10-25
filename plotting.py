@@ -349,7 +349,6 @@ def plot_flux_dists():
         plt.xlabel(label)
         plt.ylabel("Flux in log(erg/s/cm^2)")
         plt.title(f"How flux trends with {label} for AGN")
-        plt.yscale("log")
         plt.savefig(f"data/flux/pngs/{label}_{AGN_name}.png")
         plt.close()
     
