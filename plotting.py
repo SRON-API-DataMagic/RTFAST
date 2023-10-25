@@ -215,7 +215,7 @@ def plot_flux_corner():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    fig, axs = plt.subplots(len(labels),len(labels))
+    fig, axs = plt.subplots(len(labels),len(labels),sharex=True,sharey=True)
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
             x_bad = AGN[label_j][AGN["flux"]>1e6]
@@ -224,12 +224,17 @@ def plot_flux_corner():
             y_good = AGN[label_i][AGN["flux"]<1e6]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad,y_bad,c = "r")
+            if j == len(labels)-1:
+                axs[i,j].set_xlabel(label_j)
+            if i == 0:
+                axs[i,j].set_ylabel(label_i)
     
     for i in range(len(labels)):
         for j in range(len(labels)):
             if j>i:
                 fig.delaxes(axs[i,j])
     fig.title("Corner plot of parameters colored by flux")
+    plt.tight_layout()
     plt.savefig("data/flux/pngs/corner.png")
     
 def plot_flux_dists():
