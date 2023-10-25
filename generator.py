@@ -329,7 +329,7 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 10**pars[:,4]   #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = 10**pars[:,6]   #Gamma
+    new_pars[:,6] = pars[:,6]       #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 10**pars[:,8]   #Afe
     new_pars[:,9] = pars[:,9]       #logNe
@@ -372,13 +372,13 @@ def pars_conversion_explor(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = -10**pars[:,0]  #height
+    new_pars[:,0] = 6               #height
     new_pars[:,1] = 0.9             #spin
     new_pars[:,2] = 10**pars[:,2]   #inclination
-    new_pars[:,3] = -10**pars[:,3]  #inner radius
+    new_pars[:,3] = -1              #inner radius
     new_pars[:,4] = 1e4             #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = 10**pars[:,6]   #Gamma
+    new_pars[:,6] = pars[:,6]       #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 1               #Afe
     new_pars[:,9] = pars[:,9]       #logNe
