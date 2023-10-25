@@ -1012,8 +1012,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    plot_flux_corner()
     plot_flux_dists()
+    plot_flux_corner()
     quit()
     
     nums = [0,10,20,30,40]
