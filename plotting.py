@@ -254,7 +254,7 @@ def plot_flux_dists():
     
     imageio.mimsave('./data/flux/angles.gif', # output gif
                 frames,          # array of input frames
-                fps = 5,         # optional: frames per second
+                duration = 200,         # optional: frames per second
                 loop = 1)        
         
     for label in labels:
