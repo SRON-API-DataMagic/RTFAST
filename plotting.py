@@ -215,14 +215,14 @@ def plot_flux_corner():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    fig, axs = plt.subplots(len(labels),len(labels),sharex=True,sharey=True)
+    fig, axs = plt.subplots(len(labels),len(labels))
     fig.set_size_inches(20,20)
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
-            x_bad = AGN[label_j][AGN["flux"]>1e6]
-            y_bad = AGN[label_i][AGN["flux"]>1e6]
-            x_good = AGN[label_j][AGN["flux"]<1e6]
-            y_good = AGN[label_i][AGN["flux"]<1e6]
+            x_bad = AGN[label_j][AGN["flux"]>6]
+            y_bad = AGN[label_i][AGN["flux"]>6]
+            x_good = AGN[label_j][AGN["flux"]<6]
+            y_good = AGN[label_i][AGN["flux"]<6]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad,y_bad,c = "r")
             if j == len(labels)-1:
@@ -234,7 +234,7 @@ def plot_flux_corner():
         for j in range(len(labels)):
             if j>=i:
                 fig.delaxes(axs[i,j])
-    plt.title("Corner plot of parameters colored by flux")
+    plt.suptitle("Corner plot of parameters colored by flux")
     plt.tight_layout()
     plt.savefig("data/flux/pngs/corner.png")
     
