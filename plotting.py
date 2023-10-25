@@ -1013,7 +1013,7 @@ def main():
     wrk_dir = os.getcwd()
     
     plot_flux_corner()
-    #plot_flux_dists()
+    plot_flux_dists()
     quit()
     
     nums = [0,10,20,30,40]
