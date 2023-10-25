@@ -329,7 +329,7 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 10**pars[:,4]   #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = pars[:,6]       #Gamma
+    new_pars[:,6] = 10**pars[:,6]   #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 10**pars[:,8]   #Afe
     new_pars[:,9] = pars[:,9]       #logNe
@@ -342,7 +342,7 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,16] = pars[:,16]     #b2
     new_pars[:,21] = pars[:,17]     #phiAB
     new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 1              #Anorm
+    new_pars[:,23] = 10**pars[:,19] #Anorm
     
     return new_pars
 
@@ -378,7 +378,7 @@ def pars_conversion_explor(pars,ReIm):
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 10**pars[:,4]   #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = pars[:,6]       #Gamma
+    new_pars[:,6] = 10**pars[:,6]   #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 10**pars[:,8]   #Afe
     new_pars[:,9] = pars[:,9]       #logNe
@@ -391,7 +391,7 @@ def pars_conversion_explor(pars,ReIm):
     new_pars[:,16] = pars[:,16]     #b2
     new_pars[:,21] = pars[:,17]     #phiAB
     new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 10**pars[:,19] #Anorm
+    new_pars[:,23] = 1              #Anorm
     
     return new_pars
 
