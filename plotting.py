@@ -208,23 +208,27 @@ def plot_flux_dists():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    def create_frame(angle,elev):
+    label_1 = "a"
+    label_2 = "rin"
+    label_3 = "rout"
     
+    def create_frame(angle,elev,label_1,label_2,label_3):
+        
         fig = plt.figure()
         ax = fig.add_subplot(projection="3d")
         
-        p = ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
+        p = ax.scatter(AGN[label_1],AGN[label_2],AGN["flux"], c = AGN[label_3],
                    cmap = "plasma")
         
-        ax.set_xlabel("log(height)")
-        ax.set_ylabel("log(inner radius)")
+        ax.set_xlabel(label_1)
+        ax.set_ylabel(label_2)
         ax.set_zlabel("flux in log(erg/cm^2/s)")
-        x_0 = np.linspace(AGN["height"].min(),AGN["height"].max(),50)
-        x_1 = np.ones(50)*AGN["height"].min()
-        x_2 = np.ones(50)*AGN["height"].max()
-        y_0 = np.linspace(AGN["rin"].min(),AGN["rin"].max(),50)
-        y_1 = np.ones(50)*AGN["rin"].min()
-        y_2 = np.ones(50)*AGN["rin"].max()
+        x_0 = np.linspace(AGN[label_1].min(),AGN[label_1].max(),50)
+        x_1 = np.ones(50)*AGN[label_1].min()
+        x_2 = np.ones(50)*AGN[label_1].max()
+        y_0 = np.linspace(AGN[label_2].min(),AGN[label_2].max(),50)
+        y_1 = np.ones(50)*AGN[label_2].min()
+        y_2 = np.ones(50)*AGN[label_2].max()
         X, Y = np.meshgrid(x_0,y_0)
         ax.plot_surface(X, Y, -6*np.ones((len(X),len(Y))), edgecolor = "orange",
                         linewidth=0.5,
@@ -245,7 +249,7 @@ def plot_flux_dists():
         ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
         ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
         ax.view_init(elev=elev,azim=angle)
-        fig.colorbar(p, label="Photon index")
+        fig.colorbar(p, label=label_3)
         plt.title("Flux as a function of height and inner radius")
         fig.tight_layout()
         plt.savefig(f"data/flux/frames/frame_{angle}_{elev}.png",
@@ -256,7 +260,8 @@ def plot_flux_dists():
     elevs = [0,10,20,30,40,50,60,70,80,90]
     for angle in angles:
         for elev in elevs:
-            create_frame(angle,elev)
+            create_frame(angle,elev,label_1,label_2,label_3)
+    
     print("All frames generated")
     angles = [0,10,20,30,40,50,60,70,80,90]
     elevs = [0,10,20,30,40,50,60,70,80,90,80,70,60,50,40,30,20,10,0]
@@ -267,7 +272,7 @@ def plot_flux_dists():
             frames[i].append(image)
     
     for i, angle in enumerate(angles):
-        imageio.mimsave(f'./data/flux/proj_{angle}.gif', # output gif
+        imageio.mimsave(f'./data/flux/{label_1}_{label_2}_{label_3}_{angle}.gif', # output gif
                     frames[i],                      # array of input frames
                     duration = 500,                 # optional: duration of frame
                     loop = 1)        
