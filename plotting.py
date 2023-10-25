@@ -206,9 +206,8 @@ def plot_flux_corner():
     None.
 
     """
-    matplotlib.rcParams['figure.dpi'] = 300
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    matplotlib.rcParams['figure.dpi'] = 100
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","mass","Anorm"]
     
     AGN_name = "restricted_AGN"
     generator.generate_flux_dists(AGN_name)
@@ -218,7 +217,7 @@ def plot_flux_corner():
     print("Spectra over threshold:",len(AGN[AGN["flux"]>-6]))
     print("Spectra under threshold:",len(AGN[AGN["flux"]<-11]))
     
-    fig, axs = plt.subplots(len(labels),len(labels), figsize=(100,100))
+    fig, axs = plt.subplots(len(labels),len(labels), figsize=(50,50))
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
             x_bad = AGN[label_j][AGN["flux"]>-6]
@@ -227,9 +226,9 @@ def plot_flux_corner():
             y_good = AGN[label_i][(AGN["flux"]<-6)&(AGN["flux"]>-11)]
             x_bad_2 = AGN[label_j][AGN["flux"]<-11]
             y_bad_2 = AGN[label_i][AGN["flux"]<-11]
-            axs[i,j].scatter(x_good,y_good,c = "b")
-            axs[i,j].scatter(x_bad,y_bad,c = "r")
             axs[i,j].scatter(x_bad_2,y_bad_2,c = "yellow")
+            axs[i,j].scatter(x_bad,y_bad,c = "r")
+            axs[i,j].scatter(x_good,y_good,c = "b")
     
     for i in range(len(labels)):
         plt.setp(axs[-1, i], xlabel=labels[i])
