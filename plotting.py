@@ -279,6 +279,8 @@ def plot_flux_dists():
         ax.set_xlabel(label_1)
         ax.set_ylabel(label_2)
         ax.set_zlabel("flux in log(erg/cm^2/s)")
+        """
+        #plot thresholds
         x_0 = np.linspace(AGN[label_1].min(),AGN[label_1].max(),50)
         x_1 = np.ones(50)*AGN[label_1].min()
         x_2 = np.ones(50)*AGN[label_1].max()
@@ -304,6 +306,7 @@ def plot_flux_dists():
         ax.plot(x_0,y_2,zs=-11,c="orange",ls="--")
         ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
         ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
+        """
         ax.view_init(elev=elev,azim=angle)
         fig.colorbar(p, label="flux")
         plt.title("Flux as a function of height, inner radius and photon index")
