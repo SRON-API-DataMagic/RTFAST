@@ -248,7 +248,7 @@ def plot_flux_dists():
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     AGN_name = "restricted_AGN"
-    #generator.generate_flux_dists(AGN_name)
+    generator.generate_flux_dists(AGN_name)
     
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
@@ -1014,7 +1014,7 @@ def main():
     wrk_dir = os.getcwd()
     
     plot_flux_dists()
-    #plot_flux_corner()
+    plot_flux_corner()
     quit()
     
     nums = [0,10,20,30,40]
