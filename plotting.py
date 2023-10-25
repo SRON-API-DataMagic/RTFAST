@@ -253,9 +253,9 @@ def plot_flux_dists():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    label_1 = "height"
-    label_2 = "rin"
-    label_3 = "Gamma"
+    label_1 = "Afe"
+    label_2 = "Gamma"
+    label_3 = "logNe"
     
     def create_frame(angle,elev,label_1,label_2,label_3):
         """
@@ -1021,8 +1021,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    #plot_flux_dists()
-    plot_flux_corner()
+    plot_flux_dists()
+    #plot_flux_corner()
     quit()
     
     nums = [0,10,20,30,40]
