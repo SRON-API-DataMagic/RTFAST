@@ -211,10 +211,27 @@ def plot_flux_dists():
     
     ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
                cmap = "plasma")
-    ax.colorbar(label="Photon index")
+    
     ax.set_xlabel("log(height)")
     ax.set_ylabel("log(inner radius)")
     ax.set_zlabel("flux in erg/cm^2/s")
+    x_0 = np.linspace(AGN["height"].min(),AGN["height"].max(),50)
+    x_1 = np.ones(50)*AGN["height"].min()
+    x_2 = np.ones(50)*AGN["height"].max()
+    y_0 = np.linspace(AGN["rin"].min(),AGN["rin"].max(),50)
+    y_1 = np.ones(50)*AGN["rin"].min()
+    y_2 = np.ones(50)*AGN["rin"].max()
+    #plot flux upper threshold
+    ax.plot(x_0,y_1,zs=1e-6,c="orange",ls="--")
+    ax.plot(x_0,y_2,zs=1e-6,c="orange",ls="--")
+    ax.plot(x_1,y_0,zs=1e-6,c="orange",ls="--")
+    ax.plot(x_2,y_0,zs=1e-6,c="orange",ls="--")
+    #plot flux lower threshold
+    ax.plot(x_0,y_1,zs=1e-11,c="orange",ls="--")
+    ax.plot(x_0,y_2,zs=1e-11,c="orange",ls="--")
+    ax.plot(x_1,y_0,zs=1e-11,c="orange",ls="--")
+    ax.plot(x_2,y_0,zs=1e-11,c="orange",ls="--")
+    fig.colorbar(label="Photon index")
     plt.savefig("data/flux/rin_h_gamma_AGN.png")
     plt.close()
     
