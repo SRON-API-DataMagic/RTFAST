@@ -211,7 +211,7 @@ def plot_flux_corner():
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     AGN_name = "restricted_AGN"
-    generator.generate_flux_dists(AGN_name)
+    #generator.generate_flux_dists(AGN_name)
     
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
