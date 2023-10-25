@@ -244,7 +244,7 @@ def plot_flux_dists():
         ax.plot(x_0,y_2,zs=-11,c="orange",ls="--")
         ax.plot(x_1,y_0,zs=-11,c="orange",ls="--")
         ax.plot(x_2,y_0,zs=-11,c="orange",ls="--")
-        ax.view_init(elev=20,azim=angle)
+        ax.view_init(elev=0,azim=angle)
         fig.colorbar(p, label="Photon index")
         plt.title("Flux as a function of height and inner radius")
         fig.tight_layout()
