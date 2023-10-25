@@ -233,7 +233,7 @@ def plot_flux_corner():
         for j in range(len(labels)):
             if j>=i:
                 fig.delaxes(axs[i,j])
-    fig.title("Corner plot of parameters colored by flux")
+    plt.title("Corner plot of parameters colored by flux")
     plt.tight_layout()
     plt.savefig("data/flux/pngs/corner.png")
     
