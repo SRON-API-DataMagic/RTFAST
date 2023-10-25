@@ -227,9 +227,11 @@ def plot_flux_dists():
         y_2 = np.ones(50)*AGN["rin"].max()
         X, Y = np.meshgrid(x_0,y_0)
         ax.plot_surface(X, Y, -6*np.ones((len(X),len(Y))), linewidth=0.5,
-                        alpha = 0.3)
+                        rstride=8, cstride=8,
+                        alpha = 0.1)
         ax.plot_surface(X, Y, -11*np.ones((len(X),len(Y))), linewidth=0.5,
-                        alpha = 0.3)
+                        rstride=8, cstride=8,
+                        alpha = 0.1)
         #plot flux upper threshold
         ax.plot(x_0,y_1,zs=-6,c="orange",ls="--")
         ax.plot(x_0,y_2,zs=-6,c="orange",ls="--")
