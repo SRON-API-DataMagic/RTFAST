@@ -247,9 +247,9 @@ def plot_flux_dists():
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
     
-    label_1 = "a"
+    label_1 = "height"
     label_2 = "rin"
-    label_3 = "rout"
+    label_3 = "Gamma"
     
     def create_frame(angle,elev,label_1,label_2,label_3):
         """
