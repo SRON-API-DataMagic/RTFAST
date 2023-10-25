@@ -215,14 +215,16 @@ def plot_flux_corner():
     
     AGN = pd.read_csv(f"data/flux/{AGN_name}.csv")
     AGN["flux"] = np.log10(AGN["flux"])
+    print("Spectra over threshold:",len(AGN[AGN["flux"]>-6]))
+    print("Spectra under threshold:",len(AGN[AGN["flux"]<-11]))
     
     fig, axs = plt.subplots(len(labels),len(labels), figsize=(100,100))
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
-            x_bad = AGN[label_j][AGN["flux"]>6]
-            y_bad = AGN[label_i][AGN["flux"]>6]
-            x_good = AGN[label_j][AGN["flux"]<6]
-            y_good = AGN[label_i][AGN["flux"]<6]
+            x_bad = AGN[label_j][AGN["flux"]>-6]
+            y_bad = AGN[label_i][AGN["flux"]>-6]
+            x_good = AGN[label_j][AGN["flux"]<-6]
+            y_good = AGN[label_i][AGN["flux"]<-6]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad,y_bad,c = "r")
     
