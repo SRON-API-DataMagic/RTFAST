@@ -209,7 +209,7 @@ def plot_flux_dists():
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
     
-    ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
+    p = ax.scatter(AGN["height"],AGN["rin"],AGN["flux"], c = AGN["Gamma"],
                cmap = "plasma")
     
     ax.set_xlabel("log(height)")
@@ -231,7 +231,7 @@ def plot_flux_dists():
     ax.plot(x_0,y_2,zs=1e-11,c="orange",ls="--")
     ax.plot(x_1,y_0,zs=1e-11,c="orange",ls="--")
     ax.plot(x_2,y_0,zs=1e-11,c="orange",ls="--")
-    fig.colorbar(label="Photon index")
+    fig.colorbar(p, label="Photon index")
     plt.savefig("data/flux/rin_h_gamma_AGN.png")
     plt.close()
     
