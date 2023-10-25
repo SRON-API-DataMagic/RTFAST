@@ -233,7 +233,7 @@ def lhs_explor():
     b2_range = [-4,4]
     phiAB_range = [-3.14,3.14]
     g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
+    Anorm_range = [np.log10(1e-5),np.log10(1e5)]
     
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
@@ -390,7 +390,7 @@ def pars_conversion_explor(pars,ReIm):
     new_pars[:,16] = pars[:,16]     #b2
     new_pars[:,21] = pars[:,17]     #phiAB
     new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 1              #Anorm
+    new_pars[:,23] = 10**pars[:,19] #Anorm
     
     return new_pars
 
