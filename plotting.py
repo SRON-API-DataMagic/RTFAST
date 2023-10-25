@@ -225,10 +225,9 @@ def plot_flux_corner():
             y_good = AGN[label_i][AGN["flux"]<6]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad,y_bad,c = "r")
-            if j == len(labels)-1:
-                axs[i,j].set_xlabel(label_j)
-            if i == 0:
-                axs[i,j].set_ylabel(label_i)
+            
+    plt.setp(axs[-1, :], xlabel=labels)
+    plt.setp(axs[:, 0], ylabel=labels)
     
     for i in range(len(labels)):
         for j in range(len(labels)):
@@ -1016,7 +1015,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    plot_flux_dists()
+    #plot_flux_dists()
     plot_flux_corner()
     quit()
     
