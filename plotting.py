@@ -272,7 +272,7 @@ def plot_flux_dists():
             frames[i].append(image)
     
     for i, angle in enumerate(angles):
-        imageio.mimsave(f'./data/flux/{label_1}_{label_2}_{label_3}_{angle}.gif', # output gif
+        imageio.mimsave(f'./data/flux/gifs/{label_1}_{label_2}_{label_3}_{angle}.gif', # output gif
                     frames[i],                      # array of input frames
                     duration = 500,                 # optional: duration of frame
                     loop = 1)        
