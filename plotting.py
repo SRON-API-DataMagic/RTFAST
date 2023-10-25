@@ -216,6 +216,7 @@ def plot_flux_corner():
     AGN["flux"] = np.log10(AGN["flux"])
     
     fig, axs = plt.subplots(len(labels),len(labels),sharex=True,sharey=True)
+    fig.set_size_inches(20,20)
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
             x_bad = AGN[label_j][AGN["flux"]>1e6]
