@@ -81,7 +81,33 @@ def rtdist_lags(pars, egrid):
     output = y[:-1]/dE
     return output
 
-def lhs_all():
+def lhc_filter(lhc):
+    """
+    Removes unphysical parameter sets from the Latin Hypercube. This prevents
+    overly bright sources from being generated as well as reducing time spent
+    on generating model data for objects that we won't see
+
+    Parameters
+    ----------
+    lhc : np.ndarray
+        latin hypercube containing parameter sets for rtdist.
+
+    Returns
+    -------
+    new_lhc : np.ndarray
+        latin hypercube with unphysical parameter sets removed..
+
+    """
+    #bad sets indexes all parameter sets that don't fit the filter criteria
+    #removes parameter sets that have a ph0ton index higher than 3 AND a iron
+    #solar abundance above 6 AND a electron density in the disk of higher than
+    #10^19.
+    bad_sets = np.nonzero((lhc[:,6]>3)&(10**lhc[:,8]>6)&(lhc[:,9]>19))
+    #removes all unphysical sets from the parameter sets
+    new_lhc = np.delete(lhc,bad_sets,0)
+    return new_lhc
+
+def lhc_all():
     """
     Generates valid ranges of parameters of AGN to be trained on
     
@@ -121,7 +147,7 @@ def lhs_all():
     
     return range_all
 
-def lhs_BH():
+def lhc_BH():
     """
     Generates valid ranges of parameters of stellar mass BHs to be trained on
 
@@ -161,7 +187,7 @@ def lhs_BH():
     
     return range_all
 
-def lhs_AGN():
+def lhc_AGN():
     """
     Generates valid ranges of parameters of AGN to be trained on.
     
@@ -201,7 +227,7 @@ def lhs_AGN():
     
     return range_all
 
-def lhs_explor():
+def lhc_explor():
     """
     Generates valid ranges of parameters of AGN to be trained on. This is
     a function purely used for exploring parameter ranges and generally not
@@ -243,9 +269,9 @@ def lhs_explor():
     
     return range_all
 
-def lhs_trimmed_gen():
+def lhc_trimmed_gen():
     """
-    Limited form of lhs_range_gen that returns ranges for only a limited amount
+    Limited form of lhc_range_gen that returns ranges for only a limited amount
     of parameters. Used in the comparitive between grid and active learning
     strategies.
 
@@ -511,10 +537,11 @@ def generate_flux_dists(AGN_name):
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
               "Anorm"]
-    range_AGN = np.asarray(lhs_explor())
+    range_AGN = np.asarray(lhc_explor())
     
     #pre generate Latin Hypercube samples.
-    theta_agn = lhs_generation(int(1e3), range_AGN)
+    theta_agn = lhc_generation(int(1e3), range_AGN)
+    theta_agn = lhc_filter(theta_agn)
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
     
@@ -530,7 +557,7 @@ def generate_flux_dists(AGN_name):
     AGN.to_csv(f"data/flux/{AGN_name}.csv")
     return
     
-def generate_test_set(size, egrid, lags_egrid, lhs_gen):
+def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     """
     
 
@@ -544,15 +571,15 @@ def generate_test_set(size, egrid, lags_egrid, lhs_gen):
     None.
 
     """
-    range_all = np.asarray(lhs_gen())
+    range_all = np.asarray(lhc_gen())
     #pre generate Latin Hypercube samples.
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
-    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
 
     #generate physical models of test set
-    theta_flux = pars_conversion_full(theta_lhs,0)
-    theta_lags = pars_conversion_full(theta_lhs,6)
+    theta_flux = pars_conversion_full(theta_lhc,0)
+    theta_lags = pars_conversion_full(theta_lhc,6)
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
@@ -625,18 +652,18 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                lags_test_name)
     return
 
-def lhs_generation(size,range_all):
+def lhc_generation(size,range_all):
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
-    theta_lhs = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-    return theta_lhs
+    theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+    return theta_lhc
 
-def intialize_dataset(theta_lhs,egrid,lags_egrid,flux_name,lags_name):
+def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")
     init_data_size = 5000
-    lhs_idx = init_data_size
+    lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
-    theta_init = theta_lhs[:init_data_size]
+    theta_init = theta_lhc[:init_data_size]
     theta_flux = pars_conversion_full(theta_init,0)
     theta_lags = pars_conversion_full(theta_init,6)
     print("Parallelized model generation")
@@ -664,4 +691,4 @@ def intialize_dataset(theta_lhs,egrid,lags_egrid,flux_name,lags_name):
     print("Performing data cleanup")
     readAndRemoveNans(f"data/locations/{flux_name}", 
                       f"data/locations/{lags_name}")
-    return lhs_idx
+    return lhc_idx

@@ -223,10 +223,10 @@ def plot_flux_corner():
         for j, label_j in enumerate(labels):
             x_bad = AGN[label_j][AGN["flux"]>-6]
             y_bad = AGN[label_i][AGN["flux"]>-6]
-            x_good = AGN[label_j][(AGN["flux"]<-6)&(AGN["flux"]>-11)]
-            y_good = AGN[label_i][(AGN["flux"]<-6)&(AGN["flux"]>-11)]
-            x_bad_2 = AGN[label_j][AGN["flux"]<-11]
-            y_bad_2 = AGN[label_i][AGN["flux"]<-11]
+            x_good = AGN[label_j][(AGN["flux"]<-6)&(AGN["flux"]>-15)]
+            y_good = AGN[label_i][(AGN["flux"]<-6)&(AGN["flux"]>-15)]
+            x_bad_2 = AGN[label_j][AGN["flux"]<-15]
+            y_bad_2 = AGN[label_i][AGN["flux"]<-15]
             axs[i,j].scatter(x_good,y_good,c = "b")
             axs[i,j].scatter(x_bad_2,y_bad_2,c = "yellow")
             axs[i,j].scatter(x_bad,y_bad,c = "r")

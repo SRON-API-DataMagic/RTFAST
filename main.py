@@ -55,8 +55,8 @@ def active_learning(wrk_dir, device = "cpu"):
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 40
-    range_BH = np.asarray(generator.lhs_BH())
-    range_AGN = np.asarray(generator.lhs_AGN())
+    range_BH = np.asarray(generator.lhc_BH())
+    range_AGN = np.asarray(generator.lhc_AGN())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -66,13 +66,13 @@ def active_learning(wrk_dir, device = "cpu"):
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     #pre generate Latin Hypercube samples.
-    theta_bh = generator.lhs_generation(int(5e6), range_BH)
-    theta_agn = generator.lhs_generation(int(5e6), range_AGN)
+    theta_bh = generator.lhc_generation(int(5e6), range_BH)
+    theta_agn = generator.lhc_generation(int(5e6), range_AGN)
     
     #shuffle bhs and agn together
-    theta_lhs = np.concatenate([theta_bh,theta_agn],axis=0)
-    np.random.shuffle(theta_lhs)
-    lhs_idx = 0
+    theta_lhc = np.concatenate([theta_bh,theta_agn],axis=0)
+    np.random.shuffle(theta_lhc)
+    lhc_idx = 0
     
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
@@ -104,7 +104,7 @@ def active_learning(wrk_dir, device = "cpu"):
     scaler = MinMaxScaler()
     
     if first == True: 
-        lhs_idx = intialize_dataset(theta_lhs, egrid, lags_egrid, flux_name, lags_name)
+        lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, lags_name)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
@@ -171,9 +171,9 @@ def active_learning(wrk_dir, device = "cpu"):
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
-            theta_lhs, lhs_idx = QBDC(flux_name, flux_test_name, lags_name, 
+            theta_lhc, lhc_idx = QBDC(flux_name, flux_test_name, lags_name, 
                                       lags_test_name, active_loop_num, 
-                                      theta_lhs, lhs_idx, egrid, lags_egrid, 
+                                      theta_lhc, lhc_idx, egrid, lags_egrid, 
                                       flux_model, lags_model, dec_mag, device, 
                                       labels, parallel)
     

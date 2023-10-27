@@ -662,7 +662,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     return
 
 def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num, 
-         theta_lhs, lhs_idx, egrid, lags_egrid, flux_model, lags_model, 
+         theta_lhc, lhc_idx, egrid, lags_egrid, flux_model, lags_model, 
          dec_mag, device, labels, parallel):
     data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
     multiplier = ceil(data_size/100000)
@@ -673,7 +673,7 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     print(f"I am in active learning loop {active_loop_num}")
     # randomly generate points in parameter space
     print("Generating random samples of theta")
-    theta_query_large = theta_lhs[lhs_idx : lhs_idx+n_samples_large]
+    theta_query_large = theta_lhc[lhc_idx : lhc_idx+n_samples_large]
     
     print("computing neural network predictions with dropout for each theta")
     # compute 100 neural network predictions with dropout
@@ -741,9 +741,9 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     
     # add rejected parameter sets back to original array for potential 
     # future use:
-    theta_lhs = np.vstack([theta_lhs, theta_query_large[query_idx[n_samples:]]])
+    theta_lhc = np.vstack([theta_lhc, theta_query_large[query_idx[n_samples:]]])
     
-    # increment the index for reading parameters from theta_lhs
-    lhs_idx += (n_samples_large)
+    # increment the index for reading parameters from theta_lhc
+    lhc_idx += (n_samples_large)
     
-    return theta_lhs, lhs_idx
+    return theta_lhc, lhc_idx
