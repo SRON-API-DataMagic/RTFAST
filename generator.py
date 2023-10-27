@@ -259,7 +259,7 @@ def lhc_explor():
     b2_range = [-4,4]
     phiAB_range = [-3.14,3.14]
     g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-5),np.log10(1e5)]
+    Anorm_range = [np.log10(1e-6),np.log10(1e4)]
     
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
