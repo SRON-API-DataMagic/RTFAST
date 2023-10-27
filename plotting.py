@@ -255,7 +255,7 @@ def plot_flux_dists():
     
     label_1 = "Afe"
     label_2 = "Gamma"
-    label_3 = "logNe"
+    label_3 = "z"
     
     def create_frame(angle,elev,label_1,label_2,label_3):
         """
