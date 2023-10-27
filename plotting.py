@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual
-from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhs_AGN, lhs_BH
+from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc_AGN, lhc_BH
 import generator
 from processing import saveData, nanChecker, spectraChecker
             
@@ -1026,7 +1026,7 @@ def main():
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     """
     flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
-                                                           lags_egrid, lhs_BH)
+                                                           lags_egrid, lhc_BH)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_BH_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_BH_test.csv")
@@ -1035,7 +1035,7 @@ def main():
                       "data/locations/loc_lags_BH_test.csv")
     
     flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
-                                                           lags_egrid, lhs_AGN)
+                                                           lags_egrid, lhc_AGN)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
