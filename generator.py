@@ -102,7 +102,7 @@ def lhc_filter(lhc):
     #removes parameter sets that have a ph0ton index higher than 3 AND a iron
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
-    bad_sets = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>19))
+    bad_sets = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
     return new_lhc
