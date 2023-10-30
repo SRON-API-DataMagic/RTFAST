@@ -359,9 +359,10 @@ def plot_flux_dists():
 
 def plot_flux_ranges_corner():
     labels = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
-              "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g"]
+              "kTe","boost","Mass","honr","b1","b2","phiAB","g"]
     
     AGN_name = "restricted_AGN"
+    generator.generate_flux_dists(AGN_name)
     AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
