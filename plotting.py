@@ -391,15 +391,15 @@ def plot_flux_ranges_corner():
     
     for i in range(len(labels)):
         for j in range(len(labels)):
-            if j != 0 and i !=len(labels):
+            if j != 0 and i != len(labels)-1:
                 axs[i,j].xaxis.set_tick_params(labelbottom=False)
                 axs[i,j].yaxis.set_tick_params(labelleft=False)
                 axs[i,j].set_xticks([])
                 axs[i,j].set_yticks([])
-            elif j == 0 and i !=len(labels):
+            elif j == 0 and i != len(labels)-1:
                 axs[i,j].xaxis.set_tick_params(labelbottom=False)
                 axs[i,j].set_xticks([])
-            elif j != 0 and i ==len(labels):
+            elif j != 0 and i == len(labels)-1:
                 axs[i,j].yaxis.set_tick_params(labelleft=False)
                 axs[i,j].set_yticks([])
     for i in range(len(labels)):
