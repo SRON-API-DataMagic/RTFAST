@@ -411,7 +411,6 @@ def plot_flux_ranges_corner():
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     fig.colorbar(p, cax=cbar_ax, label="maximum photons/cm/s/keV")
     matplotlib.rcParams.update({'font.size': 36})
-    plt.tight_layout()
     plt.savefig("data/flux/pngs/corner_ranges.png")
         
 
