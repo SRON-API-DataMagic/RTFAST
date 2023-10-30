@@ -364,6 +364,13 @@ def plot_flux_ranges_corner():
     AGN_name = "restricted_AGN"
     AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
     
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [0,3]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
+    AGN.iloc[:,negatives] = -AGN.iloc[:,negatives]
+    AGN.iloc[:,logged] = np.log10(AGN.iloc[:,logged]) 
+    
     max_photons = []
     for spec in AGN["Location"]:
         spectra = np.loadtxt(spec)
