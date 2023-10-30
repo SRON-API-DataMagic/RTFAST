@@ -394,7 +394,7 @@ def plot_flux_ranges_corner():
             if j>=i:
                 fig.delaxes(axs[i,j])
     plt.suptitle("Corner plot of parameters colored by max photons")
-    fig.colorbar(p, label="maximum photons/cm/s/keV")
+    fig.colorbar(p, ax=axs.ravel().tolist(), label="maximum photons/cm/s/keV")
     plt.tight_layout()
     plt.savefig("data/flux/pngs/corner_ranges.png")
         
@@ -1055,8 +1055,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    plot_flux_dists()
-    plot_flux_corner()
+    #plot_flux_dists()
+    #plot_flux_corner()
     plot_flux_ranges_corner()
     quit()
     
