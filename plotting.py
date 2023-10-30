@@ -357,6 +357,40 @@ def plot_flux_dists():
     
     print(len(flux_AGN[(flux_AGN > -15)& (flux_AGN < -6)]))
 
+def plot_flux_ranges_corner():
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    
+    AGN_name = "restricted_AGN"
+    AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
+    
+    max_photons = []
+    for spec in AGN["Location"]:
+        spectra = np.loadtxt(spec)
+        max_photons.append(spectra.max())
+    
+    max_photons = np.log10(max_photons)
+    AGN["max"] = max_photons
+    
+    fig, axs = plt.subplots(len(labels),len(labels), figsize=(50,50))
+    for i, label_i in enumerate(labels):
+        for j, label_j in enumerate(labels):
+            axs[i,j].scatter(AGN[label_j],AGN[label_i],c = max_photons, 
+                             cmap = "plasma")
+    
+    for i in range(len(labels)):
+        plt.setp(axs[-1, i], xlabel=labels[i])
+        plt.setp(axs[i, 0], ylabel=labels[i])
+    
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            if j>=i:
+                fig.delaxes(axs[i,j])
+    plt.suptitle("Corner plot of parameters colored by max photons")
+    plt.tight_layout()
+    plt.savefig("data/flux/pngs/corner_ranges.png")
+        
+
 def model_load(model_loc, egrid, lags = None):
     """
     Loads neural network model states from the disk. Can load both the flux and
@@ -1015,6 +1049,7 @@ def main():
     
     plot_flux_dists()
     plot_flux_corner()
+    plot_flux_ranges_corner()
     quit()
     
     nums = [0,10,20,30,40]

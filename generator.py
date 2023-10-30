@@ -549,7 +549,12 @@ def generate_flux_dists(AGN_name):
         #generate rtdist models for the correlated grid
         AGN_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
                                         for pars in iter_agn)
+        AGN_spec = parallel(delayed(rtdist_flux)(pars, egrid)
+                                        for pars in iter_agn)
     AGN_flux = np.asarray(AGN_flux)
+    AGN_spec = np.asarray(AGN_spec)
+    
+    saveData(AGN_spec,iter_agn, "data/flux/", f"{AGN_name}_range.csv")
     
     AGN = pd.DataFrame(data=theta_agn,columns=labels)
     AGN["flux"] = AGN_flux
