@@ -379,7 +379,7 @@ def plot_flux_ranges_corner():
     max_photons = np.log10(max_photons)
     AGN["max"] = max_photons
     
-    fig, axs = plt.subplots(len(labels),len(labels), figsize=(50,50))
+    fig, axs = plt.subplots(len(labels),len(labels), figsize=(25,25))
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
             p = axs[i,j].scatter(AGN[label_j],AGN[label_i],c = max_photons, 
@@ -397,7 +397,7 @@ def plot_flux_ranges_corner():
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     fig.colorbar(p, cax=cbar_ax, label="maximum photons/cm/s/keV")
-    matplotlib.rcParams.update({'font.size': 16})
+    matplotlib.rcParams.update({'font.size': 32})
     plt.savefig("data/flux/pngs/corner_ranges.png")
         
 
