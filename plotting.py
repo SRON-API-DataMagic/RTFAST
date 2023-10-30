@@ -359,7 +359,7 @@ def plot_flux_dists():
 
 def plot_flux_ranges_corner():
     labels = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
-              "kTe","boost","Mass","honr","b1","b2","phiAB","g"]
+              "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g","Anorm"]
     
     AGN_name = "restricted_AGN"
     generator.generate_flux_dists(AGN_name)
