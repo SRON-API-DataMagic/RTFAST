@@ -382,7 +382,7 @@ def plot_flux_ranges_corner():
     fig, axs = plt.subplots(len(labels),len(labels), figsize=(50,50))
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
-            axs[i,j].scatter(AGN[label_j],AGN[label_i],c = max_photons, 
+            p = axs[i,j].scatter(AGN[label_j],AGN[label_i],c = max_photons, 
                              cmap = "plasma")
     
     for i in range(len(labels)):
@@ -394,6 +394,7 @@ def plot_flux_ranges_corner():
             if j>=i:
                 fig.delaxes(axs[i,j])
     plt.suptitle("Corner plot of parameters colored by max photons")
+    fig.colorbar(p, label="maximum photons/cm/s/keV")
     plt.tight_layout()
     plt.savefig("data/flux/pngs/corner_ranges.png")
         
