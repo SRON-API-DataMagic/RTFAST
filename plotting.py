@@ -358,8 +358,8 @@ def plot_flux_dists():
     print(len(flux_AGN[(flux_AGN > -15)& (flux_AGN < -6)]))
 
 def plot_flux_ranges_corner():
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
+              "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g","Anorm"]
     
     AGN_name = "restricted_AGN"
     AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
