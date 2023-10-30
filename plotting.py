@@ -359,7 +359,7 @@ def plot_flux_dists():
 
 def plot_flux_ranges_corner():
     labels = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
-              "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g","Anorm"]
+              "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g"]
     
     AGN_name = "restricted_AGN"
     AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
@@ -388,7 +388,15 @@ def plot_flux_ranges_corner():
     for i in range(len(labels)):
         plt.setp(axs[-1, i], xlabel=labels[i])
         plt.setp(axs[i, 0], ylabel=labels[i])
-    
+        if i != len(labels)-1:
+            #hide tick labels
+            axs[i,0].xaxis.set_tick_params(labelbottom=False)
+            axs[-1,i].yaxis.set_tick_params(labelleft=False)
+            
+            # Hide X and Y axes tick marks
+            axs[i,0].set_xticks([])
+            axs[-1,i].set_yticks([])
+            
     for i in range(len(labels)):
         for j in range(len(labels)):
             if j>=i:
