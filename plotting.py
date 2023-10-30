@@ -383,7 +383,7 @@ def plot_flux_ranges_corner():
     for i, label_i in enumerate(labels):
         for j, label_j in enumerate(labels):
             p = axs[i,j].scatter(AGN[label_j],AGN[label_i],c = max_photons, 
-                             cmap = "plasma")
+                             s = 2, cmap = "plasma")
     
     for i in range(len(labels)):
         plt.setp(axs[-1, i], xlabel=labels[i])
@@ -391,15 +391,15 @@ def plot_flux_ranges_corner():
     
     for i in range(len(labels)):
         for j in range(len(labels)):
-            if i != 0 and j !=len(labels):
+            if j != 0 and i !=len(labels):
                 axs[i,j].xaxis.set_tick_params(labelbottom=False)
                 axs[i,j].yaxis.set_tick_params(labelleft=False)
                 axs[i,j].set_xticks([])
                 axs[i,j].set_yticks([])
-            elif i == 0 and j !=len(labels):
+            elif j == 0 and i !=len(labels):
                 axs[i,j].xaxis.set_tick_params(labelbottom=False)
                 axs[i,j].set_xticks([])
-            elif i != 0 and j ==len(labels):
+            elif j != 0 and i ==len(labels):
                 axs[i,j].yaxis.set_tick_params(labelleft=False)
                 axs[i,j].set_yticks([])
     for i in range(len(labels)):
