@@ -394,8 +394,10 @@ def plot_flux_ranges_corner():
             if j>=i:
                 fig.delaxes(axs[i,j])
     plt.suptitle("Corner plot of parameters colored by max photons")
-    fig.colorbar(p, ax=axs.ravel().tolist(), label="maximum photons/cm/s/keV")
-    plt.tight_layout()
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    fig.colorbar(p, cax=cbar_ax, label="maximum photons/cm/s/keV")
+    matplotlib.rcParams.update({'font.size': 16})
     plt.savefig("data/flux/pngs/corner_ranges.png")
         
 
