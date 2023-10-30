@@ -133,7 +133,7 @@ class LagsData(FluxData):
         self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.threshold = 1e-5
+        self.threshold = 1e-6
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
