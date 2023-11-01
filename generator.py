@@ -158,7 +158,7 @@ def lhc_BH():
         in the latin hypercube sampling
 
     """
-    height_range = [np.log10(1.5),np.log10(1e4)]
+    height_range = [np.log10(1.5),np.log10(100)]
     spin_range = [0,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
@@ -198,7 +198,7 @@ def lhc_AGN():
         in the latin hypercube sampling
     
     """
-    height_range = [np.log10(1.5),np.log10(1e4)]
+    height_range = [np.log10(1.5),np.log10(100)]
     spin_range = [0,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
@@ -217,7 +217,7 @@ def lhc_AGN():
     b2_range = [-4,4]
     phiAB_range = [-3.14,3.14]
     g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
+    Anorm_range = [np.log10(1e-10),np.log10(1e4)]
     
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
