@@ -929,6 +929,7 @@ def aggregate_dists(files):
                 new_pars_list = np.log10(new_pars_list).tolist()
             full_pars[item].append(new_pars_list)
     
+    full_pars = np.asarray(full_pars)
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
     pars_bins = []
