@@ -944,8 +944,6 @@ def aggregate_dists(files):
     for i, item in enumerate(pars_list):
         x = np.floor(i/5)
         y = i%5
-        print(full_pars[i])
-        print(pars_bins[i])
         axs[x,y].hist(full_pars[i], pars_bins[i], 
                       histtype="bar", stacked=True, color = cmap, label=labels)
         if i in logged:
@@ -1117,11 +1115,11 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
 def main():
     wrk_dir = os.getcwd()
-    
+    """
     nums = [0,10,20,30,40]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
-    
+    """
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
