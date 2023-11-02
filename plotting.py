@@ -755,72 +755,120 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     plt.close()
     return
 
-def plot_loss_vs_sample_size(grid_sample_nums, grid, active_sample_nums, active,
-                             mode):
-    fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
-    
-    for (x,y,z) in zip(grid_sample_nums,grid.low,grid.high):
-        axs[0].scatter([x]*len(y),y, s=1, color="orange", zorder = 1, marker = "x",
-                       alpha = 0.5)
-        axs[0].scatter([x]*len(z),z, s=1, color="orange", zorder = 1, marker = "x",
-                       alpha = 0.5)
+def plot_loss_vs_sample_size(grid_sample_nums=[], grid=[], 
+                             active_sample_nums=[], active=[],
+                             mode="flux",single=False):
+    if single == False:
+        fig , axs = plt.subplots(1,2,sharey=True, sharex=True, figsize=(12,9))
         
-    axs[0].fill_between(grid_sample_nums, grid.q_95, 
-                     grid.q_5, alpha = 0.25,color = "orange",
-                     zorder=3)
-    axs[0].fill_between(grid_sample_nums, grid.q_75, 
-                     grid.q_25, alpha = 0.5,color = "orange",
-                     zorder=4)
-    axs[0].fill_between(grid_sample_nums, grid.q_99, 
-                     grid.q_1, alpha = 0.5,color = "orange",
-                     zorder=2)
-    axs[0].plot(grid_sample_nums,grid.median,label="Grid",color = "orange",
-             zorder=5)
-    
-    for (x,y,z) in zip(active_sample_nums,active.low,active.high):
-        axs[1].scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
-                       alpha = 0.5)
-        axs[1].scatter([x]*len(z),z, s=1, color="blue", zorder = 2, marker = "x",
-                       alpha = 0.5)
+        for (x,y,z) in zip(grid_sample_nums,grid.low,grid.high):
+            axs[0].scatter([x]*len(y),y, s=1, color="orange", zorder = 1, marker = "x",
+                           alpha = 0.5)
+            axs[0].scatter([x]*len(z),z, s=1, color="orange", zorder = 1, marker = "x",
+                           alpha = 0.5)
+            
+        axs[0].fill_between(grid_sample_nums, grid.q_95, 
+                         grid.q_5, alpha = 0.25,color = "orange",
+                         zorder=3)
+        axs[0].fill_between(grid_sample_nums, grid.q_75, 
+                         grid.q_25, alpha = 0.5,color = "orange",
+                         zorder=4)
+        axs[0].fill_between(grid_sample_nums, grid.q_99, 
+                         grid.q_1, alpha = 0.5,color = "orange",
+                         zorder=2)
+        axs[0].plot(grid_sample_nums,grid.median,label="Grid",color = "orange",
+                 zorder=5)
         
-    axs[1].fill_between(active_sample_nums, active.q_95, 
-                     active.q_5, alpha = 0.25,color = "blue",
-                     zorder=3)
-    axs[1].fill_between(active_sample_nums, active.q_75, 
-                     active.q_25, alpha = 0.5,color = "blue",
-                     zorder=4)
-    axs[1].fill_between(active_sample_nums, active.q_99, 
-                     active.q_1, alpha = 0.5,color = "blue",
-                     zorder=2)
-    axs[1].plot(active_sample_nums,active.median,label="Active learning",
-             color = "blue",zorder=5)
-    
-    axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
-    axs[1].axhline(y=1e-2, ls = "--",zorder=6,color="green")
-    axs[0].axhline(y=1e-3, ls = "dashdot",label="0.1% error",zorder=7,color="red")
-    axs[1].axhline(y=1e-3, ls = "dashdot",zorder=7,color="red")
-    
-    plt.yscale("symlog")
-    plt.xscale("symlog")
-    
-    plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
-    fig.suptitle(f"Loss by sample size for {mode}")
-    
-    fig.supxlabel("Number of samples used in training")
-    fig.supylabel("Residuals")
-    lines = []
-    labels = []
-      
-    for ax in fig.axes:
-        Line, Label = ax.get_legend_handles_labels()
-        # print(Label)
-        lines.extend(Line)
-        labels.extend(Label)
+        for (x,y,z) in zip(active_sample_nums,active.low,active.high):
+            axs[1].scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
+                           alpha = 0.5)
+            axs[1].scatter([x]*len(z),z, s=1, color="blue", zorder = 2, marker = "x",
+                           alpha = 0.5)
+            
+        axs[1].fill_between(active_sample_nums, active.q_95, 
+                         active.q_5, alpha = 0.25,color = "blue",
+                         zorder=3)
+        axs[1].fill_between(active_sample_nums, active.q_75, 
+                         active.q_25, alpha = 0.5,color = "blue",
+                         zorder=4)
+        axs[1].fill_between(active_sample_nums, active.q_99, 
+                         active.q_1, alpha = 0.5,color = "blue",
+                         zorder=2)
+        axs[1].plot(active_sample_nums,active.median,label="Active learning",
+                 color = "blue",zorder=5)
         
-    fig.legend(lines, labels, loc='upper right')
-    matplotlib.rcParams.update({'font.size': 16})
-    plt.savefig(f"loss/loss_size_{mode}.png")
-    plt.close()
+        axs[0].axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
+        axs[1].axhline(y=1e-2, ls = "--",zorder=6,color="green")
+        axs[0].axhline(y=1e-3, ls = "dashdot",label="0.1% error",zorder=7,color="red")
+        axs[1].axhline(y=1e-3, ls = "dashdot",zorder=7,color="red")
+        
+        plt.yscale("symlog")
+        plt.xscale("symlog")
+        
+        plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
+        fig.suptitle(f"Loss by sample size for {mode}")
+        
+        fig.supxlabel("Number of samples used in training")
+        fig.supylabel("Residuals")
+        lines = []
+        labels = []
+          
+        for ax in fig.axes:
+            Line, Label = ax.get_legend_handles_labels()
+            # print(Label)
+            lines.extend(Line)
+            labels.extend(Label)
+            
+        fig.legend(lines, labels, loc='upper right')
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.savefig(f"loss/loss_size_{mode}.png")
+        plt.close()
+    else:
+        if grid_sample_nums != []:
+            pass
+        elif active_sample_nums != []:
+            for (x,y,z) in zip(active_sample_nums,active.low,active.high):
+                plt.scatter([x]*len(y),y, s=1, color="blue", zorder = 2, marker = "x",
+                               alpha = 0.5)
+                plt.scatter([x]*len(z),z, s=1, color="blue", zorder = 2, marker = "x",
+                               alpha = 0.5)
+                
+            plt.fill_between(active_sample_nums, active.q_95, 
+                             active.q_5, alpha = 0.25,color = "blue",
+                             zorder=3)
+            plt.fill_between(active_sample_nums, active.q_75, 
+                             active.q_25, alpha = 0.5,color = "blue",
+                             zorder=4)
+            plt.fill_between(active_sample_nums, active.q_99, 
+                             active.q_1, alpha = 0.5,color = "blue",
+                             zorder=2)
+            plt.plot(active_sample_nums,active.median,label="Active learning",
+                     color = "blue",zorder=5)
+            
+            plt.axhline(y=1e-2, ls = "--",label="1% error",zorder=6,color="green")
+            plt.axhline(y=1e-3, ls = "dashdot",label="0.1% error",zorder=7,color="red")
+            
+            plt.yscale("symlog")
+            plt.xscale("symlog")
+            
+            plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
+            fig.suptitle(f"Loss by sample size for {mode}")
+            
+            fig.supxlabel("Number of samples used in training")
+            fig.supylabel("Residuals")
+            lines = []
+            labels = []
+              
+            for ax in fig.axes:
+                Line, Label = ax.get_legend_handles_labels()
+                # print(Label)
+                lines.extend(Line)
+                labels.extend(Label)
+                
+            fig.legend(lines, labels, loc='upper right')
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"loss/loss_size_{mode}.png")
+            plt.close()
 
 def loss_epochs_plot(loss_base_loc,mode):
     
@@ -857,11 +905,11 @@ def aggregate_dists(files):
     nbins = 100
     
     labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
+    pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    rins = []
-    routs = []
-    distances = []
-    spins = []
+    pars = [[] for i in range(len(pars_list))]
     
     last_pars = pd.DataFrame()
     for file in files:
@@ -870,48 +918,30 @@ def aggregate_dists(files):
         pars = df.loc[:, df.columns!="Location"]
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
-        rins.append(-1*new_pars.loc[:,"rin"])
-        routs.append(new_pars.loc[:,"rout"])
-        distances.append(new_pars.loc[:,"Dkpc"])
-        spins.append(new_pars.loc[:,"a"])
+        for item in range(20):
+            pars[item].append(new_pars.loc[:,item])
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
-    hist, bins_rins, _ = plt.hist(rins, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    logbins_rins = np.logspace(np.log10(bins_rins[0]),np.log10(bins_rins[-1]),len(bins_rins))
+    pars_bins = []
     
-    hist, bins_routs, _ = plt.hist(routs, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    logbins_routs = np.logspace(np.log10(bins_routs[0]),np.log10(bins_routs[-1]),len(bins_routs))
+    for i, item in enumerate(pars_list):
+        hist, bins, _ = plt.hist(pars[i], nbins, histtype="bar", stacked=True, 
+                                 color = cmap, label=labels)
+        logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+        pars_bins.append(logbins)
     
-    hist, bins_distances, _ = plt.hist(distances, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    logbins_distances = np.logspace(np.log10(bins_distances[0]),np.log10(bins_distances[-1]),len(bins_distances))
-    plt.close()
-    
-    fig, axs = plt.subplots(2,2,sharey=True,figsize=(12,9))
+    fig, axs = plt.subplots(4,5,sharey=True,figsize=(12,9))
     matplotlib.rcParams.update({'font.size': 16})
     
-    axs[0,0].hist(rins, logbins_rins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    axs[0,0].set_xscale("log")
-    axs[0,0].set_xlabel("Inner radius / ISCO")
-    
-    axs[0,1].hist(routs, logbins_routs, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    axs[0,1].set_xscale("log")
-    axs[0,1].set_xlabel("Outer radius / Rg")
-    axs[0,1].legend()
-    
-    axs[1,0].hist(distances, logbins_distances, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    axs[1,0].set_xscale("log")
-    axs[1,0].set_xlabel("Distances / Kpc")
-    
-    axs[1,1].hist(spins, nbins, histtype="bar", stacked=True, 
-                             color = cmap, label=labels)
-    axs[1,1].set_xlabel("Spin")
+    for i, item in enumerate(pars_list):
+        x = np.floor(i/5)
+        y = i%5
+        axs[x,y].hist(pars[i], bins[i], histtype="bar", stacked=True, 
+                                 color = cmap, label=labels)
+        if i in logged:
+            axs[x,y].set_xscale("log")
+        axs[x,y].set_xlabel(pars_list[i])
     plt.yscale("log")
     plt.savefig("dists/stacked.png")
     plt.close()
@@ -1053,6 +1083,11 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                            active_lags_scaler, lags_egrid, lags=True)
+    
+    plot_loss_vs_sample_size(active_sample_nums=active_sample_flux_nums,
+                             active = active_flux, mode= "flux", single = True)
+    plot_loss_vs_sample_size(active_sample_nums=active_sample_lags_nums,
+                             active = active_lags, mode= "lags", single = True)
     """
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
