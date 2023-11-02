@@ -927,16 +927,14 @@ def aggregate_dists(files):
                 new_pars_list = new_pars_list.tolist()
             if item in logged:
                 new_pars_list = np.log10(new_pars_list).tolist()
-            full_pars[item].extend(new_pars_list)
-    
-    full_pars = np.asarray(full_pars)
+            full_pars[item].append(new_pars_list)
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
     pars_bins = []
     
     for i, item in enumerate(pars_list):
-        hist, bins, _ = plt.hist(full_pars[i], nbins, histtype="bar", stacked=True, 
-                                 color = cmap, label=labels)
+        hist, bins, _ = plt.hist(full_pars[i], nbins, histtype="bar", 
+                                 stacked=True)
         logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
         pars_bins.append(logbins)
         plt.close()
@@ -947,8 +945,6 @@ def aggregate_dists(files):
     for i, item in enumerate(pars_list):
         x = np.floor(i/5)
         y = i%5
-        print(np.squeeze(full_pars[i]))
-        print(np.squeeze(pars_bins[i]))
         axs[x,y].hist(np.squeeze(full_pars[i]), np.squeeze(pars_bins[i]), 
                       histtype="bar", stacked=True, color = cmap, label=labels)
         if i in logged:
