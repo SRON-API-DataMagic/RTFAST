@@ -120,6 +120,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     axs[1].set_xlabel("Energy in keV")
     axs[1].axhline(y=0.01,ls="--",color="orange")
     axs[1].axhline(y=-0.01,ls="--",color="orange")
+    axs[1].set_yscale("symlog")
     max_res = np.absolute((da-pred)/da).max()
     if max_res > 1 and norm == True:
         axs[1].set_ylim(-1,1)
@@ -1052,6 +1053,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                            active_lags_scaler, lags_egrid, lags=True)
+    """
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
     
@@ -1067,6 +1069,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     print("Plotting lags")
     plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
                              active_sample_lags_nums, active_lags, mode="lags")
+    """
     
 def main():
     wrk_dir = os.getcwd()
