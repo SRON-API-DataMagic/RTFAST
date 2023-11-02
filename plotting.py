@@ -922,8 +922,8 @@ def aggregate_dists(files):
         for item in range(len(pars_list)):
             print(new_pars)
             print(pars_list[item])
-            print(new_pars.loc[pars_list[item]])
-            pars[item].append(new_pars.loc[pars_list[item]])
+            print(new_pars.loc[:,pars_list[item]])
+            pars[item].append(new_pars.loc[:,pars_list[item]])
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
