@@ -925,7 +925,7 @@ def aggregate_dists(files):
             if item in negatives:
                 new_pars_list = -1*new_pars_list
             if item in logged:
-                new_pars_list = np.log10(new_pars_list)
+                new_pars_list = np.log10(new_pars_list).tolist()
             full_pars[item].append(new_pars_list)
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
