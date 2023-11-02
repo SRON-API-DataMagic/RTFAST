@@ -950,12 +950,12 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         #put test set into dataloader format
         batch_size = 1
         if lags == None:
-            test_data = LoadFluxData("data/locations/loc_flux_BH_test.csv",scaler,
+            test_data = LoadFluxData("data/locations/loc_flux_AGN_test.csv",scaler,
                                       scaler_name, pars_list, negatives = negatives, 
                                       logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid, lags = lags)
         else:
-            test_data = LoadLagsData("data/locations/loc_lags_BH_test.csv",scaler,
+            test_data = LoadLagsData("data/locations/loc_lags_AGN_test.csv",scaler,
                                        scaler_name, pars_list, negatives = negatives, 
                                        logged = logged) #scaler unused but must be parsed
             model = model_load(model_loc, egrid[:-1], lags = lags)
@@ -1071,11 +1071,6 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
 def main():
     wrk_dir = os.getcwd()
     
-    #plot_flux_dists()
-    #plot_flux_corner()
-    plot_flux_ranges_corner()
-    quit()
-    
     nums = [0,10,20,30,40]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
@@ -1092,7 +1087,7 @@ def main():
     
     readAndRemoveNans("data/locations/loc_flux_BH_test.csv",
                       "data/locations/loc_lags_BH_test.csv")
-    
+    """
     flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
                                                            lags_egrid, lhc_AGN)
     
@@ -1101,7 +1096,7 @@ def main():
     
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv",
                       "data/locations/loc_lags_AGN_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
     
