@@ -905,8 +905,9 @@ def aggregate_dists(files):
     nbins = 100
     
     labels = ["0th loop", "10th loop", "20th loop", "30th loop", "40th loop"]
-    pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    pars_list = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
+                    "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g",
+                    "Anorm"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     pars = [[] for i in range(len(pars_list))]
