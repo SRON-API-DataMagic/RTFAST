@@ -944,6 +944,7 @@ def aggregate_dists(files):
     for i, item in enumerate(pars_list):
         x = np.floor(i/5)
         y = i%5
+        print(full_pars[i])
         axs[x,y].hist(full_pars[i], pars_bins[i], 
                       histtype="bar", stacked=True, color = cmap, label=labels)
         if i in logged:
