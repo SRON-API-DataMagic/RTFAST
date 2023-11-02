@@ -77,7 +77,7 @@ def active_learning(wrk_dir, device = "cpu"):
     theta_lhc = generator.lhc_filter(theta_lhc)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     flux_name = "active_locs_flux.csv"
     flux_test_name = "active_test_locs_flux.csv"
@@ -137,7 +137,7 @@ def active_learning(wrk_dir, device = "cpu"):
         loss_fn_flux = FluxLoss(f"{flux_scaler_name}", device)
         loss_fn_lags = LagLoss(f"{lags_scaler_name}", device)
     else:
-        name_num = 19
+        name_num = 40
         active_loop_num = name_num+1
         flux_model.load_state_dict(torch.load(f"models/{name_num}_flux_model.pth"))
         lags_model.load_state_dict(torch.load(f"models/{name_num}_lags_model.pth"))
