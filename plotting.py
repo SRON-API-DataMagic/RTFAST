@@ -923,7 +923,8 @@ def aggregate_dists(files):
         for item in range(len(pars_list)):
             new_pars_list = new_pars.loc[:,pars_list[item]].tolist()
             if item in negatives:
-                new_pars_list = -1*new_pars_list
+                new_pars_list = -1*np.asarray(new_pars_list)
+                new_pars_list = new_pars_list.tolist()
             if item in logged:
                 new_pars_list = np.log10(new_pars_list).tolist()
             full_pars[item].append(new_pars_list)
