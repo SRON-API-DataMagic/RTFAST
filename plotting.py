@@ -909,6 +909,7 @@ def aggregate_dists(files):
                     "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g",
                     "Anorm"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
+    negatives = [0,3]
     
     full_pars = [[] for i in range(len(pars_list))]
     
@@ -921,6 +922,10 @@ def aggregate_dists(files):
         last_pars = pars
         for item in range(len(pars_list)):
             new_pars_list = new_pars.loc[:,pars_list[item]].tolist()
+            if item in negatives:
+                new_pars_list = -1*new_pars_list
+            if item in logged:
+                new_pars_list = np.log10(new_pars_list)
             full_pars[item].append(new_pars_list)
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
