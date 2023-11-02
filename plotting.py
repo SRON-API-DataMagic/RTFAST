@@ -920,10 +920,8 @@ def aggregate_dists(files):
         new_pars = check_uniques(pars,last_pars)
         last_pars = pars
         for item in range(len(pars_list)):
-            print(new_pars)
-            print(pars_list[item])
-            print(new_pars.loc[:,pars_list[item]])
-            pars[item].append(new_pars.loc[:,pars_list[item]].tolist())
+            new_pars_list = new_pars.loc[:,pars_list[item]].tolist()
+            pars[item].append(new_pars_list)
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
