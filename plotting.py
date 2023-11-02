@@ -910,7 +910,7 @@ def aggregate_dists(files):
                     "Anorm"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars = [[] for i in range(len(pars_list))]
+    full_pars = [[] for i in range(len(pars_list))]
     
     last_pars = pd.DataFrame()
     for file in files:
@@ -921,17 +921,18 @@ def aggregate_dists(files):
         last_pars = pars
         for item in range(len(pars_list)):
             new_pars_list = new_pars.loc[:,pars_list[item]].tolist()
-            pars[item].append(new_pars_list)
+            full_pars[item].append(new_pars_list)
     
     cmap = cm.get_cmap("Wistia")(np.linspace(0, 1, 5))
     
     pars_bins = []
     
     for i, item in enumerate(pars_list):
-        hist, bins, _ = plt.hist(pars[i], nbins, histtype="bar", stacked=True, 
+        hist, bins, _ = plt.hist(full_pars[i], nbins, histtype="bar", stacked=True, 
                                  color = cmap, label=labels)
         logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
         pars_bins.append(logbins)
+        plt.close()
     
     fig, axs = plt.subplots(4,5,sharey=True,figsize=(12,9))
     matplotlib.rcParams.update({'font.size': 16})
