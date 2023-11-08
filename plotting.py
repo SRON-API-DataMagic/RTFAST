@@ -131,9 +131,9 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     print(data_max)
     data_min = np.min(np.asarray(da[ind_1:ind_2]))
     print(data_min)
-    ymin = np.min([pred_min,data_min])
+    ymin = np.min([pred_min,data_min])*0.8
     print(ymin)
-    ymax = np.max([pred_max,data_max])
+    ymax = np.max([pred_max,data_max])*1.2
     print(ymax)
     axs[0].set_ylim(ymin,ymax)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
