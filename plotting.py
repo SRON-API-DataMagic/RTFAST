@@ -119,15 +119,15 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     axs[0].set_xscale("log")
     axs[0].set_yscale("log")
     axs[0].set_xlim(4,10)
-    ind_1 = np.argmin(np.abs(egrid-6))
-    ind_2 = np.argmin(np.abs(egrid-8))
+    ind_1 = np.argmin(np.abs(egrid-4))
+    ind_2 = np.argmin(np.abs(egrid-10))
     pred_max = np.max(pred[ind_1:ind_2])
     pred_min = np.min(pred[ind_1:ind_2])
     data_max = np.max(np.asarray(da[ind_1:ind_2]))
     data_min = np.min(np.asarray(da[ind_1:ind_2]))
     ymin = np.min([pred_min,data_min])*0.8
     ymax = np.max([pred_max,data_max])*1.2
-    #axs[0].set_ylim(data_min,data_max)
+    axs[0].set_ylim(data_min,data_max)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
