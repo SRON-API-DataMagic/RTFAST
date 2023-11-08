@@ -107,7 +107,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     pred = np.squeeze(pred)
     da = np.squeeze(da)
     fig, axs = plt.subplots(2,1,sharex=True)
-    axs[0].plot(egrid,pred,c="blue",label="NN model")
+    #axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_title(title)
@@ -127,7 +127,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     data_min = np.min(np.asarray(da[ind_1:ind_2]))
     ymin = np.min([pred_min,data_min])*0.8
     ymax = np.max([pred_max,data_max])*1.2
-    axs[0].set_ylim(ymin,ymax)
+    axs[0].set_ylim(data_min,data_max)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
