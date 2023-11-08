@@ -105,6 +105,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
 
     """
     pred = np.squeeze(pred)
+    da = np.squeeze(da)
     fig, axs = plt.subplots(2,1,sharex=True)
     axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
@@ -123,7 +124,9 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     ind_2 = np.argmin(np.abs(egrid-10))
     print(ind_2)
     pred_max = np.max(pred[ind_1:ind_2])
+    print(pred_max)
     pred_min = np.min(pred[ind_1:ind_2])
+    print(pred_min)
     data_max = np.max(da[ind_1:ind_2])
     data_min = np.min(da[ind_1:ind_2])
     ymin = np.min([pred_min,data_min])
