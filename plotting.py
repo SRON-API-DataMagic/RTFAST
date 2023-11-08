@@ -1062,7 +1062,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,5,10,15,20,25,30,35,40,45,50,55,60]
+    active_name = [0,5,10,15,20,25,30,35,40,45,50,55,60,60]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
@@ -1071,8 +1071,8 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
         active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
     active_flux_names = [f"{model_base_loc}{i}_flux_model.pth" for i in active_name]
     active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
-    active_flux_names.append(f"{model_base_loc}active_flux_final.pth")
-    active_lags_names.append(f"{model_base_loc}active_lags_final.pth")
+    active_flux_names[-1] = f"{model_base_loc}active_flux_final.pth"
+    active_lags_names[-1] = f"{model_base_loc}active_lags_final.pth"
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
     grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
