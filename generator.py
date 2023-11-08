@@ -81,6 +81,38 @@ def rtdist_lags(pars, egrid):
     output = y[:-1]/dE
     return output
 
+def Anorm_wrapper(pars,upper,lower):
+    """
+    This function uses generated values of luminosity and distance to calculate
+    the expected flux of the corona. We then check that the flux is either 
+    below or above the thresholds imposed by upper and lower. If the parameter
+    set is outside of these thresholds, we delete the set due to it being 
+    an object that is either unphysical or unable to be seen.
+
+    Parameters
+    ----------
+    pars : np.ndarray
+        DESCRIPTION.
+    upper : TYPE
+        DESCRIPTION.
+    lower : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    new_lhc : TYPE
+        DESCRIPTION.
+
+    """
+    
+    L = pars[:,9] #confirm location of luminosity of corona
+    D = pars[:,7] #confirm location of distance
+    F = L/(4*np.pi*D**2)
+    
+    bad_sets = np.nonzero((F>upper)|(F<lower))
+    new_lhc = np.delete(pars,bad_sets,0)
+    return new_lhc
+
 def lhc_filter(lhc):
     """
     Removes unphysical parameter sets from the Latin Hypercube. This prevents
