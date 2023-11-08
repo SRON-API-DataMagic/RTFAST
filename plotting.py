@@ -127,6 +127,8 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     print(pred_max)
     pred_min = np.min(pred[ind_1:ind_2])
     print(pred_min)
+    print(da)
+    print(da[ind_1:ind_2])
     data_max = np.max(da[ind_1:ind_2])
     data_min = np.min(da[ind_1:ind_2])
     ymin = np.min([pred_min,data_min])
