@@ -107,6 +107,10 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     pred = np.squeeze(pred)
     da = np.squeeze(da)
     fig, axs = plt.subplots(2,1,sharex=True)
+    emid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
+    pred = pred[:-1]*emid
+    da = da[:-1]*emid
+    egrid = egrid[:-1]
     #axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
