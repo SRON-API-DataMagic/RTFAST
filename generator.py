@@ -386,7 +386,7 @@ def pars_conversion_full(pars,ReIm):
     new_pars[:,3] = -10**pars[:,3]  #inner radius
     new_pars[:,4] = 10**pars[:,4]   #outer radius
     new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = pars[:,6]   #Gamma
+    new_pars[:,6] = 2               #Gamma
     new_pars[:,7] = 10**pars[:,7]   #distance
     new_pars[:,8] = 10**pars[:,8]   #Afe
     new_pars[:,9] = pars[:,9]       #logNe

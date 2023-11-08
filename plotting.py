@@ -1144,6 +1144,13 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
+    flux, lags, theta_flux, theta_lags = generate_test_set(100, egrid, lags_egrid, lhc_AGN)
+    
+    saveData(flux, theta_flux, "/data/locations/", "loc_flux_AGN_test.csv")
+    saveData(lags, theta_lags, "/data/locations/", "loc_lags_AGN_test.csv")
+    
+    readAndRemoveNans("/data/locations/loc_flux_AGN_test.csv", "/data/locations/loc_lags_AGN_test.csv")
+    
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
     
