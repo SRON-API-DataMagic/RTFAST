@@ -115,6 +115,8 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
         axs[0].set_yscale("log")
     else:
         axs[0].set_ylabel(f"{mode}")
+    axs[0].set_xscale("log")
+    axs[0].set_yscale("log")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
     axs[1].set_xlabel("Energy in keV")
@@ -1062,7 +1064,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,5,10,15,20,25,30,35,40,45,50,55,60,60]
+    active_name = [60,60]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
@@ -1125,24 +1127,6 @@ def main():
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    """
-    flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
-                                                           lags_egrid, lhc_BH)
-    
-    saveData(flux, theta_flux, "data/locations/", "loc_flux_BH_test.csv")
-    saveData(lags, theta_lags, "data/locations/", "loc_lags_BH_test.csv")
-    
-    readAndRemoveNans("data/locations/loc_flux_BH_test.csv",
-                      "data/locations/loc_lags_BH_test.csv")
-    """
-    flux, lags, theta_flux, theta_lags = generate_test_set(2000, egrid, 
-                                                           lags_egrid, lhc_AGN)
-    
-    saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
-    saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
-    
-    readAndRemoveNans("data/locations/loc_flux_AGN_test.csv",
-                      "data/locations/loc_lags_AGN_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
