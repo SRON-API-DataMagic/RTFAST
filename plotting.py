@@ -125,8 +125,8 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     pred_min = np.min(pred[ind_1:ind_2])
     data_max = np.max(np.asarray(da[ind_1:ind_2]))
     data_min = np.min(np.asarray(da[ind_1:ind_2]))
-    ymin = np.min([pred_min,data_min])*0.8
-    ymax = np.max([pred_max,data_max])*1.2
+    ymin = np.min([pred_min,data_min])*0.5
+    ymax = np.max([pred_max,data_max])*5
     axs[0].set_ylim(ymin,ymax)
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
@@ -662,6 +662,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                   dec_mag=False):
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
+        print(P)
         D = np.squeeze(D)
         if mode == "flux":
             D[D<=1e-11] = 1e-11
