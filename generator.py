@@ -3,6 +3,7 @@ This program deals with generating rtdist models with given parameters. For use
 for generating sampels for training the emulator for rtdist.
 """
 import numpy as np
+from scipy.integrate import quad
 import os
 from reltrans import _models
 from joblib import Parallel, delayed
@@ -81,37 +82,56 @@ def rtdist_lags(pars, egrid):
     output = y[:-1]/dE
     return output
 
-def Anorm_wrapper(pars,upper,lower):
+def Anorm_wrapper(pars):
     """
-    This function uses generated values of luminosity and distance to calculate
-    the expected flux of the corona. We then check that the flux is either 
-    below or above the thresholds imposed by upper and lower. If the parameter
-    set is outside of these thresholds, we delete the set due to it being 
-    an object that is either unphysical or unable to be seen.
+    This function recalculates the Anorm input parameter of rtdist from the 
+    generated values of flux. This allows considerably more efficient sampling
+    of Anorm - only physically plausible scenarios are considered and we 
+    have physical reasoning behind the Anorm values chosen.
 
     Parameters
     ----------
     pars : np.ndarray
-        DESCRIPTION.
-    upper : TYPE
-        DESCRIPTION.
-    lower : TYPE
-        DESCRIPTION.
+        the curated hypercube of parameters that the emulator will eventually
+        be trained on.
 
     Returns
     -------
-    new_lhc : TYPE
-        DESCRIPTION.
+    new_lhc : np.ndarray
+        latin hypercube with "coronal flux" parameter replaced with Anorm.
 
     """
+    #calculate g_0
+    h = pars[:,0]
+    a = pars[:,1]
+    Dh = h**2 -2*h +a**2
+    g_so = np.sqrt(Dh/(h**2 + a**2))
+    #calculate luminosity of corona
+    F = pars[:,9]       #Flux of corona
+    D = pars[:,7]       #distance of objects
+    L = 4*np.pi*D**2*F  #luminosity of corona
+    #get photon index
+    gamma = pars[:,6]   #gamma
+    #calculate normalisation for each flux spectra
+    egrid = np.logspace(-1,3,num = 500)
+    E_cut = 1000
+    fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
-    L = pars[:,9] #confirm location of luminosity of corona
-    D = pars[:,7] #confirm location of distance
-    F = L/(4*np.pi*D**2)
+    for i in range(fluxs.shape[1]):
+        E_mid = egrid[i]+egrid[i+1]
+        fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
-    bad_sets = np.nonzero((F>upper)|(F<lower))
-    new_lhc = np.delete(pars,bad_sets,0)
-    return new_lhc
+    normalisation = fluxs.sum(axis=1)/(10**20 * (10**15 / (4*np.pi)))
+    
+    #Integrate flux from 0 to infinity for then finding Anorm
+    def flux(E):
+        return normalisation*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
+    
+    integral = quad(flux, 0, np.inf)[0]
+    gamma = pars[:,6]   #photon index
+    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integral)
+    pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
+    return pars
 
 def lhc_filter(lhc):
     """
@@ -134,7 +154,20 @@ def lhc_filter(lhc):
     #removes parameter sets that have a ph0ton index higher than 3 AND a iron
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
-    bad_sets = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
+    bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
+    #check if the calculated hubble constant for the set of parameters
+    #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
+    hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
+    bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
+    #Check luminosities aren't super eddington or too small to see
+    F = lhc[:,19]       #Flux of corona
+    D = lhc[:,7]        #distance of objects
+    M = lhc[:,13]       #mass of the object
+    L = 4*np.pi*D**2*F  #luminosity of corona
+    Ledd = 1.26e38*M    #eddington luminosity
+    bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
+    #collates all bad sets together
+    bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
     return new_lhc
@@ -155,7 +188,7 @@ def lhc_all():
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,4]
+    z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
     distance_range = [np.log10(0.2),np.log10(1e10)]
     Afe_range = [np.log10(0.5),np.log10(10)]
@@ -235,9 +268,9 @@ def lhc_AGN():
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,4]
+    z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e6),np.log10(1e10)]
+    distance_range = [np.log10(3.5e6),np.log10(5e6)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
@@ -277,15 +310,15 @@ def lhc_explor():
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(100)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,4]
+    z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
     distance_range = [np.log10(3.5e6),np.log10(1e10)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1e3)]
+    nH_range = [np.log10(1e-3),np.log10(1e1)]
     boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
+    mass_range = [np.log10(1e4),np.log10(1e8)]
     honr_range = [0,0.176]
     b1_range = [0,2]
     b2_range = [-4,4]
