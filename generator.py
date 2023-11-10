@@ -102,34 +102,39 @@ def Anorm_wrapper(pars):
 
     """
     #calculate g_0
-    h = pars[:,0]
+    h = 10**pars[:,0]
     a = pars[:,1]
     Dh = h**2 -2*h +a**2
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
-    F = pars[:,9]       #Flux of corona
-    D = pars[:,7]       #distance of objects
-    L = 4*np.pi*D**2*F  #luminosity of corona
+    F = 10**pars[:,9]               #Flux of corona in erg/cm^2/s
+    D = 10**pars[:,7]*3.086e21      #distance of objects in cm
+    L = 4*np.pi*D**2*F              #luminosity of corona
     #get photon index
-    gamma = pars[:,6]   #gamma
+    gamma = pars[:,6]               #gamma
     #calculate normalisation for each flux spectra
+    
+    #energies from 0.1keV to 1MeV
     egrid = np.logspace(-1,3,num = 500)
-    E_cut = 1000
+    E_cut = 1000                    #cutoff in keV
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
     for i in range(fluxs.shape[1]):
         E_mid = egrid[i]+egrid[i+1]
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
-    normalisation = fluxs.sum(axis=1)/(10**20 * (10**15 / (4*np.pi)))
+    normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
     
     #Integrate flux from 0 to infinity for then finding Anorm
     def flux(E):
-        return normalisation*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
+        return normal*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
-    integral = quad(flux, 0, np.inf)[0]
+    integrals = np.zeros(normalisation.shape)
+    
+    for i,normal in enumerate(normalisation):
+        integrals[i] = quad(flux, 0, np.inf)[0]
     gamma = pars[:,6]   #photon index
-    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integral)
+    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
@@ -282,13 +287,13 @@ def lhc_AGN():
     b2_range = [-4,4]
     phiAB_range = [-3.14,3.14]
     g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-10),np.log10(1e4)]
+    flux_range = [np.log10(1e-12),np.log10(1e-8)]
     
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
                  r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
                  logNe_range,kte_range,nH_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
+                 honr_range,b1_range,b2_range,phiAB_range,g_range,flux_range]
     
     return range_all
 
