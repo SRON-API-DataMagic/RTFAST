@@ -134,9 +134,12 @@ def Anorm_wrapper(pars):
     for i in range(len(normalisation)):
         print(f"Flux normalistion is {normalisation[i]}")
         print(f"Gamma is {gamma[i]}")
-        E_range = np.logspace(-6,40,num = 1000)
-        flux = flux(E_range,normalisation[i],gamma[i])
-        print(flux)
+        E_range = np.logspace(-6,40,num = 100000)
+        gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
+        fluxs = flux(E_range,normalisation[i],gamma[i])
+        fluxs = fluxs[:-1]*gmid
+        fluxs = fluxs.sum()
+        print(fluxs)
         integral = quad(flux, 0, np.inf, args=(normalisation[i],gamma[i]))[0]
         print(f"Integral is {integral}")
         integrals[i] = integral
