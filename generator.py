@@ -138,6 +138,7 @@ def Anorm_wrapper(pars):
         gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
         fluxs = flux(E_range,normalisation[i],gamma[i])
         fluxs = fluxs[:-1]*gmid
+        print(fluxs)
         fluxs = fluxs.sum()
         print(fluxs)
         integral = quad(flux, 0, np.inf, args=(normalisation[i],gamma[i]))[0]
