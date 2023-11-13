@@ -126,13 +126,13 @@ def Anorm_wrapper(pars):
     normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
     
     #Integrate flux from 0 to infinity for then finding Anorm
-    def flux(E):
+    def flux(E,normal,gamma):
         return normal*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
     integrals = np.zeros(normalisation.shape)
     
-    for i,normal in enumerate(normalisation):
-        integral = quad(flux, 0, np.inf)
+    for i in range(len(normalisation)):
+        integral = quad(flux, 0, np.inf, args=(normalisation[i],gamma[i]))
         print(integral)
         integrals[i] = integral
     gamma = pars[:,6]   #photon index
