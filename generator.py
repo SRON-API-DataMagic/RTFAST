@@ -167,9 +167,9 @@ def lhc_filter(lhc):
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
     print(bad_dists[0].shape)
     #Check luminosities aren't super eddington or too small to see
-    F = lhc[:,19]       #Flux of corona
-    D = lhc[:,7]        #distance of objects
-    M = lhc[:,13]       #mass of the object
+    F = 10**lhc[:,19]       #Flux of corona
+    D = 10**lhc[:,7]        #distance of objects
+    M = 10**lhc[:,13]       #mass of the object
     L = 4*np.pi*D**2*F  #luminosity of corona
     Ledd = 1.26e38*M    #eddington luminosity
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
