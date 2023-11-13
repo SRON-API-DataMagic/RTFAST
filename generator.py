@@ -175,6 +175,8 @@ def lhc_filter(lhc):
     bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
+    #convert fluxes to Anorm
+    new_lhc = Anorm_wrapper(new_lhc)
     return new_lhc
 
 def lhc_all():
@@ -651,7 +653,12 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
     sample = sampler.random(n=size)
     theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-
+    
+    theta_lhc = lhc_filter(theta_lhc)
+    print(theta_lhc)
+    print(theta_lhc.shape)
+    quit()
+    
     #generate physical models of test set
     theta_flux = pars_conversion_full(theta_lhc,0)
     theta_lags = pars_conversion_full(theta_lhc,6)
