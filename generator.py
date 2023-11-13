@@ -173,11 +173,17 @@ def lhc_filter(lhc):
     M = 10**lhc[:,13]       #mass of the object
     M = 1.989e33*M          #mass in g
     L = 4*np.pi*(D**2)*F  #luminosity of corona in erg/cm^2/s
+    print("Fluxes:")
     print(F)
+    print("Masses:")
     print(M)
+    print("Distances:")
     print(D)
+    print("Luminosities:")
     print(L)
     Ledd = 1.26e38*M    #eddington luminosity
+    print("Eddington luminosities:")
+    print(Ledd)
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
     print(bad_Ls[0].shape)
     #collates all bad sets together
