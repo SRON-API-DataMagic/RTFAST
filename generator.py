@@ -107,7 +107,7 @@ def Anorm_wrapper(pars):
     Dh = h**2 -2*h +a**2
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
-    F = 10**pars[:,9]               #Flux of corona in erg/cm^2/s
+    F = 10**pars[:,19]               #Flux of corona in erg/cm^2/s
     D = 10**pars[:,7]*3.086e21      #distance of objects in cm
     L = 4*np.pi*D**2*F              #luminosity of corona
     gamma = pars[:,6]               #photon index
@@ -141,12 +141,10 @@ def Anorm_wrapper(pars):
         print(f"Integration of flux is {fluxs}")
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
-    print("Anorm:",Anorm)
-    print("L:",L[np.isnan(Anorm)])
-    print("gamma:",gamma[np.isnan(Anorm)])
-    print("integrals:",integrals[np.isnan(Anorm)])
-    print("D:",D[np.isnan(Anorm)])
     print("g_so:",g_so[np.isnan(Anorm)])
+    print("a:",a[np.isnan(Anorm)])
+    print("Dh:",Dh[np.isnan(Anorm)])
+    
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
