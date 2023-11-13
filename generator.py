@@ -110,8 +110,7 @@ def Anorm_wrapper(pars):
     F = 10**pars[:,9]               #Flux of corona in erg/cm^2/s
     D = 10**pars[:,7]*3.086e21      #distance of objects in cm
     L = 4*np.pi*D**2*F              #luminosity of corona
-    #get photon index
-    gamma = pars[:,6]               #gamma
+    gamma = pars[:,6]               #photon index
     #calculate normalisation for each flux spectra
     
     #energies from 0.1keV to 1MeV
@@ -141,8 +140,8 @@ def Anorm_wrapper(pars):
         fluxs = fluxs.sum()
         print(f"Integration of flux is {fluxs}")
         integrals[i] = fluxs
-    gamma = pars[:,6]   #photon index
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    print(Anorm)
     pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
