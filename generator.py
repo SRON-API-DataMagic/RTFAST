@@ -132,7 +132,9 @@ def Anorm_wrapper(pars):
     integrals = np.zeros(normalisation.shape)
     
     for i,normal in enumerate(normalisation):
-        integrals[i] = quad(flux, 0, np.inf)[0]
+        integral = quad(flux, 0, np.inf)
+        print(integral)
+        integrals[i] = integral
     gamma = pars[:,6]   #photon index
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
