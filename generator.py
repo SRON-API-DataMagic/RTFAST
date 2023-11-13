@@ -141,8 +141,13 @@ def Anorm_wrapper(pars):
         print(f"Integration of flux is {fluxs}")
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
-    print(Anorm)
-    pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
+    print("Anorm:",Anorm)
+    print("L:",L[np.isnan(Anorm)])
+    print("gamma:",gamma[np.isnan(Anorm)])
+    print("integrals:",integrals[np.isnan(Anorm)])
+    print("D:",D[np.isnan(Anorm)])
+    print("g_so:",g_so[np.isnan(Anorm)])
+    pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
 def lhc_filter(lhc):
