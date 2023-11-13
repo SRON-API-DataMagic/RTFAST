@@ -134,7 +134,7 @@ def Anorm_wrapper(pars):
     for i in range(len(normalisation)):
         print(f"Flux normalistion is {normalisation[i]}")
         print(f"Gamma is {gamma[i]}")
-        E_range = np.logspace(-6,40,num = 100000)
+        E_range = np.logspace(-6,20,num = 10000)
         gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
         fluxs = flux(E_range,normalisation[i],gamma[i])
         fluxs = fluxs[:-1]*gmid
