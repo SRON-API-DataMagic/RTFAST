@@ -138,9 +138,8 @@ def Anorm_wrapper(pars):
         print(f"Gamma is {gamma[i]}")
         fluxs = flux(E_range,normalisation[i],gamma[i])
         fluxs = fluxs[:-1]*gmid
-        print(fluxs)
         fluxs = fluxs.sum()
-        print(fluxs)
+        print(f"Integration of flux is {fluxs}")
         integrals[i] = fluxs
     gamma = pars[:,6]   #photon index
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
