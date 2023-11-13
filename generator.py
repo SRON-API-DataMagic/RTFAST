@@ -170,8 +170,8 @@ def lhc_filter(lhc):
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
     D = 3.086e21 * D        #distance in cm
-    M = 10**lhc[:,13]       #mass of the object
-    M = 1.989e33*M          #mass in g
+    M_solar = 10**lhc[:,13]       #mass of the object
+    M = 1.989e33*M_solar         #mass in g
     L = 4*np.pi*(D**2)*F  #luminosity of corona in erg/cm^2/s
     print("Fluxes:")
     print(F)
@@ -181,7 +181,7 @@ def lhc_filter(lhc):
     print(D)
     print("Luminosities:")
     print(L)
-    Ledd = 1.26e38*M    #eddington luminosity
+    Ledd = 1.26e38*M_solar    #eddington luminosity
     print("Eddington luminosities:")
     print(Ledd)
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
