@@ -172,7 +172,10 @@ def lhc_filter(lhc):
     D = 3.086e21 * D        #distance in cm
     M = 10**lhc[:,13]       #mass of the object
     M = 1.989e33*M          #mass in g
-    L = 4*np.pi*D**2*F  #luminosity of corona in erg/cm^2/s
+    L = 4*np.pi*(D**2)*F  #luminosity of corona in erg/cm^2/s
+    print(F)
+    print(M)
+    print(D)
     print(L)
     Ledd = 1.26e38*M    #eddington luminosity
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
