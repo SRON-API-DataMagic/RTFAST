@@ -160,32 +160,21 @@ def lhc_filter(lhc):
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
-    print(bad_disks[0].shape)
+    print(f"There are {bad_disks[0].shape[0]} bad disk sets")
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
-    print(bad_dists[0].shape)
+    print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
     D = 3.086e21 * D        #distance in cm
-    M_solar = 10**lhc[:,13]       #mass of the object
-    M = 1.989e33*M_solar         #mass in g
-    L = 4*np.pi*(D**2)*F  #luminosity of corona in erg/cm^2/s
-    print("Fluxes:")
-    print(F)
-    print("Masses:")
-    print(M)
-    print("Distances:")
-    print(D)
-    print("Luminosities:")
-    print(L)
-    Ledd = 1.26e38*M_solar    #eddington luminosity
-    print("Eddington luminosities:")
-    print(Ledd)
+    M_solar = 10**lhc[:,13] #mass of the object
+    L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
+    Ledd = 1.26e38*M_solar  #eddington luminosity
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
-    print(bad_Ls[0].shape)
+    print(f"There are {bad_Ls[0].shape[0]} bad distance sets")
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
     #removes all unphysical sets from the parameter sets
