@@ -177,7 +177,7 @@ def lhc_filter(lhc):
     print(f"There are {bad_Ls[0].shape[0]} bad luminosity sets")
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
-    print(f"There are {bad_sets[0].shape[0]} total unique bad sets")
+    print(f"There are {bad_sets.shape[0]} total unique bad sets")
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
     #convert fluxes to Anorm
