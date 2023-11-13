@@ -174,9 +174,10 @@ def lhc_filter(lhc):
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
     bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
-    print(f"There are {bad_Ls[0].shape[0]} bad distance sets")
+    print(f"There are {bad_Ls[0].shape[0]} bad luminosity sets")
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
+    print(f"There are {bad_sets[0].shape[0]} total unique bad sets")
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
     #convert fluxes to Anorm
