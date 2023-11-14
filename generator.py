@@ -119,7 +119,7 @@ def Anorm_wrapper(pars):
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
     for i in range(fluxs.shape[1]):
-        E_mid = egrid[i]+egrid[i+1]/2
+        E_mid = 1.60217653e-09 * (egrid[i]+egrid[i+1])/2
         print(E_mid)
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
