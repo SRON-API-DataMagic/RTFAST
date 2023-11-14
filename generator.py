@@ -673,6 +673,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     print(theta_lhc.shape)
     print(theta_lhc)
     t_end = time.time()
+    print(pars_conversion_full(theta_lhc, 0))
     print(t_end - t_start)
     quit()
     
