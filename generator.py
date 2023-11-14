@@ -5,6 +5,7 @@ for generating sampels for training the emulator for rtdist.
 import numpy as np
 from scipy.integrate import quad
 import os
+import time
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
@@ -668,9 +669,11 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     sample = sampler.random(n=size)
     theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
+    t_start = time.time()
     theta_lhc = lhc_filter(theta_lhc)
-    print(theta_lhc)
     print(theta_lhc.shape)
+    t_end = time.time()
+    print(t_end - t_start)
     quit()
     
     #generate physical models of test set
