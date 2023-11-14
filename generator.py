@@ -131,7 +131,7 @@ def Anorm_wrapper(pars):
         return normal*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
     integrals = np.zeros(normalisation.shape)
-    E_range = np.linspace(1e-3,1e6,num = 100000)
+    E_range = np.linspace(1e-3,1e4,num = 1000)
     gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
