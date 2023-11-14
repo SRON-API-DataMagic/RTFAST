@@ -143,6 +143,7 @@ def Anorm_wrapper(pars):
         fluxs = fluxs.sum()
         integrals[i] = fluxs
     print("Integrals")
+    print(gamma)
     print(integrals)
     print("Distance effect")
     print(10**pars[:,7])
