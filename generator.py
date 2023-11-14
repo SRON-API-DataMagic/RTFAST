@@ -125,7 +125,7 @@ def Anorm_wrapper(pars):
     print(fluxs.shape)
     print(fluxs.sum(axis=1))
     normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
-    print(np.format_float_scientific(normalisation))
+    print(normalisation)
     
     #Integrate flux from 0 to infinity for then finding Anorm
     def flux(E,normal,gamma):
