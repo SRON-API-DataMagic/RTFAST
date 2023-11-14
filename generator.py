@@ -141,6 +141,7 @@ def Anorm_wrapper(pars):
         fluxs = normalisation[i]*flux(gmid,gamma[i])
         fluxs = fluxs.sum()
         integrals[i] = fluxs
+    print(integrals)
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
