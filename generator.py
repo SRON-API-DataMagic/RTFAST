@@ -123,7 +123,7 @@ def Anorm_wrapper(pars):
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
     print(fluxs.shape)
-    print(f"{fluxs.sum(axis=1):.2E}")
+    print(fluxs.sum(axis=1))
     normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
     print(f"{normalisation:.2E}")
     
