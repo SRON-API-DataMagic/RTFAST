@@ -149,6 +149,7 @@ def Anorm_wrapper(pars):
     print(10**pars[:,7])
     print(8*np.pi*D**2)
     print("Gravitational redshift")
+    print(g_so)
     print(g_so**(gamma-2))
     print("Luminosities")
     print(L)
