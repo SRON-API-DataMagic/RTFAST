@@ -123,8 +123,9 @@ def Anorm_wrapper(pars):
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
     print(fluxs.shape)
-    print(fluxs.sum(axis=1))
+    print(f"{fluxs.sum(axis=1):.2E}")
     normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
+    print(f"{normalisation:.2E}")
     
     #Integrate flux from 0 to infinity for then finding Anorm
     def flux(E,normal,gamma):
@@ -135,12 +136,8 @@ def Anorm_wrapper(pars):
     gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
-        print(f"Flux normalistion is {normalisation[i]}")
-        print(f"Gamma is {gamma[i]}")
         fluxs = flux(gmid,normalisation[i],gamma[i])
         fluxs = fluxs.sum()
-        print(f"Integration of flux is {fluxs}")
-        print("\n")
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     
