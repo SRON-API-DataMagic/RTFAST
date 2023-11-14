@@ -130,15 +130,15 @@ def Anorm_wrapper(pars):
     print(normalisation)
     
     #Integrate flux from 0 to infinity for then finding Anorm
-    def flux(E,normal,gamma):
-        return normal*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
+    def flux(E,gamma):
+        return np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
     integrals = np.zeros(normalisation.shape)
     E_range = np.linspace(1e-3,1e4,num = 1000)
     gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
-        fluxs = flux(gmid,normalisation[i],gamma[i])
+        fluxs = normalisation[i]*flux(gmid,gamma[i])
         fluxs = fluxs.sum()
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
