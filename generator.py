@@ -137,8 +137,7 @@ def Anorm_wrapper(pars):
     for i in range(len(normalisation)):
         print(f"Flux normalistion is {normalisation[i]}")
         print(f"Gamma is {gamma[i]}")
-        fluxs = flux(E_range,normalisation[i],gamma[i])
-        fluxs = fluxs[:-1]*gmid
+        fluxs = flux(gmid,normalisation[i],gamma[i])
         fluxs = fluxs.sum()
         print(f"Integration of flux is {fluxs}")
         print("\n")
