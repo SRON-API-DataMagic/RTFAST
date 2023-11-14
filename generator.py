@@ -155,7 +155,12 @@ def Anorm_wrapper(pars):
     print(L)
     print(L/Ledd)
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    print("Anorm")
     print(Anorm)
+    print("Final checks")
+    print(L)
+    print(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
