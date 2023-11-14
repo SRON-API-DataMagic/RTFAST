@@ -115,6 +115,7 @@ def Anorm_wrapper(pars):
     gamma = pars[:,6]               #photon index
     #calculate normalisation for each flux spectra
     
+    print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
     egrid = np.linspace(1e-1,1e3,num = 10000)
     E_cut = 1.60217653e-09 * 300   #cutoff in ergs
@@ -124,17 +125,14 @@ def Anorm_wrapper(pars):
         E_mid = 1.60217653e-09 * (egrid[i]+egrid[i+1])/2
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
-    print(fluxs.shape)
-    print(fluxs.sum(axis=1))
     normal = 10**20 * 10**15 /(4*np.pi)
-    print(normal)
     normalisation = normal/fluxs.sum(axis=1)
-    print(normalisation)
     
     #Integrate flux from 0 to infinity for then finding Anorm
     def flux(E,gamma):
         return np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
+    print("Integrating fluxes")
     integrals = np.zeros(normalisation.shape)
     E_range = np.linspace(1e-3,1e4,num = 1000)
     gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
@@ -146,6 +144,7 @@ def Anorm_wrapper(pars):
     D = 10**pars[:,7]
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
+    print("Calculated Anorms")
     return pars
 
 def lhc_filter(lhc):
