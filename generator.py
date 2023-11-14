@@ -116,7 +116,7 @@ def Anorm_wrapper(pars):
     
     #energies from 0.1keV to 1MeV
     egrid = np.linspace(1e-1,1e3,num = 10000)
-    E_cut = 1.60217653e-09 * 1000   #cutoff in ergs
+    E_cut = 1.60217653e-09 * 300   #cutoff in ergs
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
     for i in range(fluxs.shape[1]):
@@ -191,6 +191,7 @@ def lhc_filter(lhc):
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
+    print(hubble)
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
     print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     #Check luminosities aren't super eddington or too small to see
