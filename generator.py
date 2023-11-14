@@ -146,6 +146,7 @@ def Anorm_wrapper(pars):
     print(gamma)
     print(integrals)
     print("Distance effect")
+    print(pars[:,7])
     print(10**pars[:,7])
     print(8*np.pi*D**2)
     print("Gravitational redshift")
