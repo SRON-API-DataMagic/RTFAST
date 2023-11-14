@@ -115,7 +115,7 @@ def Anorm_wrapper(pars):
     
     #energies from 0.1keV to 1MeV
     egrid = np.linspace(1e-1,1e3,num = 10000)
-    E_cut = 1.60217653e-09 * 1000   #cutoff in keV
+    E_cut = 1.60217653e-09 * 1000   #cutoff in ergs
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
     for i in range(fluxs.shape[1]):
@@ -124,7 +124,9 @@ def Anorm_wrapper(pars):
     
     print(fluxs.shape)
     print(fluxs.sum(axis=1))
-    normalisation = (10**20 * (10**15 / (4*np.pi)))/fluxs.sum(axis=1)
+    normal = 10**20 * 10**15 /(4*np.pi)
+    print(normal)
+    normalisation = normal/fluxs.sum(axis=1)
     print(normalisation)
     
     #Integrate flux from 0 to infinity for then finding Anorm
