@@ -192,6 +192,7 @@ def lhc_filter(lhc):
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
     print(hubble)
+    print(hubble[(hubble < 60) | (hubble > 80)])
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
     print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     #Check luminosities aren't super eddington or too small to see
