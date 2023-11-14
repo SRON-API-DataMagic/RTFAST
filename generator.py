@@ -142,25 +142,7 @@ def Anorm_wrapper(pars):
         fluxs = normalisation[i]*flux(gmid,gamma[i])
         fluxs = fluxs.sum()
         integrals[i] = fluxs
-    print("Integrals")
-    print(gamma)
-    print(integrals)
-    print("Distance effect")
-    print(pars[:,7])
-    print(10**pars[:,7])
-    print(8*np.pi*D**2)
-    print("Gravitational redshift")
-    print(g_so)
-    print(g_so**(gamma-2))
-    print("Luminosities")
-    print(L)
-    print(L/Ledd)
-    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
-    print("Anorm")
-    print(Anorm)
-    print("Final checks")
-    print(L)
-    print(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    D = 10**pars[:,7]
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
@@ -191,8 +173,6 @@ def lhc_filter(lhc):
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
-    print(hubble)
-    print(hubble[(hubble < 60) | (hubble > 80)])
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
     print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     #Check luminosities aren't super eddington or too small to see
@@ -202,7 +182,7 @@ def lhc_filter(lhc):
     M_solar = 10**lhc[:,13] #mass of the object
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
-    bad_Ls = np.nonzero((L > 1.2*Ledd)|(L < 1e-4*Ledd))
+    bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
     print(f"There are {bad_Ls[0].shape[0]} bad luminosity sets")
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
