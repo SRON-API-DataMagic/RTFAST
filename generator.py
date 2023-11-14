@@ -114,7 +114,7 @@ def Anorm_wrapper(pars):
     #calculate normalisation for each flux spectra
     
     #energies from 0.1keV to 1MeV
-    egrid = np.logspace(-1,3,num = 500)
+    egrid = np.linspace(1e-1,1e3,num = 10000)
     E_cut = 1000                    #cutoff in keV
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
@@ -129,22 +129,19 @@ def Anorm_wrapper(pars):
         return normal*np.exp((-0.5*E)/E_cut)*E**(1-gamma)
     
     integrals = np.zeros(normalisation.shape)
-    E_range = np.logspace(-3,6,num = 10000)
+    E_range = np.linspace(1e-3,1e6,num = 100000)
     gmid = 1.60217653e-09  * (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
         print(f"Flux normalistion is {normalisation[i]}")
         print(f"Gamma is {gamma[i]}")
         fluxs = flux(E_range,normalisation[i],gamma[i])
+        print(fluxs)
         fluxs = fluxs[:-1]*gmid
         fluxs = fluxs.sum()
         print(f"Integration of flux is {fluxs}")
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
-    print("g_so:",g_so[np.isnan(Anorm)])
-    print("a:",a[np.isnan(Anorm)])
-    print("h:",h[np.isnan(Anorm)])
-    print("Dh:",Dh[np.isnan(Anorm)])
     
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
