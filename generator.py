@@ -109,7 +109,7 @@ def Anorm_wrapper(pars):
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
     F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
-    D = 10**pars[:,7]*3.086e21      #distance of objects in cm
+    D = 10**pars[:,7]               #distance of objects in cm
     L = 4*np.pi*D**2*F              #luminosity of corona
     Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
