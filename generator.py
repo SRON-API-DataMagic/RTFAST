@@ -180,7 +180,6 @@ def lhc_filter(lhc):
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
-    D = 3.086e21 * D        #distance in cm
     M_solar = 10**lhc[:,13] #mass of the object
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
