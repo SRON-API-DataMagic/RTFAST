@@ -134,6 +134,7 @@ def Anorm_wrapper(pars):
         plt.xlabel("Energy(eV)")
         plt.ylabel("E*F (erg/$cm^2$/$s^1$)")
         plt.savefig(f"verify/{i}.png")
+        plt.close()
     
     normal = 10**20 * 10**15 /(4*np.pi)
     normalisation = normal/fluxs.sum(axis=1)
