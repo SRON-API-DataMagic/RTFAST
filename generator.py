@@ -125,7 +125,7 @@ def Anorm_wrapper(pars):
         E_mid = (egrid[i]+egrid[i+1])/2
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
-    normal = 10**20 * 10**15 /(4*np.pi)
+    normal = (6.242e+8 * 1e20 * 1e15 )/(4*np.pi)
     normalisation = normal/fluxs.sum(axis=1)
     
     #Integrate flux from 0 to infinity for then finding Anorm
