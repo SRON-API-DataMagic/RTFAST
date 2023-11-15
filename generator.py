@@ -124,6 +124,7 @@ def Anorm_wrapper(pars):
     
     for i in range(Fx.shape[1]):
         E_mid = (egrid[i]+egrid[i+1])/2
+        print(E_mid)
         Fx[:,i] = np.exp(-E_mid/E_cut)*E_mid**(1-gamma)
     
     Fx = Fx.sum(axis=1)*1.60218e-12
