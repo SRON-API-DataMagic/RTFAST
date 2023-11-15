@@ -120,14 +120,19 @@ def Anorm_wrapper(pars):
     #energies from 0.1keV to 1MeV
     egrid = np.logspace(-1,3,num = 10000)
     E_cut = 300                     #cutoff in keV
-    fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
+    Fx = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
-    for i in range(fluxs.shape[1]):
+    for i in range(Fx.shape[1]):
         E_mid = (egrid[i]+egrid[i+1])/2
-        fluxs[:,i] = np.exp(-E_mid/E_cut)*E_mid**(1-gamma)
+        Fx[:,i] = np.exp(-E_mid/E_cut)*E_mid**(1-gamma)
     
+    Fx = Fx.sum(axis=1)*1.60218e-9
     normal = 10**20 * 10**15 /(4*np.pi)
-    normalisation = (fluxs.sum(axis=1)*1.60218e-9)/normal
+    normalisation = normal/Fx
+    print("Fx:")
+    print(Fx)
+    print("Normalisations:")
+    print(normalisation)
     
     #Integrate flux from 0 to infinity for then finding Anorm
     def flux(E,gamma):
@@ -135,14 +140,17 @@ def Anorm_wrapper(pars):
     
     print("Integrating fluxes")
     integrals = np.zeros(normalisation.shape)
-    E_range = np.logspace(-3,4,num = 10000)
+    #approximation of 0 to inf integral
+    E_range = np.logspace(-3,4,num = 10000) 
     gmid = (E_range[:-1] + E_range[1:]) / 2
+    print("Energies in keV")
+    print(gmid)
     
     for i in range(len(normalisation)):
-        fluxs = normalisation[i]*flux(gmid,gamma[i])
-        fluxs = fluxs.sum()*1.60218e-9
+        fluxs = flux(gmid,gamma[i])
+        fluxs = normalisation[i]*fluxs.sum()*1.60218e-9
         integrals[i] = fluxs
-    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    Anorm = 2*F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
     print("See L/Ledds for comparison:")
