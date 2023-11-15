@@ -434,7 +434,7 @@ def pars_conversion_full(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = -10**pars[:,0]  #height
+    new_pars[:,0] = 10**pars[:,0]   #height
     new_pars[:,1] = pars[:,1]       #spin
     new_pars[:,2] = 10**pars[:,2]   #inclination
     new_pars[:,3] = -10**pars[:,3]  #inner radius
@@ -670,8 +670,6 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     
     t_start = time.time()
     theta_lhc = lhc_filter(theta_lhc)
-    print(theta_lhc.shape)
-    print(theta_lhc)
     t_end = time.time()
     print(pars_conversion_full(theta_lhc, 0))
     print(t_end - t_start)
