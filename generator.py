@@ -124,10 +124,10 @@ def Anorm_wrapper(pars):
     
     for i in range(fluxs.shape[1]):
         E_mid = (egrid[i]+egrid[i+1])/2
-        fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)*1,60218e-9
+        fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
     for i, flux in enumerate(fluxs):
-        plt.plot(egrid,flux)
+        plt.plot(egrid,flux*1,60218e-9)
         plt.xscale("log")
         plt.yscale("log")
         plt.title(f"Normalisation emission spectra for {gamma[i]}")
