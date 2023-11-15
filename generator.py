@@ -135,12 +135,12 @@ def Anorm_wrapper(pars):
     
     print("Integrating fluxes")
     integrals = np.zeros(normalisation.shape)
-    E_range = np.logspace(-3,4,num = 1000)
+    E_range = np.logspace(-3,4,num = 10000)
     gmid = (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
         fluxs = normalisation[i]*flux(gmid,gamma[i])
-        fluxs = fluxs.sum()
+        fluxs = fluxs.sum()*1.60218e-9
         integrals[i] = fluxs
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
@@ -674,7 +674,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     theta_lhc = lhc_filter(theta_lhc)
     t_end = time.time()
     print(pars_conversion_full(theta_lhc, 0))
-    print(t_end - t_start)
+    print(f"Time to filter and compute Anorm: {t_end - t_start}s")
     quit()
     
     #generate physical models of test set
