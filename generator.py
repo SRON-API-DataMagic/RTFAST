@@ -110,14 +110,14 @@ def Anorm_wrapper(pars):
     #calculate luminosity of corona
     F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
     D = 10**pars[:,7]*3.086e21      #distance of objects in cm
-    L = 6.242e+8*4*np.pi*D**2*F              #luminosity of corona
-    Ledd = 6.242e+8*1.26e38*10**pars[:,13]   #eddington luminosity
+    L = 4*np.pi*D**2*F              #luminosity of corona
+    Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
     #calculate normalisation for each flux spectra
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
-    egrid = np.linspace(1e-1,1e3,num = 10000)
+    egrid = np.logspace(-1,3,num = 10000)
     E_cut = 300                     #cutoff in keV
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
@@ -125,7 +125,7 @@ def Anorm_wrapper(pars):
         E_mid = (egrid[i]+egrid[i+1])/2
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
-    normal = (6.242e+8 * 1e20 * 1e15 )/(4*np.pi)
+    normal = 10**20 * 10**15 /(4*np.pi)
     normalisation = normal/fluxs.sum(axis=1)
     
     #Integrate flux from 0 to infinity for then finding Anorm
@@ -134,7 +134,7 @@ def Anorm_wrapper(pars):
     
     print("Integrating fluxes")
     integrals = np.zeros(normalisation.shape)
-    E_range = np.linspace(1e-3,1e4,num = 1000)
+    E_range = np.logspace(-3,4,num = 1000)
     gmid = (E_range[:-1] + E_range[1:]) / 2
     
     for i in range(len(normalisation)):
