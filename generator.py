@@ -6,6 +6,7 @@ import numpy as np
 from scipy.integrate import quad
 import os
 import time
+import matplotlib.pyplot as plt
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
@@ -123,7 +124,16 @@ def Anorm_wrapper(pars):
     
     for i in range(fluxs.shape[1]):
         E_mid = (egrid[i]+egrid[i+1])/2
-        fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
+        fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)*1,60218e-9
+    
+    for i, flux in enumerate(fluxs):
+        plt.plot(egrid,flux)
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.title(f"Normalisation emission spectra for {gamma[i]}")
+        plt.xlabel("Energy(eV)")
+        plt.ylabel("E*F (erg/$cm^2$/$s^1$)")
+        plt.savefig(f"verify/{i}.png")
     
     normal = 10**20 * 10**15 /(4*np.pi)
     normalisation = normal/fluxs.sum(axis=1)
