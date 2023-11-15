@@ -143,8 +143,6 @@ def Anorm_wrapper(pars):
     #approximation of 0 to inf integral
     E_range = np.logspace(-3,4,num = 10000) 
     gmid = (E_range[:-1] + E_range[1:]) / 2
-    print("Energies in keV")
-    print(gmid)
     
     for i in range(len(normalisation)):
         fluxs = flux(gmid,gamma[i])
