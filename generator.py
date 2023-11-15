@@ -109,7 +109,7 @@ def Anorm_wrapper(pars):
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
     F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
-    D = 10**pars[:,7]               #distance of objects in cm
+    D = 10**pars[:,7]*3.086e21      #distance of objects in cm
     L = 4*np.pi*D**2*F              #luminosity of corona
     Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
@@ -141,8 +141,7 @@ def Anorm_wrapper(pars):
         fluxs = normalisation[i]*flux(gmid,gamma[i])
         fluxs = fluxs.sum()
         integrals[i] = fluxs
-    D = 10**pars[:,7]
-    Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
+    Anorm = (3.086e21**2)*(L/(8*np.pi*D**2*g_so**(gamma-2)*integrals))
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
     print("See L/Ledds for comparison:")
@@ -180,6 +179,7 @@ def lhc_filter(lhc):
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
+    D = 3.086e21 * D        #distance in cm
     M_solar = 10**lhc[:,13] #mass of the object
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
