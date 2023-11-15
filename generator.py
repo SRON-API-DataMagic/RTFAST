@@ -118,7 +118,7 @@ def Anorm_wrapper(pars):
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
-    egrid = np.logspace(-1,3,num = 10000)
+    egrid = np.logspace(-1,6,num = 10000)
     E_cut = 300                     #cutoff in keV
     fluxs = np.zeros((pars.shape[0],egrid.shape[0]-1))
     
@@ -127,7 +127,7 @@ def Anorm_wrapper(pars):
         fluxs[:,i] = np.exp((-0.5*E_mid)/E_cut)*E_mid**(1-gamma)
     
     for i, flux in enumerate(fluxs):
-        plt.plot(egrid[:-1],flux*1,60218e-9)
+        plt.plot(egrid[:-1],flux*1,60218e-12)
         plt.xscale("log")
         plt.yscale("log")
         plt.title(f"Normalisation emission spectra for {gamma[i]}")
