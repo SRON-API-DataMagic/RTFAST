@@ -125,11 +125,12 @@ def Anorm_wrapper(pars):
     for i in range(Fx.shape[1]):
         E_mid = (egrid[i]+egrid[i+1])/2
         Fx[:,i] = np.exp(-E_mid/E_cut)*E_mid**(1-gamma)
-        print(Fx[0,i])
     
     Fx = Fx.sum(axis=1)*1.60218e-12
     normal = 10**20 * 10**15 /(4*np.pi)
     normalisation = normal/Fx
+    print("F:")
+    print(F)
     print("Fx:")
     print(Fx)
     print("Normalisations:")
