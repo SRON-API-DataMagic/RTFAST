@@ -145,6 +145,8 @@ def Anorm_wrapper(pars):
     Anorm = L/(8*np.pi*D**2*g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
+    print("See L/Ledds for comparison:")
+    print(L/Ledd)
     return pars
 
 def lhc_filter(lhc):
