@@ -110,8 +110,8 @@ def Anorm_wrapper(pars):
     #calculate luminosity of corona
     F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
     D = 10**pars[:,7]*3.086e21      #distance of objects in cm
-    L = 4*np.pi*D**2*F              #luminosity of corona
-    Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
+    L = 6.242e+8*4*np.pi*D**2*F              #luminosity of corona
+    Ledd = 6.242e+8*1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
     #calculate normalisation for each flux spectra
     
