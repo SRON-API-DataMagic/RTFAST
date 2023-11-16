@@ -132,6 +132,7 @@ def Anorm_wrapper(pars):
     
     xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
     xill_pars = np.array(xill_pars)
+    xill_pars[:,0] = [2,1,300,3.1,0,30,0,1]
     print(xill_pars)
     print(xill_pars.shape)
     
