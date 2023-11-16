@@ -122,32 +122,34 @@ def Anorm_wrapper(pars):
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
-    egrid = np.linspace(1e-1,1e3,num = 10000)
-    bin_width = np.diff(egrid)
-    e_mid = (egrid[:-1] + egrid[1:]) / 2
-    integrals = np.zeros(gamma.shape)
-    #cutoff in keV
-    E_cut = np.ones(gamma.shape)*300
-    logxi = np.ones(gamma.shape)
-    xnorm = np.ones(gamma.shape)
-    
-    xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
-    xill_pars = np.array(xill_pars)
-    xill_pars[:,0] = [2,1,300,3.1,0,30,0,1]
-    print(xill_pars)
-    print(xill_pars.shape)
-    
-    for i in range(xill_pars.shape[1]):
-        continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]
-        plt.plot(egrid[:-1],continuum)
-        plt.xscale("log")
-        plt.yscale("log")
-        plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
-        plt.xlabel("Energy (keV)")
-        plt.xlim(0.1,40)
-        plt.ylim(6,6200)
-        plt.savefig(f"verify/{i}.pdf")
-        integrals[i] = (continuum*e_mid).sum()
+    bins = [1000,10000]
+    for binz in bins:
+        egrid = np.linspace(1e-1,1e3,num = binz)
+        bin_width = np.diff(egrid)
+        e_mid = (egrid[:-1] + egrid[1:]) / 2
+        integrals = np.zeros(gamma.shape)
+        #cutoff in keV
+        E_cut = np.ones(gamma.shape)*300
+        logxi = np.ones(gamma.shape)
+        xnorm = np.ones(gamma.shape)
+        
+        xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
+        xill_pars = np.array(xill_pars)
+        xill_pars[:,0] = [2,1,300,3.1,0,30,0,1]
+        print(xill_pars)
+        print(xill_pars.shape)
+        
+        for i in range(xill_pars.shape[1]):
+            continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]
+            plt.plot(egrid[:-1],continuum)
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
+            plt.xlabel("Energy (keV)")
+            plt.xlim(0.1,40)
+            plt.ylim(6,6200)
+            plt.savefig(f"verify/{i}_{binz}.pdf")
+            integrals[i] = (continuum*e_mid).sum()
     
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
