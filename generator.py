@@ -129,7 +129,8 @@ def Anorm_wrapper(pars):
     E_cut = np.ones(gamma.shape)*300
     logxi = np.ones(gamma.shape)
     
-    xill_pars = np.array([gamma,Afe,E_cut,logxi,z,inc,refl_frac])
+    xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac]
+    xill_pars = np.array(xill_pars)
     print(xill_pars)
     
     for i,xill in enumerate(xill_pars):
