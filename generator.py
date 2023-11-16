@@ -130,6 +130,7 @@ def Anorm_wrapper(pars):
     logxi = np.ones(gamma.shape)
     
     xill_pars = np.array([gamma,Afe,E_cut,logxi,z,inc,refl_frac])
+    print(xill_pars)
     
     for i,xill in enumerate(xill_pars):
         continuum = _models.lmodxillver(xill, egrid)[:-1]
