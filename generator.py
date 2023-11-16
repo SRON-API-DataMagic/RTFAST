@@ -139,7 +139,7 @@ def Anorm_wrapper(pars):
         print(xill_pars)
         print(xill_pars.shape)
         
-        continuum = _models.lmodxillver(xill_pars[:,0], egrid)[:-1]*bin_width
+        continuum = _models.lmodxillver(xill_pars[:,0], egrid)[:-1]/bin_width
         plt.plot(egrid[:-1],continuum)
         plt.xscale("log")
         plt.yscale("log")
@@ -147,7 +147,7 @@ def Anorm_wrapper(pars):
         plt.xlabel("Energy (keV)")
         plt.xlim(0.1,40)
         plt.ylim(6,6200)
-        plt.savefig(f"verify/{binz}.pdf")
+        plt.savefig(f"verify/div_{binz}.pdf")
         plt.close()
         integrals[0] = (continuum*e_mid).sum()
     
