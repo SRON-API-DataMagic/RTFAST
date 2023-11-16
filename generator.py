@@ -139,7 +139,7 @@ def Anorm_wrapper(pars):
         continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]
         integrals[i] = (continuum*e_mid).sum()
     
-    Anorm = 2*F/(g_so**(gamma-2)*integrals)
+    Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
     print("See L/Ledds for comparison:")
