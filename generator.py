@@ -122,7 +122,7 @@ def Anorm_wrapper(pars):
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
-    egrid = np.linspace(1e-1,1e3,num = 1000)
+    egrid = np.linspace(1e-1,1e3,num = 10000)
     bin_width = np.diff(egrid)
     e_mid = (egrid[:-1] + egrid[1:]) / 2
     integrals = np.zeros(gamma.shape)
@@ -145,8 +145,8 @@ def Anorm_wrapper(pars):
         plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
         plt.xlabel("Energy (keV)")
         plt.xlim(0.1,40)
-        plt.ylim(6,6000)
-        plt.savefig(f"verify/{i}.png")
+        plt.ylim(6,6200)
+        plt.savefig(f"verify/{i}.pdf")
         integrals[i] = (continuum*e_mid).sum()
     
     Anorm = F/(g_so**(gamma-2)*integrals)
