@@ -132,9 +132,10 @@ def Anorm_wrapper(pars):
     
     xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
     xill_pars = np.array(xill_pars)
+    print(xill_pars)
     
     for i in range(len(xill_pars)):
-        continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]
+        continuum = _models.lmodxillver(xill_pars[i,:], egrid)[:-1]
         integrals[i] = (continuum*e_mid).sum()
     
     Anorm = 2*F/(g_so**(gamma-2)*integrals)
