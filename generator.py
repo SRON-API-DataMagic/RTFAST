@@ -143,6 +143,7 @@ def Anorm_wrapper(pars):
         plt.ylabel("Continuum (units???)")
         plt.xlabel("Energy (keV)")
         plt.xlim(1e-1,40)
+        plt.ylim(5,10000)
         plt.savefig(f"verify/{i}.png")
         integrals[i] = (continuum*e_mid).sum()
     
