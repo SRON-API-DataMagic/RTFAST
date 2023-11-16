@@ -142,8 +142,9 @@ def Anorm_wrapper(pars):
         plt.plot(egrid[:-1],continuum)
         plt.xscale("log")
         plt.yscale("log")
-        plt.ylabel("Continuum (units???)")
+        plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
         plt.xlabel("Energy (keV)")
+        plt.xlim(0.1,40)
         plt.savefig(f"verify/{i}.png")
         integrals[i] = (continuum*e_mid).sum()
     
