@@ -128,8 +128,9 @@ def Anorm_wrapper(pars):
     #cutoff in keV
     E_cut = np.ones(gamma.shape)*300
     logxi = np.ones(gamma.shape)
+    xnorm = np.ones(gamma.shape)
     
-    xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac]
+    xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
     xill_pars = np.array(xill_pars)
     
     for i in range(len(xill_pars)):
