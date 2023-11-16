@@ -126,7 +126,6 @@ def Anorm_wrapper(pars):
     for binz in bins:
         egrid = np.linspace(1e-1,1e3,num = binz)
         bin_width = np.diff(egrid)
-        print(bin_width)
         e_mid = (egrid[:-1] + egrid[1:]) / 2
         integrals = np.zeros(gamma.shape)
         #cutoff in keV
@@ -140,7 +139,7 @@ def Anorm_wrapper(pars):
         print(xill_pars)
         print(xill_pars.shape)
         
-        continuum = _models.lmodxillver(xill_pars[:,0], egrid)[:-1]/bin_width
+        continuum = _models.lmodxillver(xill_pars[:,0], egrid)[:-1]*bin_width
         plt.plot(egrid[:-1],continuum)
         plt.xscale("log")
         plt.yscale("log")
