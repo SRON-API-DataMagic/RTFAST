@@ -123,7 +123,7 @@ def Anorm_wrapper(pars):
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
     egrid = np.linspace(1e-1,1e3,num = 10000)
-    bin_width = egrid[:-1] - egrid[1:]
+    bin_width = np.diff(egrid)
     e_mid = (egrid[:-1] + egrid[1:]) / 2
     integrals = np.zeros(gamma.shape)
     #cutoff in keV
@@ -144,8 +144,6 @@ def Anorm_wrapper(pars):
         plt.yscale("log")
         plt.ylabel("Continuum (units???)")
         plt.xlabel("Energy (keV)")
-        plt.xlim(1e-1,40)
-        plt.ylim(5,10000)
         plt.savefig(f"verify/{i}.png")
         integrals[i] = (continuum*e_mid).sum()
     
