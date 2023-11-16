@@ -126,6 +126,7 @@ def Anorm_wrapper(pars):
     for binz in bins:
         egrid = np.linspace(1e-1,1e3,num = binz)
         bin_width = np.diff(egrid)
+        print(bin_width)
         e_mid = (egrid[:-1] + egrid[1:]) / 2
         integrals = np.zeros(gamma.shape)
         #cutoff in keV
