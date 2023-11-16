@@ -138,7 +138,7 @@ def Anorm_wrapper(pars):
     print(xill_pars.shape)
     
     for i in range(xill_pars.shape[1]):
-        continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]/bin_width
+        continuum = _models.lmodxillver(xill_pars[:,i], egrid)[:-1]
         plt.plot(egrid[:-1],continuum)
         plt.xscale("log")
         plt.yscale("log")
