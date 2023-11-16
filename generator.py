@@ -114,42 +114,27 @@ def Anorm_wrapper(pars):
     L = 4*np.pi*D**2*F              #luminosity of corona
     Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
+    Afe = pars[:,8]
+    z = pars[:,5]
+    refl_frac = np.zeros(gamma.shape)
+    inc = pars[:,2]
     #calculate normalisation for each flux spectra
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
     egrid = np.logspace(2,6,num = 10000)
-    E_cut = 300e3                  #cutoff in keV
-    Fx = np.zeros((pars.shape[0],egrid.shape[0]-1))
+    e_mid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
+    integrals = np.zeros(gamma.shape)
+    #cutoff in keV
+    E_cut = np.ones(gamma.shape)*300
+    logxi = np.ones(gamma.shape)
     
-    for i in range(Fx.shape[1]):
-        E_mid = (egrid[i]+egrid[i+1])/2
-        Fx[:,i] = np.exp(-E_mid/E_cut)*E_mid**(1-gamma)
+    xill_pars = np.array([gamma,Afe,E_cut,logxi,z,inc,refl_frac])
     
-    Fx = Fx.sum(axis=1)*1.60218e-12
-    normal = 10**20 * 10**15 /(4*np.pi)
-    normalisation = normal/Fx
-    print("F:")
-    print(F)
-    print("Fx:")
-    print(Fx)
-    print("Normalisations:")
-    print(normalisation)
+    for i,xill in enumerate(xill_pars):
+        continuum = _models.lmodxillver(xill, egrid)[:-1]
+        integrals[i] = (continuum*e_mid).sum()
     
-    #Integrate flux from 0 to infinity for then finding Anorm
-    def flux(E,gamma):
-        return np.exp(-E/E_cut)*E**(1-gamma)
-    
-    print("Integrating fluxes")
-    integrals = np.zeros(normalisation.shape)
-    #approximation of 0 to inf integral
-    E_range = np.logspace(-3,8,num = 10000) 
-    gmid = (E_range[:-1] + E_range[1:]) / 2
-    
-    for i in range(len(normalisation)):
-        fluxs = flux(gmid,gamma[i])
-        fluxs = normalisation[i]*fluxs.sum()*1.60218e-12
-        integrals[i] = fluxs
     Anorm = 2*F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
