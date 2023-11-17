@@ -129,13 +129,18 @@ def Anorm_wrapper(pars):
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
     bins = 1000
-    for i in range(gamma.shape[0]):
-        egrid = np.logspace(-1,3,num = bins)
-        e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
-        e_mid = e_mid * 1.60218e-9 #convert to erg
-        continuum = _models.lmodxillver(xill_pars[i], egrid[:-1], egrid[1:])
-        integrals[i] = (continuum*e_mid).sum()
-        
+    egrid = np.logspace(-1,3,num = bins)
+    e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
+    e_mid = e_mid * 1.60218e-9 #convert to erg
+    
+    def integrate(pars):
+        continuum = _models.lmodxillver(pars, egrid[:-1], egrid[1:])
+        integral = (continuum*e_mid).sum()
+        return integral
+    
+    with Parallel(n_jobs=10,verbose=5) as parallel:
+        integrals = parallel(delayed(rtdist_flux)(pars) for pars in xill_pars)
+    integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
