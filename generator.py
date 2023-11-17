@@ -174,6 +174,8 @@ def lhc_filter(lhc):
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
     print(f"There are {bad_dists[0].shape[0]} bad distance sets")
+    heights = 1+ np.sqrt(1-lhc[:,1]**2)
+    bad_heights = np.nonzero((lhc[:,0]<heights))
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
@@ -184,7 +186,8 @@ def lhc_filter(lhc):
     bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
     print(f"There are {bad_Ls[0].shape[0]} bad luminosity sets")
     #collates all bad sets together
-    bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,bad_Ls),axis=None))
+    bad_sets = np.unique(np.concatenate((bad_disks,bad_heights,bad_dists,
+                                         bad_Ls),axis=None))
     print(f"There are {bad_sets.shape[0]} total unique bad sets")
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)

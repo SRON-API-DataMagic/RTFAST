@@ -1144,7 +1144,7 @@ def main():
         temp_egrid = np.zeros(shape = (theta_flux.shape[0],egrid.shape[0]))
         for i,row in enumerate(temp_egrid):
             temp_egrid[i]  = egrid
-        p = plt.plot(temp_egrid, flux[:-1]*egrid*1.60218e-9,
+        p = plt.plot(temp_egrid, flux*egrid*1.60218e-9,
                  alpha = 0.2, cmap="plasma",c = theta_flux[:,par])
         plt.ylabel("erg/cm^2/s")
         plt.xlabel("Energy (keV)")
