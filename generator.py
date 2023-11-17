@@ -156,10 +156,10 @@ def Anorm_wrapper(pars):
             plt.xlim(0.1,40)
             #plt.ylim(6)
             integrals[0] = (continuum*e_mid).sum()
-        plt.title(f"Linear bins")
-        plt.legend()
-        plt.savefig(f"verify/full_com.png")
-        plt.close()
+    plt.title(f"Full comparison of bins")
+    plt.legend()
+    plt.savefig(f"verify/full_com.png")
+    plt.close()
         
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
