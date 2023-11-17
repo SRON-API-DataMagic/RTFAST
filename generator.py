@@ -176,6 +176,7 @@ def lhc_filter(lhc):
     print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero((lhc[:,0]<heights))
+    print(f"There are {bad_heights[0].shape[0]} bad height sets")
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
