@@ -764,6 +764,8 @@ def lhc_generation(size,range_all):
         return final_lhc
     lhc = lhc_cycle(size, range_all)
     while lhc.shape[0] < size:
+        print(f"Currently {lhc.shape[0]}/{size}.")
+        print("Generating more parmaters...")
         lhc_temp = lhc_generation(size, range_all)
         lhc = np.concatenate((lhc,lhc_temp),axis=0)
     np.random.shuffle(lhc)
