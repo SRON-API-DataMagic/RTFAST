@@ -1153,7 +1153,7 @@ def main():
         plt.yscale("log")
         plt.xlim(5e-2)
         plt.ylim(1e-20)
-        plt.colorbar(p, label="")
+        #plt.colorbar(p, label="")
         plt.savefig("verify/test_specs_{par}.png")
         plt.close()
     
