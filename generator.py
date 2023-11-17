@@ -146,7 +146,7 @@ def Anorm_wrapper(pars):
             print(xill_pars.shape)
             
             continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])
-            plt.plot(egrid,continuum)
+            plt.plot(egrid[:-1],continuum)
             plt.xscale("log")
             plt.yscale("log")
             plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
