@@ -1144,7 +1144,8 @@ def main():
     
     for par in range(theta_flux.shape[1]):
         fig, ax = plt.subplots()
-        lc = matplotlib.collections.LineCollection(segs, array = theta_flux[:,par])
+        lc = matplotlib.collections.LineCollection(segs, array = theta_flux[:,par],
+                                                   alpha = 0.3)
         ax.add_collection(lc)
         axcb = fig.colorbar(lc)
         axcb.set_label(f"{labels[par]}")
