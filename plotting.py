@@ -1137,12 +1137,14 @@ def main():
     print("Generated test set, now plotting")
     
     for i, spec in enumerate(flux):
-        plt.plot(egrid, spec*egrid*1.60218e-9, label=f"Spectra {i}",alpha = 0.3)
+        plt.plot(egrid[:-1], spec*egrid*1.60218e-9[:-1], label=f"Spectra {i}",alpha = 0.3)
     plt.ylabel("erg/cm^2/s")
     plt.xlabel("Energy (keV)")
     plt.title("Checking spectra range")
     plt.xscale("log")
     plt.yscale("log")
+    plt.xlim(1e-2)
+    plt.ylim(1e-20)
     plt.savefig("verify/test_specs.png")
     plt.close()
     
