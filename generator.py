@@ -163,6 +163,7 @@ def lhc_filter(lhc):
         latin hypercube with unphysical parameter sets removed..
 
     """
+    old_size = lhc.shape[0]
     #bad sets indexes all parameter sets that don't fit the filter criteria
     #removes parameter sets that have a ph0ton index higher than 3 AND a iron
     #solar abundance above 6 AND a electron density in the disk of higher than
@@ -192,6 +193,8 @@ def lhc_filter(lhc):
     print(f"There are {bad_sets.shape[0]} total unique bad sets")
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
+    print(f"{(new_lhc.shape[0]/old_size)*100}% remains")
+    print(f"{new_lhc.shape[0]} sets remain")
     #convert fluxes to Anorm
     new_lhc = Anorm_wrapper(new_lhc)
     return new_lhc
