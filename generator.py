@@ -152,10 +152,12 @@ def Anorm_wrapper(pars):
             plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
             plt.xlabel("Energy (keV)")
             plt.xlim(0.1,40)
-            #plt.ylim(6,6200)
+            plt.ylim(6)
             if i == 0:
+                plt.title(f"Linear bins with num of bins = {binz}")
                 plt.savefig(f"verify/lin_{binz}.png")
             else:
+                plt.title(f"Log bins with num of bins = {binz}")
                 plt.savefig(f"verify/log_{binz}.png")
             plt.close()
             integrals[0] = (continuum*e_mid).sum()
