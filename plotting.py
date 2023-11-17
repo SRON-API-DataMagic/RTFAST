@@ -1155,7 +1155,7 @@ def main():
         ax.set_yscale("log")
         ax.set_xlim(5e-2)
         ax.set_ylim(1e-20)
-        plt.savefig(f"verify/test_specs_{par}.png")
+        plt.savefig(f"verify/specs_{labels[par]}.png")
         plt.close()
     
     quit()
