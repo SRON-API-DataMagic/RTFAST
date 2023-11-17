@@ -122,48 +122,26 @@ def Anorm_wrapper(pars):
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
-    bins = [1000,10000]
-    for i in range(2):
-        for binz in bins:
-            if i == 0:
-                egrid = np.linspace(1e-1,1e3,num = binz)
-                e_mid = (egrid[:-1] + egrid[1:]) / 2
-                lab = "Linear"
-            else:
-                egrid = np.logspace(-1,3,num = binz)
-                e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
-                lab = "Log"
-            bin_width = np.diff(egrid)
-            
-            integrals = np.zeros(gamma.shape)
-            #cutoff in keV
-            E_cut = np.ones(gamma.shape)*300
-            logxi = np.ones(gamma.shape)
-            xnorm = np.ones(gamma.shape)
-            
-            xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
-            xill_pars = np.array(xill_pars)
-            xill_pars[:,0] = [2,1,300,3.1,0,30,0,1]
-            print(xill_pars)
-            print(xill_pars.shape)
-            
-            continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])/bin_width
-            if binz == 1000:
-                plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}")
-            else:
-                plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}",
-                         ls = "--")
-            integrals[0] = (continuum*e_mid).sum()
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
-    plt.xlabel("Energy (keV)")
-    plt.xlim(0.1,40)
-    plt.ylim(6)
-    plt.title(f"Full comparison of bins")
-    plt.legend()
-    plt.savefig(f"verify/full_com.png")
-    plt.close()
+    bins = 1000
+    for i in range(gamma.shape[0]):
+        egrid = np.logspace(-1,3,num = bins)
+        e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
+        bin_width = np.diff(egrid)
+        
+        integrals = np.zeros(gamma.shape)
+        #cutoff in keV
+        E_cut = np.ones(gamma.shape)*300
+        logxi = np.ones(gamma.shape)
+        xnorm = np.ones(gamma.shape)
+        
+        xill_pars = [gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm]
+        xill_pars = np.array(xill_pars)
+        xill_pars[:,0] = [2,1,300,3.1,0,30,0,1]
+        print(xill_pars)
+        print(xill_pars.shape)
+        
+        continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])/bin_width
+        integrals[i] = (continuum*e_mid).sum()
         
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
