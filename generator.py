@@ -122,6 +122,7 @@ def Anorm_wrapper(pars):
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
+    integrals = np.zeros(gamma.shape[0])
     bins = 1000
     for i in range(gamma.shape[0]):
         egrid = np.logspace(-1,3,num = bins)
