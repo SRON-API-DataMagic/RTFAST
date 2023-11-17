@@ -166,15 +166,12 @@ def lhc_filter(lhc):
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
-    print(f"There are {bad_disks[0].shape[0]} bad disk sets")
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
-    print(f"There are {bad_dists[0].shape[0]} bad distance sets")
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero((lhc[:,0]<heights))
-    print(f"There are {bad_heights[0].shape[0]} bad height sets")
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
@@ -183,15 +180,11 @@ def lhc_filter(lhc):
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
     bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
-    print(f"There are {bad_Ls[0].shape[0]} bad luminosity sets")
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_heights,bad_dists,
                                          bad_Ls),axis=None))
-    print(f"There are {bad_sets.shape[0]} total unique bad sets")
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
-    print(f"{(new_lhc.shape[0]/old_size)*100}% remains")
-    print(f"{new_lhc.shape[0]} sets remain")
     #convert fluxes to Anorm
     new_lhc = Anorm_wrapper(new_lhc)
     return new_lhc
