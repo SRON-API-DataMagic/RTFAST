@@ -55,7 +55,6 @@ def active_learning(wrk_dir, device = "cpu"):
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 60
-    range_BH = np.asarray(generator.lhc_BH())
     range_AGN = np.asarray(generator.lhc_AGN())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
@@ -64,20 +63,12 @@ def active_learning(wrk_dir, device = "cpu"):
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [0,3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
-    
-    #pre generate Latin Hypercube samples.
-    theta_bh = generator.lhc_generation(int(5e6), range_BH)
-    theta_agn = generator.lhc_generation(int(5e6), range_AGN)
-    
-    #shuffle bhs and agn together
-    theta_lhc = np.concatenate([theta_bh,theta_agn],axis=0)
-    np.random.shuffle(theta_lhc)
+
     lhc_idx = 0
     theta_lhc = generator.lhc_generation(int(1e7), range_AGN)
-    theta_lhc = generator.lhc_filter(theta_lhc)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     flux_name = "active_locs_flux.csv"
     flux_test_name = "active_test_locs_flux.csv"
@@ -86,7 +77,7 @@ def active_learning(wrk_dir, device = "cpu"):
     lags_test_name = "active_test_locs_lags.csv"
     lags_scaler_name = "active_scaler_lags.bin"
     
-    num_pars = range_BH.shape[0]
+    num_pars = range_AGN.shape[0]
     
     flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
     flux_model.to(device)
@@ -100,8 +91,6 @@ def active_learning(wrk_dir, device = "cpu"):
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
-    #scheduler_flux = ReduceLROnPlateau(optimizer_flux,factor=0.5,patience=30)
-    #scheduler_lags = ReduceLROnPlateau(optimizer_lags,factor=0.5,patience=30)
     scaler = MinMaxScaler()
     
     if first == True: 

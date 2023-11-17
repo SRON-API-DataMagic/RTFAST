@@ -756,10 +756,19 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     return
 
 def lhc_generation(size,range_all):
-    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=size)
-    theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-    return theta_lhc
+    def lhc_cycle(size,range_all):
+        sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
+        sample = sampler.random(n=size)
+        theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+        final_lhc = lhc_filter(theta_lhc)
+        return final_lhc
+    lhc = lhc_cycle(size, range_all)
+    while lhc.shape[0] < size:
+        lhc_temp = lhc_generation(size, range_all)
+        lhc = np.concatenate((lhc,lhc_temp),axis=0)
+    np.random.shuffle(lhc)
+    lhc = lhc[:size]
+    return lhc
 
 def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")
