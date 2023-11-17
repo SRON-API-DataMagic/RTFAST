@@ -1132,7 +1132,7 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(5e7), egrid, lags_egrid, lhc_AGN)
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(20e7), egrid, lags_egrid, lhc_AGN)
     
     print(f"{(theta_flux.shape[0]/1e7)*100}% of the dataset remains after filtering.")
     
@@ -1142,7 +1142,7 @@ def main():
     
     print("Generated test set, now plotting")
     
-    segs = [np.column_stack([egrid, fl]) for fl in flux]
+    segs = [np.column_stack([egrid[:-1], fl[:-1]]) for fl in flux]
     
     for par in range(theta_flux.shape[1]):
         fig, ax = plt.subplots()
