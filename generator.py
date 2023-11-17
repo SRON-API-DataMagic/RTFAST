@@ -124,7 +124,7 @@ def Anorm_wrapper(pars):
     E_cut = np.ones(gamma.shape)*300
     logxi = np.ones(gamma.shape)
     xnorm = np.ones(gamma.shape)
-    xill_pars = np.concatenate((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm))
+    xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
     print(xill_pars)
     
     print("Calculating normalisations")
