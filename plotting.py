@@ -902,6 +902,30 @@ def loss_epochs_plot(loss_base_loc,mode):
     plt.savefig(f"loss/loss_time_{mode}.png")
     plt.close()
 
+def plot_spec_dist(egrid,flux,pars):
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
+              "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
+              "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
+    
+    segs = [np.column_stack([egrid[:-1], fl[:-1]]) for fl in flux]
+    
+    for par in range(pars.shape[1]):
+        fig, ax = plt.subplots()
+        lc = matplotlib.collections.LineCollection(segs, array = pars[:,par],
+                                                   alpha = 0.3)
+        ax.add_collection(lc)
+        axcb = fig.colorbar(lc)
+        axcb.set_label(f"{labels[par]}")
+        ax.set_title(f"Colored by {labels[par]}")
+        ax.set_ylabel("erg/cm^2/s")
+        ax.set_xlabel("Energy (keV)")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlim(5e-2)
+        ax.set_ylim(1e-20)
+        plt.savefig(f"verify/specs_{labels[par]}.png")
+        plt.close()
+    
 def check_uniques(array1,array2):
     combo = pd.concat([array1,array2])
     combo.drop_duplicates(keep=False)
@@ -1132,36 +1156,7 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(20e7), egrid, lags_egrid, lhc_AGN)
-    
-    print(f"{(theta_flux.shape[0]/1e7)*100}% of the dataset remains after filtering.")
-    
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
-              "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
-              "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
-    
-    print("Generated test set, now plotting")
-    
-    segs = [np.column_stack([egrid[:-1], fl[:-1]]) for fl in flux]
-    
-    for par in range(theta_flux.shape[1]):
-        fig, ax = plt.subplots()
-        lc = matplotlib.collections.LineCollection(segs, array = theta_flux[:,par],
-                                                   alpha = 0.3)
-        ax.add_collection(lc)
-        axcb = fig.colorbar(lc)
-        axcb.set_label(f"{labels[par]}")
-        ax.set_title(f"Colored by {labels[par]}")
-        ax.set_ylabel("erg/cm^2/s")
-        ax.set_xlabel("Energy (keV)")
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xlim(5e-2)
-        ax.set_ylim(1e-20)
-        plt.savefig(f"verify/specs_{labels[par]}.png")
-        plt.close()
-    
-    quit()
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e4), egrid, lags_egrid, lhc_AGN)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
@@ -1169,10 +1164,8 @@ def main():
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", "data/locations/loc_lags_AGN_test.csv")
     
     
-    
-    """
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
-    """
+    
 if __name__ == "__main__":
     main()
