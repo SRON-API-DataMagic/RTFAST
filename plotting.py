@@ -1140,8 +1140,7 @@ def main():
     
     print("Generated test set, now plotting")
     for par in range(theta_flux.shape[1]):
-        colors = cm.plasma(theta_flux[:,par]/theta_flux[:,par].max())
-        print(colors)
+        colors = cm.plasma((theta_flux[:,par]-theta_flux[:,par].min())/(theta_flux[:,par].max()-theta_flux[:,par].min()))
         for i, spec in enumerate(flux):
             plt.plot(egrid, spec*egrid*1.60218e-9,
                      alpha = 0.2, c = colors[i])
