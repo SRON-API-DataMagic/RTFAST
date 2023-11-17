@@ -1141,8 +1141,10 @@ def main():
     print("Generated test set, now plotting")
     for par in range(theta_flux.shape[1]):
         cm.get_cmap('plasma', 128)
-        
-        p = plt.plot(egrid[:-1], flux[:-1]*egrid*1.60218e-9,
+        temp_egrid = np.zeros(shape = (theta_flux.shape[0],egrid.shape[0]))
+        for i,row in enumerate(temp_egrid):
+            temp_egrid[i]  = egrid
+        p = plt.plot(temp_egrid, flux[:-1]*egrid*1.60218e-9,
                  alpha = 0.2, cmap="plasma",c = theta_flux[:,par])
         plt.ylabel("erg/cm^2/s")
         plt.xlabel("Energy (keV)")
