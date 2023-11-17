@@ -125,7 +125,6 @@ def Anorm_wrapper(pars):
     logxi = np.ones(gamma.shape)
     xnorm = np.ones(gamma.shape)
     xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
-    print(xill_pars)
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
@@ -140,8 +139,6 @@ def Anorm_wrapper(pars):
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
-    print("See L/Ledds for comparison:")
-    print(L/Ledd)
     return pars
 
 def lhc_filter(lhc):
@@ -668,7 +665,6 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     t_start = time.time()
     theta_lhc = lhc_filter(theta_lhc)
     t_end = time.time()
-    print(pars_conversion_full(theta_lhc, 0))
     print(f"Time to filter and compute Anorm: {t_end - t_start}s")
     quit()
     
