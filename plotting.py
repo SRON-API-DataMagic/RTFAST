@@ -1145,7 +1145,7 @@ def main():
         for i,row in enumerate(temp_egrid):
             temp_egrid[i]  = egrid
         p = plt.plot(temp_egrid, flux*egrid*1.60218e-9,
-                 alpha = 0.2, c = colors)
+                 alpha = 0.2, c = "b")
         plt.ylabel("erg/cm^2/s")
         plt.xlabel("Energy (keV)")
         plt.title("Colored by ")
