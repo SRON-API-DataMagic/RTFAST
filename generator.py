@@ -148,7 +148,11 @@ def Anorm_wrapper(pars):
             print(xill_pars.shape)
             
             continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])/bin_width
-            plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}")
+            if binz == 1000:
+                plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}")
+            else:
+                plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}",
+                         ls = "--")
             plt.xscale("log")
             plt.yscale("log")
             plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
