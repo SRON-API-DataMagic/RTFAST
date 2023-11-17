@@ -1134,20 +1134,26 @@ def main():
     
     flux, lags, theta_flux, theta_lags = generate_test_set(int(1e4), egrid, lags_egrid, lhc_AGN)
     
-    print("Generated test set, now plotting")
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
+              "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
+              "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     
-    for i, spec in enumerate(flux):
-        plt.plot(egrid[:-1], spec[:-1]*egrid[:-1]*1.60218e-9, label=f"Spectra {i}",
-                 alpha = 0.2, c = "b")
-    plt.ylabel("erg/cm^2/s")
-    plt.xlabel("Energy (keV)")
-    plt.title("Checking spectra range")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlim(5e-2)
-    plt.ylim(1e-20)
-    plt.savefig("verify/test_specs.png")
-    plt.close()
+    print("Generated test set, now plotting")
+    for par in range(theta_flux.shape[1]):
+        cm.get_cmap('plasma', 128)
+        
+        p = plt.plot(egrid[:-1], flux[:-1]*egrid[:-1]*1.60218e-9,
+                 alpha = 0.2, cmap="plasma",c = theta_flux[:,par])
+        plt.ylabel("erg/cm^2/s")
+        plt.xlabel("Energy (keV)")
+        plt.title("Colored by ")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlim(5e-2)
+        plt.ylim(1e-20)
+        plt.colorbar(p, label="")
+        plt.savefig("verify/test_specs_{par}.png")
+        plt.close()
     
     quit()
     

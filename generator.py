@@ -433,26 +433,26 @@ def pars_conversion_full(pars,ReIm):
     for i in range(pars.shape[0]):
         new_pars.append(pars_base)
     new_pars = np.asarray(new_pars)
-    new_pars[:,0] = 10**pars[:,0]   #height
-    new_pars[:,1] = pars[:,1]       #spin
-    new_pars[:,2] = 10**pars[:,2]   #inclination
-    new_pars[:,3] = -10**pars[:,3]  #inner radius
-    new_pars[:,4] = 10**pars[:,4]   #outer radius
-    new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = pars[:,6]       #Gamma
-    new_pars[:,7] = 10**pars[:,7]   #distance
-    new_pars[:,8] = 10**pars[:,8]   #Afe
-    new_pars[:,9] = pars[:,9]       #logNe
-    new_pars[:,10] = 10**pars[:,10] #kTe
-    new_pars[:,11] = 10**pars[:,11] #nH
-    new_pars[:,12] = 10**pars[:,12] #boost
-    new_pars[:,13] = 10**pars[:,13] #mass
-    new_pars[:,14] = pars[:,14]     #scale height of disk
-    new_pars[:,15] = pars[:,15]     #b1
-    new_pars[:,16] = pars[:,16]     #b2
-    new_pars[:,21] = pars[:,17]     #phiAB
-    new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = pars[:,19]     #Anorm
+    new_pars[:,0] = 10**pars[:,0]   #height - 0
+    new_pars[:,1] = pars[:,1]       #spin - 1
+    new_pars[:,2] = 10**pars[:,2]   #inclination - 2
+    new_pars[:,3] = -10**pars[:,3]  #inner radius - 3
+    new_pars[:,4] = 10**pars[:,4]   #outer radius - 4
+    new_pars[:,5] = pars[:,5]       #redshift (z) - 5
+    new_pars[:,6] = pars[:,6]       #Gamma - 6
+    new_pars[:,7] = 10**pars[:,7]   #distance - 7
+    new_pars[:,8] = 10**pars[:,8]   #Afe - 8
+    new_pars[:,9] = pars[:,9]       #logNe - 9
+    new_pars[:,10] = 10**pars[:,10] #kTe - 10
+    new_pars[:,11] = 10**pars[:,11] #nH - 11
+    new_pars[:,12] = 10**pars[:,12] #boost - 12
+    new_pars[:,13] = 10**pars[:,13] #mass - 13
+    new_pars[:,14] = pars[:,14]     #scale height of disk - 14
+    new_pars[:,15] = pars[:,15]     #b1 - 15
+    new_pars[:,16] = pars[:,16]     #b2 - 16
+    new_pars[:,21] = pars[:,17]     #phiAB - 17
+    new_pars[:,22] = pars[:,18]     #coherence - 18
+    new_pars[:,23] = pars[:,19]     #Anorm - 19
     
     return new_pars
 
