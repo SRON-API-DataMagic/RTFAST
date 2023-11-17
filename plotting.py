@@ -1144,7 +1144,7 @@ def main():
     plt.title("Checking spectra range")
     plt.xscale("log")
     plt.yscale("log")
-    plt.xlim(1e-2)
+    plt.xlim(5e-2)
     plt.ylim(1e-20)
     plt.savefig("verify/test_specs.png")
     plt.close()
