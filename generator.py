@@ -139,7 +139,7 @@ def Anorm_wrapper(pars):
         return integral
     
     with Parallel(n_jobs=10,verbose=5) as parallel:
-        integrals = parallel(delayed(rtdist_flux)(pars) for pars in xill_pars)
+        integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
