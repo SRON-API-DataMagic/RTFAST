@@ -1139,19 +1139,22 @@ def main():
               "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     
     print("Generated test set, now plotting")
+    
+    segs = [np.column_stack([egrid, fl]) for fl in flux]
+    
     for par in range(theta_flux.shape[1]):
-        colors = cm.plasma((theta_flux[:,par]-theta_flux[:,par].min())/(theta_flux[:,par].max()-theta_flux[:,par].min()))
-        for i, spec in enumerate(flux):
-            plt.plot(egrid, spec*egrid*1.60218e-9,
-                     alpha = 0.2, c = colors[i])
-        plt.ylabel("erg/cm^2/s")
-        plt.xlabel("Energy (keV)")
-        plt.title(f"Colored by {labels[par]}")
-        plt.xscale("log")
-        plt.yscale("log")
-        plt.xlim(5e-2)
-        plt.ylim(1e-20)
-        #plt.colorbar(p, label="")
+        fig, ax = plt.subplots()
+        lc = matplotlib.collections.LineCollection(segs, array = theta_flux[:,par])
+        ax.add_collection(lc)
+        axcb = fig.colorbar(lc)
+        axcb.set_label(f"{labels[par]}")
+        ax.set_title(f"Colored by {labels[par]}")
+        ax.set_ylabel("erg/cm^2/s")
+        ax.set_xlabel("Energy (keV)")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlim(5e-2)
+        ax.set_ylim(1e-20)
         plt.savefig(f"verify/test_specs_{par}.png")
         plt.close()
     
