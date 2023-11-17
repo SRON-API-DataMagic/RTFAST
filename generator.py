@@ -145,7 +145,7 @@ def Anorm_wrapper(pars):
             print(xill_pars)
             print(xill_pars.shape)
             
-            continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])
+            continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])/bin_width
             plt.plot(egrid[:-1],continuum)
             plt.xscale("log")
             plt.yscale("log")
@@ -155,10 +155,10 @@ def Anorm_wrapper(pars):
             #plt.ylim(6)
             if i == 0:
                 plt.title(f"Linear bins with num of bins = {binz}")
-                plt.savefig(f"verify/lin_{binz}.png")
+                plt.savefig(f"verify/lin_{binz}_div.png")
             else:
                 plt.title(f"Log bins with num of bins = {binz}")
-                plt.savefig(f"verify/log_{binz}.png")
+                plt.savefig(f"verify/log_{binz}_div.png")
             plt.close()
             integrals[0] = (continuum*e_mid).sum()
     
