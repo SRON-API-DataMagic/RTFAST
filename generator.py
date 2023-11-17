@@ -152,7 +152,7 @@ def Anorm_wrapper(pars):
             plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
             plt.xlabel("Energy (keV)")
             plt.xlim(0.1,40)
-            plt.ylim(6)
+            #plt.ylim(6)
             if i == 0:
                 plt.title(f"Linear bins with num of bins = {binz}")
                 plt.savefig(f"verify/lin_{binz}.png")
