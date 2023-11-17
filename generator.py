@@ -119,6 +119,13 @@ def Anorm_wrapper(pars):
     refl_frac = np.zeros(gamma.shape)
     inc = pars[:,2]
     #calculate normalisation for each flux spectra
+    integrals = np.zeros(gamma.shape)
+    #cutoff in keV
+    E_cut = np.ones(gamma.shape)*300
+    logxi = np.ones(gamma.shape)
+    xnorm = np.ones(gamma.shape)
+    xill_pars = np.concatenate((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm))
+    print(xill_pars)
     
     print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
@@ -127,16 +134,6 @@ def Anorm_wrapper(pars):
         egrid = np.logspace(-1,3,num = bins)
         e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
         e_mid = e_mid * 1.60218e-9 #convert to erg
-        
-        integrals = np.zeros(gamma.shape)
-        #cutoff in keV
-        E_cut = np.ones(gamma.shape)*300
-        logxi = np.ones(gamma.shape)
-        xnorm = np.ones(gamma.shape)
-        
-        xill_pars = np.concatenate((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm))
-        print(xill_pars)
-        
         continuum = _models.lmodxillver(xill_pars[i], egrid[:-1], egrid[1:])
         integrals[i] = (continuum*e_mid).sum()
         
