@@ -54,7 +54,7 @@ def active_learning(wrk_dir, device = "cpu"):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 60
+    active_loops = 40
     range_AGN = np.asarray(generator.lhc_AGN())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
