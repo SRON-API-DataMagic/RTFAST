@@ -125,8 +125,6 @@ def Anorm_wrapper(pars):
     logxi = np.ones(gamma.shape)
     xnorm = np.ones(gamma.shape)
     xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
-    
-    print("Calculating normalisations")
     #energies from 0.1keV to 1MeV
     bins = 1000
     egrid = np.logspace(-1,3,num = bins)
@@ -138,12 +136,11 @@ def Anorm_wrapper(pars):
         integral = (continuum*e_mid).sum()
         return integral
     
-    with Parallel(n_jobs=10,verbose=5) as parallel:
+    with Parallel(n_jobs=10,verbose=0) as parallel:
         integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
-    print("Calculated Anorms")
     return pars
 
 def lhc_filter(lhc):
@@ -765,7 +762,6 @@ def lhc_generation(size,range_all):
     lhc = lhc_cycle(size, range_all)
     while lhc.shape[0] < size:
         print(f"Currently {lhc.shape[0]}/{size}.")
-        print("Generating more parmaters...")
         lhc_temp = lhc_cycle(size, range_all)
         lhc = np.concatenate((lhc,lhc_temp),axis=0)
     np.random.shuffle(lhc)
