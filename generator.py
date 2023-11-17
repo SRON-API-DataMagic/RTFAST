@@ -668,6 +668,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
     
     t_start = time.time()
+    print("Beginning filtering")
     theta_lhc = lhc_filter(theta_lhc)
     t_end = time.time()
     print(f"Time to filter and compute {theta_lhc.shape[0]}s Anorm: {t_end - t_start}s")
