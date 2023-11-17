@@ -1141,20 +1141,18 @@ def main():
     print("Generated test set, now plotting")
     for par in range(theta_flux.shape[1]):
         colors = cm.plasma(theta_flux[:,par]/theta_flux[:,par].max())
-        temp_egrid = np.zeros(shape = (theta_flux.shape[0],egrid.shape[0]))
-        for i,row in enumerate(temp_egrid):
-            temp_egrid[i]  = egrid
-        p = plt.plot(temp_egrid, flux*egrid*1.60218e-9,
-                 alpha = 0.2, c = "b")
+        for spec in flux:
+            plt.plot(egrid, spec*egrid*1.60218e-9,
+                     alpha = 0.2, c = "b")
         plt.ylabel("erg/cm^2/s")
         plt.xlabel("Energy (keV)")
-        plt.title("Colored by ")
+        plt.title(f"Colored by {labels[par]}")
         plt.xscale("log")
         plt.yscale("log")
         plt.xlim(5e-2)
         plt.ylim(1e-20)
         #plt.colorbar(p, label="")
-        plt.savefig("verify/test_specs_{par}.png")
+        plt.savefig(f"verify/test_specs_{par}.png")
         plt.close()
     
     quit()
