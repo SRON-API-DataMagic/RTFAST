@@ -665,7 +665,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     t_start = time.time()
     theta_lhc = lhc_filter(theta_lhc)
     t_end = time.time()
-    print(f"Time to filter and compute Anorm: {t_end - t_start}s")
+    print(f"Time to filter and compute {theta_lhc.shape[0]}s Anorm: {t_end - t_start}s")
     quit()
     
     #generate physical models of test set
