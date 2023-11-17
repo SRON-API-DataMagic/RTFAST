@@ -1132,15 +1132,32 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e8), egrid, lags_egrid, lhc_AGN)
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e4), egrid, lags_egrid, lhc_AGN)
+    
+    print("Generated test set, now plotting")
+    
+    for i, spec in enumerate(flux):
+        plt.plot(egrid, spec*egrid*1.60218e-9, label=f"Spectra {i}",alpha = 0.3)
+    plt.ylabel("erg/cm^2/s")
+    plt.xlabel("Energy (keV)")
+    plt.title("Checking spectra range")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.savefig("verify/test_specs.png")
+    plt.close()
+    
+    quit()
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
     
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", "data/locations/loc_lags_AGN_test.csv")
     
+    
+    
+    """
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
-    
+    """
 if __name__ == "__main__":
     main()
