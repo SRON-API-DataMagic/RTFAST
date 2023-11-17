@@ -128,9 +128,11 @@ def Anorm_wrapper(pars):
             if i == 0:
                 egrid = np.linspace(1e-1,1e3,num = binz)
                 e_mid = (egrid[:-1] + egrid[1:]) / 2
+                lab = "Linear"
             else:
                 egrid = np.logspace(-1,3,num = binz)
                 e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
+                lab = "Log"
             bin_width = np.diff(egrid)
             
             integrals = np.zeros(gamma.shape)
@@ -146,25 +148,19 @@ def Anorm_wrapper(pars):
             print(xill_pars.shape)
             
             continuum = _models.lmodxillver(xill_pars[:,0], egrid[:-1], egrid[1:])/bin_width
-            plt.plot(egrid[:-1],continuum,label = f"bins = {binz}")
+            plt.plot(egrid[:-1],continuum,label = f"{lab} bins = {binz}")
             plt.xscale("log")
             plt.yscale("log")
             plt.ylabel("Continuum (Photons cm^-2 s^-1 KeV^-1)")
             plt.xlabel("Energy (keV)")
             plt.xlim(0.1,40)
             #plt.ylim(6)
-            if i == 0 and binz==10000:
-                plt.title(f"Linear bins")
-                plt.legend()
-                plt.savefig(f"verify/lin_{binz}_com.png")
-                plt.close()
-            elif i != 0 and binz==10000:
-                plt.title(f"Log bins")
-                plt.legend()
-                plt.savefig(f"verify/log_{binz}_com.png")
-                plt.close()
             integrals[0] = (continuum*e_mid).sum()
-    
+        plt.title(f"Linear bins")
+        plt.legend()
+        plt.savefig(f"verify/full_com.png")
+        plt.close()
+        
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     print("Calculated Anorms")
