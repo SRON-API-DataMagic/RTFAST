@@ -126,6 +126,7 @@ def Anorm_wrapper(pars):
     for i in range(gamma.shape[0]):
         egrid = np.logspace(-1,3,num = bins)
         e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
+        e_mid = e_mid * 1.60218e-9 #convert to erg
         bin_width = np.diff(egrid)
         
         integrals = np.zeros(gamma.shape)
