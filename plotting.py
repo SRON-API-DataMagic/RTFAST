@@ -908,6 +908,8 @@ def plot_spec_dist(egrid,flux,pars):
               "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
+    pars[:,3] = -pars[:,3]
+    
     e_mid = (egrid[1:] + egrid[:-1])/2
     e_mid = e_mid * 1.60218e-9 #convert to erg
     hist_F = []
