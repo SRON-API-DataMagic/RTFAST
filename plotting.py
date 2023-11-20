@@ -1207,6 +1207,8 @@ def main():
     
     flux, lags, theta_flux, theta_lags = generate_test_set(int(10), egrid, lags_egrid, lhc_AGN)
     
+    print(theta_flux)
+    
     plot_spec_dist(egrid, flux, theta_flux)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
