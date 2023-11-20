@@ -1174,7 +1174,7 @@ def main():
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e4), egrid, lags_egrid, lhc_AGN)
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, lags_egrid, lhc_AGN)
     
     plot_spec_dist(egrid, flux, theta_flux)
     
