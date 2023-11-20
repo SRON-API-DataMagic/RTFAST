@@ -906,6 +906,7 @@ def plot_spec_dist(egrid,flux,pars):
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
               "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     e_mid = (egrid[1:] + egrid[:-1])/2
     e_mid = e_mid * 1.60218e-9 #convert to erg
@@ -921,8 +922,16 @@ def plot_spec_dist(egrid,flux,pars):
     
     bad_pars = np.asarray(bad_pars)
     for i in range(bad_pars.shape[1]):
-        plt.hist(bad_pars[:,i])
-        plt.xlabel(f"{labels[i]}")
+        if i in logged:
+            hist, bins, _ = plt.hist(bad_pars[:,i],bins=20)
+            plt.close()
+            logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+            print(logbins)
+            plt.hist(bad_pars[:,i], bins=logbins)
+            plt.xlabel(f"log({labels[i]})")
+        else:
+            plt.hist(bad_pars[:,i])
+            plt.xlabel(f"{labels[i]}")
         plt.ylabel("Occurences")
         plt.title(f"Parameters yielding negative fluxs for {labels[i]}")
         plt.savefig(f"verify/bad_{labels[i]}.png")
