@@ -910,12 +910,11 @@ def plot_spec_dist(egrid,flux,pars):
     e_mid = (egrid[1:] + egrid[:-1])/2
     e_mid = e_mid * 1.60218e-9 #convert to erg
     hist_F = []
-    for fl in flux:
+    for i,fl in enumerate(flux):
         fl_int = fl[:-1]*e_mid
         fl_int = fl_int.sum()
         if fl_int < 0:
-            print(fl_int)
-            print(fl)
+            print()
         hist_F.append(fl_int)
     
     hist_F = np.asarray(hist_F)
@@ -929,6 +928,7 @@ def plot_spec_dist(egrid,flux,pars):
     plt.hist(hist_F, bins=logbins)
     plt.xlabel("Flux (erg/cm^2/s)")
     plt.ylabel("Occurences")
+    plt.xscale("log")
     plt.title("Histogram of total fluxes generated in test set")
     plt.savefig("verify/hist.png")
     plt.close()
