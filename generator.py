@@ -670,6 +670,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
+        print(flux)
         flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                       1e-11)
         lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
