@@ -929,6 +929,7 @@ def plot_spec_dist(egrid,flux,pars):
             print(logbins)
             plt.hist(bad_pars[:,i], bins=logbins)
             plt.xlabel(f"log({labels[i]})")
+            plt.xscale("log")
         else:
             plt.hist(bad_pars[:,i])
             plt.xlabel(f"{labels[i]}")
