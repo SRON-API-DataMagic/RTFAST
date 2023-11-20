@@ -916,6 +916,7 @@ def plot_spec_dist(egrid,flux,pars):
         hist_F.append(fl_int)
     
     print(hist_F)
+    print(hist_F.shape)
     hist_F = np.asarray(hist_F)
     hist, bins, _ = plt.hist(hist_F,bins=100)
     plt.close()
