@@ -113,7 +113,6 @@ def Anorm_wrapper(pars):
     D = 10**pars[:,7]*3.086e21      #distance of objects in cm
     L = 4*np.pi*D**2*F              #luminosity of corona
     Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
-    print(Ledd/L)
     gamma = pars[:,6]               #photon index
     Afe = pars[:,8]
     z = pars[:,5]
@@ -142,6 +141,8 @@ def Anorm_wrapper(pars):
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
+    if pars.shape[0] != 0:
+        print(Ledd/L)
     return pars
 
 def lhc_filter(lhc):
