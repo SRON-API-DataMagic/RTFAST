@@ -910,12 +910,23 @@ def plot_spec_dist(egrid,flux,pars):
     e_mid = (egrid[1:] + egrid[:-1])/2
     e_mid = e_mid * 1.60218e-9 #convert to erg
     hist_F = []
+    bad_pars = []
     for i,fl in enumerate(flux):
         fl_int = fl[:-1]*e_mid
         fl_int = fl_int.sum()
         if fl_int < 0:
             print(pars[i])
+            bad_pars.append(pars[i])
         hist_F.append(fl_int)
+    
+    bad_pars = np.asarray(bad_pars)
+    for i in range(bad_pars.shape[1]):
+        plt.hist(bad_pars[:,i])
+        plt.xlabel(f"{labels[i]}")
+        plt.ylabel("Occurences")
+        plt.title(f"Parameters yielding negative fluxs for {labels[i]}")
+        plt.savefig(f"verify/bad_{labels[i]}.png")
+        plt.close()
     
     hist_F = np.asarray(hist_F)
     hist_F = hist_F[hist_F > 0]
