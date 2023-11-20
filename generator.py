@@ -287,11 +287,11 @@ def lhc_AGN():
     r_outer_range = [np.log10(400),np.log10(1e5)]
     z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e6),np.log10(5e6)]
+    distance_range = [np.log10(3.5e6),np.log10(5e7)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1e3)]
+    nH_range = [np.log10(1e-3),np.log10(200)]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(1e4),np.log10(1e11)]
     honr_range = [0,0.176]
@@ -623,7 +623,6 @@ def generate_flux_dists(AGN_name):
     
     #pre generate Latin Hypercube samples.
     theta_agn = lhc_generation(int(1e3), range_AGN)
-    theta_agn = lhc_filter(theta_agn)
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
     
@@ -659,16 +658,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
 
     """
     range_all = np.asarray(lhc_gen())
-    #pre generate Latin Hypercube samples.
-    sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
-    sample = sampler.random(n=size)
-    theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-    
-    t_start = time.time()
-    print("Beginning filtering")
-    theta_lhc = lhc_filter(theta_lhc)
-    t_end = time.time()
-    print(f"Time to filter and compute {theta_lhc.shape[0]}s Anorm: {t_end - t_start}s")
+    theta_lhc = lhc_generation(size, range_all)
     
     #generate physical models of test set
     theta_flux = pars_conversion_full(theta_lhc,0)
@@ -752,10 +742,14 @@ def lhc_generation(size,range_all):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         final_lhc = lhc_filter(theta_lhc)
         return final_lhc
-    lhc = lhc_cycle(size, range_all)
+    if size > 1e6:
+        gen_size = 1e6
+    else:
+        gen_size = size
+    lhc = lhc_cycle(gen_size, range_all)
     while lhc.shape[0] < size:
         print(f"Currently {lhc.shape[0]}/{size}.")
-        lhc_temp = lhc_cycle(size, range_all)
+        lhc_temp = lhc_cycle(gen_size, range_all)
         lhc = np.concatenate((lhc,lhc_temp),axis=0)
     np.random.shuffle(lhc)
     lhc = lhc[:size]

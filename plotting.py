@@ -907,6 +907,24 @@ def plot_spec_dist(egrid,flux,pars):
               "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
               "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
     
+    e_mid = (egrid[1:] + egrid[:-1])/2
+    e_mid = e_mid * 1.60218e-9 #convert to erg
+    hist_F = []
+    for fl in flux:
+        fl_int = fl[:-1]*e_mid
+        fl_int = fl_int.sum()
+        hist_F.append(fl_int)
+    
+    hist, bins, _ = plt.hist(hist_F,bins=100)
+    plt.close()
+    logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    plt.hist(hist_F, bins=logbins)
+    plt.xlabel("Flux (erg/cm^2/s)")
+    plt.ylabel("Occurences")
+    plt.title("Histogram of total fluxes generated in test set")
+    plt.savefig("verify/hist.png")
+    plt.close()
+    
     segs = [np.column_stack([egrid[:-1], fl[:-1]]) for fl in flux]
     
     for par in range(pars.shape[1]):
@@ -1157,6 +1175,8 @@ def main():
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     flux, lags, theta_flux, theta_lags = generate_test_set(int(1e4), egrid, lags_egrid, lhc_AGN)
+    
+    plot_spec_dist(egrid, flux, theta_flux)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
