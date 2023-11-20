@@ -915,6 +915,7 @@ def plot_spec_dist(egrid,flux,pars):
         fl_int = fl_int.sum()
         hist_F.append(fl_int)
     
+    print(hist_F)
     hist_F = np.asarray(hist_F)
     hist, bins, _ = plt.hist(hist_F,bins=100)
     plt.close()
@@ -926,7 +927,7 @@ def plot_spec_dist(egrid,flux,pars):
     plt.savefig("verify/hist.png")
     plt.close()
     
-    segs = [np.column_stack([egrid[:-1], fl[:-1]]) for fl in flux]
+    segs = [np.column_stack([egrid[:-1], fl[:-1]*e_mid]) for fl in flux]
     
     for par in range(pars.shape[1]):
         fig, ax = plt.subplots()
