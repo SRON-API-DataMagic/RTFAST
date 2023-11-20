@@ -142,7 +142,7 @@ def Anorm_wrapper(pars):
     Anorm = F/(g_so**(gamma-2)*integrals)
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     if pars.shape[0] != 0:
-        print(Ledd/L)
+        print(L/Ledd)
     return pars
 
 def lhc_filter(lhc):
