@@ -921,6 +921,7 @@ def plot_spec_dist(egrid,flux,pars):
     hist, bins, _ = plt.hist(hist_F,bins=100)
     plt.close()
     logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+    print(logbins)
     plt.hist(hist_F, bins=logbins)
     plt.xlabel("Flux (erg/cm^2/s)")
     plt.ylabel("Occurences")
