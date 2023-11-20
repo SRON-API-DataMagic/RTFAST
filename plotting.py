@@ -918,7 +918,9 @@ def plot_spec_dist(egrid,flux,pars):
         fl_int = fl[:-1]*e_mid
         fl_int = fl_int.sum()
         if fl_int < 0:
-            print(pars[i])
+            pars_print = pars[i]
+            pars_print[3] = -pars_print[3]
+            print(pars_print)
             bad_pars.append(pars[i])
         hist_F.append(fl_int)
     
