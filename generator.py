@@ -287,7 +287,7 @@ def lhc_AGN():
     r_outer_range = [np.log10(400),np.log10(1e5)]
     z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e6),np.log10(5e7)]
+    distance_range = [np.log10(3.5e5),np.log10(5e7)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
@@ -747,8 +747,12 @@ def lhc_generation(size,range_all):
     else:
         gen_size = size
     lhc = lhc_cycle(gen_size, range_all)
+    percent = 0
     while lhc.shape[0] < size:
-        print(f"Currently {lhc.shape[0]}/{size}.")
+        if percent <= ((lhc.shape[0]/size)*100 - 10):
+            print(f"Currently {lhc.shape[0]}/{size}.")
+            percent = np.round((lhc.shape[0]/size)*100,0)/10
+            percent = np.floor(percent)*10
         lhc_temp = lhc_cycle(gen_size, range_all)
         lhc = np.concatenate((lhc,lhc_temp),axis=0)
     np.random.shuffle(lhc)
