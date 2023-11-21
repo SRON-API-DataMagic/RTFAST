@@ -754,7 +754,7 @@ def lhc_generation(size,range_all):
             percent = np.floor(percent)*10
         lhc_temp = lhc_cycle(gen_size, range_all)
         lhc = np.concatenate((lhc,lhc_temp),axis=0)
-    #np.random.shuffle(lhc)
+    np.random.shuffle(lhc)
     lhc = lhc[:size]
     return lhc
 
