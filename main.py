@@ -361,7 +361,6 @@ def main():
     None.
 
     """
-    torch.set_default_dtype(torch.double)
     
     wrk_dir = os.getcwd()
     
