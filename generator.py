@@ -280,7 +280,7 @@ def lhc_AGN():
         in the latin hypercube sampling
     
     """
-    height_range = [np.log10(2),np.log10(100)]
+    height_range = [np.log10(1.5),np.log10(100)]
     spin_range = [0,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
