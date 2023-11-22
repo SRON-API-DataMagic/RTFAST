@@ -359,6 +359,14 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
+        if torch.any(torch.isnan(D)) == True:
+            print("D contains NaNs")
+            print(D)
+            quit()
+        elif torch.any(torch.isinf(D)) == True:
+            print("D contains infinities")
+            print(D)
+            quit()
         optimizer.zero_grad()
         for name, param in model.named_parameters():
             if torch.any(torch.isnan(param.data)) == True:

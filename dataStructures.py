@@ -7,7 +7,6 @@ from joblib import dump, load
 import pandas as pd
 import torch
 import numpy as np
-import copy
 
 class FluxData(Dataset):
     """
