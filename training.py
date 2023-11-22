@@ -16,6 +16,55 @@ from tqdm import tqdm
 from plotting import distributions, variances
 from generator import active_learning_generation, pars_conversion
 
+def model_NaN_checker(D,P,model):
+    """
+    This function checks for the cause of models parameters going to zero by
+    checking for infinities and NaNs in the model parameters, data and input
+    parameters.
+
+    Parameters
+    ----------
+    D : torch.array
+        array of data.
+    P : torch.array
+        array of input parameters.
+    model : neural network
+        neural network to check.
+
+    Returns
+    -------
+    None.
+
+    """
+    #Checks data for NaNs and infinities
+    if torch.any(torch.isnan(D)) == True:
+        print("D contains NaNs")
+        print(D)
+        quit()
+    elif torch.any(torch.isinf(D)) == True:
+        print("D contains infinities")
+        print(D)
+        quit()
+    #Checks input parmaeters for NaNs and infinities
+    if torch.any(torch.isnan(P)) == True:
+        print("P contains NaNs")
+        print(P)
+        quit()
+    elif torch.any(torch.isinf(P)) == True:
+        print("D contains infinities")
+        print(P)
+        quit()
+    #Checks model parmaeters for NaNs and infinities
+    for name, param in model.named_parameters():
+        if torch.any(torch.isnan(param.data)) == True:
+            print(f"Param is {param.data}")
+            print("Exiting program")
+            quit()
+        elif torch.any(torch.isinf(param.data)) == True:
+            print(f"Param is {param.data}")
+            print("Exiting program")
+            quit()
+                
 class FluxLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
@@ -359,32 +408,7 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
-        if torch.any(torch.isnan(D)) == True:
-            print("D contains NaNs")
-            print(D)
-            quit()
-        elif torch.any(torch.isinf(D)) == True:
-            print("D contains infinities")
-            print(D)
-            quit()
-        if torch.any(torch.isnan(P)) == True:
-            print("P contains NaNs")
-            print(P)
-            quit()
-        elif torch.any(torch.isinf(P)) == True:
-            print("D contains infinities")
-            print(P)
-            quit()
         optimizer.zero_grad()
-        for name, param in model.named_parameters():
-            if torch.any(torch.isnan(param.data)) == True:
-                print(f"Param is {param.data}")
-                print("Exiting program")
-                quit()
-            elif torch.any(torch.isinf(param.data)) == True:
-                print(f"Param is {param.data}")
-                print("Exiting program")
-                quit()
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
             loss = loss_fn(pred,D.to(device))
@@ -438,15 +462,6 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
-        for name, param in model.named_parameters():
-            if torch.any(torch.isnan(param.data)) == True:
-                print(f"Param is {param.data}")
-                print("Exiting program")
-                quit()
-            elif torch.any(torch.isinf(param.data)) == True:
-                print(f"Param is {param.data}")
-                print("Exiting program")
-                quit()
         optimizer.zero_grad()
         if dec_mag == False:
             pred, I_pred = model(P.to(device))
