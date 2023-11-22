@@ -690,8 +690,8 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
          dec_mag, device, labels, parallel):
     data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
     multiplier = ceil(data_size/100000)
-    n_samples = 5000*multiplier
-    n_samples_large = 10000*multiplier # number of parameter sets to draw 
+    n_samples = 500*multiplier
+    n_samples_large = 1000*multiplier # number of parameter sets to draw 
     divider = 100*multiplier
     n_samples_small = int(n_samples_large/divider)
     print(f"I am in active learning loop {active_loop_num}")

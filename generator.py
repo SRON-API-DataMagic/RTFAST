@@ -760,7 +760,7 @@ def lhc_generation(size,range_all):
 
 def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")
-    init_data_size = 5000
+    init_data_size = 500
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
