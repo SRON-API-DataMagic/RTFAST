@@ -207,7 +207,7 @@ class LagLoss(nn.Module):
             result = 10**result
             return result
         elif self.scale_type == "Standard":
-            result = (a - self.mean)/self.scale
+            result = (a - self.mean.to(self.device))/self.scale.to(self.device)
             return 10**result
     
     def forward(self, output, index, target, index_target):
