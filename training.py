@@ -9,6 +9,7 @@ from torch import nn
 from joblib import load
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 from processing import mergeSaveData, saveLoop
 from math import ceil
@@ -107,14 +108,24 @@ class FluxLoss(nn.Module):
         self.set_scale()
         
     def set_scale(self):
-        self.min = torch.tensor(self.scaler.data_min_)
-        self.max = torch.tensor(self.scaler.data_max_)
-        self.scale = self.max - self.min
+        if isinstance(self.scaler, MinMaxScaler):
+            self.min = torch.tensor(self.scaler.data_min_)
+            self.max = torch.tensor(self.scaler.data_max_)
+            self.scale = self.max - self.min
+            self.scale_type = "MinMax"
+        elif isinstance(self.scaler, StandardScaler):
+            self.mean = torch.tensor(self.scaler.mean_)
+            self.scale = torch.tensor(self.scaler.scale_)
+            self.scale_type = "Standard"
         
     def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-        result = 10**result
-        return result
+        if self.scale_type == "MinMax":
+            result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+            result = 10**result
+            return result
+        elif self.scale_type == "Standard":
+            result = (a - self.mean)/self.scale
+            return 10**result
         
     def forward(self, output, target):
         #scale to real space
@@ -180,14 +191,24 @@ class LagLoss(nn.Module):
         self.threshold = 1e-5
     
     def set_scale(self):
-        self.min = torch.tensor(self.scaler.data_min_)
-        self.max = torch.tensor(self.scaler.data_max_)
-        self.scale = self.max - self.min
-    
+        if isinstance(self.scaler, MinMaxScaler):
+            self.min = torch.tensor(self.scaler.data_min_)
+            self.max = torch.tensor(self.scaler.data_max_)
+            self.scale = self.max - self.min
+            self.scale_type = "MinMax"
+        elif isinstance(self.scaler, StandardScaler):
+            self.mean = torch.tensor(self.scaler.mean_)
+            self.scale = torch.tensor(self.scaler.scale_)
+            self.scale_type = "Standard"
+        
     def scaling(self,a):
-        result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-        result = 10**result
-        return result
+        if self.scale_type == "MinMax":
+            result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+            result = 10**result
+            return result
+        elif self.scale_type == "Standard":
+            result = (a - self.mean)/self.scale
+            return 10**result
     
     def forward(self, output, index, target, index_target):
         #scale to real space
