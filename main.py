@@ -12,7 +12,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 #from torch.optim.lr_scheduler import ReduceLROnPlateau
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from joblib import Parallel, delayed
 
 from dataStructures import FluxData, LagsData
@@ -92,6 +92,7 @@ def active_learning(wrk_dir, device = "cpu"):
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
     scaler = MinMaxScaler()
+    scaler = StandardScaler()
     
     if first == True: 
         lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, lags_name)

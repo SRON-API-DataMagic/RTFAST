@@ -118,7 +118,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
         axs[0].set_ylabel(f"{mode}")
     axs[1].scatter(egrid,(da-pred)/da,s=0.5)
     axs[1].set_ylabel("Residuals")
-    axs[1].set_xlabel("Photons/cm2/s")
+    axs[1].set_xlabel("Energy (keV)")
     axs[1].axhline(y=0.01,ls="--",color="orange")
     axs[1].axhline(y=-0.01,ls="--",color="orange")
     axs[1].set_yscale("symlog")
