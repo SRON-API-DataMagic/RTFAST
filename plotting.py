@@ -111,7 +111,7 @@ def residual_plots(egrid, pred, da, fname, title, mname, log = False,
     pred = pred[:-1]*emid
     da = da[:-1]*emid
     egrid = egrid[:-1]
-    #axs[0].plot(egrid,pred,c="blue",label="NN model")
+    axs[0].plot(egrid,pred,c="blue",label="NN model")
     axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
     axs[0].legend()
     axs[0].set_title(title)
@@ -653,8 +653,6 @@ def residuals_dataframe(residuals,names):
 def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
                   dec_mag=False):
     for batch, (D,P) in enumerate(testing_dataloader):
-        print(batch)
-        print(P)
         D = np.squeeze(D)
         if mode == "flux":
             D[D<=1e-11] = 1e-11
