@@ -372,7 +372,7 @@ def plot_flux_ranges_corner():
     AGN = pd.read_csv(f"data/flux/{AGN_name}_range.csv")
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [0,3]
+    negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     AGN.iloc[:,negatives] = -AGN.iloc[:,negatives]
@@ -988,7 +988,7 @@ def aggregate_dists(files):
                     "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g",
                     "Anorm"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
-    negatives = [0,3]
+    negatives = [3]
     
     full_pars = [[] for i in range(len(pars_list))]
     
@@ -1055,7 +1055,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
     resid_list = []
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [0,3]
+    negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     if type(scaler_names) != list:
@@ -1141,7 +1141,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [60,60]
+    active_name = [0,10,20,30,40]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
@@ -1207,13 +1207,12 @@ def main():
     
     flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, lags_egrid, lhc_AGN)
     
-    plot_spec_dist(egrid, flux, theta_flux)
+    #plot_spec_dist(egrid, flux, theta_flux)
     
     saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
     saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
     
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", "data/locations/loc_lags_AGN_test.csv")
-    
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
