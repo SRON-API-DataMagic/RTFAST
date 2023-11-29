@@ -22,7 +22,7 @@ class FluxData(Dataset):
     """
     
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
-                 logged = [], scaling=False):
+                 logged = [], scaling=False, end=-1):
         super().__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = pars_list
@@ -34,7 +34,7 @@ class FluxData(Dataset):
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
-            self.scaler_create()
+            self.scaler_create(end)
         else:
             self.scaler = load(f'scalers/{self.scaler_name}')
     
@@ -68,7 +68,7 @@ class FluxData(Dataset):
         D = D.double()
         return D
     
-    def scaler_create(self):
+    def scaler_create(self,end):
         """
         Creates and loads the scaler for the dataset.
 
@@ -78,7 +78,7 @@ class FluxData(Dataset):
 
         """
         data = []
-        for file in self.labels.iloc[:,-1]:
+        for file in self.labels.iloc[:end,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[D<=self.lower_threshold] = self.lower_threshold
@@ -124,7 +124,7 @@ class LagsData(FluxData):
     """
     
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
-                 logged = [], scaling=False):
+                 logged = [], scaling=False, end = -1):
         super(FluxData, self).__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = pars_list
@@ -136,7 +136,7 @@ class LagsData(FluxData):
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
-            self.scaler_create()
+            self.scaler_create(end)
         else:
             self.scaler = load(f'scalers/{self.scaler_name}')
             
@@ -171,7 +171,7 @@ class LagsData(FluxData):
         ind = ind.double()
         return norm_D, ind
     
-    def scaler_create(self):
+    def scaler_create(self, end):
         """
         Loads all data from the list of time lags locations and then creates
         a scikitlearn scaler fitted on these data. Saves this scaler to disk 
@@ -183,7 +183,7 @@ class LagsData(FluxData):
 
         """
         data = []
-        for file in self.labels.iloc[:,-1]:
+        for file in self.labels.iloc[:end,-1]:
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D = np.abs(D)

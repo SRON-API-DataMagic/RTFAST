@@ -489,7 +489,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
             te_loss_arr, tr_loss_arr, last_sig_tr, last_sig_te)
 
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
-                       test_dataloader, loss_fn, device, size, mode, 
+                       test_dataloader, loss_fn, device, name, mode, 
                        epochs = 400, dec_mag = False):
     
     last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
@@ -519,7 +519,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
             imp_tr = 0
             print(f"New best training loss: {train_loss}")
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), f"models/grid_{size}_{mode}.pth")
+            torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
         elif tr_bet > 0:
             imp_tr = 0
             imp_te += 1
@@ -530,7 +530,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
             imp_te = 0
             last_sig_best_te = loss
             print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), f"models/grid_{size}_{mode}.pth")
+            torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
         else:
             imp_te += 1
             imp_tr += 1
@@ -539,14 +539,14 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
     print("Final best testing loss:", last_sig_best_te)
-    torch.save(model.state_dict(), f"models/grid_{size}_{mode}_final.pth")
-    print(f"Saved PyTorch Model State to grid_{size}_{mode}_final.pth")
+    torch.save(model.state_dict(), f"models/{name}_{mode}_final.pth")
+    print(f"Saved PyTorch Model State to {name}_{mode}_final.pth")
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     
-    np.savetxt(f"loss/grid_{size}_{mode}_te_loss.txt",te_loss_arr)
-    np.savetxt(f"loss/grid_{size}_{mode}_tr_loss.txt",tr_loss_arr)
+    np.savetxt(f"loss/{name}_{mode}_te_loss.txt",te_loss_arr)
+    np.savetxt(f"loss/{name}_{mode}_tr_loss.txt",tr_loss_arr)
     
     return
 
