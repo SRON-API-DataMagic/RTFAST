@@ -387,27 +387,28 @@ def fixed_data_varied_training(wrk_dir,device):
     
     flux_name = "active_locs_flux.csv"
     flux_test_name = "active_test_locs_flux.csv"
-    flux_scaler_name = "active_scaler_flux.bin"
     lags_name = "active_locs_lags.csv"
     lags_test_name = "active_test_locs_lags.csv"
-    lags_scaler_name = "active_scaler_lags.bin"
     
     training_epochs = 400
     
-    optimizers = ["adaptive","Nestorov"]
+    optimizers = ["adam","sgd"]
     schedulers = ["fixed","cyclic"]
-    scalers = ["minmax","standard_dev"]
+    scalers = ["minmax","std"]
     
     for scaler_typ in scalers:
         print(f"Attempting scaler type {scaler_typ}")
         #select scalers
         if scaler_typ == "minmax":
             scaler = MinMaxScaler()
-        elif scaler_typ == "standard_dev":
+        elif scaler_typ == "std":
             scaler = StandardScaler()
         else:
             print(f"{scaler_typ} is not a valid scaler, skipping...")
             continue
+        
+        flux_scaler_name = f"{scaler_typ}_scaler_flux.bin"
+        lags_scaler_name = f"{scaler_typ}_scaler_lags.bin"
         
         Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
                           flux_scaler_name, pars_list=pars_list,
@@ -456,10 +457,10 @@ def fixed_data_varied_training(wrk_dir,device):
                 step_size_up = len(flux_test_dataloader)*5
                 
                 #select optimizers
-                if optimizer_typ == "adaptive":
+                if optimizer_typ == "adam":
                     optimizer_flux = Adam(flux_model.parameters(),lr = max_lr)
                     optimizer_lags = Adam(lags_model.parameters(),lr = max_lr)
-                elif optimizer_typ == "Nestorov":
+                elif optimizer_typ == "sgd":
                     optimizer_flux = SGD(flux_model.parameters(),lr = max_lr)
                     optimizer_lags = SGD(lags_model.parameters(),lr = max_lr)
                 else:
