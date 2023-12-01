@@ -390,7 +390,7 @@ def fixed_data_varied_training(wrk_dir,device):
     lags_name = "active_locs_lags.csv"
     lags_test_name = "active_test_locs_lags.csv"
     
-    training_epochs = 400
+    training_epochs = 50
     
     optimizers = ["adam","sgd"]
     schedulers = ["fixed","cyclic"]
