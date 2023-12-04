@@ -156,6 +156,13 @@ class FluxLoss(nn.Module):
             print(f"Target: {target}")
             print(f"Data: {data}")
             quit()
+        if loss > 10:
+            print("Loss has become large, performing checks")
+            print(f"Prediction: {pred}")
+            print(f"Raw output: {output}")
+            print(f"Target: {target}")
+            print(f"Data: {data}")
+            quit()
         return loss 
 
 class LagLoss(nn.Module):
