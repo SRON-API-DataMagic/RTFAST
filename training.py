@@ -259,6 +259,18 @@ def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
+        if torch.any(torch.isinf(D)):
+            print("infinities in data")
+            quit()
+        elif torch.any(torch.isnan(D)):
+            print("nans in data")
+            quit()
+        if torch.any(torch.isinf(P)):
+            print("infinities in P")
+            quit()
+        elif torch.any(torch.isnan(P)):
+            print("nans in P")
+            quit()
         optimizer.zero_grad()
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
