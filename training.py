@@ -119,9 +119,11 @@ class FluxLoss(nn.Module):
             self.scale = torch.tensor(self.scaler.scale_)
             self.scale_type = "Standard"
         
-    def scaling(self,a):
+    def scaling(self,a,testing=False):
         if self.scale_type == "MinMax":
             result = (a * self.scale.to(self.device)) + self.min.to(self.device)
+            if testing == True:
+                print(result)
             result = 10**result
             return result
         elif self.scale_type == "Standard":
@@ -150,7 +152,7 @@ class FluxLoss(nn.Module):
         elif torch.any(torch.isinf(scaled_out)):
             print("target scaled output has infs")
             print(output)
-            print(self.scale)
+            print(self.scaling(output,True))
             print(scaled_out)
             quit()
         #create mask where prediction is within boundaries
