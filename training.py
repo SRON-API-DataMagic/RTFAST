@@ -132,6 +132,18 @@ class FluxLoss(nn.Module):
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
+        if torch.any(torch.isnan(scaled_tar)):
+            print("target scaled target has nans")
+            quit()
+        elif torch.any(torch.isnan(scaled_out)):
+            print("target scaled output has nans")
+            quit()
+        if torch.any(torch.isinf(scaled_tar)):
+            print("target scaled target has infs")
+            quit()
+        elif torch.any(torch.isinf(scaled_out)):
+            print("target scaled output has infs")
+            quit()
         #create mask where prediction is within boundaries
         mask = torch.where(((scaled_tar<=self.lower_threshold)&
                             (scaled_out<=self.lower_threshold)),
@@ -228,7 +240,7 @@ class LagLoss(nn.Module):
         loss += signed_loss
         return loss 
   
-def train_flux(dataloader, model, optimizer, loss_fn,device, dec_mag = False):
+def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
     """
     
 
