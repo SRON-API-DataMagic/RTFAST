@@ -446,8 +446,8 @@ def fixed_data_varied_training(wrk_dir,device):
                                      num_workers = num_workers, shuffle=True)
         print("Lags test data loader created")
         
-        loss_fn_flux = FluxLoss(scaler_flux, device)
-        loss_fn_lags = LagLoss(scaler_lags, device)
+        loss_fn_flux = FluxLoss(flux_scaler_name, device)
+        loss_fn_lags = LagLoss(lags_scaler_name, device)
         
         for scheduler_typ in schedulers:
             for optimizer_typ in optimizers:
