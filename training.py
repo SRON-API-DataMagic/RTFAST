@@ -134,15 +134,23 @@ class FluxLoss(nn.Module):
         scaled_out = self.scaling(output)
         if torch.any(torch.isnan(scaled_tar)):
             print("target scaled target has nans")
+            print(target)
+            print(scaled_tar)
             quit()
         elif torch.any(torch.isnan(scaled_out)):
             print("target scaled output has nans")
+            print(output)
+            print(scaled_out)
             quit()
         if torch.any(torch.isinf(scaled_tar)):
             print("target scaled target has infs")
+            print(target)
+            print(scaled_tar)
             quit()
         elif torch.any(torch.isinf(scaled_out)):
             print("target scaled output has infs")
+            print(output)
+            print(scaled_out)
             quit()
         #create mask where prediction is within boundaries
         mask = torch.where(((scaled_tar<=self.lower_threshold)&
