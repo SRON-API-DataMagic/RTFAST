@@ -458,7 +458,7 @@ def fixed_data_varied_training(wrk_dir,device):
                 lags_model.to(device)
                 
                 base_lr = 0.001
-                max_lr = 0.1
+                max_lr = 0.01
                 step_size_up = len(flux_test_dataloader)*5
                 
                 #select optimizers
