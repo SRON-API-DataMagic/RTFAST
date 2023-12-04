@@ -150,6 +150,7 @@ class FluxLoss(nn.Module):
         elif torch.any(torch.isinf(scaled_out)):
             print("target scaled output has infs")
             print(output)
+            print(self.scale)
             print(scaled_out)
             quit()
         #create mask where prediction is within boundaries
