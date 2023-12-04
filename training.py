@@ -139,19 +139,16 @@ class FluxLoss(nn.Module):
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
-        if torch.any(torch.isinf(pred)) == True:
-            print("Prediction has infinities")
-            print(f"Prediction:{pred}")
-            print(f"Raw output:{output}")
-            quit()
-        elif torch.any(torch.isnan(pred)) == True:
-            print("Prediction has NaNs")
-            print(f"Prediction:{pred}")
-            print(f"Raw output:{output}")
-            quit()
         #calculate loss
         criterion = nn.MSELoss()
         loss = criterion(pred,data)
+        if torch.isnan(loss) == True:
+            print("Loss has become NaN, performing checks")
+            print(f"Prediction: {pred}")
+            print(f"Raw output: {output}")
+            print(f"Target: {target}")
+            print(f"Data: {data}")
+            quit()
         return loss 
 
 class LagLoss(nn.Module):
@@ -269,14 +266,6 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
-        if torch.any(torch.isnan(D)) == True:
-            print("D got nans")
-        if torch.any(torch.isnan(D)) == True:
-            print("D got infs")
-        if torch.any(torch.isnan(P)) == True:
-            print("P got nans")
-        if torch.any(torch.isinf(P)) == True:
-            print("P got infs")
         optimizer.zero_grad()
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
