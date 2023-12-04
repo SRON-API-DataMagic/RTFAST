@@ -269,6 +269,14 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
     size = len(dataloader.dataset)
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
+        if torch.any(torch.isnan(D)) == True:
+            print("D got nans")
+        if torch.any(torch.isnan(D)) == True:
+            print("D got infs")
+        if torch.any(torch.isnan(P)) == True:
+            print("P got nans")
+        if torch.any(torch.isinf(P)) == True:
+            print("P got infs")
         optimizer.zero_grad()
         if dec_mag == False:
             pred = model(P.to(device))[:,None,:]
