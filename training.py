@@ -122,9 +122,6 @@ class FluxLoss(nn.Module):
     def scaling(self,a,testing=False):
         if self.scale_type == "MinMax":
             result = (a * self.scale.to(self.device)) + self.min.to(self.device)
-            if testing == True:
-                print("Before power**10")
-                print(result)
             result = 10**result
             return result
         elif self.scale_type == "Standard":
@@ -135,31 +132,6 @@ class FluxLoss(nn.Module):
         #scale to real space
         scaled_tar = self.scaling(target)
         scaled_out = self.scaling(output)
-        if torch.any(torch.isnan(scaled_tar)):
-            print("target scaled target has nans")
-            print(target)
-            print(scaled_tar)
-            quit()
-        elif torch.any(torch.isnan(scaled_out)):
-            print("target scaled output has nans")
-            print(output)
-            print(scaled_out)
-            quit()
-        if torch.any(torch.isinf(scaled_tar)):
-            print("target scaled target has infs")
-            print(target)
-            print(scaled_tar)
-            quit()
-        elif torch.any(torch.isinf(scaled_out)):
-            print("target scaled output has infs")
-            print("Scaled target")
-            print(scaled_tar)
-            print("NN output raw")
-            print(output)
-            print(self.scaling(output,True))
-            print("Final scaled NN output")
-            print(scaled_out)
-            quit()
         #create mask where prediction is within boundaries
         mask = torch.where(((scaled_tar<=self.lower_threshold)&
                             (scaled_out<=self.lower_threshold)),
@@ -167,6 +139,16 @@ class FluxLoss(nn.Module):
         #multiply with mask to only consider where network is out of bounds
         pred = torch.mul(output,mask)
         data = torch.mul(target,mask)
+        if torch.any(torch.isinf(pred)) == True:
+            print("Prediction has infinities")
+            print(f"Prediction:{pred}")
+            print(f"Raw output:{output}")
+            quit()
+        elif torch.any(torch.isnan(pred)) == True:
+            print("Prediction has NaNs")
+            print(f"Prediction:{pred}")
+            print(f"Raw output:{output}")
+            quit()
         #calculate loss
         criterion = nn.MSELoss()
         loss = criterion(pred,data)
