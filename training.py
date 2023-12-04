@@ -10,6 +10,7 @@ from joblib import load
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import time
 
 from processing import mergeSaveData, saveLoop
 from math import ceil
@@ -503,6 +504,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     
     print("Beginning training")
     while epoch < epochs:
+        time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
         model, optimizer, train_loss = train(train_dataloader, model,
                                              optimizer, loss_fn, device,
@@ -535,6 +537,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
             imp_te += 1
             imp_tr += 1
         epoch += 1
+        print("Time for one epoch:",time.time()-time_st)
     
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
