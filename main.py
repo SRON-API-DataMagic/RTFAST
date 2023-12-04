@@ -457,8 +457,8 @@ def fixed_data_varied_training(wrk_dir,device):
                 lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
                 lags_model.to(device)
                 
-                base_lr = 0.001
-                max_lr = 0.01
+                base_lr = 0.00001
+                max_lr = 0.001
                 step_size_up = len(flux_test_dataloader)*5
                 
                 #select optimizers
