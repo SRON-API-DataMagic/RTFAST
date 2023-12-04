@@ -400,9 +400,11 @@ def fixed_data_varied_training(wrk_dir,device):
         print(f"Attempting scaler type {scaler_typ}")
         #select scalers
         if scaler_typ == "minmax":
-            scaler = MinMaxScaler()
+            scaler_flux = MinMaxScaler()
+            scaler_lags = MinMaxScaler()
         elif scaler_typ == "std":
-            scaler = StandardScaler()
+            scaler_flux = StandardScaler()
+            scaler_lags = StandardScaler()
         else:
             print(f"{scaler_typ} is not a valid scaler, skipping...")
             continue
@@ -410,39 +412,39 @@ def fixed_data_varied_training(wrk_dir,device):
         flux_scaler_name = f"{scaler_typ}_scaler_flux.bin"
         lags_scaler_name = f"{scaler_typ}_scaler_lags.bin"
         
-        Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
+        Xquery = FluxData(f"data/locations/{flux_name}", scaler_flux, 
                           flux_scaler_name, pars_list=pars_list,
                           negatives=negatives,logged=logged, scaling=True,
                           end=30000)
-        print("Query data set created")
+        print("Flux training data set created")
         flux_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                       num_workers = num_workers, shuffle=True)
-        print("Query data loader created")
+        print("Flux data loader created")
         
-        Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
+        Xquery = LagsData(f"data/locations/{lags_name}", scaler_lags, 
                           lags_scaler_name, pars_list=pars_list,
                           negatives=negatives,logged=logged, scaling=True,
                           end=30000)
-        print("Query data set created")
+        print("Lags training data set created")
         lags_dataloader = DataLoader(Xquery, batch_size=batch_size, 
                                       num_workers = num_workers, shuffle=True)
-        print("Query data loader created")
+        print("Lags data loader created")
         
-        Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
+        Xtest = FluxData(f"data/locations/{flux_test_name}", scaler_flux, 
                           flux_scaler_name, pars_list=pars_list, 
                           negatives=negatives,logged=logged)
-        print("Test data set created")
+        print("Flux test data set created")
         flux_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                      num_workers = num_workers, shuffle=True)
-        print("Test data loader created")
+        print("Flux test data loader created")
         
-        Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
+        Xtest = LagsData(f"data/locations/{lags_test_name}", scaler_lags, 
                           lags_scaler_name, pars_list=pars_list, 
                           negatives=negatives,logged=logged)
-        print("Test data set created")
+        print("Lags test data set created")
         lags_test_dataloader = DataLoader(Xtest, batch_size=batch_size,
                                      num_workers = num_workers, shuffle=True)
-        print("Test data loader created")
+        print("Lags test data loader created")
         
         for scheduler_typ in schedulers:
             for optimizer_typ in optimizers:
