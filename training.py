@@ -149,6 +149,13 @@ class FluxLoss(nn.Module):
             print(f"Target: {target}")
             print(f"Data: {data}")
             quit()
+        elif torch.isinf(loss) == True:
+            print("Loss has become inf, performing checks")
+            print(f"Prediction: {pred}")
+            print(f"Raw output: {output}")
+            print(f"Target: {target}")
+            print(f"Data: {data}")
+            quit()
         return loss 
 
 class LagLoss(nn.Module):
