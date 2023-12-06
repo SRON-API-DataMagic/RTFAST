@@ -141,6 +141,7 @@ def removeRedundantData():
     spectra_names = []
     for fname in labels:
         data = pd.read_csv(locations+fname)
+        print(f"{fname}:{len(data)}")
         names = data["Location"].values.tolist()
         spectra_names.extend(names)
     
