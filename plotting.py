@@ -475,7 +475,7 @@ def residual_sorting(df,indexing):
         ticklabel.append(f"{df[indexing][int(len(df)*p)]:.2f}")
     return tick,ticklabel
 
-def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
+def residual_computation(dataloader, model, scaler, mode):
     """
     Computes and records residual differences between neural network outputs
     and rtdist outputs. Records them with the parameters. For data and model
@@ -559,8 +559,7 @@ def residual_computation(dataloader, model, scaler, mode, dec_mag=False):
     
     return (dataframe, ticks, ticklabels)
 
-def calculate_loss(testing_dataloader, model, scaler, mode = "flux", 
-                   dec_mag = False):
+def calculate_loss(testing_dataloader, model, scaler, mode = "flux"):
     """
     
 
@@ -591,19 +590,10 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux",
             D[(D<=0)&(np.abs(D)<1e-4)] = -1e-4
             D[(D>=0)&(np.abs(D)<1e-4)] = 1e-4
             D = np.squeeze(D)
-        if dec_mag == False:
-            if mode == "flux":
-                pred = model(P)
-            else:
-                pred, I_pred = model(P)
+        if mode == "flux":
+            pred = model(P)
         else:
-            if mode == "flux":
-                mag_pred, dec_pred = model(P)
-            else:
-                mag_pred, dec_pred, I_pred = model(P)
-            
-            dec_pred = (dec_pred.detach().numpy()*9) + 1
-            pred = dec_pred * (10**np.round(inverse(scaler,mag_pred.detach().numpy())))
+            pred, I_pred = model(P)
         
         if mode != "flux":
             pred = pred.detach().numpy()*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
@@ -633,8 +623,7 @@ def residuals_dataframe(residuals,names):
     df = pd.DataFrame(data = d)
     return df
 
-def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5,
-                  dec_mag=False):
+def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
     for batch, (D,P) in enumerate(testing_dataloader):
         D = np.squeeze(D)
         if mode == "flux":
@@ -992,7 +981,7 @@ def aggregate_dists(files):
     plt.close()
     
 
-def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = False):
+def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     if lags != None:
         mode = "lags"
     else:
@@ -1041,8 +1030,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         #folname = str(fname)
         fname = f"{fname}_{mode}"
         print(fname)
-        residuals = calculate_loss(testing_dataloader, model, scaler, mode,
-                                   dec_mag)
+        residuals = calculate_loss(testing_dataloader, model, scaler, mode)
         resid_list.append(residuals)
         median = np.median(residuals)
         q_01,q_05, q_25, q_75, q_95, q_99 = np.quantile(residuals,
@@ -1065,13 +1053,12 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None, dec_mag = Fals
         loss_high_out.append(high_outliers)
         if lags == None:
             model_samples(testing_dataloader, scaler, model, egrid, fname, 
-                          mode, dec_mag=dec_mag)
+                          mode)
         else:
             model_samples(testing_dataloader, scaler, model, egrid[:-1], fname, 
-                          mode, dec_mag=dec_mag)
+                          mode)
         df, ticks, ticklabels = residual_computation(testing_dataloader, 
-                                                     model, scaler, mode,
-                                                     dec_mag=dec_mag)
+                                                     model, scaler, mode)
         heatmap_plots(df, indexes, ticks, ticklabels, fname, mode)
         del df, ticks, ticklabels
         

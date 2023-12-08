@@ -8,10 +8,17 @@ import scipy
 import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
+
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, SGD
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CyclicLR
+
+import torch.multiprocessing as mp
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.distributed import init_process_group, destroy_process_group
+
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from joblib import Parallel, delayed
 
@@ -27,7 +34,7 @@ from training import FluxLoss, LagLoss
 from training import QBDC
 from generator import intialize_dataset
 
-def active_learning(wrk_dir, device = "cpu"):
+def active_learning(device,wrk_dir,world_size=1,parallelism=False):
     """
     Core method that collates together methods from other files to perform
     active learning based training by the query by dropout committee technique.
@@ -79,15 +86,18 @@ def active_learning(wrk_dir, device = "cpu"):
     
     num_pars = range_AGN.shape[0]
     
-    flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
-    flux_model.to(device)
-    lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
-    lags_model.to(device)
-    
-    best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
-    best_flux_model.to(device)
-    best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
-    best_lags_model.to(device)
+    if parallelism == False:
+        flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
+        flux_model.to(device)
+        lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
+        lags_model.to(device)
+        
+        best_flux_model = network.HeavyFluxNetwork(num_pars,len(egrid))
+        best_flux_model.to(device)
+        best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
+        best_lags_model.to(device)
+    else:
+        flux_model = DDP(network.HeavyFluxNetwork, device_ids=[gpu_id])
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
@@ -157,15 +167,13 @@ def active_learning(wrk_dir, device = "cpu"):
     batch_size = 1024
     num_workers = 4
     
-    dec_mag = False
-    
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
             theta_lhc, lhc_idx = QBDC(flux_name, flux_test_name, lags_name, 
                                       lags_test_name, active_loop_num, 
                                       theta_lhc, lhc_idx, egrid, lags_egrid, 
-                                      flux_model, lags_model, dec_mag, device, 
+                                      flux_model, lags_model, device, 
                                       labels, parallel)
     
             print("Setting up modeling")
@@ -211,7 +219,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_flux_epochs, 
                                                               best_flux_model, 
                                                               train_flux, test_flux,
-                                                              mode = "flux", dec_mag=dec_mag)
+                                                              mode = "flux")
             #train the lags model second
             (lags_model, best_lags_model, optimizer_lags, loop_lags_epochs, 
                     lags_te_loss_arr, lags_tr_loss_arr, 
@@ -223,7 +231,7 @@ def active_learning(wrk_dir, device = "cpu"):
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
                                                               train_lags, test_lags,
-                                                              mode = "lags", dec_mag=dec_mag)
+                                                              mode = "lags")
             #iterate loop number by 1
             active_loop_num += 1
             
@@ -251,8 +259,9 @@ def active_learning(wrk_dir, device = "cpu"):
         np.savetxt("loss/active_lags_te_loss.txt",lags_te_loss_arr)
         np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
         np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
+    destroy_process_group()
 
-def grid_learning(wrk_dir,device):
+def grid_learning(device,wrk_dir):
     """
     This method collates together methods to train neural networks utilizing a
     grid based learning strategy. This has less functionality than the active
@@ -352,7 +361,7 @@ def grid_learning(wrk_dir,device):
                                    loss_fn, device,
                                    size, mode)
 
-def fixed_data_varied_training(wrk_dir,device):
+def fixed_data_varied_training(device,wrk_dir):
     """
     This method is used for the exploration of the effect of the use of
     different scaling and learning rate schedulers on training of the emulator.
@@ -493,15 +502,30 @@ def fixed_data_varied_training(wrk_dir,device):
                                    flux_test_dataloader,
                                    loss_fn_flux, device,
                                    f"{scaler_typ}_{optimizer_typ}_{scheduler_typ}", 
-                                   "flux")
+                                   "flux", training_epochs)
                 
                 grid_training_loop(lags_model, optimizer_lags, train_lags, 
                                    test_lags, lags_dataloader, 
                                    lags_test_dataloader,
                                    loss_fn_lags, device,
                                    f"{scaler_typ}_{optimizer_typ}_{scheduler_typ}", 
-                                   "lags")
-    
+                                   "lags", training_epochs)
+
+def ddp_setup(rank: int, world_size: int):
+  """
+  Sets up distributed GPU processing.
+  
+  Parameters
+  ----------
+     rank: int
+         Unique identifier of each process
+     world_size: int
+         Total number of processes
+  """
+  os.environ["MASTER_ADDR"] = "localhost"
+  os.environ["MASTER_PORT"] = "12355"
+  init_process_group(backend="nccl", rank=rank, world_size=world_size)
+  torch.cuda.set_device(rank)
 
 def main():
     """
@@ -530,12 +554,19 @@ def main():
     
     print("Environmental variables successfully set")
     
+    parallelism = True
     print("Cuda is available:",torch.cuda.is_available())
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    #active_learning(wrk_dir,device)
-    #grid_learning(wrk_dir,device)
-    fixed_data_varied_training(wrk_dir, device)
+    if parallelism == False:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    else:
+        world_size = torch.cuda.device_count()
+        mp.spawn(active_learning, args=(wrk_dir,world_size,parallelism), 
+                 nprocs=world_size)
+
+    #active_learning(device,wrk_dir)
+    #grid_learning(device,wrk_dir)
+    fixed_data_varied_training(device,wrk_dir)
     
 
 if __name__ == "__main__":

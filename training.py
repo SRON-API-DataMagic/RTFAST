@@ -242,7 +242,7 @@ class LagLoss(nn.Module):
         loss += signed_loss
         return loss 
   
-def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
+def train_flux(dataloader, model, optimizer, loss_fn, device):
     """
     
 
@@ -274,13 +274,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
         optimizer.zero_grad()
-        if dec_mag == False:
-            pred = model(P.to(device))[:,None,:]
-            loss = loss_fn(pred,D.to(device))
-        else:
-            mag_pred, dec_pred  = model(P.to(device))
-            mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
-            loss = loss_fn(dec_pred, mag_pred, D.to(device))
+        pred = model(P.to(device))[:,None,:]
+        loss = loss_fn(pred,D.to(device))
         loss.backward()
         #prevents exploding gradients
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -296,7 +291,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, dec_mag = False):
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
-def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
+def train_lags(dataloader, model, optimizer, loss_fn, device):
     """
     
 
@@ -328,14 +323,9 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
         optimizer.zero_grad()
-        if dec_mag == False:
-            pred, I_pred = model(P.to(device))
-            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-            loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
-        else:
-            mag_pred, dec_pred, I_pred = model(P.to(device))
-            mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
-            loss = loss_fn(dec_pred, mag_pred, I_pred, D.to(device), I.to(device))
+        pred, I_pred = model(P.to(device))
+        pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+        loss = loss_fn(pred, I_pred, D.to(device), I.to(device))
         loss.backward()
         #prevents exploding gradients
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -350,7 +340,7 @@ def train_lags(dataloader, model, optimizer, loss_fn, device, dec_mag=False):
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
-def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
+def test_flux(dataloader, model, loss_fn, device):
     """
     
 
@@ -375,19 +365,14 @@ def test_flux(dataloader, model, loss_fn, device, dec_mag=False):
     
     with torch.no_grad():
         for batch, (D,P) in enumerate(dataloader):
-            if dec_mag == False:
-                pred = model(P.to(device))[:,None,:]
-                test_loss += loss_fn(pred,D.to(device)).detach().item()
-            else:
-                mag_pred, dec_pred = model(P.to(device))
-                mag_pred, dec_pred = mag_pred[:,None,:], dec_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, D.to(device), test=True).detach().item()
+            pred = model(P.to(device))[:,None,:]
+            test_loss += loss_fn(pred,D.to(device)).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
     return test_loss
 
-def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
+def test_lags(dataloader, model, loss_fn, device):
     """
     
 
@@ -412,15 +397,9 @@ def test_lags(dataloader, model, loss_fn, device, dec_mag=False):
     
     with torch.no_grad():
         for batch, (D,I,P) in enumerate(dataloader):
-            if dec_mag == False:
-                pred, I_pred = model(P.to(device))
-                pred, I_pred = pred[:,None,:], I_pred[:,None,:]
-                test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device)).detach().item()
-            else:
-                mag_pred, dec_pred, I_pred = model(P.to(device))
-                mag_pred, dec_pred, I_pred = mag_pred[:,None,:], dec_pred[:,None,:], I_pred[:,None,:]
-                test_loss += loss_fn(dec_pred, mag_pred, I_pred, D.to(device), 
-                                     I.to(device), test=True).detach().item()
+            pred, I_pred = model(P.to(device))
+            pred, I_pred = pred[:,None,:], I_pred[:,None,:]
+            test_loss += loss_fn(pred, I_pred, D.to(device), I.to(device)).detach().item()
     test_loss /= batches
     
     print(f"Average testing loss: {test_loss:>8f}")
@@ -430,8 +409,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                         test_dataloader,te_loss_arr,tr_loss_arr,
                         last_sig_te,last_sig_tr, active_loop_num,
                         loop_epochs, best_model, train, test,
-                        mode = "flux", stopping = 15, scheduler = None,
-                        dec_mag=False):
+                        mode = "flux", stopping = 15, scheduler = None):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
@@ -443,8 +421,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         
         model, optimizer, train_loss = train(dataloader, model,
                                              optimizer, loss_fn,
-                                             device, dec_mag)
-        loss = test(test_dataloader, model, loss_fn, device, dec_mag)
+                                             device)
+        loss = test(test_dataloader, model, loss_fn, device)
         if scheduler != None:
             scheduler.step(loss)
         te_loss_arr.append(loss)
@@ -505,7 +483,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
 
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        test_dataloader, loss_fn, device, name, mode, 
-                       epochs = 400, dec_mag = False):
+                       epochs = 400):
     
     last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
     last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
@@ -521,9 +499,8 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
         model, optimizer, train_loss = train(train_dataloader, model,
-                                             optimizer, loss_fn, device,
-                                             dec_mag=dec_mag)
-        loss = test(test_dataloader, model, loss_fn, device, dec_mag=dec_mag)
+                                             optimizer, loss_fn, device)
+        loss = test(test_dataloader, model, loss_fn, device)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         tr_bet = (0.9*last_sig_best_tr) - train_loss
@@ -568,8 +545,8 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     return
 
 def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num, 
-         theta_lhc, lhc_idx, egrid, lags_egrid, flux_model, lags_model, 
-         dec_mag, device, labels, parallel):
+         theta_lhc, lhc_idx, egrid, lags_egrid, flux_model, lags_model, device,
+         labels, parallel):
     data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
     multiplier = ceil(data_size/100000)
     n_samples = 5000*multiplier
@@ -594,18 +571,11 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     for j in tqdm(range(divider),desc="Sample dropout loops"):
         theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
         for i in range(sample_dropout):
-            if dec_mag == True:
-                mag_flux, dec_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                mag_lags, dec_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                pred_query_flux[i] = mag_flux.detach().cpu().numpy() + dec_flux.detach().cpu().numpy()
-                pred_query_lags[i] = mag_lags.detach().cpu().numpy() + dec_lags.detach().cpu().numpy()
-                pred_query_inds[i] = ind.detach().cpu().numpy()
-            else:
-                pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-                pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
-                pred_query_flux[i] = pred_flux.detach().cpu().numpy()
-                pred_query_lags[i] = pred_lags.detach().cpu().numpy()
-                pred_query_inds[i] = ind.detach().cpu().numpy()
+            pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
+            pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+            pred_query_flux[i] = pred_flux.detach().cpu().numpy()
+            pred_query_lags[i] = pred_lags.detach().cpu().numpy()
+            pred_query_inds[i] = ind.detach().cpu().numpy()
         # find uncertainty (as measured by relative variance)
         dvar_flux = np.var(pred_query_flux,axis=0)
         mean_var_flux = np.mean(dvar_flux, axis=1)
