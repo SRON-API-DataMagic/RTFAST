@@ -136,10 +136,10 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         
         active_loop_num = 0
         
-        flux_pars = pd.read_csv(flux_name)
+        flux_pars = pd.read_csv(f"data/locations/{flux_name}")
         flux_data = read_data(flux_pars)
         
-        lags_pars = pd.read_csv(lags_name)
+        lags_pars = pd.read_csv(f"data/locations/{lags_name}")
         lags_data = read_data(lags_pars)
         
         #create initial dataset object to create scaler
@@ -198,16 +198,16 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
                                       flux_model, lags_model, device, 
                                       labels, parallel)
             
-            flux_pars = pd.read_csv(flux_name)
+            flux_pars = pd.read_csv(f"data/locations/{flux_name}")
             flux_data = read_data(flux_pars)
             
-            flux_test_pars = pd.read_csv(flux_test_name)
+            flux_test_pars = pd.read_csv(f"data/locations/{flux_test_name}")
             flux_test_data = read_data(flux_test_pars)
             
-            lags_pars = pd.read_csv(lags_name)
+            lags_pars = pd.read_csv(f"data/locations/{lags_name}")
             lags_data = read_data(lags_pars)
             
-            lags_test_pars = pd.read_csv(lags_test_name)
+            lags_test_pars = pd.read_csv(f"data/locations/{lags_test_name}")
             lags_test_data = read_data(lags_test_pars)
             
             print("Setting up modeling")
