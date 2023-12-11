@@ -183,7 +183,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         return data
     
     print("Beginning training")
-    with Parallel(n_jobs=10,verbose=5) as parallel:
+    with Parallel(n_jobs=20,verbose=3) as parallel:
         while active_loop_num <= active_loops:
             
             

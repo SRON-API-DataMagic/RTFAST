@@ -136,7 +136,7 @@ def Anorm_wrapper(pars):
         integral = (continuum*e_mid).sum()
         return integral
     
-    with Parallel(n_jobs=10,verbose=0) as parallel:
+    with Parallel(n_jobs=20,verbose=0) as parallel:
         integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
@@ -543,7 +543,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     theta_flux = pars_conversion(theta_init,0)
     theta_lags = pars_conversion(theta_init,6)
     
-    with Parallel(n_jobs=10,verbose=5) as parallel:
+    with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
@@ -626,7 +626,7 @@ def generate_flux_dists(AGN_name):
     
     iter_agn = pars_conversion_explor(theta_agn, 0)
     
-    with Parallel(n_jobs=10,verbose=5) as parallel:
+    with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         AGN_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
                                         for pars in iter_agn)
@@ -663,7 +663,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
     #generate physical models of test set
     theta_flux = pars_conversion_full(theta_lhc,0)
     theta_lags = pars_conversion_full(theta_lhc,6)
-    with Parallel(n_jobs=10,verbose=5) as parallel:
+    with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
@@ -779,7 +779,7 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+    flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
@@ -791,7 +791,7 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     
     del flux
     print("Generating lags models")
-    lags_query =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)
+    lags_query =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)
                                     for pars in theta_lags)
     lags_query = np.asarray(lags_query)
     print("Saving lags data")
