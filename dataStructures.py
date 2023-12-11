@@ -128,7 +128,7 @@ class LagsData(Dataset):
             data.append(datum)
         D = np.concatenate(data,axis=0)
         D = np.abs(D)
-        D[D<=self.lower_threshold] = self.lower_threshold
+        D[D<=self.threshold] = self.threshold
         D = np.log10(D)
         data = self.scaler.fit(D)
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
