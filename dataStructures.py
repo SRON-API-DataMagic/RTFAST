@@ -74,8 +74,7 @@ class LagsData(FluxData):
     def __init__(self, pars, data, scaler, scaler_name, pars_list, 
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
-        super().__init__()
-        print(pars)
+        super(FluxData,self).__init__()
         self.pars = torch.Tensor(pars.to_numpy()[:,:-1].astype(float))
         self.data = torch.Tensor(data)
         self.negatives = negatives
