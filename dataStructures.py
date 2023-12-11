@@ -16,6 +16,7 @@ class FluxData(Dataset):
         self.pars = torch.Tensor(pars.to_numpy()[:,pars_list].astype(float))
         self.pars[:,negatives] = -self.pars[:,negatives]
         self.pars[:,logged] = np.log10(self.pars[:,logged])
+        self.pars.double()
         self.data = torch.Tensor(data)
         self.scaling = scaling
         self.scaler_name = scaler_name
@@ -75,6 +76,7 @@ class LagsData(Dataset):
         self.pars = torch.Tensor(pars.to_numpy()[:,pars_list].astype(float))
         self.pars[:,negatives] = -self.pars[:,negatives]
         self.pars[:,logged] = np.log10(self.pars[:,logged])
+        self.pars.double()
         self.data = torch.Tensor(data)
         self.scaling = scaling
         self.scaler_name = scaler_name
