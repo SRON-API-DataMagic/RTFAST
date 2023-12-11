@@ -190,13 +190,11 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     print("Beginning training")
     with Parallel(n_jobs=20,verbose=3) as parallel:
         while active_loop_num <= active_loops:
-            
-            
             theta_lhc, lhc_idx = QBDC(flux_name, flux_test_name, lags_name, 
                                       lags_test_name, active_loop_num, 
                                       theta_lhc, lhc_idx, egrid, lags_egrid, 
                                       flux_model, lags_model, device, 
-                                      labels, parallel)
+                                      labels, parallel, parallelism)
             
             flux_pars = pd.read_csv(f"data/locations/{flux_name}")
             flux_data = read_data(flux_pars)

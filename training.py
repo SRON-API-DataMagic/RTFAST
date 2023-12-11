@@ -546,7 +546,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
 
 def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num, 
          theta_lhc, lhc_idx, egrid, lags_egrid, flux_model, lags_model, device,
-         labels, parallel = False):
+         labels, parallel, parallellism = False):
     data_size = len(pd.read_csv(f"data/locations/{flux_name}"))
     multiplier = ceil(data_size/100000)
     n_samples = 5000*multiplier
@@ -571,7 +571,7 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     for j in tqdm(range(divider),desc="Sample dropout loops"):
         theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
         for i in range(sample_dropout):
-            if parallel == False:
+            if parallellism == False:
                 pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
                 pred_lags, ind = lags_model(torch.DoubleTensor(theta_query_small).to(device))
                 pred_query_flux[i] = pred_flux.detach().cpu().numpy()
