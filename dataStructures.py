@@ -16,7 +16,6 @@ class FluxData(Dataset):
         self.pars = torch.Tensor(pars.to_numpy()[:,pars_list].astype(float))
         self.pars[:,negatives] = -self.pars[:,negatives]
         self.pars[:,logged] = np.log10(self.pars[:,logged])
-        self.pars.double()
         self.data = torch.Tensor(data)
         self.scaling = scaling
         self.scaler_name = scaler_name
@@ -34,7 +33,7 @@ class FluxData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum = self.standardize(datum)
-        parameters = self.pars[idx]
+        parameters = self.pars[idx].double()
         return datum, parameters
 
     def standardize(self, D):
@@ -94,7 +93,7 @@ class LagsData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum, ind = self.standardize(datum)
-        parameters = self.pars[idx]
+        parameters = self.pars[idx].double()
         return datum, ind, parameters
 
     def standardize(self, D):
