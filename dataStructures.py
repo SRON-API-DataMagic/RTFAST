@@ -13,7 +13,7 @@ class FluxData(Dataset):
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
         super().__init__()
-        self.par_list = torch.Tensor(pars)
+        self.pars = torch.Tensor(pars)
         self.data = torch.Tensor(data)
         self.negatives = negatives
         self.logged = logged
@@ -33,7 +33,7 @@ class FluxData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum = self.standardize(datum)
-        parameters = self.par_list[idx]
+        parameters = self.pars[idx,self.pars_list]
         parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
         parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
         parameters = torch.tensor(parameters)
@@ -75,7 +75,7 @@ class LagsData(FluxData):
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
         super().__init__()
-        self.par_list = torch.Tensor(pars)
+        self.pars = torch.Tensor(pars)
         self.data = torch.Tensor(data)
         self.negatives = negatives
         self.logged = logged
@@ -95,7 +95,7 @@ class LagsData(FluxData):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum, ind = self.standardize(datum)
-        parameters = self.par_list[idx]
+        parameters = self.pars[idx,self.pars_list]
         parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
         parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
         parameters = torch.tensor(parameters)
