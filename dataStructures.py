@@ -79,7 +79,7 @@ class LagsData(Dataset):
         self.data = torch.Tensor(data)
         self.scaling = scaling
         self.scaler_name = scaler_name
-        self.lower_threshold = 1e-6
+        self.threshold = 1e-6
         if scaling == True:
             print(f"Creating scaler with name {scaler_name}")
             self.scaler = scaler
