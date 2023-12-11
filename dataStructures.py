@@ -13,7 +13,7 @@ class FluxData(Dataset):
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
         super().__init__()
-        self.pars = torch.Tensor(pars)
+        self.pars = torch.Tensor(pars.values)
         self.data = torch.Tensor(data)
         self.negatives = negatives
         self.logged = logged
@@ -75,7 +75,7 @@ class LagsData(FluxData):
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
         super().__init__()
-        self.pars = torch.Tensor(pars)
+        self.pars = torch.Tensor(pars.values)
         self.data = torch.Tensor(data)
         self.negatives = negatives
         self.logged = logged
