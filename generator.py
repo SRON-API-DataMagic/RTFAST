@@ -764,14 +764,18 @@ def lhc_generation(size,range_all, limited = False):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
-def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
+def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=False):
     print("Generating first time dataset")
     init_data_size = 5000
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
-    theta_flux = pars_conversion_full(theta_init,0)
-    theta_lags = pars_conversion_full(theta_init,6)
+    if trimmed == False:
+        theta_flux = pars_conversion_full(theta_init,0)
+        theta_lags = pars_conversion_full(theta_init,6)
+    else:
+        theta_flux = pars_conversion(theta_init,0)
+        theta_lags = pars_conversion(theta_init,6)
     print("Parallelized model generation")
     
     print("Generating flux models")

@@ -110,7 +110,8 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     #scaler = StandardScaler()
     
     if first == True: 
-        lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, lags_name)
+        lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, 
+                                    lags_name, trimmed = True)
         
         last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
         last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)
