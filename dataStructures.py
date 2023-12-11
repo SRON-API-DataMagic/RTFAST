@@ -107,7 +107,7 @@ class LagsData(Dataset):
         #becoming infinities
         D[D<self.threshold] = self.threshold
         D = np.log10(D)
-        D = self.scale(D)
+        D = self.scaler.transform(D)
         D = torch.from_numpy(D)
         norm_D = D.double()
         ind = torch.from_numpy(ind)
