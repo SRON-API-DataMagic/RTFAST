@@ -108,6 +108,14 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
     scaler = MinMaxScaler()
     #scaler = StandardScaler()
+    def read_data(csv):
+        locations = csv.iloc[:,-1]
+        data = []
+        for location in locations:
+            datum = np.loadtxt(location).reshape(1, -1)
+            data.append(datum)
+        data = np.asarray(data)
+        return data
     
     if first == True: 
         lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, 
@@ -128,13 +136,19 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         
         active_loop_num = 0
         
+        flux_pars = pd.read_csv(flux_name)
+        flux_data = read_data(flux_pars)
+        
+        lags_pars = pd.read_csv(lags_name)
+        lags_data = read_data(lags_pars)
+        
         #create initial dataset object to create scaler
-        flux_dataloader = FluxData(f"data/locations/{flux_name}", 
+        flux_dataloader = FluxData(flux_pars, flux_data,
                                        scaler, flux_scaler_name,  
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
                                        scaling=True)
-        lags_dataloader = LagsData(f"data/locations/{lags_name}", 
+        lags_dataloader = LagsData(lags_pars, lags_data, 
                                        scaler, lags_scaler_name,
                                        pars_list=pars_list,
                                        negatives=negatives,logged=logged,
@@ -172,15 +186,6 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         
     batch_size = 1024
     num_workers = 4
-    
-    def read_data(csv):
-        locations = csv.iloc[:,-1]
-        data = []
-        for location in locations:
-            datum = np.loadtxt(location).reshape(1, -1)
-            data.append(datum)
-        data = np.asarray(data)
-        return data
     
     print("Beginning training")
     with Parallel(n_jobs=20,verbose=3) as parallel:
