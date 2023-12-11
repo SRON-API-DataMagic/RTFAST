@@ -13,10 +13,11 @@ class FluxData(Dataset):
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
         super().__init__()
-        self.pars = torch.Tensor(pars.to_numpy()[:,:-1].astype(float))
+        self.pars = torch.Tensor(pars.to_numpy()[:,pars_list].astype(float))
+        self.pars.iloc[:,negatives] = -self.pars.iloc[:,negatives]
+        self.pars.iloc[:,logged] = np.log10(self.pars.iloc[:,logged])
+        self.pars = torch.tensor(pars)
         self.data = torch.Tensor(data)
-        self.negatives = negatives
-        self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
         self.lower_threshold = 1e-11
@@ -33,10 +34,7 @@ class FluxData(Dataset):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum = self.standardize(datum)
-        parameters = self.pars[idx,self.pars_list]
-        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
-        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
-        parameters = torch.tensor(parameters)
+        parameters = self.pars[idx]
         return datum, parameters
 
     def standardize(self, D):
@@ -70,15 +68,16 @@ class FluxData(Dataset):
         dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
         return
 
-class LagsData(FluxData):
+class LagsData(Dataset):
     def __init__(self, pars, data, scaler, scaler_name, pars_list, 
                  negatives = [], logged = [], scaling=False, end=-1 , 
                  parallel = False):
-        super(FluxData,self).__init__()
-        self.pars = torch.Tensor(pars.to_numpy()[:,:-1].astype(float))
+        super().__init__()
+        self.pars = torch.Tensor(pars.to_numpy()[:,pars_list].astype(float))
+        self.pars.iloc[:,negatives] = -self.pars.iloc[:,negatives]
+        self.pars.iloc[:,logged] = np.log10(self.pars.iloc[:,logged])
+        self.pars = torch.tensor(pars)
         self.data = torch.Tensor(data)
-        self.negatives = negatives
-        self.logged = logged
         self.scaling = scaling
         self.scaler_name = scaler_name
         self.lower_threshold = 1e-6
@@ -95,10 +94,7 @@ class LagsData(FluxData):
     def __getitem__(self,idx):
         datum = self.data[idx]
         datum, ind = self.standardize(datum)
-        parameters = self.pars[idx,self.pars_list]
-        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
-        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
-        parameters = torch.tensor(parameters)
+        parameters = self.pars[idx]
         return datum, ind, parameters
 
     def standardize(self, D):
