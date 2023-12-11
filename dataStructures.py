@@ -9,6 +9,137 @@ import torch
 import numpy as np
 
 class FluxData(Dataset):
+    def __init__(self, pars, data, scaler, scaler_name, pars_list, 
+                 negatives = [], logged = [], scaling=False, end=-1 , 
+                 parallel = False):
+        super().__init__()
+        self.par_list = torch.Tensor(pars)
+        self.data = torch.Tensor(data)
+        self.negatives = negatives
+        self.logged = logged
+        self.scaling = scaling
+        self.scaler_name = scaler_name
+        self.lower_threshold = 1e-11
+        if scaling == True:
+            print(f"Creating scaler with name {scaler_name}")
+            self.scaler = scaler
+            self.scaler_create(end)
+        else:
+            self.scaler = load(f'scalers/{self.scaler_name}')
+
+    def __len__(self):
+        return self.data.shape[0]
+
+    def __getitem__(self,idx):
+        datum = self.data[idx]
+        datum = self.standardize(datum)
+        parameters = self.par_list[idx]
+        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
+        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
+        parameters = torch.tensor(parameters)
+        return datum, parameters
+
+    def standardize(self, D):
+        """
+        Filters 0 flux and converts to smallest non-zero value. Then standard
+        scales the energy bins.
+        """
+        D[D<=self.lower_threshold] = self.lower_threshold
+        D = np.log10(D)
+        D = self.scaler.transform(D)
+        D = torch.from_numpy(D)
+        D = D.double()
+        return D
+    
+    def scaler_create(self,end):
+        """
+        Creates and loads the scaler for the dataset.
+
+        Returns
+        -------
+        None.
+
+        """
+        data = []
+        for datum in self.data:
+            data.append(datum)
+        D = np.concatenate(data,axis=0)
+        D[D<=self.lower_threshold] = self.lower_threshold
+        D = np.log10(D)
+        data = self.scaler.fit(D)
+        dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
+        return
+
+class LagsData(FluxData):
+    def __init__(self, pars, data, scaler, scaler_name, pars_list, 
+                 negatives = [], logged = [], scaling=False, end=-1 , 
+                 parallel = False):
+        super().__init__()
+        self.par_list = torch.Tensor(pars)
+        self.data = torch.Tensor(data)
+        self.negatives = negatives
+        self.logged = logged
+        self.scaling = scaling
+        self.scaler_name = scaler_name
+        self.lower_threshold = 1e-6
+        if scaling == True:
+            print(f"Creating scaler with name {scaler_name}")
+            self.scaler = scaler
+            self.scaler_create(end)
+        else:
+            self.scaler = load(f'scalers/{self.scaler_name}')
+
+    def __len__(self):
+        return self.data.shape[0]
+
+    def __getitem__(self,idx):
+        datum = self.data[idx]
+        datum, ind = self.standardize(datum)
+        parameters = self.par_list[idx]
+        parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
+        parameters.iloc[self.logged] = np.log10(parameters.iloc[self.logged])
+        parameters = torch.tensor(parameters)
+        return datum, ind, parameters
+
+    def standardize(self, D):
+        """
+        Filters 0 flux and converts to smallest non-zero value. Then standard
+        scales the energy bins.
+        """
+        ind = np.where(D >= 0, 1, 0)
+        D = np.abs(D)
+        #set all values lower than the threshold to threshold to avoid 0s
+        #becoming infinities
+        D[D<self.threshold] = self.threshold
+        D = np.log10(D)
+        D = self.scale(D)
+        D = torch.from_numpy(D)
+        norm_D = D.double()
+        ind = torch.from_numpy(ind)
+        ind = ind.double()
+        return norm_D, ind
+    
+    def scaler_create(self,end):
+        """
+        Creates and loads the scaler for the dataset.
+
+        Returns
+        -------
+        None.
+
+        """
+        data = []
+        for datum in self.data:
+            data.append(datum)
+        D = np.concatenate(data,axis=0)
+        D = np.abs(D)
+        D[D<=self.lower_threshold] = self.lower_threshold
+        D = np.log10(D)
+        data = self.scaler.fit(D)
+        dump(self.scaler, f'scalers/{self.scaler_name}', compress=True)
+        return
+
+class FluxDataDisk(Dataset):
     """
     A class that inherits from torch.Dataset that returns both the data from
     the model evaluation and the parameters used to generate the model.
@@ -22,7 +153,7 @@ class FluxData(Dataset):
     """
     
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
-                 logged = [], scaling=False, end=-1):
+                 logged = [], scaling=False, end=-1 , parallel = False):
         super().__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = pars_list
@@ -106,7 +237,7 @@ class FluxData(Dataset):
         scaled_data = self.scaler.transform(data)
         return scaled_data
 
-class LagsData(FluxData):
+class LagsDataDisk(FluxDataDisk):
     """
     A class that inherits from FluxData that returns both the data from
     the model evaluation and the parameters used to generate the model.
@@ -125,7 +256,7 @@ class LagsData(FluxData):
     
     def __init__(self, labels, scaler, scaler_name, pars_list, negatives = [], 
                  logged = [], scaling=False, end = -1):
-        super(FluxData, self).__init__()
+        super(FluxDataDisk, self).__init__()
         self.labels = pd.read_csv(labels)
         self.pars_list = pars_list
         self.negatives = negatives
@@ -208,7 +339,7 @@ class LagsData(FluxData):
         datum, ind = self.standardize(datum)
         return datum, ind, parameters
 
-class LoadFluxData(FluxData):
+class LoadFluxData(FluxDataDisk):
     """
     A class that inherits from FluxData and instead loads in data in its pure
     form.
@@ -231,7 +362,7 @@ class LoadFluxData(FluxData):
         datum = np.loadtxt(location).reshape(1, -1)
         return datum, parameters
 
-class LoadLagsData(LagsData):
+class LoadLagsData(LagsDataDisk):
     """
     A class that inherits from LagsData and instead loads in data in its pure
     form.

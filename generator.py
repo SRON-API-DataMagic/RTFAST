@@ -366,11 +366,11 @@ def lhc_trimmed_gen():
     spin_range = [0.1,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    distance_range = [np.log10(0.2),np.log10(1e10)]
+    distance_range = [np.log10(3.5e5),np.log10(5e7)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
     
-    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
-                 distance_range]
+    range_all = [spin_range,inclination_range,r_inner_range,distance_range,
+                 mass_range]
     
     return range_all
 
@@ -401,7 +401,7 @@ def pars_conversion(pars,ReIm):
     new_pars[:,1] = pars[:,0]
     new_pars[:,2] = 10**pars[:,1]
     new_pars[:,3] = -10**pars[:,2]
-    new_pars[:,4] = 10**pars[:,3]
+    new_pars[:,7] = 10**pars[:,3]
     new_pars[:,13] = 10**pars[:,4]
     
     return new_pars
@@ -524,20 +524,20 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
 
     """
    
-    spin = np.linspace(0.1,1.0,size)
+    spin = np.linspace(0.1,0.998,size)
     inc = np.linspace(np.log10(1),np.log10(80),size)
     r_in = np.linspace(np.log10(1),np.log10(400),size)
-    r_out = np.linspace(np.log10(400),np.log10(1e5),size)
-    distance = np.linspace(np.log10(400),np.log10(1e5),size)
+    distance = np.linspace(np.log10(3.5e5),np.log10(5e7),size)
+    mass = np.linspace(np.log10(1e4),np.log10(1e11),size)
     
     #create parameter grid
     theta_init = []
     for a in spin:
         for i in inc:
                 for r_i in r_in:
-                    for r_o in r_out:
-                        for d in distance:
-                            theta_init.append([a,i,r_i,r_o,d])
+                    for d in distance:
+                        for m in mass:
+                            theta_init.append([a,i,r_i,d,m])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     theta_flux = pars_conversion(theta_init,0)
@@ -570,39 +570,39 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     tes_idx = idxs[int(0.9*len(idxs)):]
     
     #Splitting data and parameters into training and testing datasets
-    train_data = flux_data_init[tra_idx]
+    train_flux = flux_data_init[tra_idx]
     train_lags = lags_data_init[tra_idx]
     train_flux_pars = theta_flux[tra_idx]
     train_lags_pars = theta_lags[tra_idx]
     
-    test_data = flux_data_init[tes_idx]
+    test_flux = flux_data_init[tes_idx]
     test_lags = lags_data_init[tes_idx]
     test_flux_pars = theta_flux[tes_idx]
     test_lags_pars = theta_lags[tes_idx]
     
     print("Saving to disk")
     #save data for the first time in text files
-    saveData(train_data, train_flux_pars, 
+    saveData(train_flux, train_flux_pars, 
              "data/locations/",f"loc_{fname}_flux.csv")
     saveData(train_lags, train_lags_pars, 
              "data/locations/",f"loc_{fname}_lags.csv")
-    saveData(test_data, test_flux_pars, 
+    saveData(test_flux, test_flux_pars, 
              "data/locations/",f"loc_{fname}_flux_test.csv")
     saveData(test_lags, test_lags_pars, 
              "data/locations/",f"loc_{fname}_lags_test.csv")
     
     scaler = MinMaxScaler()
     
-    pars_list = [1,2,3,4,7]
+    pars_list = [1,2,3,7,13]
     negatives = [2]
     logged = [1,2,3,4]
     
-    flux_dataloader = FluxData(f"data/locations/loc_{fname}_flux.csv", 
+    flux_dataloader = FluxData(train_flux_pars, train_flux,
                                    scaler,f"{fname}_flux_scaler.bin",
                                    pars_list=pars_list,
                                    negatives=negatives, logged=logged, 
                                    scaling=True)
-    lags_dataloader = LagsData(f"data/locations/loc_{fname}_lags.csv", 
+    lags_dataloader = LagsData(train_lags_pars, train_lags,
                                    scaler,f"{fname}_lags_scaler.bin", 
                                    pars_list=pars_list,
                                    negatives=negatives, logged=logged, 
@@ -734,29 +734,35 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                lags_test_name)
     return
 
-def lhc_generation(size,range_all):
-    def lhc_cycle(size,range_all):
+def lhc_generation(size,range_all, limited = False):
+    if limited == False:
+        def lhc_cycle(size,range_all):
+            sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
+            sample = sampler.random(n=size)
+            theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
+            final_lhc = lhc_filter(theta_lhc)
+            return final_lhc
+        if size > 1e6:
+            gen_size = 1e6
+        else:
+            gen_size = size
+        lhc = lhc_cycle(gen_size, range_all)
+        percent = 0
+        while lhc.shape[0] < size:
+            if percent <= ((lhc.shape[0]/size)*100 - 10):
+                print(f"Currently {lhc.shape[0]}/{size}.")
+                percent = np.round((lhc.shape[0]/size)*100,0)/10
+                percent = np.floor(percent)*10
+            lhc_temp = lhc_cycle(gen_size, range_all)
+            lhc = np.concatenate((lhc,lhc_temp),axis=0)
+        np.random.shuffle(lhc)
+        lhc = lhc[:size]
+        return lhc
+    else:
         sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))
         sample = sampler.random(n=size)
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
-        final_lhc = lhc_filter(theta_lhc)
-        return final_lhc
-    if size > 1e6:
-        gen_size = 1e6
-    else:
-        gen_size = size
-    lhc = lhc_cycle(gen_size, range_all)
-    percent = 0
-    while lhc.shape[0] < size:
-        if percent <= ((lhc.shape[0]/size)*100 - 10):
-            print(f"Currently {lhc.shape[0]}/{size}.")
-            percent = np.round((lhc.shape[0]/size)*100,0)/10
-            percent = np.floor(percent)*10
-        lhc_temp = lhc_cycle(gen_size, range_all)
-        lhc = np.concatenate((lhc,lhc_temp),axis=0)
-    np.random.shuffle(lhc)
-    lhc = lhc[:size]
-    return lhc
+        return theta_lhc
 
 def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")

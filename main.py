@@ -34,7 +34,7 @@ from training import FluxLoss, LagLoss
 from training import QBDC
 from generator import intialize_dataset
 
-def active_learning(device,wrk_dir,world_size=1,parallelism=False):
+def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     """
     Core method that collates together methods from other files to perform
     active learning based training by the query by dropout committee technique.
@@ -61,28 +61,33 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 40
-    range_AGN = np.asarray(generator.lhc_AGN())
+    active_loops = 30
+    range_AGN = np.asarray(generator.lhc_trimmed_gen())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["a","inc","rin","distance","mass"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
-
+    
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
+    
     lhc_idx = 0
-    theta_lhc = generator.lhc_generation(int(1e6), range_AGN)
+    theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited = True)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
     first = True
     
-    flux_name = "active_locs_flux.csv"
-    flux_test_name = "active_test_locs_flux.csv"
-    flux_scaler_name = "active_scaler_flux.bin"
-    lags_name = "active_locs_lags.csv"
-    lags_test_name = "active_test_locs_lags.csv"
-    lags_scaler_name = "active_scaler_lags.bin"
+    flux_name = f"{name}_locs_flux.csv"
+    flux_test_name = f"{name}_test_locs_flux.csv"
+    flux_scaler_name = f"{name}_scaler_flux.bin"
+    lags_name = f"{name}_locs_lags.csv"
+    lags_test_name = f"{name}_test_locs_lags.csv"
+    lags_scaler_name = f"{name}_scaler_lags.bin"
     
     num_pars = range_AGN.shape[0]
     
@@ -97,12 +102,12 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
         best_lags_model = network.HeavyLagsNetwork(num_pars,len(lags_egrid)-1)
         best_lags_model.to(device)
     else:
-        flux_model = DDP(network.HeavyFluxNetwork, device_ids=[gpu_id])
+        flux_model = DDP(network.HeavyFluxNetwork, device_ids=["dead"])
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 5e-4)
     optimizer_lags = Adam(lags_model.parameters(),lr = 5e-4)
     scaler = MinMaxScaler()
-    scaler = StandardScaler()
+    #scaler = StandardScaler()
     
     if first == True: 
         lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, lags_name)
@@ -167,17 +172,40 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
     batch_size = 1024
     num_workers = 4
     
+    def read_data(csv):
+        locations = csv.iloc[:,-1]
+        data = []
+        for location in locations:
+            datum = np.loadtxt(location).reshape(1, -1)
+            data.append(datum)
+        data = np.asarray(data)
+        return data
+    
     print("Beginning training")
     with Parallel(n_jobs=10,verbose=5) as parallel:
         while active_loop_num <= active_loops:
+            
+            
             theta_lhc, lhc_idx = QBDC(flux_name, flux_test_name, lags_name, 
                                       lags_test_name, active_loop_num, 
                                       theta_lhc, lhc_idx, egrid, lags_egrid, 
                                       flux_model, lags_model, device, 
                                       labels, parallel)
-    
+            
+            flux_pars = pd.read_csv(flux_name)
+            flux_data = read_data(flux_pars)
+            
+            flux_test_pars = pd.read_csv(flux_test_name)
+            flux_test_data = read_data(flux_test_pars)
+            
+            lags_pars = pd.read_csv(lags_name)
+            lags_data = read_data(lags_pars)
+            
+            lags_test_pars = pd.read_csv(lags_test_name)
+            lags_test_data = read_data(lags_test_pars)
+            
             print("Setting up modeling")
-            Xquery = FluxData(f"data/locations/{flux_name}", scaler, 
+            Xquery = FluxData(flux_pars, flux_data, scaler, 
                               flux_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -185,7 +213,7 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xquery = LagsData(f"data/locations/{lags_name}", scaler, 
+            Xquery = LagsData(lags_pars, lags_data, scaler, 
                               lags_scaler_name, pars_list=pars_list,
                               negatives=negatives,logged=logged)
             print("Query data set created")
@@ -193,7 +221,7 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
                                           num_workers = num_workers, shuffle=True)
             print("Query data loader created")
             
-            Xtest = FluxData(f"data/locations/{flux_test_name}", scaler, 
+            Xtest = FluxData(flux_test_pars, flux_test_data, scaler, 
                               flux_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
@@ -201,7 +229,7 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
                                          num_workers = num_workers, shuffle=True)
             print("Test data loader created")
             
-            Xtest = LagsData(f"data/locations/{lags_test_name}", scaler, 
+            Xtest = LagsData(lags_test_pars, lags_test_data, scaler, 
                               lags_scaler_name, pars_list=pars_list, 
                               negatives=negatives,logged=logged)
             print("Test data set created")
@@ -238,30 +266,31 @@ def active_learning(device,wrk_dir,world_size=1,parallelism=False):
         print("Completed training")
         print("Final best flux training loss:", last_sig_flux_tr)
         print("Final best flux testing loss:", last_sig_flux_te)
-        torch.save(flux_model.state_dict(), "models/active_flux_final.pth")
-        print("Saved PyTorch Model State to models/active_flux_final.pth")
+        torch.save(flux_model.state_dict(), f"models/{name}_flux_final.pth")
+        print(f"Saved PyTorch Model State to models/{name}_flux_final.pth")
         
         flux_tr_loss_arr = np.asarray(flux_tr_loss_arr)
         flux_te_loss_arr = np.asarray(flux_te_loss_arr)
         
-        np.savetxt("loss/active_flux_te_loss.txt",flux_te_loss_arr)
-        np.savetxt("loss/active_flux_tr_loss.txt",flux_tr_loss_arr)
-        np.savetxt("loss/active_flux_epochs.txt",loop_flux_epochs)
+        np.savetxt(f"loss/{name}_flux_te_loss.txt",flux_te_loss_arr)
+        np.savetxt(f"loss/{name}_flux_tr_loss.txt",flux_tr_loss_arr)
+        np.savetxt(f"loss/{name}_flux_epochs.txt",loop_flux_epochs)
         
         print("Final best lags training loss:", last_sig_lags_tr)
         print("Final best lags testing loss:", last_sig_lags_te)
-        torch.save(lags_model.state_dict(), "models/active_lags_final.pth")
-        print("Saved PyTorch Model State to models/active_lags_final.pth")
+        torch.save(lags_model.state_dict(), f"models/{name}_lags_final.pth")
+        print(f"Saved PyTorch Model State to models/{name}_lags_final.pth")
         
         lags_tr_loss_arr = np.asarray(lags_tr_loss_arr)
         lags_te_loss_arr = np.asarray(lags_te_loss_arr)
         
-        np.savetxt("loss/active_lags_te_loss.txt",lags_te_loss_arr)
-        np.savetxt("loss/active_lags_tr_loss.txt",lags_tr_loss_arr)
-        np.savetxt("loss/active_lags_epochs.txt",loop_lags_epochs)
-    destroy_process_group()
+        np.savetxt(f"loss/{name}_lags_te_loss.txt",lags_te_loss_arr)
+        np.savetxt(f"loss/{name}_lags_tr_loss.txt",lags_tr_loss_arr)
+        np.savetxt(f"loss/{name}_lags_epochs.txt",loop_lags_epochs)
+    if parallelism == True:
+        destroy_process_group()
 
-def grid_learning(device,wrk_dir):
+def grid_learning(device,wrk_dir,data_gen = False):
     """
     This method collates together methods to train neural networks utilizing a
     grid based learning strategy. This has less functionality than the active
@@ -288,7 +317,7 @@ def grid_learning(device,wrk_dir):
     
     locations = "data/locations/"
     
-    pars_list = [1,2,3,4,13]
+    pars_list = [1,2,3,7,13]
     negatives = [2]
     logged = [1,2,3,4]
     
@@ -297,7 +326,11 @@ def grid_learning(device,wrk_dir):
     for size in grid_sizes:
         grid_names.append(f"grid_{size}")
     print(grid_names)
-        
+    
+    if data_gen == True:
+        for fname,size in zip(grid_names,grid_sizes):
+            generator.grid_data_gen(size, fname, egrid, lags_egrid)
+    
     batch_size = 1024
     num_workers = 4
     
@@ -385,8 +418,6 @@ def fixed_data_varied_training(device,wrk_dir):
     num_workers = 4
     
     locations = "data/locations/"
-    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
@@ -554,7 +585,7 @@ def main():
     
     print("Environmental variables successfully set")
     
-    parallelism = True
+    parallelism = False
     print("Cuda is available:",torch.cuda.is_available())
     
     if parallelism == False:
@@ -564,9 +595,9 @@ def main():
         mp.spawn(active_learning, args=(wrk_dir,world_size,parallelism), 
                  nprocs=world_size)
 
-    #active_learning(device,wrk_dir)
-    #grid_learning(device,wrk_dir)
-    fixed_data_varied_training(device,wrk_dir)
+    active_learning(device,wrk_dir,"short_active")
+    grid_learning(device,wrk_dir)
+    #fixed_data_varied_training(device,wrk_dir)
     
 
 if __name__ == "__main__":
