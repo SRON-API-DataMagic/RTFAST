@@ -340,6 +340,15 @@ def grid_learning(device,wrk_dir,data_gen = False):
     
     modes = ["flux", "lags"]
     
+    def read_data(csv):
+        locations = csv.iloc[:,-1]
+        data = []
+        for location in locations:
+            datum = np.loadtxt(location).reshape(1, -1)
+            data.append(datum)
+        data = np.asarray(data)
+        return data
+    
     for (size,fname) in zip(grid_sizes,grid_names):
         print(f"Starting {size} x {size} grid loop")
         for mode in modes:
@@ -368,7 +377,13 @@ def grid_learning(device,wrk_dir,data_gen = False):
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 0.001)
             
-            training_data = dataType(locations+f"loc_{fname}_{mode}.csv", scaler, 
+            train_pars = pd.read_csv(f"data/locations/loc_{fname}_{mode}.csv")
+            train_data = read_data(train_pars)
+            
+            test_pars = pd.read_csv(f"data/locations/loc_{fname}_{mode}_test.csv")
+            test_data = read_data(test_pars)
+            
+            training_data = dataType(train_pars, test_pars, scaler, 
                              scaler_name=f"{fname}_{mode}_scaler.bin", 
                              pars_list=pars_list,
                              negatives=negatives, logged=logged, scaling=True)
@@ -376,7 +391,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
             
-            testing_data = dataType(locations+f"loc_{fname}_{mode}_test.csv", scaler, 
+            testing_data = dataType(train_pars, test_pars, scaler, 
                                  scaler_name=f"{fname}_{mode}_scaler.bin", 
                                  pars_list=pars_list,
                                  negatives=negatives,logged=logged)
@@ -599,8 +614,8 @@ def main():
         mp.spawn(active_learning, args=(wrk_dir,world_size,parallelism), 
                  nprocs=world_size)
 
-    active_learning(device,wrk_dir,"short_active")
-    grid_learning(device,wrk_dir)
+    #active_learning(device,wrk_dir,"short_active")
+    grid_learning(device,wrk_dir,data_gen=True)
     #fixed_data_varied_training(device,wrk_dir)
     
 
