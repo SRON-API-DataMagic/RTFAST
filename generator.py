@@ -597,12 +597,27 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     negatives = [2]
     logged = [1,2,3,4]
     
-    flux_dataloader = FluxData(train_flux_pars, train_flux,
+    def read_data(csv):
+        locations = csv.iloc[:,-1]
+        data = []
+        for location in locations:
+            datum = np.loadtxt(location).reshape(1, -1)
+            data.append(datum)
+        data = np.asarray(data)
+        return data
+    
+    flux_pars = pd.read_csv(f"data/locations/loc_{fname}_flux.csv")
+    flux_data = read_data(flux_pars)
+    
+    lags_pars = pd.read_csv(f"data/locations/loc_{fname}_lags.csv")
+    lags_data = read_data(lags_pars)
+    
+    flux_dataloader = FluxData(flux_pars, flux_data,
                                    scaler,f"{fname}_flux_scaler.bin",
                                    pars_list=pars_list,
                                    negatives=negatives, logged=logged, 
                                    scaling=True)
-    lags_dataloader = LagsData(train_lags_pars, train_lags,
+    lags_dataloader = LagsData(lags_pars, lags_data,
                                    scaler,f"{fname}_lags_scaler.bin", 
                                    pars_list=pars_list,
                                    negatives=negatives, logged=logged, 

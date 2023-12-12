@@ -383,7 +383,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             test_pars = pd.read_csv(f"data/locations/loc_{fname}_{mode}_test.csv")
             test_data = read_data(test_pars)
             
-            training_data = dataType(train_pars, test_pars, scaler, 
+            training_data = dataType(train_pars, train_data, scaler, 
                              scaler_name=f"{fname}_{mode}_scaler.bin", 
                              pars_list=pars_list,
                              negatives=negatives, logged=logged, scaling=True)
@@ -391,7 +391,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             train_dataloader = DataLoader(training_data,batch_size=batch_size,
                                           num_workers = num_workers, shuffle=True)
             
-            testing_data = dataType(train_pars, test_pars, scaler, 
+            testing_data = dataType(test_pars, test_data, scaler, 
                                  scaler_name=f"{fname}_{mode}_scaler.bin", 
                                  pars_list=pars_list,
                                  negatives=negatives,logged=logged)
