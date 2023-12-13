@@ -61,7 +61,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    active_loops = 30
+    active_loops = 40
     range_AGN = np.asarray(generator.lhc_trimmed_gen())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
@@ -80,7 +80,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited = True)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = True
+    first = False
     
     flux_name = f"{name}_locs_flux.csv"
     flux_test_name = f"{name}_test_locs_flux.csv"
@@ -157,7 +157,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         loss_fn_flux = FluxLoss(f"{flux_scaler_name}", device)
         loss_fn_lags = LagLoss(f"{lags_scaler_name}", device)
     else:
-        name_num = 40
+        name_num = 30
         active_loop_num = name_num+1
         flux_model.load_state_dict(torch.load(f"models/{name_num}_flux_model.pth"))
         lags_model.load_state_dict(torch.load(f"models/{name_num}_lags_model.pth"))
@@ -614,8 +614,8 @@ def main():
         mp.spawn(active_learning, args=(wrk_dir,world_size,parallelism), 
                  nprocs=world_size)
 
-    #active_learning(device,wrk_dir,"short_active")
-    grid_learning(device,wrk_dir,data_gen=True)
+    active_learning(device,wrk_dir,"short_active")
+    #grid_learning(device,wrk_dir,data_gen=True)
     #fixed_data_varied_training(device,wrk_dir)
     
 
