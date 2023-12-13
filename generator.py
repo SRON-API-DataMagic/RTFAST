@@ -676,8 +676,12 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
     theta_lhc = lhc_generation(size, range_all,limited=limited)
     
     #generate physical models of test set
-    theta_flux = pars_conversion_full(theta_lhc,0)
-    theta_lags = pars_conversion_full(theta_lhc,6)
+    if limited == False:
+        theta_flux = pars_conversion_full(theta_lhc,0)
+        theta_lags = pars_conversion_full(theta_lhc,6)
+    else:
+        theta_flux = pars_conversion(theta_lhc,0)
+        theta_lags = pars_conversion(theta_lhc,6)
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
