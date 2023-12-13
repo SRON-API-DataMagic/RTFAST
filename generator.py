@@ -658,7 +658,7 @@ def generate_flux_dists(AGN_name):
     AGN.to_csv(f"data/flux/{AGN_name}.csv")
     return
     
-def generate_test_set(size, egrid, lags_egrid, lhc_gen):
+def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
     """
     
 
@@ -673,7 +673,7 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen):
 
     """
     range_all = np.asarray(lhc_gen())
-    theta_lhc = lhc_generation(size, range_all)
+    theta_lhc = lhc_generation(size, range_all,limited=limited)
     
     #generate physical models of test set
     theta_flux = pars_conversion_full(theta_lhc,0)
