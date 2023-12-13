@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 
+import tqdm
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, SGD
@@ -111,7 +112,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     def read_data(csv):
         locations = csv.iloc[:,-1]
         data = []
-        for location in locations:
+        for location in tqdm.tqdm(locations):
             datum = np.loadtxt(location).reshape(1, -1)
             data.append(datum)
         data = np.asarray(data)
