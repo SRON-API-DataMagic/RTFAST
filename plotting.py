@@ -1130,18 +1130,11 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     active_lags = analysis(active_name, active_lags_names, active_sample_lags_nums, 
                            active_lags_scaler, lags_egrid, lags=True)
     
-    plot_loss_vs_sample_size(active_sample_nums=active_sample_flux_nums,
-                             active = active_flux, mode= "flux", single = True)
-    plot_loss_vs_sample_size(active_sample_nums=active_sample_lags_nums,
-                             active = active_lags, mode= "lags", single = True)
-    
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
     
     grid_lags = analysis(grid_lags_name, grid_model_lag_names, grid_sample_nums,
                             grid_lags_scaler, lags_egrid, lags=True)
-    
-    
     
     print("Plotting loss by sample size")
     print("Plotting fluxes")
@@ -1150,6 +1143,9 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     print("Plotting lags")
     plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
                              active_sample_lags_nums, active_lags, mode="lags")
+    
+    loss_epochs_plot("loss/", "flux")
+    loss_epochs_plot("loss/", "lags")
     
 def main():
     wrk_dir = os.getcwd()
