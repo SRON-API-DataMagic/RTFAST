@@ -808,21 +808,14 @@ def plot_loss_vs_sample_size(grid_sample_nums=[], grid=[],
             plt.xscale("symlog")
             
             plt.yticks([1e-8,1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,1e-1,1e0,1e1])
-            fig.suptitle(f"Loss by sample size for {mode}")
+            plt.title(f"Loss by sample size for {mode}")
             
-            fig.supxlabel("Number of samples used in training")
-            fig.supylabel("Residuals")
+            plt.xlabel("Number of samples used in training")
+            plt.ylabel("Residuals")
             lines = []
             labels = []
-              
-            for ax in fig.axes:
-                Line, Label = ax.get_legend_handles_labels()
-                # print(Label)
-                lines.extend(Line)
-                labels.extend(Label)
                 
-            fig.legend(lines, labels, loc='upper right')
-            matplotlib.rcParams.update({'font.size': 16})
+            plt.legend(lines, labels, loc='upper right')
             plt.savefig(f"loss/loss_size_{mode}.png")
             plt.close()
 
