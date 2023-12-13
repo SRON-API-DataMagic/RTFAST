@@ -182,7 +182,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         last_sig_lags_te = np.min(lags_te_loss_arr)
         
         loop_flux_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt").tolist()
-        loop_lags_epochs = np.loadtxt(f"loss/{name_num}_flux_epochs.txt").tolist()
+        loop_lags_epochs = np.loadtxt(f"loss/{name_num}_lags_epochs.txt").tolist()
         
     batch_size = 1024
     num_workers = 4
