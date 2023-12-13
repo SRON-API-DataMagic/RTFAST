@@ -196,15 +196,19 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
                                       flux_model, lags_model, device, 
                                       labels, parallel, parallelism)
             
+            print("loading flux data")
             flux_pars = pd.read_csv(f"data/locations/{flux_name}")
             flux_data = read_data(flux_pars)
             
+            print("loading flux test data")
             flux_test_pars = pd.read_csv(f"data/locations/{flux_test_name}")
             flux_test_data = read_data(flux_test_pars)
             
+            print("loading lags data")
             lags_pars = pd.read_csv(f"data/locations/{lags_name}")
             lags_data = read_data(lags_pars)
             
+            print("loading lags test data")
             lags_test_pars = pd.read_csv(f"data/locations/{lags_test_name}")
             lags_test_data = read_data(lags_test_pars)
             
