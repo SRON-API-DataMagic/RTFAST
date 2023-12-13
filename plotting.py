@@ -503,8 +503,10 @@ def residual_computation(dataloader, model, scaler, mode):
 
     """
     logged = [0,2,3,4,7,8,10,11,12,13,19]
+    logged = [1,2,3,4]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    pars_list = ["a","inc","rin","distance","mass"]
     pars = [[] for i in range(len(pars_list))]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
@@ -513,8 +515,8 @@ def residual_computation(dataloader, model, scaler, mode):
             D[D<=1e-10] = 1e-10
             D = np.squeeze(D)
         else:
-            D[(D<=0)&(np.abs(D)<1e-4)] = -1e-4
-            D[(D>=0)&(np.abs(D)<1e-4)] = 1e-4
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
             D = np.squeeze(D)
         for i in range(len(pars)):
             if i in logged:
@@ -535,7 +537,7 @@ def residual_computation(dataloader, model, scaler, mode):
             resid = np.where((np.abs(D)<=1e-10)&(np.abs(pred)<=1e-10),0,resid)
             resid = np.where((np.abs(D)==0),0,resid)
         else:
-            resid = np.where((np.abs(D)<=1e-4)&(np.abs(pred)<=1e-4),0,resid)
+            resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),0,resid)
         resid = np.absolute(np.asarray(resid))
         residuals.append(resid)
         
@@ -587,8 +589,8 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux"):
             D[D<=1e-10] = 1e-10
             D = np.squeeze(D)
         else:
-            D[(D<=0)&(np.abs(D)<1e-4)] = -1e-4
-            D[(D>=0)&(np.abs(D)<1e-4)] = 1e-4
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
             D = np.squeeze(D)
         if mode == "flux":
             pred = model(P)
@@ -604,7 +606,7 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux"):
                              0,resid)
             resid = np.where((np.abs(D)==0),0,resid)
         else:
-            resid = np.where((np.abs(D)<=1e-4)&(np.abs(pred)<=1e-4),
+            resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
                              0,resid)
             resid = np.where((np.abs(D)==0),0,resid)
         residuals.append(np.absolute(np.asarray(resid)))
@@ -630,8 +632,8 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
             D[D<=1e-10] = 1e-10
             da = np.squeeze(D)
         else:
-            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-4
-            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-4
+            D[(D<=0)&(np.abs(D)<1e-5)] = -1e-5
+            D[(D>=0)&(np.abs(D)<1e-5)] = 1e-5
             da = np.squeeze(D)
         
         da_log = np.log10(np.abs(da))
@@ -647,7 +649,7 @@ def model_samples(testing_dataloader,scaler,model,egrid,mname,mode,no_brk=5):
         if mode == "flux":
             sca_pred[sca_pred<=1e-10] = 1e-10
         else:
-            sca_pred[sca_pred<1e-4] = 1e-4
+            sca_pred[sca_pred<1e-5] = 1e-5
             sca_pred = np.squeeze(sca_pred*np.where(I_pred > 0.5, 1, -1))
         
         fname = f"{batch}"
@@ -829,8 +831,8 @@ def loss_epochs_plot(loss_base_loc,mode):
     train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
     test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
-    active_loss = np.loadtxt(loss_base_loc+f"40_{mode}_tr_loss.txt")
-    active_test = np.loadtxt(loss_base_loc+f"40_{mode}_te_loss.txt")
+    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
     
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
@@ -854,6 +856,8 @@ def plot_spec_dist(egrid,flux,pars):
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","fmin","fmax",
               "ReIM","phiA","phiAB","g","Anorm","RESP","Xnorm"]
+    
+    labels = ["a","inc","rin","distance","mass"]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     pars[:,3] = -pars[:,3]
@@ -935,6 +939,9 @@ def aggregate_dists(files):
     pars_list = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
                     "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g",
                     "Anorm"]
+    
+    pars_list = ["a","inc","rin","distance","mass"]
+    
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     negatives = [3]
     
@@ -990,6 +997,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     indexes = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
+    indexes = ["a","inc","rin","distance","mass"]
     median_loss = []
     loss_01_q = []
     loss_05_q = []
@@ -1005,6 +1013,10 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
     
     if type(scaler_names) != list:
         tmp = [scaler_names for i in range(len(names))]
@@ -1087,7 +1099,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,10,20,30,40]
+    active_name = [0,10,20,30]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
@@ -1096,14 +1108,14 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
         active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
     active_flux_names = [f"{model_base_loc}{i}_flux_model.pth" for i in active_name]
     active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
-    active_flux_names[-1] = f"{model_base_loc}active_flux_final.pth"
-    active_lags_names[-1] = f"{model_base_loc}active_lags_final.pth"
+    active_flux_names[-1] = f"{model_base_loc}short_active_flux_final.pth"
+    active_lags_names[-1] = f"{model_base_loc}short_active_lags_final.pth"
     grid_flux_name = [f"grid_{i}" for i in range(5,11)]
     grid_lags_name = [f"grid_{i}" for i in range(5,11)]
     grid_flux_scaler = [f"grid_{i}_flux_scaler.bin" for i in range(5,11)]
     grid_lags_scaler = [f"grid_{i}_lags_scaler.bin" for i in range(5,11)]
-    active_flux_scaler = "active_scaler_flux.bin"
-    active_lags_scaler = "active_scaler_lags.bin"
+    active_flux_scaler = "short_active_scaler_flux.bin"
+    active_lags_scaler = "short_active_scaler_lags.bin"
     grid_model_names = np.array([5,6,7,8,9,10])
     grid_sample_nums = grid_model_names**5
     grid_model_flux_names = [model_base_loc+f"grid_{i}_flux.pth" for i in grid_model_names]
@@ -1122,7 +1134,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
                              active = active_flux, mode= "flux", single = True)
     plot_loss_vs_sample_size(active_sample_nums=active_sample_lags_nums,
                              active = active_lags, mode= "lags", single = True)
-    """
+    
     grid_flux = analysis(grid_flux_name, grid_model_flux_names, grid_sample_nums,
                             grid_flux_scaler, egrid)
     
@@ -1138,27 +1150,25 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     print("Plotting lags")
     plot_loss_vs_sample_size(grid_sample_nums, grid_lags,
                              active_sample_lags_nums, active_lags, mode="lags")
-    """
     
 def main():
     wrk_dir = os.getcwd()
     """
-    nums = [0,10,20,30,40]
+    nums = [0,10,20,30]
     files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
     aggregate_dists(files)
     """
-    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
-    #flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, lags_egrid, lhc_AGN)
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, 
+        lags_egrid, generator.lhc_trimmed_gen())
     
-    #plot_spec_dist(egrid, flux, theta_flux)
+    saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
+    saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
     
-    #saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
-    #saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
-    
-    #readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", "data/locations/loc_lags_AGN_test.csv")
+    readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", 
+                      "data/locations/loc_lags_AGN_test.csv")
     
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
