@@ -439,9 +439,9 @@ def model_load(model_loc, egrid, lags = None):
 
     """
     if lags == None:
-        model = network.HeavyFluxNetwork(20, len(egrid))
+        model = network.HeavyFluxNetwork(5, len(egrid))
     else:
-        model = network.HeavyLagsNetwork(20, len(egrid))
+        model = network.HeavyLagsNetwork(5, len(egrid))
     model.load_state_dict(torch.load(model_loc))
     model.eval()
     return model
@@ -1160,7 +1160,7 @@ def main():
     """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    
+    """
     flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, 
         lags_egrid, generator.lhc_trimmed_gen,limited=True)
     
@@ -1169,7 +1169,7 @@ def main():
     
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", 
                       "data/locations/loc_lags_AGN_test.csv")
-    
+    """
     set_envir_vars(wrk_dir)
     active_v_grid(wrk_dir, egrid, lags_egrid)
     
