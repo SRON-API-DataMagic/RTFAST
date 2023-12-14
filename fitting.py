@@ -9,6 +9,7 @@ from generator import rtdist_flux
 from sherpa.astro.ui import unpack_rmf
 import torch
 import os
+import matplotlib.pyplot as plt
 
 def emulator(theta):
     """
@@ -25,7 +26,17 @@ def emulator(theta):
         Model spectra for the provided parameters.
 
     """
-    
+
+def log_prior(theta):
+    a, inc, inner_r, outer_r, mass = theta
+    if (0.0 < a < 0.998 and np.log10(1.) < inc < np.log10(80.0) 
+        and np.log10(1) < inner_r < np.log10(400.0)
+        and np.log10(400) < outer_r < np.log10(1e5) 
+        and np.log10(1e4) < mass < np.log10(1e11)):
+        return 0.0
+    return -np.inf
+
+
 def log_likelihood(theta, data):
     """
     
@@ -59,13 +70,21 @@ def log_likelihood(theta, data):
     summation = np.sum(poissons) #sum poisson likelihoods for whole spectra
     return summation
 
+def log_probability(theta, x, y, yerr):
+    lp = log_prior(theta)
+    if not np.isfinite(lp):
+        return -np.inf
+    return lp + log_likelihood(theta, data)
+
 from scipy.optimize import minimize
+
+dimensions = 5
 
 a_true = 0.9
 inc_true = np.log10(57)
 inner_r_true = np.log10(-1*-1)
+outer_r_true = np.log10(2e4)
 mass_true = np.log10(3e6)
-distance_true = np.log10(1e5)
 
 rmf_name = wrk_dir = os.getcwd()+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
@@ -78,6 +97,47 @@ data = rtdist_flux(pars, egrid)
 
 np.random.seed(42)
 nll = lambda *args: -log_likelihood(*args)
-initial = np.array([a_true, inc_true, inner_r_true,distance_true,mass_true]) + 0.1 * np.random.randn(5)
+initial = np.array([a_true, inc_true, inner_r_true, outer_r_true,mass_true]) + 0.1 * np.random.randn(dimensions)
 soln = minimize(nll, initial, args=(data))
-m_ml, b_ml, log_f_ml = soln.x
+a_sln, inc_sln, inner_r_sln, outer_r_sln, mass_sln = soln.x
+
+print(f"Solved a: {a_sln}")
+print(f"Solved inc: {inc_sln}")
+print(f"Solved inner radius: {inner_r_sln}")
+print(f"Solved outer radius: {outer_r_sln}")
+print(f"Solved mass: {mass_sln}")
+
+pos = soln.x + 1e-4 * np.random.randn(32, 5)
+nwalkers, ndim = pos.shape
+
+sampler = emcee.EnsembleSampler(
+    nwalkers, ndim, log_probability, args=(data)
+)
+sampler.run_mcmc(pos, 5000, progress=True);
+
+fig, axes = plt.subplots(dimensions, figsize=(10, 7), sharex=True)
+samples = sampler.get_chain()
+labels = ["a", "inc", "inner radius (ISCOs)", "outer radius (Rg)", r"Mass (M_{$\odot$}"]
+for i in range(ndim):
+    ax = axes[i]
+    ax.plot(samples[:, :, i], "k", alpha=0.3)
+    ax.set_xlim(0, len(samples))
+    ax.set_ylabel(labels[i])
+    ax.yaxis.set_label_coords(-0.1, 0.5)
+
+axes[-1].set_xlabel("step number");
+plt.savefig("test_case/chains.png")
+plt.close()
+
+tau = sampler.get_autocorr_time()
+print(tau)
+
+flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+print(flat_samples.shape)
+
+import corner
+
+fig = corner.corner(
+    flat_samples, labels=labels, truths=[a_true, inc_true, inner_r_true, 
+                                         outer_r_true, mass_true]
+);
