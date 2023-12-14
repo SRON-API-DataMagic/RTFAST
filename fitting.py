@@ -11,6 +11,26 @@ import torch
 import os
 import matplotlib.pyplot as plt
 
+def poisson_noise(data):
+    """
+    This function applies a poisson distribution to a photon spectra
+
+    Parameters
+    ----------
+    data : np.ndarray
+        spectra to randomly distribute.
+
+    Returns
+    -------
+    new_data : np.ndarray
+        new spectra drawn from poisson distributions.
+
+    """
+    rng = np.random.default_rng()
+    #draws a single sample from a poisson distribution for each energy bin
+    new_data = rng.poisson(lam = data,size = (1,data.shape[0])).squeeze()
+    return new_data
+    
 def emulator(theta):
     """
     The function calls the emulator and returns the predicted spectra.
