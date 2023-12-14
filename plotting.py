@@ -822,8 +822,8 @@ def loss_epochs_plot(loss_base_loc,mode):
     train_names = [loss_base_loc+f"grid_{i}_{mode}_tr_loss.txt" for i in range(5,11)]
     test_names = [loss_base_loc+f"grid_{i}_{mode}_te_loss.txt" for i in range(5,11)]
     
-    active_loss = np.loadtxt(loss_base_loc+f"30_{mode}_tr_loss.txt")
-    active_test = np.loadtxt(loss_base_loc+f"30_{mode}_te_loss.txt")
+    active_loss = np.loadtxt(loss_base_loc+f"36_{mode}_tr_loss.txt")
+    active_test = np.loadtxt(loss_base_loc+f"36_{mode}_te_loss.txt")
     
     plt.plot(np.loadtxt(train_names[-1]), label="Training loss: 10x10 grid", 
              c = "red", ls = "-")
@@ -1090,7 +1090,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     model_base_loc = wrk_dir+"/models/"
     loss_base_loc = wrk_dir+"/loss/"
     
-    active_name = [0,10,20,30]
+    active_name = [0,10,20,30,36]
     active_name = np.array(active_name)
     active_sample_flux_nums = []
     active_sample_lags_nums = []
