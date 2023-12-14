@@ -73,7 +73,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,7,13]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     
@@ -81,7 +81,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited = True)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
-    first = False
+    first = True
     
     flux_name = f"{name}_locs_flux.csv"
     flux_test_name = f"{name}_test_locs_flux.csv"
@@ -326,7 +326,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
     
     locations = "data/locations/"
     
-    pars_list = [1,2,3,7,13]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     
@@ -620,7 +620,7 @@ def main():
                  nprocs=world_size)
 
     active_learning(device,wrk_dir,"short_active")
-    #grid_learning(device,wrk_dir,data_gen=True)
+    grid_learning(device,wrk_dir,data_gen=True)
     #fixed_data_varied_training(device,wrk_dir)
     
 

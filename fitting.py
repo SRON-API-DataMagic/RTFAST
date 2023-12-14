@@ -5,9 +5,10 @@ emcee package and the emulator.
 
 import emcee
 import numpy as np
-from reltrans import _models
-
+from generator import rtdist_flux
+from sherpa.astro.ui import unpack_rmf
 import torch
+import os
 
 def emulator(theta):
     """
@@ -16,11 +17,12 @@ def emulator(theta):
     Parameters
     ----------
     theta : np.ndarray
-        DESCRIPTION.
+        model parameters.
 
     Returns
     -------
-    None.
+    model : np.ndarray
+        Model spectra for the provided parameters.
 
     """
     
@@ -56,3 +58,26 @@ def log_likelihood(theta, data):
     poissons = first - l - thirds #poisson likelihoods per data point
     summation = np.sum(poissons) #sum poisson likelihoods for whole spectra
     return summation
+
+from scipy.optimize import minimize
+
+a_true = 0.9
+inc_true = np.log10(57)
+inner_r_true = np.log10(-1*-1)
+mass_true = np.log10(3e6)
+distance_true = np.log10(1e5)
+
+rmf_name = wrk_dir = os.getcwd()+"/ResponseFiles/PN.rmf"
+rmf = unpack_rmf(rmf_name)
+egrid = rmf.e_min #energy grid used to evaluate the xspec model
+
+pars = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+             0,0,0,-0.8,0.3,2.2e-4,1,1.]
+
+data = rtdist_flux(pars, egrid)
+
+np.random.seed(42)
+nll = lambda *args: -log_likelihood(*args)
+initial = np.array([a_true, inc_true, inner_r_true,distance_true,mass_true]) + 0.1 * np.random.randn(5)
+soln = minimize(nll, initial, args=(data))
+m_ml, b_ml, log_f_ml = soln.x

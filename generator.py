@@ -366,10 +366,10 @@ def lhc_trimmed_gen():
     spin_range = [0.1,0.998]
     inclination_range = [np.log10(1),np.log10(80)]
     r_inner_range = [np.log10(1),np.log10(400)]
-    distance_range = [np.log10(3.5e5),np.log10(5e7)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
     mass_range = [np.log10(1e4),np.log10(1e11)]
     
-    range_all = [spin_range,inclination_range,r_inner_range,distance_range,
+    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
                  mass_range]
     
     return range_all
@@ -401,7 +401,7 @@ def pars_conversion(pars,ReIm):
     new_pars[:,1] = pars[:,0]
     new_pars[:,2] = 10**pars[:,1]
     new_pars[:,3] = -10**pars[:,2]
-    new_pars[:,7] = 10**pars[:,3]
+    new_pars[:,4] = 10**pars[:,3]
     new_pars[:,13] = 10**pars[:,4]
     
     return new_pars
@@ -527,7 +527,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     spin = np.linspace(0.1,0.998,size)
     inc = np.linspace(np.log10(1),np.log10(80),size)
     r_in = np.linspace(np.log10(1),np.log10(400),size)
-    distance = np.linspace(np.log10(3.5e5),np.log10(5e7),size)
+    r_outer_range = [np.log10(400),np.log10(1e5)]
     mass = np.linspace(np.log10(1e4),np.log10(1e11),size)
     
     #create parameter grid
@@ -535,9 +535,9 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     for a in spin:
         for i in inc:
                 for r_i in r_in:
-                    for d in distance:
+                    for r in r_outer_range:
                         for m in mass:
-                            theta_init.append([a,i,r_i,d,m])
+                            theta_init.append([a,i,r_i,r,m])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     theta_flux = pars_conversion(theta_init,0)
