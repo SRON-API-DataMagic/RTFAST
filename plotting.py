@@ -1097,6 +1097,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     for name in active_name:
         active_sample_flux_nums.append(len(pd.read_csv(f"data/locations/loc_flux_{name}.csv")))
         active_sample_lags_nums.append(len(pd.read_csv(f"data/locations/loc_lags_{name}.csv")))
+    print(active_sample_flux_nums)
     active_flux_names = [f"{model_base_loc}{i}_flux_model.pth" for i in active_name]
     active_lags_names = [f"{model_base_loc}{i}_lags_model.pth" for i in active_name]
     active_flux_names[-1] = f"{model_base_loc}short_active_flux_final.pth"
