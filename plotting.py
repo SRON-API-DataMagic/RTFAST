@@ -988,7 +988,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     indexes = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     
-    indexes = ["a","inc","rin","distance","mass"]
+    indexes = ["a","inc","rin","rout","mass"]
     median_loss = []
     loss_01_q = []
     loss_05_q = []
