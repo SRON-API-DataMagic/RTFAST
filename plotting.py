@@ -593,17 +593,18 @@ def calculate_loss(testing_dataloader, model, scaler, mode = "flux"):
             D[(D>=0)&(np.abs(D)<1e-6)] = 1e-6
             D = np.squeeze(D)
         if mode == "flux":
-            pred = model(P).detach().numpy()
-            pred = 10**(inverse(scaler,pred))
+            pred = model(P)
         else:
             pred, I_pred = model(P)
-            pred = 10**(inverse(scaler,pred.detach().numpy()))
+            I_pred = I_pred.detach().numpy()
+        pred = pred.detach().numpy()
+        pred = 10**(inverse(scaler,pred))
         if mode != "flux":
-            pred = pred.detach().numpy()*np.where(I_pred.detach().numpy() > 0.5, 1, -1)
+            pred = pred*np.where(I_pred > 0.5, 1, -1)
         resid = (D-pred)/D
         resid = resid.detach().numpy()
         if mode == "flux":
-            resid = np.where((np.abs(D)<=1e-10)&(np.abs(pred.detach().numpy())<=1e-10),
+            resid = np.where((np.abs(D)<=1e-10)&(np.abs(pred)<=1e-10),
                              0,resid)
         else:
             resid = np.where((np.abs(D)<=1e-5)&(np.abs(pred)<=1e-5),
