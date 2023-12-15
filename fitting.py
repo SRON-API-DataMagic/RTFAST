@@ -6,7 +6,7 @@ emcee package and the emulator.
 import emcee
 import numpy as np
 from generator import rtdist_flux
-from sherpa.astro.ui import unpack_rmf
+from reltrans import _models
 import torch
 import os
 import matplotlib.pyplot as plt
@@ -96,6 +96,24 @@ def log_probability(theta, x, y, yerr):
         return -np.inf
     return lp + log_likelihood(theta, data)
 
+def spectrum_to_data(data):
+    """
+    Applies instrument time of XMM-Newton to outputs
+
+    Parameters
+    ----------
+    data : np.ndarray
+        spectra in units of #/cm^2/s/keV.
+
+    Returns
+    -------
+    data : np.ndarray
+        spectra in units of #/cm^2/keV.
+
+    """
+    data = data*250e3
+    return data
+
 from scipy.optimize import minimize
 
 dimensions = 5
@@ -106,6 +124,18 @@ inner_r_true = np.log10(-1*-1)
 outer_r_true = np.log10(2e4)
 mass_true = np.log10(3e6)
 
+from sherpa.astro.data import DataPHA
+
+from sherpa.astro.io import read_arf, read_rmf, read_pha
+from sherpa.astro.ui import unpack_rmf, fake, fake_pha
+
+data = DataPHA(name='any', channel=None, counts=None, exposure=250000.)
+
+data.set_arf(read_arf(os.getcwd()+"/ResponseFiles/PN.arf"))
+
+data.set_rmf(read_rmf(os.getcwd()+"/ResponseFiles/PN.rmf"))
+
+
 rmf_name = wrk_dir = os.getcwd()+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min #energy grid used to evaluate the xspec model
@@ -113,7 +143,17 @@ egrid = rmf.e_min #energy grid used to evaluate the xspec model
 pars = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
              0,0,0,-0.8,0.3,2.2e-4,1,1.]
 
-data = rtdist_flux(pars, egrid)
+model = _models.tdrtdist()
+
+fake_pha(data, model)
+data.set_analysis('energy')
+from sherpa.plot import DataPlot
+
+dplot = DataPlot()
+
+dplot.prepare(data)
+
+dplot.plot(xlog=True, ylog=True)
 
 np.random.seed(42)
 nll = lambda *args: -log_likelihood(*args)
