@@ -506,7 +506,7 @@ def residual_computation(dataloader, model, scaler, mode):
     logged = [1,2,3,4]
     pars_list = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    pars_list = ["a","inc","rin","distance","mass"]
+    pars_list = ["a","inc","rin","rout","mass"]
     pars = [[] for i in range(len(pars_list))]
     residuals = []
     for batch, (D,P) in enumerate(tqdm(dataloader)):
@@ -931,7 +931,7 @@ def aggregate_dists(files):
                     "kTe","nH","boost","Mass","honr","b1","b2","phiAB","g",
                     "Anorm"]
     
-    pars_list = ["a","inc","rin","distance","mass"]
+    pars_list = ["a","inc","rin","rout","mass"]
     
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     negatives = [3]
@@ -1005,7 +1005,7 @@ def analysis(names, locs, nums, scaler_names, egrid, lags = None):
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,7,13]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     
