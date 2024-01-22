@@ -374,133 +374,52 @@ def lhc_trimmed_gen():
     
     return range_all
 
-def pars_conversion(pars,ReIm):
+def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
     """
-    Converts sampled parameters for neural network training into correct
-    format for use in generating data and adds non-sampled parameters
-    needed by the model
+    Converts sampled paramters for neural network training into correct format
+    for use in generating data and adds non-sampled parameters needed by the
+    model. This is the generic form in which the list of sampled parameters 
+    and manipulations are passed to the function
 
     Parameters
     ----------
-    pars : np.ndarray
-        large array that contains sampled parameters.
+    nn_pars : np.ndarray
+        array of sampled parameters.
+    ReIm : int
+        value of ReIm from rtdist to determine the type of output rtdist 
+        produces.
+    pars_list : list
+        list of indexes of parameters.
+    negatives : list
+        list of indexes of parameters that need to be turned positive.
+    logged : list
+        list of indexes of parameters that need to be transformed to power of
+        10.
 
     Returns
     -------
-    pars : np.ndarray
-        large array that contains correctly formatted parameters ready for 
-        parsing into external model.
+    converted_pars : np.ndarray
+        array of parameters to be used for parameter generation.
 
     """
+    #set up base parameters which can be used to fix parameter sets to
+    #reasonable values
     pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
                  0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
-    new_pars = []
-    for i in range(pars.shape[0]):
-        new_pars.append(pars_base)
-    new_pars = np.asarray(new_pars)
-    new_pars[:,1] = pars[:,0]
-    new_pars[:,2] = 10**pars[:,1]
-    new_pars[:,3] = -10**pars[:,2]
-    new_pars[:,4] = 10**pars[:,3]
-    new_pars[:,13] = 10**pars[:,4]
-    
-    return new_pars
-
-def pars_conversion_full(pars,ReIm):
-    """
-    Converts sampled parameters for neural network training into correct
-    format for use in generating data and adds non-sampled parameters
-    needed by the model
-
-    Parameters
-    ----------
-    pars : np.ndarray
-        large array that contains sampled parameters.
-
-    Returns
-    -------
-    pars : np.ndarray
-        large array that contains correctly formatted parameters ready for 
-        parsing into external model.
-
-    """
-    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
-    new_pars = []
-    for i in range(pars.shape[0]):
-        new_pars.append(pars_base)
-    new_pars = np.asarray(new_pars)
-    new_pars[:,0] = 10**pars[:,0]   #height - 0
-    new_pars[:,1] = pars[:,1]       #spin - 1
-    new_pars[:,2] = 10**pars[:,2]   #inclination - 2
-    new_pars[:,3] = -10**pars[:,3]  #inner radius - 3
-    new_pars[:,4] = 10**pars[:,4]   #outer radius - 4
-    new_pars[:,5] = pars[:,5]       #redshift (z) - 5
-    new_pars[:,6] = pars[:,6]       #Gamma - 6
-    new_pars[:,7] = 10**pars[:,7]   #distance - 7
-    new_pars[:,8] = 10**pars[:,8]   #Afe - 8
-    new_pars[:,9] = pars[:,9]       #logNe - 9
-    new_pars[:,10] = 10**pars[:,10] #kTe - 10
-    new_pars[:,11] = 10**pars[:,11] #nH - 11
-    new_pars[:,12] = 10**pars[:,12] #boost - 12
-    new_pars[:,13] = 10**pars[:,13] #mass - 13
-    new_pars[:,14] = pars[:,14]     #scale height of disk - 14
-    new_pars[:,15] = pars[:,15]     #b1 - 15
-    new_pars[:,16] = pars[:,16]     #b2 - 16
-    new_pars[:,21] = pars[:,17]     #phiAB - 17
-    new_pars[:,22] = pars[:,18]     #coherence - 18
-    new_pars[:,23] = pars[:,19]     #Anorm - 19
-    
-    return new_pars
-
-def pars_conversion_explor(pars,ReIm):
-    """
-    Converts sampled parameters for neural network training into correct
-    format for use in generating data and adds non-sampled parameters
-    needed by the model. This is primarily used for exploring the effects
-    of parameter ranges on flux so as to further restrict the parameter space.
-    Not intended for use in training of the emulator.
-
-    Parameters
-    ----------
-    pars : np.ndarray
-        large array that contains sampled parameters.
-
-    Returns
-    -------
-    pars : np.ndarray
-        large array that contains correctly formatted parameters ready for 
-        parsing into external model.
-
-    """
-    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
-    new_pars = []
-    for i in range(pars.shape[0]):
-        new_pars.append(pars_base)
-    new_pars = np.asarray(new_pars)
-    new_pars[:,0] = -10**pars[:,0]  #height
-    new_pars[:,1] = pars[:,1]       #spin
-    new_pars[:,2] = 10**pars[:,2]   #inclination
-    new_pars[:,3] = -10**pars[:,3]  #inner radius
-    new_pars[:,4] = 10**pars[:,4]   #outer radius
-    new_pars[:,5] = pars[:,5]       #redshift (z)
-    new_pars[:,6] = pars[:,6]   #Gamma
-    new_pars[:,7] = 10**pars[:,7]   #distance
-    new_pars[:,8] = 10**pars[:,8]   #Afe
-    new_pars[:,9] = pars[:,9]       #logNe
-    new_pars[:,10] = 10**pars[:,10] #kTe
-    new_pars[:,11] = 10**pars[:,11] #nH
-    new_pars[:,12] = 10**pars[:,12] #boost
-    new_pars[:,13] = 10**pars[:,13] #mass
-    new_pars[:,14] = pars[:,14]     #scale height of disk
-    new_pars[:,15] = pars[:,15]     #b1
-    new_pars[:,16] = pars[:,16]     #b2
-    new_pars[:,21] = pars[:,17]     #phiAB
-    new_pars[:,22] = pars[:,18]     #coherence
-    new_pars[:,23] = 10**pars[:,19] #Anorm
-    
-    return new_pars
+    #set up base parameters to transform according to sampled parameters
+    converted_pars = []
+    for i in range(nn_pars.shape[0]):
+        converted_pars.append(pars_base)
+    converted_pars = np.asarray(converted_pars)
+    #iterate through 
+    for i, parameter in enumerate(pars_list):
+        if parameter in logged:
+            converted_pars[:,parameter] = 10**nn_pars[:,i]
+        else:
+            converted_pars[:,parameter] = nn_pars[:,i]
+        if parameter in negatives:
+            converted_pars[:,parameter] = converted_pars[:,parameter]
+    return converted_pars
 
 def grid_data_gen(size, fname, egrid, lags_egrid):
     """
@@ -540,8 +459,12 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
                             theta_init.append([a,i,r_i,r,m])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
-    theta_flux = pars_conversion(theta_init,0)
-    theta_lags = pars_conversion(theta_init,6)
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
+    #generate physical models of test set
+    theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
     
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
@@ -639,7 +562,11 @@ def generate_flux_dists(AGN_name):
     #pre generate Latin Hypercube samples.
     theta_agn = lhc_generation(int(1e3), range_AGN)
     
-    iter_agn = pars_conversion_explor(theta_agn, 0)
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
+    #generate physical models of test set
+    iter_agn = nn_pars_to_rtdist(theta_agn, 0, pars_list, negatives, logged)
     
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
@@ -675,13 +602,13 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
     range_all = np.asarray(lhc_gen())
     theta_lhc = lhc_generation(size, range_all,limited=limited)
     
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
     #generate physical models of test set
-    if limited == False:
-        theta_flux = pars_conversion_full(theta_lhc,0)
-        theta_lags = pars_conversion_full(theta_lhc,6)
-    else:
-        theta_flux = pars_conversion(theta_lhc,0)
-        theta_lags = pars_conversion(theta_lhc,6)
+    theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_lhc, 6, pars_list, negatives, logged)
+    
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
@@ -696,10 +623,14 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
 
 def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                flux_name, flux_test_name, lags_name,
-                               lags_test_name,pars_conversion = pars_conversion_full):
+                               lags_test_name):
     # compute the physical model for these thetas
-    theta_flux = pars_conversion(theta_query,0)
-    theta_lags = pars_conversion(theta_query,6)
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
+    #generate physical models of test set
+    theta_flux = nn_pars_to_rtdist(theta_query, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_query, 6, pars_list, negatives, logged)
     print("Generating flux models")
     flux =  parallel(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
@@ -789,12 +720,12 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
-    if trimmed == False:
-        theta_flux = pars_conversion_full(theta_init,0)
-        theta_lags = pars_conversion_full(theta_init,6)
-    else:
-        theta_flux = pars_conversion(theta_init,0)
-        theta_lags = pars_conversion(theta_init,6)
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
+    #generate physical models of test set
+    theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
