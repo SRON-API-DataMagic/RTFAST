@@ -395,3 +395,83 @@ class Losses():
     def set_loss(self, residuals, name):
         super().__setattr__(name, residuals)
         
+class Parameters():
+    """
+    Class that holds parameters and their transformed versions for both neural
+    networks and rtdist generation.
+    """
+    def __init__(self,nn_pars,pars_list,negatives,logged):
+        self.nn_pars = nn_pars
+        self.pars_list = pars_list
+        self.negatives = negatives
+        self.logged = logged
+        self.flux = self.nn_pars_to_rtdist(nn_pars,0)
+        self.lags = self.nn_pars_to_rtdist(nn_pars,6)
+        
+    def nn_pars_to_rtdist(self,nn_pars,ReIm):
+        """
+        Converts sampled paramters for neural network training into correct format
+        for use in generating data and adds non-sampled parameters needed by the
+        model. This is the generic form in which the list of sampled parameters 
+        and manipulations are passed to the function
+
+        Parameters
+        ----------
+        nn_pars : np.ndarray
+            array of sampled parameters.
+        ReIm : int
+            value of ReIm from rtdist to determine the type of output rtdist 
+            produces.
+        pars_list : list
+            list of indexes of parameters.
+        negatives : list
+            list of indexes of parameters that need to be turned positive.
+        logged : list
+            list of indexes of parameters that need to be transformed to power of
+            10.
+
+        Returns
+        -------
+        converted_pars : np.ndarray
+            array of parameters to be used for parameter generation.
+
+        """
+        #set up base parameters which can be used to fix parameter sets to
+        #reasonable values
+        pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
+                     0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
+        #set up base parameters to transform according to sampled parameters
+        converted_pars = []
+        for i in range(nn_pars.shape[0]):
+            converted_pars.append(pars_base)
+        converted_pars = np.asarray(converted_pars)
+        #iterate through 
+        for i, parameter in enumerate(self.pars_list):
+            if parameter in self.logged:
+                converted_pars[:,parameter] = 10**nn_pars[:,i]
+            else:
+                converted_pars[:,parameter] = nn_pars[:,i]
+            if parameter in self.negatives:
+                converted_pars[:,parameter] = converted_pars[:,parameter]
+        return converted_pars
+    
+    def add_pars(self,new_pars):
+        """
+        Adds new parameters to parameter set, as well as converts them to
+        rtdist generational form.
+
+        Parameters
+        ----------
+        new_pars : np.ndarray
+            array of new sampled parameters for neural network.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.nn_pars = np.concatenate((self.nn_pars,new_pars),axis = 0)
+        new_flux = self.nn_pars_to_rtdist(new_pars,0)
+        new_lags = self.nn_pars_to_rtdist(new_pars,6)
+        self.flux = np.concatenate((self.flux,new_flux),axis = 0)
+        self.lags = np.concatenate((self.lags,new_lags),axis = 0)
