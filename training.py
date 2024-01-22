@@ -16,7 +16,7 @@ from processing import mergeSaveData, saveLoop
 from math import ceil
 from tqdm import tqdm
 from plotting import distributions, variances
-from generator import active_learning_generation, pars_conversion
+from generator import active_learning_generation
 
 def model_NaN_checker(D,P,model):
     """
@@ -614,7 +614,7 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     
     active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                    flux_name, flux_test_name, lags_name,
-                                   lags_test_name, pars_conversion)
+                                   lags_test_name)
     
     # add rejected parameter sets back to original array for potential 
     # future use:
