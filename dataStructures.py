@@ -488,6 +488,8 @@ class PCADataset(Dataset):
         self.pars = np.asarray(data_table.iloc[pars_list,:-1])
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
+        print(self.data)
+        print(self.pars)
         
     def __len__(self):
         return self.data.shape[0]
