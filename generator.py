@@ -424,6 +424,7 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
             print(parameter)
             print("flipped negative")
             converted_pars[:,parameter] = converted_pars[:,parameter]
+            print(converted_pars[:,parameter])
     return converted_pars
 
 def grid_data_gen(size, fname, egrid, lags_egrid):

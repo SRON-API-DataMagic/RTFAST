@@ -71,7 +71,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,19]
+    logged = [0,2,3,4,7,8,10,11,12,13,23]
     """
     pars_list = [1,2,3,4,13]
     negatives = [2]
