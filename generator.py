@@ -12,6 +12,7 @@ from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
 from processing import readAndRemoveNans, spectraChecker
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
 import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
@@ -720,9 +721,14 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
+    """
     pars_list = [1,2,3,7,13]
     negatives = [2]
     logged = [1,2,3,4]
+    """
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
@@ -735,9 +741,16 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     print("Checking for spectra below threshold")
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
+    
+    pca = PCA(n_components = 40)
+    pca.fit(flux)
+    print(pca.explained_variance_ratio_)
+    print(sum(pca.explained_variance_ratio_))
+    quit()
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/",flux_name)
+    
     
     del flux
     print("Generating lags models")
