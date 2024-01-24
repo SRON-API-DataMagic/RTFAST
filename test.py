@@ -72,16 +72,16 @@ tra_idx = idxs[:int(0.9*len(idxs))]
 tes_idx = idxs[int(0.9*len(idxs)):]
 
 #Splitting data and parameters into training and testing datasets
-train_flux = flux[tra_idx]
+train_flux_data = flux[tra_idx]
 train_flux_pars = theta_flux[tra_idx]
 
-test_flux = flux[tes_idx]
+test_flux_data = flux[tes_idx]
 test_flux_pars = theta_flux[tes_idx]
 
 print("Saving flux data")
-saveData(train_flux, train_flux_pars, 
+saveData(train_flux_data, train_flux_pars, 
          "data/locations/","PCA_locs_flux.csv")
-saveData(train_flux, train_flux_pars, 
+saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
 
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
