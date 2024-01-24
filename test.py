@@ -25,7 +25,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, SGD
 
-wrk_dir = os.cwd()
+wrk_dir = os.getcwd()
 
 rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
