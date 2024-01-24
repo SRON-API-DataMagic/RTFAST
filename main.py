@@ -63,7 +63,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 40
-    range_AGN = np.asarray(generator.lhc_trimmed_gen())
+    range_AGN = np.asarray(generator.lhc_AGN())
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
