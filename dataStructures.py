@@ -485,7 +485,7 @@ class PCADataset(Dataset):
         self.scaler = load(scaler_loc)
         self.PCA = load(PCA_loc)
         self.locations = data_table.iloc[:,-1]
-        self.pars = data_table.iloc[pars_list,:-1]
+        self.pars = np.asarray(data_table.iloc[pars_list,:-1])
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
         
