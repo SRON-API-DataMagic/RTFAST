@@ -17,6 +17,7 @@ import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
 from sherpa.astro.ui import unpack_rmf
+from joblib import dump, load
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -715,6 +716,17 @@ def lhc_generation(size,range_all, limited = False):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
+def PCA_scaler(flux,comp = 1):
+    print(f"Attempting n_comp = {comp}")
+    pca = PCA(n_components = comp)
+    pca.fit(flux)
+    if sum(pca.explained_variance_ratio_) < 0.999:
+        PCA_scaler(flux,comp+1)
+    else:
+        print("Successfully describes 99.9% of variance")
+        dump(pca,"scalers/PCA.bin")
+    return
+
 def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=False):
     print("Generating first time dataset")
     init_data_size = 5000
@@ -741,22 +753,14 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     print("Checking for spectra below threshold")
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
-    
-    pca = PCA(n_components = 10)
-    print(flux.shape)
-    print(flux)
     flux[flux< 1e-11] = 1e-11
     scaler = MinMaxScaler()
     flux = scaler.fit_transform(np.log10(flux))
-    pca.fit(flux)
-    print(pca.explained_variance_ratio_)
-    print(sum(pca.explained_variance_ratio_))
+    PCA_scaler(flux)
     quit()
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/",flux_name)
-    
-    
     del flux
     print("Generating lags models")
     lags_query =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)

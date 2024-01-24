@@ -255,3 +255,16 @@ class HeavyLagsNetwork(LagsNetwork):
         result = self.OutputAbsolute(stack4)
         ind = self.OutputSigmoid(self.OutputIndex(stack4))
         return result, ind
+
+class PCAFluxNetwork(nn.Module):
+    """
+    Neural network class that aims to learn the relationship between the PCA
+    components describing the flux spectrum and the original parameters. Made
+    to be light-weight due to the small amount of input and output components.
+    """
+    
+    def __init__(self,num_pars,output_len):
+        self.LinearStack = nn.Linear(num_pars, output_len)
+    
+    def forward(self,pars):
+        return self.LinearStack(pars)
