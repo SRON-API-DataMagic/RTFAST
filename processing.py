@@ -295,6 +295,7 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
         print(f"A total of {len(indexes)} spectra were under the flux thresholds.")
     try:
         index = np.unique(indexes).tolist()
+        print("indexes found")
     except:
         print("All spectra okay")
         index = []
