@@ -489,8 +489,10 @@ class PCADataset(Dataset):
         self.pars_list = pars_list
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
-        print(self.pars)
-        print(self.pars.shape)
+        self.data = torch.Tensor(self.data)
+        self.pars = torch.Tensor(self.pars)
+        self.data.double()
+        self.pars.double()
         
     def __len__(self):
         return self.data.shape[0]
