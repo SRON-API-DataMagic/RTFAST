@@ -264,6 +264,7 @@ class PCAFluxNetwork(nn.Module):
     """
     
     def __init__(self,num_pars,output_len):
+        super().__init__()
         self.LinearStack = nn.Linear(num_pars, output_len)
     
     def forward(self,pars):
