@@ -476,7 +476,7 @@ class Parameters():
         self.flux = np.concatenate((self.flux,new_flux),axis = 0)
         self.lags = np.concatenate((self.lags,new_lags),axis = 0)
     
-def PCADataset(Dataset):
+class PCADataset(Dataset):
     
     def __init__(self,data_loc,PCA_loc,scaler_loc,
                  pars_list,negatives,logged,threshold = 1e-11):
