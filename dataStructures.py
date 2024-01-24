@@ -452,7 +452,7 @@ class Parameters():
             else:
                 converted_pars[:,parameter] = nn_pars[:,i]
             if parameter in self.negatives:
-                converted_pars[:,parameter] = converted_pars[:,parameter]
+                converted_pars[:,parameter] = -converted_pars[:,parameter]
         return converted_pars
     
     def add_pars(self,new_pars):
@@ -475,3 +475,54 @@ class Parameters():
         new_lags = self.nn_pars_to_rtdist(new_pars,6)
         self.flux = np.concatenate((self.flux,new_flux),axis = 0)
         self.lags = np.concatenate((self.lags,new_lags),axis = 0)
+    
+def PCADataset(Dataset):
+    
+    def __init__(self,data_loc,PCA_loc,scaler_loc,
+                 pars_list,negatives,logged,threshold = 1e-11):
+        data_table = pd.read_csv(data_loc)
+        self.threshold = threshold
+        self.scaler = load(scaler_loc)
+        self.PCA = load(PCA_loc)
+        self.locations = data_table.iloc[:,-1]
+        self.pars = data_table.iloc[pars_list,:-1]
+        self.rtdist_to_nn(negatives,logged)
+        self.data_load()
+        
+    def __len__(self):
+        return self.PCA.shape[0]
+    
+    def __getitem__(self,idx):
+        return self.data[idx], self.pars[idx]
+    
+    def rtdist_to_nn(self,negatives,logged):
+        """
+        Converts rtdist parameters into neural network friendly form.
+
+        Parameters
+        ----------
+        negatives: list
+            list of indexes of parameters to be turned positive due to being
+            a negative value in rtdist
+        logged: list
+            list of indexes of parameters for their logarithm to be inputted
+            into the network
+
+        """
+        for i, parameter in enumerate(self.pars):
+            if i in logged:
+                self.pars[:,i] = np.log10(self.pars[:,i])
+            if i in negatives:
+                self.pars[:,i] = -self.pars[:,i]
+    
+    def data_load(self):
+        data = []
+        for file in self.locations:
+            data.append(np.loadtxt(file).reshape(1, -1))
+        D = np.concatenate(data,axis=0)
+        D[D<self.threshold] = self.threshold
+        D = np.log10(D)
+        data = self.scaler.transform(D)
+        data = self.PCA.transform(data)
+        self.data = data
+        
