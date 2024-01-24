@@ -6,7 +6,7 @@ lightweight NNs is a viable alternative to what we've been doing up until now.
 from generator import intialize_dataset, rtdist_flux, nn_pars_to_rtdist
 from generator import PCA_scaler
 import generator
-from training import grid_training_loop, train_flux, test_flux
+from training import grid_training_loop, train_flux, test_flux, PCALoss
 import numpy as np
 import os
 import pandas as pd
@@ -104,7 +104,7 @@ model.to(device)
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 
-loss_fn = torch.nn.MSELoss()
+loss_fn = PCALoss()
 
 train = train_flux
 test =  test_flux

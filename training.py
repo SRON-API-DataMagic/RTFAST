@@ -66,7 +66,16 @@ def model_NaN_checker(D,P,model):
             print(f"Param is {param.data}")
             print("Exiting program")
             quit()
-                
+
+class PCALoss(nn.Module):
+    
+    def __init__(self):
+        super().__init__()
+        self.loss = nn.MSELoss()
+    
+    def forward(self,pred,target):
+        return self.loss(torch.squeeze(pred),target)
+
 class FluxLoss(nn.Module):
     """
     Class of loss functon that only induces loss for values extending outside
