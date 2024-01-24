@@ -78,7 +78,7 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     logged = [1,2,3,4]
     """
     lhc_idx = 0
-    theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited = True)
+    theta_lhc = generator.lhc_generation(int(1e6), range_AGN)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
     first = True
