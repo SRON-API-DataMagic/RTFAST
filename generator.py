@@ -415,11 +415,13 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
     #iterate through 
     for i, parameter in enumerate(pars_list):
         if parameter in logged:
+            print(parameter)
             print("multiplied to the power of 10")
             converted_pars[:,parameter] = 10**nn_pars[:,i]
         else:
             converted_pars[:,parameter] = nn_pars[:,i]
         if parameter in negatives:
+            print(parameter)
             print("flipped negative")
             converted_pars[:,parameter] = converted_pars[:,parameter]
     return converted_pars
