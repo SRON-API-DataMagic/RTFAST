@@ -745,6 +745,9 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     pca = PCA(n_components = 10)
     print(flux.shape)
     print(flux)
+    flux[flux< 1e-11] = 1e-11
+    scaler = MinMaxScaler()
+    flux = scaler.fit_transform(np.log10(flux))
     pca.fit(flux)
     print(pca.explained_variance_ratio_)
     print(sum(pca.explained_variance_ratio_))
