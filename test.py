@@ -33,7 +33,7 @@ egrid = rmf.e_min #energy grid used to evaluate the xspec model
 
 pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
-logged = [0,2,3,4,7,8,10,11,12,13,19]
+logged = [0,2,3,4,7,8,10,11,12,13,23]
 
 range_AGN = np.asarray(generator.lhc_AGN())
 
@@ -91,7 +91,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4,
                               shuffle=True)
 
 test_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                           "scalers/PCA_scaler.bin","scalers/PCA_scaler.bin",
+                           "scalers/PCA.bin","scalers/PCA_scaler.bin",
                            pars_list,negatives,logged)
 test_dataloader = DataLoader(test_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)

@@ -486,9 +486,9 @@ class PCADataset(Dataset):
         self.PCA = load(PCA_loc)
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[pars_list,:-1])
+        self.pars_list = pars_list
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
-        print(self.data)
         print(self.pars)
         
     def __len__(self):
@@ -511,11 +511,11 @@ class PCADataset(Dataset):
             into the network
 
         """
-        for i, parameter in enumerate(self.pars):
-            if i in logged:
-                self.pars[:,i] = np.log10(self.pars[:,i])
-            if i in negatives:
+        for i, parameter in enumerate(self.pars_list):
+            if parameter in negatives:
                 self.pars[:,i] = -self.pars[:,i]
+            if parameter in logged:
+                self.pars[:,i] = np.log10(self.pars[:,i])
     
     def data_load(self):
         data = []
