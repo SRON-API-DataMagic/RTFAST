@@ -490,7 +490,7 @@ class PCADataset(Dataset):
         self.data_load()
         
     def __len__(self):
-        return self.PCA.shape[0]
+        return self.data.shape[0]
     
     def __getitem__(self,idx):
         return self.data[idx], self.pars[idx]
