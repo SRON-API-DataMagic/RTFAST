@@ -742,13 +742,12 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
     
-    pca = PCA(n_components = 40)
+    pca = PCA(n_components = 10)
     print(flux.shape)
     print(flux)
     pca.fit(flux)
     print(pca.explained_variance_ratio_)
     print(sum(pca.explained_variance_ratio_))
-    print(pca.components_)
     quit()
     print("Saving flux data")
     saveData(flux, theta_flux, 
