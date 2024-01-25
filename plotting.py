@@ -1181,6 +1181,10 @@ def PCA_plotting(wrk_dir):
     negatives = [2]
     logged = [1,2,3,4]
     
+    pars_list = [1]
+    negatives = []
+    logged = []
+    
     scaler_name = "PCA_scaler.bin"
     scaler = load("scalers/PCA_scaler.bin")
     pca = load("scalers/PCA.bin")
@@ -1199,7 +1203,6 @@ def PCA_plotting(wrk_dir):
     print("Plotting samples")
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
-        print(P)
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
@@ -1208,7 +1211,6 @@ def PCA_plotting(wrk_dir):
         sca_pred = np.squeeze(10**(emu))
         #generate neural network prediction and rescale to linear space
         sca_pred[sca_pred<=1e-11] = 1e-11
-        print(sca_pred)
         
         fig, axs = plt.subplots(2,1,sharex=True)
         axs[0].plot(egrid,sca_pred,c="blue",label="NN model")
