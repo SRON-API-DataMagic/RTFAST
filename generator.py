@@ -623,6 +623,10 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
     pars_list = [1,2,3,7,13]
     negatives = [2]
     logged = [1,2,3,4]
+    
+    pars_list = [1]
+    negatives = []
+    logged = []
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_lhc, 6, pars_list, negatives, logged)
