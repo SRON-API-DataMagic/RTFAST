@@ -1226,9 +1226,9 @@ def PCA_plotting(wrk_dir):
         plt.xlabel("PCA component")
         plt.ylabel("PCA vector")
         plt.title("Comparison of PCA emulator output vs expected")
-        plt.tight_layout()
+        plt.legend()
         plt.savefig(f"samples/PCA_compare_{batch}.png")
-        
+        plt.close()
         if batch > 6:
             break
 

@@ -35,19 +35,20 @@ pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
 
-range_AGN = np.asarray(generator.lhc_AGN())
+pars_list = [1,2,3,4,13]
+negatives = [3]
+logged = [2,3,4,13]
 
-labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
-          "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+range_AGN = np.asarray(generator.lhc_trimmed_gen())
 
-#theta_lhc = generator.lhc_generation(int(1e4), range_AGN)
+theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
 
 flux_name = "PCA_locs_flux.csv"
 flux_test_name = "PCA_test_locs_flux.csv"
 flux_scaler_name = "PCA_scaler_flux.bin"
 
 num_pars = range_AGN.shape[0]
-"""
+
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
 theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -83,7 +84,7 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-"""
+
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            "scalers/PCA.bin","scalers/PCA_scaler.bin",
                            pars_list,negatives,logged)
