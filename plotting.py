@@ -1219,7 +1219,7 @@ def PCA_plotting(wrk_dir):
         plt.savefig(f"samples/PCA_sample_{batch}.png")
         plt.close()
         
-        pca_da = pca.transform(scaler.transform(np.log10(da)))
+        pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
         
         plt.scatter(pca_da,label="True PCA components")
         plt.scatter(pred,label="Emulator PCA components")
