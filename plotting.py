@@ -1254,8 +1254,8 @@ def PCA_plotting(wrk_dir):
         data = pca.transform(data)
         data = comp_scaler.transform(data)
         a.append(P.float().detach().numpy())
-        PCA_1.append(data[0])
-        PCA_2.append(data[1])
+        PCA_1.append(data[:,0])
+        PCA_2.append(data[:,1])
     
     plt.scatter(a,PCA_1,label="PCA 1")
     plt.scatter(a,PCA_2,label="PCA 2")
