@@ -41,14 +41,14 @@ logged = [2,3,4,13]
 
 range_AGN = np.asarray(generator.lhc_trimmed_gen())
 
-theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
+#theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
 
 flux_name = "PCA_locs_flux.csv"
 flux_test_name = "PCA_test_locs_flux.csv"
 flux_scaler_name = "PCA_scaler_flux.bin"
 
 num_pars = range_AGN.shape[0]
-
+"""
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
 theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -84,7 +84,7 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-
+"""
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            "scalers/PCA.bin","scalers/PCA_scaler.bin",
                            pars_list,negatives,logged)
@@ -102,6 +102,8 @@ model = PCAFluxNetwork(num_pars, train_dataset.data.shape[1])
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 model.to(device)
+
+model.float()
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 

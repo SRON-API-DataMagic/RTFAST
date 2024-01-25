@@ -491,8 +491,8 @@ class PCADataset(Dataset):
         self.data_load()
         self.data = torch.Tensor(self.data)
         self.pars = torch.Tensor(self.pars)
-        self.data.double()
-        self.pars.double()
+        self.data.float()
+        self.pars.float()
         
     def __len__(self):
         return self.data.shape[0]
