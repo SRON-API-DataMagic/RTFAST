@@ -1139,6 +1139,90 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot("loss/", "flux")
     loss_epochs_plot("loss/", "lags")
     
+def PCA_plotting(wrk_dir):
+    """
+    Function dedicated to plotting PCA neural network model outputs. Only plots
+    things necessary for PCA model diagnosis
+
+    Parameters
+    ----------
+    wrk_dir : string
+        current working directory location.
+
+    Returns
+    -------
+    None.
+
+    """
+    #plotting of training and validation loss over time
+    PCA_train_loss = np.loadtxt("loss/PCA_flux_tr_loss.txt")
+    PCA_val_loss = np.loadtxt("loss/PCA_flux_te_loss.txt")
+    egrid = retrieve_egrid(wrk_dir)
+    
+    plt.plot(PCA_train_loss,label = "Training loss: active learning", c = "blue",
+             ls = "-")
+    plt.plot(PCA_val_loss,label = "Validation loss: active learning", c = "blue",
+             ls = "--")
+    
+    plt.yscale("log")
+    plt.xlabel("Training epochs")
+    plt.ylabel("Loss")
+    plt.title(f"Loss by epoch")
+    plt.legend()
+    plt.savefig(f"loss/loss_PCA.png")
+    plt.close()
+    
+    #plotting of emulator vs test data performance
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    
+    scaler_name = "PCA_scaler.bin"
+    scaler = load("scalers/PCA_scaler.bin")
+    pca = load("scalers/PCA.bin")
+    model = network.PCAFluxNetwork(20, pca.components_.shape[0])
+    
+    model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
+    model.eval()
+    
+    test_data = LoadFluxData("data/locations/loc_flux_AGN_test.csv",scaler,
+                              scaler_name, pars_list, negatives = negatives, 
+                              logged = logged) #scaler unused but must be parsed
+    
+    for batch, (D,P) in enumerate(test_data):
+        D = np.squeeze(D)
+        D[D<=1e-11] = 1e-11
+        da = np.squeeze(D)
+        
+        da_log = np.log10(np.abs(da))
+        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
+        pred = model(P)
+        emu = scaler.inverse_transform(pca.inverse_transform(pred))
+        sca_pred = np.squeeze(10**(emu))
+        #generate neural network prediction and rescale to linear space
+        sca_pred[sca_pred<=1e-11] = 1e-11
+        
+        fig, axs = plt.subplots(2,1,sharex=True)
+        axs[0].plot(egrid,pred,c="blue",label="NN model")
+        axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
+        axs[0].legend()
+        axs[0].set_ylabel("Flux(photons/cm^2/s")
+        axs[1].scatter(egrid,(da-pred)/da,s=0.5)
+        axs[1].set_ylabel("Residuals")
+        axs[1].set_xlabel("Energy (keV)")
+        axs[1].axhline(y=0.01,ls="--",color="orange")
+        axs[1].axhline(y=-0.01,ls="--",color="orange")
+        axs[1].set_yscale("symlog")
+        plt.tight_layout()
+        plt.savefig(f"samples/PCA_sample_{batch}.png")
+        plt.close()
+        
+        if batch > 6:
+            break
+    
+    
+
+
 def main():
     wrk_dir = os.getcwd()
     """
@@ -1159,7 +1243,9 @@ def main():
                       "data/locations/loc_lags_AGN_test.csv")
     """
     set_envir_vars(wrk_dir)
-    active_v_grid(wrk_dir, egrid, lags_egrid)
+    #active_v_grid(wrk_dir, egrid, lags_egrid)
+    PCA_plotting(wrk_dir)
+    
     
 if __name__ == "__main__":
     main()
