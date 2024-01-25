@@ -1178,8 +1178,8 @@ def PCA_plotting(wrk_dir):
     logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
+    negatives = [2]
+    logged = [1,2,3,4]
     
     scaler_name = "PCA_scaler.bin"
     scaler = load("scalers/PCA_scaler.bin")
