@@ -1203,7 +1203,6 @@ def PCA_plotting(wrk_dir):
     
     print("Plotting samples")
     for batch, (D,P) in enumerate(testing_dataloader):
-        print(D)
         print(batch)
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
