@@ -1245,7 +1245,23 @@ def PCA_plotting(wrk_dir):
         plt.close()
         if batch > 6:
             break
-
+    
+    PCA_1 = []
+    PCA_2 = []
+    a = []
+    for batch, (D,P) in enumerate(testing_dataloader):
+        a.append(P.float().detach().numpy())
+        PCA_1.append(D[0])
+        PCA_2.append(D[1])
+    
+    plt.scatter(a,PCA_1,label="PCA 1")
+    plt.scatter(a,PCA_2,label="PCA 2")
+    plt.legend()
+    plt.xlabel("Spin")
+    plt.ylabel("PCA components")
+    plt.savefig("samples/PCA_spin.png")
+    plt.close()
+    
 def main():
     wrk_dir = os.getcwd()
     """
