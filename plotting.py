@@ -1179,7 +1179,7 @@ def PCA_plotting(wrk_dir):
     
     pars_list = [1,2,3,4,13]
     negatives = [3]
-    logged = [1,2,3,4]
+    logged = [2,3,4,13]
     
     scaler_name = "PCA_scaler.bin"
     scaler = load("scalers/PCA_scaler.bin")
@@ -1199,6 +1199,7 @@ def PCA_plotting(wrk_dir):
     print("Plotting samples")
     for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
+        print(P)
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
