@@ -1230,9 +1230,6 @@ def PCA_plotting(wrk_dir):
         
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
         pca_da = comp_scaler.transform(pca_da)
-        print(pca_da)
-        print(pred)
-        print(comp_scaler.inverse_transform(pred))
         x = np.arange(0,len(pca.components_))
         plt.scatter(x,pca_da,label="True PCA components")
         plt.scatter(x,pred,label="Emulator PCA components")
@@ -1250,6 +1247,7 @@ def PCA_plotting(wrk_dir):
     PCA_2 = []
     a = []
     for batch, (D,P) in enumerate(testing_dataloader):
+        print(D)
         D[D<threshold] = threshold
         D = np.log10(D)
         data = scaler.transform(D)
