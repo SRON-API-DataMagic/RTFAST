@@ -1225,7 +1225,7 @@ def PCA_plotting(wrk_dir):
         
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
         print(pca_da.shape)
-        x = np.arange(0,len(pars_list)-1)
+        x = np.arange(0,len(pca.components_))
         print(x.shape)
         plt.scatter(x,pca_da,label="True PCA components")
         plt.scatter(x,pred,label="Emulator PCA components")
