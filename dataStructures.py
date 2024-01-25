@@ -490,9 +490,9 @@ class PCADataset(Dataset):
         self.pars_list = pars_list
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
+        self.scale_PCA_comp()
         self.data = torch.Tensor(self.data)
         self.pars = torch.Tensor(self.pars)
-        self.scale_PCA_comp()
         self.data.float()
         self.pars.float()
         
