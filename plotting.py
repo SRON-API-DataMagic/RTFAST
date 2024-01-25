@@ -1229,6 +1229,7 @@ def PCA_plotting(wrk_dir):
         plt.close()
         
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
+        pca_da
         pca_da = comp_scaler.transform(pca_da)
         print(pca_da)
         print(pred)
