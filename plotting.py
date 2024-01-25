@@ -1209,7 +1209,7 @@ def PCA_plotting(wrk_dir):
         axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
         axs[0].legend()
         axs[0].set_ylabel("Flux(photons/cm^2/s")
-        axs[1].scatter(egrid,(da-pred)/da,s=0.5)
+        axs[1].scatter(egrid,(da-sca_pred)/da,s=0.5)
         axs[1].set_ylabel("Residuals")
         axs[1].set_xlabel("Energy (keV)")
         axs[1].axhline(y=0.01,ls="--",color="orange")
