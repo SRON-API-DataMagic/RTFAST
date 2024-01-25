@@ -1194,7 +1194,7 @@ def PCA_plotting(wrk_dir):
     model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
     model.eval()
     
-    test_data = LoadFluxData("data/locations/loc_flux_AGN_test.csv",scaler,
+    test_data = LoadFluxData("data/locations/loc_flux_spin_test.csv",scaler,
                               scaler_name, pars_list, negatives = negatives, 
                               logged = logged) #scaler unused but must be parsed
     
@@ -1291,16 +1291,16 @@ def main():
     """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    """
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, 
-        lags_egrid, generator.lhc_trimmed_gen,limited=True)
     
-    saveData(flux, theta_flux, "data/locations/", "loc_flux_AGN_test.csv")
-    saveData(lags, theta_lags, "data/locations/", "loc_lags_AGN_test.csv")
+    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e3), egrid, 
+        lags_egrid, generator.lhc_spin,limited=True)
+    
+    saveData(flux, theta_flux, "data/locations/", "loc_flux_spin_test.csv")
+    saveData(lags, theta_lags, "data/locations/", "loc_lags_spin_test.csv")
     
     readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", 
                       "data/locations/loc_lags_AGN_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
     #active_v_grid(wrk_dir, egrid, lags_egrid)
     PCA_plotting(wrk_dir)
