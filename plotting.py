@@ -1198,7 +1198,7 @@ def PCA_plotting(wrk_dir):
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
-        pred = model(P.double())
+        pred = model(P.double()).detach().numpy()
         emu = scaler.inverse_transform(pca.inverse_transform(pred))
         sca_pred = np.squeeze(10**(emu))
         #generate neural network prediction and rescale to linear space
