@@ -1219,11 +1219,18 @@ def PCA_plotting(wrk_dir):
         plt.savefig(f"samples/PCA_sample_{batch}.png")
         plt.close()
         
+        pca_da = pca.transform(scaler.transform(np.log10(da)))
+        
+        plt.scatter(pca_da,label="True PCA components")
+        plt.scatter(pred,label="Emulator PCA components")
+        plt.xlabel("PCA component")
+        plt.ylabel("PCA vector")
+        plt.title("Comparison of PCA emulator output vs expected")
+        plt.tight_layout()
+        plt.savefig(f"samples/PCA_compare_{batch}.png")
+        
         if batch > 6:
             break
-    
-    
-
 
 def main():
     wrk_dir = os.getcwd()
