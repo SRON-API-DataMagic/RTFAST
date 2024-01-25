@@ -1209,8 +1209,6 @@ def PCA_plotting(wrk_dir):
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
         pred = model(P.float()).detach().numpy()
-        print(pred)
-        print(comp_scaler.inverse_transform(pred))
         emu = scaler.inverse_transform(pca.inverse_transform(comp_scaler.inverse_transform(pred)))
         sca_pred = np.squeeze(10**(emu))
         #generate neural network prediction and rescale to linear space
@@ -1234,6 +1232,7 @@ def PCA_plotting(wrk_dir):
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
         pca_da = comp_scaler.transform(pca_da)
         print(pca_da)
+        print(pred)
         x = np.arange(0,len(pca.components_))
         plt.scatter(x,pca_da,label="True PCA components")
         plt.scatter(x,pred,label="Emulator PCA components")
