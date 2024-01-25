@@ -1207,6 +1207,7 @@ def PCA_plotting(wrk_dir):
         sca_pred = np.squeeze(10**(emu))
         #generate neural network prediction and rescale to linear space
         sca_pred[sca_pred<=1e-11] = 1e-11
+        print(sca_pred)
         
         fig, axs = plt.subplots(2,1,sharex=True)
         axs[0].plot(egrid,sca_pred,c="blue",label="NN model")
@@ -1224,9 +1225,7 @@ def PCA_plotting(wrk_dir):
         plt.close()
         
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
-        print(pca_da.shape)
         x = np.arange(0,len(pca.components_))
-        print(x.shape)
         plt.scatter(x,pca_da,label="True PCA components")
         plt.scatter(x,pred,label="Emulator PCA components")
         plt.xlabel("PCA component")
