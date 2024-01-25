@@ -1205,7 +1205,7 @@ def PCA_plotting(wrk_dir):
         sca_pred[sca_pred<=1e-11] = 1e-11
         
         fig, axs = plt.subplots(2,1,sharex=True)
-        axs[0].plot(egrid,pred,c="blue",label="NN model")
+        axs[0].plot(egrid,sca_pred,c="blue",label="NN model")
         axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
         axs[0].legend()
         axs[0].set_ylabel("Flux(photons/cm^2/s")
