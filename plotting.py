@@ -1175,7 +1175,7 @@ def PCA_plotting(wrk_dir):
     #plotting of emulator vs test data performance
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,11,12,13,19]
     
     scaler_name = "PCA_scaler.bin"
     scaler = load("scalers/PCA_scaler.bin")
