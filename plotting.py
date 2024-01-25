@@ -1184,7 +1184,7 @@ def PCA_plotting(wrk_dir):
     scaler_name = "PCA_scaler.bin"
     scaler = load("scalers/PCA_scaler.bin")
     pca = load("scalers/PCA.bin")
-    model = network.PCAFluxNetwork(20, pca.components_.shape[0])
+    model = network.PCAFluxNetwork(len(pars_list), pca.components_.shape[0])
     
     model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
     model.eval()
