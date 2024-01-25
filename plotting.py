@@ -1189,8 +1189,11 @@ def PCA_plotting(wrk_dir):
                               scaler_name, pars_list, negatives = negatives, 
                               logged = logged) #scaler unused but must be parsed
     
+    testing_dataloader = DataLoader(test_data,batch_size = 1,
+                                    num_workers=1)
+    
     print("Plotting samples")
-    for batch, (D,P) in enumerate(test_data):
+    for batch, (D,P) in enumerate(testing_dataloader):
         print(batch)
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
