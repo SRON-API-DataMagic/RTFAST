@@ -494,6 +494,7 @@ class PCADataset(Dataset):
         self.pars = torch.Tensor(self.pars)
         self.data.float()
         self.pars.float()
+        self.scale_PCA_comp()
         
     def __len__(self):
         return self.data.shape[0]
