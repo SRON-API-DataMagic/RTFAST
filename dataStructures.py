@@ -7,6 +7,7 @@ from joblib import dump, load
 import pandas as pd
 import torch
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 class FluxData(Dataset):
     def __init__(self, pars, data, scaler, scaler_name, pars_list, 
@@ -530,4 +531,9 @@ class PCADataset(Dataset):
         data = self.scaler.transform(D)
         data = self.PCA.transform(data)
         self.data = data
+    
+    def scale_PCA_comp(self):
+        self.PCA_scaler = StandardScaler()
+        self.data = self.PCA_scaler.fit_transform(self.data)
+        dump(self.PCA_scaler,"scalers/PCA_comp_scaler.bin")
         

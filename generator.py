@@ -231,6 +231,22 @@ def lhc_all():
     
     return range_all
 
+def lhc_spin():
+    """
+    Generates valid ranges of parameters for spin only.
+
+    Returns
+    -------
+    range_all : list
+        gives parameter ranges for each of the given parameters listed. Used 
+        in the latin hypercube sampling
+
+    """
+    spin_range = [0,0.998]
+    range_all = [spin_range]
+    
+    return range_all
+
 def lhc_BH():
     """
     Generates valid ranges of parameters of stellar mass BHs to be trained on
