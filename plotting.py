@@ -1189,13 +1189,12 @@ def PCA_plotting(wrk_dir):
                               scaler_name, pars_list, negatives = negatives, 
                               logged = logged) #scaler unused but must be parsed
     
+    print("Plotting samples")
     for batch, (D,P) in enumerate(test_data):
+        print(batch)
         D = np.squeeze(D)
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
-        
-        da_log = np.log10(np.abs(da))
-        da_log_scal = scaler.transform(da_log.reshape(1, -1)).flatten()
         pred = model(P)
         emu = scaler.inverse_transform(pca.inverse_transform(pred))
         sca_pred = np.squeeze(10**(emu))
