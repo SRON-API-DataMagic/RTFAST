@@ -1243,8 +1243,10 @@ def PCA_plotting(wrk_dir):
             break
     
     threshold = 1e-11
-    PCA_1 = []
-    PCA_2 = []
+    PCA_1_nn = []
+    PCA_2_nn = []
+    PCA_1_tr = []
+    PCA_2_tr = []
     a = []
     for batch, (D,P) in enumerate(testing_dataloader):
         print(D)
@@ -1254,17 +1256,26 @@ def PCA_plotting(wrk_dir):
         data = pca.transform(data)
         data = comp_scaler.transform(data)
         a.append(P.float().detach().numpy())
-        PCA_1.append(data[:,0])
-        PCA_2.append(data[:,1])
+        PCA_1_tr.append(data[:,0])
+        PCA_2_tr.append(data[:,1])
+        pred = model(P.float()).detach().numpy()
+        PCA_1_nn.append(pred[:,0])
+        PCA_2_nn.append(pred[:,1])
     
-    plt.scatter(a,PCA_1,label="PCA 1")
-    plt.scatter(a,PCA_2,label="PCA 2")
+    plt.scatter(a,PCA_1_tr,label="Training set")
+    plt.scatter(a,PCA_1_nn,label="Emulator")
     plt.legend()
     plt.xlabel("Spin")
     plt.ylabel("PCA components")
-    plt.savefig("samples/PCA_spin.png")
+    plt.savefig("samples/PCA1_spin.png")
     plt.close()
     
+    plt.scatter(a,PCA_2_tr,label="Training set")
+    plt.scatter(a,PCA_2_nn,label="Emulator")
+    plt.xlabel("Spin")
+    plt.ylabel("PCA components")
+    plt.savefig("samples/PCA2_spin.png")
+    plt.close()
 def main():
     wrk_dir = os.getcwd()
     """
