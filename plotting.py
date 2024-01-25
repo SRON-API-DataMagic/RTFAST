@@ -1249,7 +1249,7 @@ def PCA_plotting(wrk_dir):
     for batch, (D,P) in enumerate(testing_dataloader):
         print(D)
         D[D<threshold] = threshold
-        D = np.log10(D).reshape(1, -1)
+        D = np.squeeze(np.log10(D).reshape(1, -1))
         data = scaler.transform(D)
         data = pca.transform(data)
         data = comp_scaler.transform(data)
