@@ -1229,7 +1229,6 @@ def PCA_plotting(wrk_dir):
         plt.close()
         
         pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
-        print(pca_da)
         pca_da = comp_scaler.transform(pca_da)
         print(pca_da)
         print(pred)
@@ -1246,13 +1245,19 @@ def PCA_plotting(wrk_dir):
         if batch > 6:
             break
     
+    threshold = 1e-11
     PCA_1 = []
     PCA_2 = []
     a = []
     for batch, (D,P) in enumerate(testing_dataloader):
+        D[D<threshold] = threshold
+        D = np.log10(D)
+        data = scaler.transform(D)
+        data = pca.transform(data)
+        data = comp_scaler.transform(data)
         a.append(P.float().detach().numpy())
-        PCA_1.append(D[0])
-        PCA_2.append(D[1])
+        PCA_1.append(data[0])
+        PCA_2.append(data[1])
     
     plt.scatter(a,PCA_1,label="PCA 1")
     plt.scatter(a,PCA_2,label="PCA 2")
