@@ -1248,13 +1248,18 @@ def PCA_plotting(wrk_dir):
     PCA_1_tr = []
     PCA_2_tr = []
     a = []
+    print(comp_scaler.scale_)
+    print(comp_scaler.mean_)
+    
     for batch, (D,P) in enumerate(testing_dataloader):
-        print(D)
+        print(batch)
         D[D<threshold] = threshold
         D = np.squeeze(np.log10(D)).reshape(1, -1)
         data = scaler.transform(D)
         data = pca.transform(data)
+        print("Before comp_scal",data)
         data = comp_scaler.transform(data)
+        print("After comp_scal",data)
         a.append(P.float().detach().numpy())
         PCA_1_tr.append(data[:,0])
         PCA_2_tr.append(data[:,1])
@@ -1276,6 +1281,7 @@ def PCA_plotting(wrk_dir):
     plt.ylabel("PCA components")
     plt.savefig("samples/PCA2_spin.png")
     plt.close()
+    
 def main():
     wrk_dir = os.getcwd()
     """
