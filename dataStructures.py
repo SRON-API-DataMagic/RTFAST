@@ -532,7 +532,7 @@ class PCADataset(Dataset):
         self.scale()
     
     def scale(self):
-        self.flux_scaler()
+        #self.flux_scaler()
         self.PCA()
         self.component_scaler()
         return
