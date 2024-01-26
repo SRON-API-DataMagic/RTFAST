@@ -17,7 +17,8 @@ from sherpa.astro.ui import unpack_rmf
 from processing import saveData, spectraChecker
 
 from joblib import Parallel, delayed, dump, load
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.decomposition import PCA
 from dataStructures import PCADataset
 from network import PCAFluxNetwork
 
@@ -44,15 +45,14 @@ negatives = []
 logged = []
 
 range_AGN = np.asarray(generator.lhc_spin())
-
-#theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=True)
+num_pars = range_AGN.shape[0]
+"""
+theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=True)
 
 flux_name = "PCA_locs_flux.csv"
 flux_test_name = "PCA_test_locs_flux.csv"
 flux_scaler_name = "PCA_scaler_flux.bin"
 
-num_pars = range_AGN.shape[0]
-"""
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
 theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)

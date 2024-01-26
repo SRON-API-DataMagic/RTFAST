@@ -7,7 +7,8 @@ from joblib import dump, load
 import pandas as pd
 import torch
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.decomposition import PCA
 
 class FluxData(Dataset):
     def __init__(self, pars, data, scaler, scaler_name, pars_list, 
@@ -479,18 +480,14 @@ class Parameters():
     
 class PCADataset(Dataset):
     
-    def __init__(self,data_loc,PCA_loc,scaler_loc,
-                 pars_list,negatives,logged,threshold = 1e-11):
+    def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
-        self.scaler = load(scaler_loc)
-        self.PCA = load(PCA_loc)
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
         self.pars_list = pars_list
         self.rtdist_to_nn(negatives,logged)
         self.data_load()
-        self.scale_PCA_comp()
         self.data = torch.Tensor(self.data)
         self.pars = torch.Tensor(self.pars)
         self.data.float()
@@ -529,12 +526,36 @@ class PCADataset(Dataset):
         D = np.concatenate(data,axis=0)
         D[D<self.threshold] = self.threshold
         D = np.log10(D)
-        data = self.scaler.transform(D)
-        data = self.PCA.transform(data)
-        self.data = data
+        self.data = D
+        self.scale()
     
-    def scale_PCA_comp(self):
+    def scale(self):
+        self.flux_scaler()
+        self.PCA()
+        self.component_scaler()
+        return
+        
+    def flux_scaler(self):
+        self.flux_scaler = MinMaxScaler()
+        self.data = self.flux_scaler.fit_transform(self.data)
+        dump(self.pca,"scalers/flux_scaler.bin")
+        return
+    
+    def PCA(self,comp = 1):
+        print(f"Attempting n_comp = {comp}")
+        self.pca = PCA(n_components = comp)
+        self.pca.fit(self.data)
+        if sum(self.pca.explained_variance_ratio_) < 0.999:
+            self.PCA(comp+1)
+        else:
+            print("Successfully describes 99.9% of variance")
+            self.data = self.pca.transform(self.data)
+            dump(self.pca,"scalers/PCA.bin")
+        return
+    
+    def component_scaler(self):
         self.PCA_scaler = StandardScaler()
         self.data = self.PCA_scaler.fit_transform(self.data)
         dump(self.PCA_scaler,"scalers/PCA_comp_scaler.bin")
-        
+        return
+    
