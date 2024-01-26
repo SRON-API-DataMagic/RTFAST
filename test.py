@@ -4,7 +4,6 @@ lightweight NNs is a viable alternative to what we've been doing up until now.
 """
 
 from generator import intialize_dataset, rtdist_flux, nn_pars_to_rtdist
-from generator import PCA_scaler
 import generator
 from training import grid_training_loop, train_flux, test_flux, PCALoss
 import numpy as np
