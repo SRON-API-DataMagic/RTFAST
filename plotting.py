@@ -1195,7 +1195,7 @@ def PCA_plotting(wrk_dir):
     model.eval()
     
     test_data = PCADataset("data/locations/loc_flux_spin_test.csv",
-                               pars_list,negatives,logged,scale_bool = False) #scaler unused but must be parsed
+                               pars_list,negatives,logged,scale_bool = False)
     
     testing_dataloader = DataLoader(test_data,batch_size = 1,
                                     num_workers=1)
@@ -1277,16 +1277,29 @@ def main():
     """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    """
-    flux, lags, theta_flux, theta_lags = generate_test_set(int(1e2), egrid, 
-        lags_egrid, generator.lhc_spin,limited=True)
+    range_AGN = np.asarray(generator.lhc_spin())
+    num_pars = range_AGN.shape[0]
     
-    saveData(flux, theta_flux, "data/locations/", "loc_flux_spin_test.csv")
-    saveData(lags, theta_lags, "data/locations/", "loc_lags_spin_test.csv")
+    theta_lhc = generator.lhc_generation(int(1e2), range_AGN, limited=True)
+    pars_list = [1]
+    negatives = []
+    logged = []
+    theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    print("Parallelized model generation")
+
+    print("Generating flux models")
+    flux =  Parallel(n_jobs=20,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
+                                    for pars in theta_flux)
+    flux = np.asarray(flux)
+    print("Checking for spectra below threshold")
+    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                  1e-11)
     
-    readAndRemoveNans("data/locations/loc_flux_AGN_test.csv", 
-                      "data/locations/loc_lags_AGN_test.csv")
-    """
+    print("Saving flux data")
+    saveData(flux, theta_flux, 
+             "data/locations/","loc_flux_spin_test.csv")
+    
     set_envir_vars(wrk_dir)
     #active_v_grid(wrk_dir, egrid, lags_egrid)
     PCA_plotting(wrk_dir)
