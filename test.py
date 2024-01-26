@@ -39,13 +39,13 @@ pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
 
-pars_list = [1]
+pars_list = [1,2]
 negatives = []
-logged = []
+logged = [2]
 
 range_AGN = np.asarray(generator.lhc_spin())
 num_pars = range_AGN.shape[0]
-"""
+
 theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=True)
 
 flux_name = "PCA_locs_flux.csv"
@@ -82,7 +82,7 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-"""
+
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            pars_list,negatives,logged)
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 

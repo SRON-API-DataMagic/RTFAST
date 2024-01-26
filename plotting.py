@@ -1173,9 +1173,9 @@ def PCA_plotting(wrk_dir):
     plt.close()
     
     #plotting of emulator vs test data performance
-    pars_list = [1]
+    pars_list = [1,2]
     negatives = []
-    logged = []
+    logged = [2]
     
     pca = load("scalers/PCA.bin")
     model = network.PCAFluxNetwork(len(pars_list), pca.components_.shape[0])
