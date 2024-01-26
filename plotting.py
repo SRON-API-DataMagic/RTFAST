@@ -1257,10 +1257,10 @@ def PCA_plotting(wrk_dir):
     
 def main():
     wrk_dir = os.getcwd()
-    """
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    range_AGN = np.asarray(generator.lhc_spin())
+    range_AGN = np.asarray(generator.lhc_2())
     num_pars = range_AGN.shape[0]
     
     theta_lhc = generator.lhc_generation(int(1e2), range_AGN, limited=True)
@@ -1282,7 +1282,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_spin_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
     PCA_plotting(wrk_dir)
     
