@@ -231,7 +231,7 @@ def lhc_all():
     
     return range_all
 
-def lhc_spin():
+def lhc_2():
     """
     Generates valid ranges of parameters for spin only.
 
@@ -243,7 +243,8 @@ def lhc_spin():
 
     """
     spin_range = [0,0.998]
-    range_all = [spin_range]
+    inclination_range = [np.log10(1),np.log10(80)]
+    range_all = [spin_range,inclination_range]
     
     return range_all
 
