@@ -1186,7 +1186,7 @@ def PCA_plotting(wrk_dir):
     logged = []
     
     scaler_name = "PCA_scaler.bin"
-    scaler = load("scalers/PCA_scaler.bin")
+    flux_scaler = load("scalers/flux_scaler.bin")
     comp_scaler = load("scalers/PCA_comp_scaler.bin")
     pca = load("scalers/PCA.bin")
     model = network.PCAFluxNetwork(len(pars_list), pca.components_.shape[0])
@@ -1194,7 +1194,7 @@ def PCA_plotting(wrk_dir):
     model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
     model.eval()
     
-    test_data = LoadFluxData("data/locations/loc_flux_spin_test.csv",scaler,
+    test_data = LoadFluxData("data/locations/loc_flux_spin_test.csv",flux_scaler,
                               scaler_name, pars_list, negatives = negatives, 
                               logged = logged) #scaler unused but must be parsed
     
@@ -1208,7 +1208,7 @@ def PCA_plotting(wrk_dir):
         D[D<=1e-11] = 1e-11
         da = np.squeeze(D)
         pred = model(P.float()).detach().numpy()
-        emu = scaler.inverse_transform(pca.inverse_transform(comp_scaler.inverse_transform(pred)))
+        emu = flux_scaler.inverse_transform(pca.inverse_transform(comp_scaler.inverse_transform(pred)))
         sca_pred = np.squeeze(10**(emu))
         #generate neural network prediction and rescale to linear space
         sca_pred[sca_pred<=1e-11] = 1e-11
@@ -1228,7 +1228,7 @@ def PCA_plotting(wrk_dir):
         plt.savefig(f"samples/PCA_sample_{batch}.png")
         plt.close()
         
-        pca_da = pca.transform(scaler.transform(np.log10(da.reshape(1, -1))))
+        pca_da = pca.transform(flux_scaler.transform(np.log10(da.reshape(1, -1))))
         pca_da = comp_scaler.transform(pca_da)
         x = np.arange(0,len(pca.components_))
         plt.scatter(x,pca_da,label="True PCA components")
@@ -1255,7 +1255,7 @@ def PCA_plotting(wrk_dir):
         print(batch)
         D[D<threshold] = threshold
         D = np.squeeze(np.log10(D)).reshape(1, -1)
-        data = scaler.transform(D)
+        data = flux_scaler.transform(D)
         data = pca.transform(data)
         print("Before comp_scal",data)
         data = comp_scaler.transform(data)
