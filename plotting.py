@@ -1173,21 +1173,10 @@ def PCA_plotting(wrk_dir):
     plt.close()
     
     #plotting of emulator vs test data performance
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,19]
-    
-    pars_list = [1,2,3,4,13]
-    negatives = [2]
-    logged = [1,2,3,4]
-    
     pars_list = [1]
     negatives = []
     logged = []
     
-    scaler_name = "PCA_scaler.bin"
-    flux_scaler = load("scalers/flux_scaler.bin")
-    comp_scaler = load("scalers/PCA_comp_scaler.bin")
     pca = load("scalers/PCA.bin")
     model = network.PCAFluxNetwork(len(pars_list), pca.components_.shape[0])
     
@@ -1246,8 +1235,6 @@ def PCA_plotting(wrk_dir):
     nn_comps = []
     train_comps = []
     a = []
-    print(comp_scaler.scale_)
-    print(comp_scaler.mean_)
     
     for batch, (D,P) in enumerate(testing_dataloader):
         pred = model(P.float()).detach().numpy()
@@ -1270,10 +1257,6 @@ def PCA_plotting(wrk_dir):
     
 def main():
     wrk_dir = os.getcwd()
-    """
-    nums = [0,10,20,30]
-    files = [f"data/locations/loc_flux_{loop}.csv" for loop in nums]
-    aggregate_dists(files)
     """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
@@ -1299,9 +1282,8 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_spin_test.csv")
-    
+    """
     set_envir_vars(wrk_dir)
-    #active_v_grid(wrk_dir, egrid, lags_egrid)
     PCA_plotting(wrk_dir)
     
     
