@@ -358,8 +358,6 @@ class LoadFluxData(FluxDataDisk):
         #load spectra
         datum = np.loadtxt(location).reshape(1, -1)
         return datum, parameters
-    
-    def scale()
 
 class LoadLagsData(LagsDataDisk):
     """
@@ -565,8 +563,6 @@ class PCADataset(Dataset):
             self.pca = load("scalers/PCA.bin")
             self.data = self.pca.transform(self.data)
             return
-        
-    
     def component_scaler(self):
         if self.scale_bool == True:
             self.PCA_scaler = StandardScaler()
