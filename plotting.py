@@ -1264,9 +1264,9 @@ def main():
     num_pars = range_AGN.shape[0]
     
     theta_lhc = generator.lhc_generation(int(1e2), range_AGN, limited=True)
-    pars_list = [1]
+    pars_list = [1,2]
     negatives = []
-    logged = []
+    logged = [2]
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
