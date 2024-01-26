@@ -84,7 +84,7 @@ saveData(test_flux_data, test_flux_pars,
          "data/locations/","PCA_locs_flux_test.csv")
 """
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
-                           pars_list,negatives,logged)
+                           pars_list,negatives,logged,scale_bool = False)
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
