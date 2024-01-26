@@ -1257,7 +1257,7 @@ def PCA_plotting(wrk_dir):
     
     nn_comps = np.asarray(nn_comps)
     train_comps = np.asarray(train_comps)
-    
+    a = np.asarray(a)
     for i in range(nn_comps.shape[1]):
         plt.scatter(a,train_comps[:,i],label="Training set")
         plt.scatter(a,nn_comps[:,i],label="Emulator")
