@@ -1252,7 +1252,7 @@ def PCA_plotting(wrk_dir):
     for batch, (D,P) in enumerate(testing_dataloader):
         pred = model(P.float()).detach().numpy()
         nn_comps.append(pred)
-        train_comps.append(D)
+        train_comps.append(D.numpy())
     
     nn_comps = np.asarray(nn_comps)
     train_comps = np.asarray(train_comps)
