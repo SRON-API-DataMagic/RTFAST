@@ -1253,6 +1253,7 @@ def PCA_plotting(wrk_dir):
         pred = model(P.float()).detach().numpy()
         nn_comps.append(pred)
         train_comps.append(D.numpy())
+        a.append(P.float().numpy())
     
     nn_comps = np.asarray(nn_comps)
     train_comps = np.asarray(train_comps)
