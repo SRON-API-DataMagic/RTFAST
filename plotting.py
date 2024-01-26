@@ -1255,12 +1255,9 @@ def PCA_plotting(wrk_dir):
         train_comps.append(D.numpy())
         a.append(P.float().numpy())
     
-    nn_comps = np.asarray(nn_comps)
-    train_comps = np.asarray(train_comps)
+    nn_comps = np.squeeze(np.asarray(nn_comps))
+    train_comps = np.squeeze(np.asarray(train_comps))
     a = np.asarray(a)
-    print(a.shape)
-    print(nn_comps.shape)
-    print(train_comps.shape)
     
     for i in range(nn_comps.shape[1]):
         plt.scatter(a,train_comps[:,i],label="Training set")
