@@ -480,9 +480,11 @@ class Parameters():
     
 class PCADataset(Dataset):
     
-    def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11):
+    def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
+                 scale_bool = True):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
+        self.scale_bool = scale_bool
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
         self.pars_list = pars_list
@@ -536,26 +538,40 @@ class PCADataset(Dataset):
         return
         
     def flux_scaler(self):
-        self.flux_scaler = MinMaxScaler()
-        self.data = self.flux_scaler.fit_transform(self.data)
-        dump(self.pca,"scalers/flux_scaler.bin")
+        if self.scale_bool == True:
+            self.flux_scaler = MinMaxScaler()
+            self.data = self.flux_scaler.fit_transform(self.data)
+            dump(self.pca,"scalers/flux_scaler.bin")
+        else:
+            self.flux_scaler = load("scalers/flux_scaler.bin")
+            self.data = self.flux_scaler.transform(self.data)
         return
     
     def PCA(self,comp = 1):
-        print(f"Attempting n_comp = {comp}")
-        self.pca = PCA(n_components = comp)
-        self.pca.fit(self.data)
-        if sum(self.pca.explained_variance_ratio_) < 0.999:
-            self.PCA(comp+1)
+        if self.scale_bool == True:
+            print(f"Attempting n_comp = {comp}")
+            self.pca = PCA(n_components = comp)
+            self.pca.fit(self.data)
+            if sum(self.pca.explained_variance_ratio_) < 0.999:
+                self.PCA(comp+1)
+            else:
+                print("Successfully describes 99.9% of variance")
+                self.data = self.pca.transform(self.data)
+                dump(self.pca,"scalers/PCA.bin")
+            return
         else:
-            print("Successfully describes 99.9% of variance")
+            self.pca = load("scalers/PCA.bin")
             self.data = self.pca.transform(self.data)
-            dump(self.pca,"scalers/PCA.bin")
-        return
+            return
+        
     
     def component_scaler(self):
-        self.PCA_scaler = StandardScaler()
-        self.data = self.PCA_scaler.fit_transform(self.data)
-        dump(self.PCA_scaler,"scalers/PCA_comp_scaler.bin")
-        return
+        if self.scale_bool == True:
+            self.PCA_scaler = StandardScaler()
+            self.data = self.PCA_scaler.fit_transform(self.data)
+            dump(self.PCA_scaler,"scalers/PCA_comp_scaler.bin")
+            return
+        else:
+            self.PCA_scaler = load("scalers/PCA_comp_scaler.bin")
+            self.data = self.PCA_scaler.transform(self.data)
     
