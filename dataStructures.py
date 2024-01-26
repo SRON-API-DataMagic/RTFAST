@@ -541,7 +541,7 @@ class PCADataset(Dataset):
         if self.scale_bool == True:
             self.flux_scaler = MinMaxScaler()
             self.data = self.flux_scaler.fit_transform(self.data)
-            dump(self.pca,"scalers/flux_scaler.bin")
+            dump(self.flux_scaler,"scalers/flux_scaler.bin")
         else:
             self.flux_scaler = load("scalers/flux_scaler.bin")
             self.data = self.flux_scaler.transform(self.data)
