@@ -1175,13 +1175,11 @@ def PCA_plotting(wrk_dir):
     pars_list = [1,2,3,4,13]
     negatives = [3]
     logged = [2,3,4,13]
+    labels = ["a","inc","rin","rout","mass"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False)
     
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
-    
-    testing_dataloader = DataLoader(test_data,batch_size = 1,
-                                    num_workers=1)
     
     model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
     model.eval()
@@ -1189,6 +1187,42 @@ def PCA_plotting(wrk_dir):
     test_pred, test_spec = reconstruct_emulator(test_data, model)
     
     residuals = (test_pred-test_spec)/test_spec
+    
+    for i, par in enumerate(pars_list):
+        sort_ind = np.argsort(test_data.pars[:,par])
+        sort_par = test_data.pars[sort_ind,par]
+        percents = [0,0.25,0.5,0.75]
+        tick_labels = sort_par[int(len(sort_par.pars)*percents)]
+        resids = residuals[sort_ind]
+        zlabel = "Fractional difference between NN model and rtdist"
+        Z_center = -2.5
+        #colormap
+        top = cm.get_cmap('autumn', 128)
+        bottom = cm.get_cmap('winter', 128)
+        middle = cm.get_cmap('summer',128)
+
+        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                               middle(np.linspace(0, 1/2, 128)),
+                            top(np.linspace(2/3, 1, 128))))
+        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+        
+        
+        fig = plt.figure(figsize=(10,10))
+        norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+        c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                    10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
+        plt.yticks(tick_labels,labels=tick_labels)
+        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        plt.xlabel("Energy in keV")
+        plt.ylabel(labels[i])
+        
+        cbar.set_label(zlabel, rotation=270, labelpad=15)
+        fig.tight_layout()
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.savefig(f"heatmaps/{labels[i]}.png")
+        plt.close()
     
     print("Plotting samples")
     i = 0
@@ -1211,7 +1245,6 @@ def PCA_plotting(wrk_dir):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = test_data.data
     pars_comps = test_data.pars
-    labels = ["a","inc","rin","rout","mass"]
     
     for j in range(pars_comps.shape[1]):
         for i in range(nn_comps.shape[1]):
