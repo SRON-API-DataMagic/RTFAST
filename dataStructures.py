@@ -481,10 +481,11 @@ class Parameters():
 class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
-                 scale_bool = True):
+                 scale_bool = True, comps = 1):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
         self.scale_bool = scale_bool
+        self.comps = comps
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
         self.pars_list = pars_list
@@ -532,7 +533,7 @@ class PCADataset(Dataset):
         self.scale()
     
     def scale(self):
-        self.PCA()
+        self.PCA(self.comps)
         self.component_scaler()
         return
     

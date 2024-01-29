@@ -41,7 +41,7 @@ logged = [2,3,4,13]
 
 range_AGN = np.asarray(generator.lhc_trimmed_gen())
 num_pars = range_AGN.shape[0]
-
+"""
 theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
 
 flux_name = "PCA_locs_flux.csv"
@@ -60,7 +60,7 @@ flux = np.asarray(flux)
 print("Checking for spectra below threshold")
 flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                               1e-11)
-""
+
 idxs = np.arange(0,flux.shape[0])
 np.random.shuffle(idxs)
 tra_idx = idxs[:int(0.9*len(idxs))]
@@ -78,9 +78,9 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-
+"""
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
-                           pars_list,negatives,logged,scale_bool = False)
+                           pars_list,negatives,logged,comps=5)
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
