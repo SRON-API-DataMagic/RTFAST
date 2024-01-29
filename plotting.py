@@ -1187,6 +1187,8 @@ def PCA_plotting(wrk_dir):
     test_pred, test_spec = reconstruct_emulator(test_data, model)
     
     residuals = (test_pred-test_spec)/test_spec
+    print(f"Maximum residual is {residuals.max()}")
+    print(f"Average residual is {residuals.mean()}")
     
     for i in range(len(pars_list)):
         sort_ind = np.argsort(test_data.pars[:,i])
