@@ -39,12 +39,45 @@ pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
 
-pars_list = [1,2]
-negatives = []
-logged = [2]
-
-range_AGN = np.asarray(generator.lhc_2())
+range_AGN = np.asarray(generator.lhc_trimmed_gen())
 num_pars = range_AGN.shape[0]
+
+theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
+
+flux_name = "PCA_locs_flux.csv"
+flux_test_name = "PCA_test_locs_flux.csv"
+flux_scaler_name = "PCA_scaler_flux.bin"
+
+#generate physical models of test set
+theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+print("Parallelized model generation")
+
+print("Generating flux models")
+flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+                                for pars in theta_flux)
+flux = np.asarray(flux)
+print("Checking for spectra below threshold")
+flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                              1e-11)
+""
+idxs = np.arange(0,flux.shape[0])
+np.random.shuffle(idxs)
+tra_idx = idxs[:int(0.9*len(idxs))]
+tes_idx = idxs[int(0.9*len(idxs)):]
+
+#Splitting data and parameters into training and testing datasets
+train_flux_data = flux[tra_idx]
+train_flux_pars = theta_flux[tra_idx]
+
+test_flux_data = flux[tes_idx]
+test_flux_pars = theta_flux[tes_idx]
+
+print("Saving flux data")
+saveData(train_flux_data, train_flux_pars, 
+         "data/locations/","PCA_locs_flux.csv")
+saveData(test_flux_data, test_flux_pars, 
+         "data/locations/","PCA_locs_flux_test.csv")
 
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            pars_list,negatives,logged,scale_bool = False)
