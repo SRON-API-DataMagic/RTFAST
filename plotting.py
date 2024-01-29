@@ -1157,7 +1157,6 @@ def PCA_plotting(wrk_dir):
     #plotting of training and validation loss over time
     PCA_train_loss = np.loadtxt("loss/PCA_flux_tr_loss.txt")
     PCA_val_loss = np.loadtxt("loss/PCA_flux_te_loss.txt")
-    egrid = retrieve_egrid(wrk_dir)
     
     plt.plot(PCA_train_loss,label = "Training loss: active learning", c = "blue",
              ls = "-")
