@@ -1193,7 +1193,7 @@ def PCA_plotting(wrk_dir):
     print("Plotting samples")
     i = 0
     for pred, D in zip(test_pred, test_spec):
-        fig, axs = plt.subplot(2)
+        fig, axs = plt.subplots(2)
         axs[0].plot(pred,label="Emulator")
         axs[0].plot(D,label="Rtdist", ls = "--")
         axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
