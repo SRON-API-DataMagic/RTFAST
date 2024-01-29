@@ -1193,12 +1193,15 @@ def PCA_plotting(wrk_dir):
     print("Plotting samples")
     i = 0
     for pred, D in zip(test_pred, test_spec):
-        plt.plot(pred,label="Emulator")
-        plt.plot(D,label="Rtdist", ls = "--")
-        plt.xlabel("Energy channel")
-        plt.ylabel("Flux (photons/cm^2/s/channel)")
-        plt.title("Comparison of PCA emulator output vs expected")
-        plt.legend()
+        fig, axs = plt.subplot(2)
+        axs[0].plot(pred,label="Emulator")
+        axs[0].plot(D,label="Rtdist", ls = "--")
+        axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
+        axs[0].legend()
+        axs[1].plot((pred-D)/D)
+        axs[1].set_ylabel("Percentage residuals")
+        fig.supxlabel("Energy channel")
+        fig.suptitle("Comparison of PCA emulator output vs expected")
         plt.savefig(f"samples/PCA_compare_{i}.png")
         plt.close()
         i += 1
