@@ -1184,6 +1184,15 @@ def PCA_plotting(wrk_dir):
     model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
     model.eval()
     
+    loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
+    
+    for j in range(test_data.pars.shape[1]):
+        plt.scatter(test_data.pars[:,j],loss)
+        plt.xlabel(labels[j])
+        plt.ylabel("Loss")
+        plt.savefig(f"loss/loss_by_{labels[j]}.png")
+        plt.close()
+    
     test_pred, test_spec = reconstruct_emulator(test_data, model)
     
     residuals = np.abs((test_pred-test_spec)/test_spec)
@@ -1272,6 +1281,10 @@ def reconstruct_emulator(dataset,model):
     data = dataset.pca.inverse_transform(data)
     pred, data = 10**pred, 10**data
     return pred, data
+
+def loss_calc(data,model):
+    loss = np.mean((model-data)**2,axis=1)
+    return loss
 
 def main():
     wrk_dir = os.getcwd()
