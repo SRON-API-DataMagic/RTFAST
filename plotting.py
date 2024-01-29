@@ -1191,23 +1191,19 @@ def PCA_plotting(wrk_dir):
     residuals = (test_pred-test_spec)/test_spec
     
     print("Plotting samples")
-    for batch, (D,P) in enumerate(testing_dataloader):
-        pred = model(P).detach().numpy()
-        x = np.arange(0,len(test_data.pca.components_))
-        plt.scatter(x,D,label="True PCA components")
-        plt.scatter(x,pred,label="Emulator PCA components")
-        plt.xlabel("PCA component")
-        plt.ylabel("PCA vector")
+    i = 0
+    for pred, D in zip(test_pred, test_spec):
+        plt.plot(pred,label="Emulator")
+        plt.plot(D,label="Rtdist", ls = "--")
+        plt.xlabel("Energy channel")
+        plt.ylabel("Flux (photons/cm^2/s/channel)")
         plt.title("Comparison of PCA emulator output vs expected")
         plt.legend()
-        plt.savefig(f"samples/PCA_compare_{batch}.png")
+        plt.savefig(f"samples/PCA_compare_{i}.png")
         plt.close()
-        if batch > 6:
+        i += 1
+        if i > 6:
             break
-    
-    nn_comps = []
-    train_comps = []
-    pars_lists = []
     
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = test_data.data
@@ -1235,7 +1231,7 @@ def reconstruct_emulator(dataset,model):
 
 def main():
     wrk_dir = os.getcwd()
-    
+    """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_trimmed_gen())
@@ -1259,7 +1255,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    
+    """
     set_envir_vars(wrk_dir)
     PCA_plotting(wrk_dir)
     
