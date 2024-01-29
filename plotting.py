@@ -1283,7 +1283,7 @@ def reconstruct_emulator(dataset,model):
     return pred, data
 
 def loss_calc(data,model):
-    loss = np.mean((np.asarray(model)-data)**2,axis=1)
+    loss = np.mean((model-np.asarray(data))**2,axis=1)
     return loss
 
 def main():
