@@ -1190,7 +1190,7 @@ def PCA_plotting(wrk_dir):
     print(f"Maximum residual is {residuals.max()}")
     print(f"Average residual is {residuals.mean()}")
     
-    plt.plot(np.mean(residuals,axis=1))
+    plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean percentage residual")
     plt.savefig("samples/mean_errors.png")
