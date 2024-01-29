@@ -1192,6 +1192,7 @@ def PCA_plotting(wrk_dir):
         sort_ind = np.argsort(test_data.pars[:,i])
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
+        ticks = (len(sort_par)*percents).astype(int)
         tick_labels = sort_par[(len(sort_par)*percents).astype(int)]
         resids = residuals[sort_ind]
         zlabel = "Fractional difference between NN model and rtdist"
@@ -1212,7 +1213,7 @@ def PCA_plotting(wrk_dir):
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
-        #plt.yticks(tick_labels,labels=tick_labels)
+        plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
         plt.xlabel("Energy in keV")
         plt.ylabel(labels[i])
