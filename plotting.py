@@ -1172,54 +1172,28 @@ def PCA_plotting(wrk_dir):
     plt.close()
     
     #plotting of emulator vs test data performance
-    pars_list = [1,2]
-    negatives = []
-    logged = [2]
-    
-    pca = load("scalers/PCA.bin")
-    model = network.PCAFluxNetwork(len(pars_list), pca.components_.shape[0])
-    
-    model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
-    model.eval()
-    
-    test_data = PCADataset("data/locations/loc_flux_spin_test.csv",
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
+    test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False)
+    
+    model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
     testing_dataloader = DataLoader(test_data,batch_size = 1,
                                     num_workers=1)
     
+    model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
+    model.eval()
+    
+    test_pred, test_spec = reconstruct_emulator(test_data, model)
+    
+    residuals = (test_pred-test_spec)/test_spec
+    
     print("Plotting samples")
     for batch, (D,P) in enumerate(testing_dataloader):
-        print(batch)
-        pred = model(P.float()).detach().numpy()
-        """
-        D = np.squeeze(D)
-        D[D<=1e-11] = 1e-11
-        da = np.squeeze(D)
-        emu = flux_scaler.inverse_transform(pca.inverse_transform(comp_scaler.inverse_transform(pred)))
-        sca_pred = np.squeeze(10**(emu))
-        #generate neural network prediction and rescale to linear space
-        sca_pred[sca_pred<=1e-11] = 1e-11
-        
-        fig, axs = plt.subplots(2,1,sharex=True)
-        axs[0].plot(egrid,sca_pred,c="blue",label="NN model")
-        axs[0].plot(egrid,da,c="r",label="Truth",lw=1.)
-        axs[0].legend()
-        axs[0].set_ylabel("Flux(photons/cm^2/s")
-        axs[1].scatter(egrid,(da-sca_pred)/da,s=0.5)
-        axs[1].set_ylabel("Residuals")
-        axs[1].set_xlabel("Energy (keV)")
-        axs[1].axhline(y=0.01,ls="--",color="orange")
-        axs[1].axhline(y=-0.01,ls="--",color="orange")
-        axs[1].set_yscale("symlog")
-        plt.tight_layout()
-        plt.savefig(f"samples/PCA_sample_{batch}.png")
-        plt.close()
-        
-        pca_da = pca.transform(flux_scaler.transform(np.log10(da.reshape(1, -1))))
-        pca_da = comp_scaler.transform(pca_da)
-        """
-        x = np.arange(0,len(pca.components_))
+        pred = model(P).detach().numpy()
+        x = np.arange(0,len(test_data.pca.components_))
         plt.scatter(x,D,label="True PCA components")
         plt.scatter(x,pred,label="Emulator PCA components")
         plt.xlabel("PCA component")
@@ -1233,39 +1207,44 @@ def PCA_plotting(wrk_dir):
     
     nn_comps = []
     train_comps = []
-    a = []
+    pars_lists = []
     
-    for batch, (D,P) in enumerate(testing_dataloader):
-        pred = model(P.float()).detach().numpy()
-        nn_comps.append(pred)
-        train_comps.append(D.numpy())
-        a.append(P.float().numpy())
+    nn_comps = model(test_data.pars).detach().numpy()
+    train_comps = test_data.data
+    pars_comps = test_data.pars
+    labels = ["a","inc","rin","rout","mass"]
     
-    nn_comps = np.squeeze(np.asarray(nn_comps))
-    train_comps = np.squeeze(np.asarray(train_comps))
-    a = np.asarray(a)
-    
-    for i in range(nn_comps.shape[1]):
-        plt.scatter(a,train_comps[:,i],label="Training set")
-        plt.scatter(a,nn_comps[:,i],label="Emulator")
-        plt.legend()
-        plt.xlabel("Spin")
-        plt.ylabel(f"PCA component {i+1}")
-        plt.savefig(f"samples/PCA{i+1}_spin.png")
-        plt.close()
-    
+    for j in range(pars_comps.shape[1]):
+        for i in range(nn_comps.shape[1]):
+            plt.scatter(pars_comps[:,i],train_comps[:,i],label="Training set")
+            plt.scatter(pars_comps[:,i],nn_comps[:,i],label="Emulator")
+            plt.legend()
+            plt.xlabel(labels[j])
+            plt.ylabel(f"PCA component {i+1}")
+            plt.savefig(f"samples/PCA{i+1}_{labels[j]}.png")
+            plt.close()
+
+def reconstruct_emulator(dataset,model):
+    pred = model(dataset.pars).detach().numpy()
+    pred = dataset.PCA_scaler.inverse_transform(np.squeeze(pred))
+    data = dataset.PCA_scaler.inverse_transform(dataset.data)
+    pred = dataset.pca.inverse_transform(pred)
+    data = dataset.pca.inverse_transform(data)
+    pred, data = 10**pred, 10**data
+    return pred, data
+
 def main():
     wrk_dir = os.getcwd()
     
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    range_AGN = np.asarray(generator.lhc_2())
+    range_AGN = np.asarray(generator.lhc_trimmed_gen())
     num_pars = range_AGN.shape[0]
     
-    theta_lhc = generator.lhc_generation(int(1e2), range_AGN, limited=True)
-    pars_list = [1,2]
-    negatives = []
-    logged = [2]
+    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
@@ -1277,10 +1256,9 @@ def main():
     print("Checking for spectra below threshold")
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
-    
     print("Saving flux data")
     saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_spin_test.csv")
+             "data/locations/","loc_flux_test.csv")
     
     set_envir_vars(wrk_dir)
     PCA_plotting(wrk_dir)
