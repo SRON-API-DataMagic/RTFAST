@@ -1188,9 +1188,9 @@ def PCA_plotting(wrk_dir):
     
     residuals = (test_pred-test_spec)/test_spec
     
-    for i, par in enumerate(pars_list):
-        sort_ind = np.argsort(test_data.pars[:,par])
-        sort_par = test_data.pars[sort_ind,par]
+    for i in range(len(pars_list)):
+        sort_ind = np.argsort(test_data.pars[:,i])
+        sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75])
         tick_labels = sort_par[(len(sort_par)*percents).astype(int)]
         resids = residuals[sort_ind]
