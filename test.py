@@ -80,7 +80,8 @@ saveData(test_flux_data, test_flux_pars,
          "data/locations/","PCA_locs_flux_test.csv")
 """
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
-                           pars_list,negatives,logged,comps=5)
+                           pars_list,negatives,logged,scale_bool = False,
+                           comps=5)
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
@@ -105,4 +106,5 @@ train = train_flux
 test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
-                   test_dataloader, loss_fn, device, "PCA", "flux", epochs = 2000)
+                   test_dataloader, loss_fn, device, "PCA", "flux", 
+                   epochs = 3000)
