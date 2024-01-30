@@ -100,7 +100,7 @@ model.float()
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 
-loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_)
+loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_,device)
 
 train = train_flux
 test =  test_flux
