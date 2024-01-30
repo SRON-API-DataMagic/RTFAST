@@ -1258,6 +1258,7 @@ def PCA_plotting(wrk_dir):
     plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean percentage residual")
+    plt.tight_layout()
     plt.savefig("samples/mean_errors.png")
     plt.close()
     
