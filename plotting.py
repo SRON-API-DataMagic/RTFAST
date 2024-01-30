@@ -1158,9 +1158,9 @@ def PCA_plotting(wrk_dir):
     PCA_train_loss = np.loadtxt("loss/PCA_flux_tr_loss.txt")
     PCA_val_loss = np.loadtxt("loss/PCA_flux_te_loss.txt")
     
-    plt.plot(PCA_train_loss,label = "Training loss: active learning", c = "blue",
+    plt.plot(PCA_train_loss,label = "Training loss", c = "blue",
              ls = "-")
-    plt.plot(PCA_val_loss,label = "Validation loss: active learning", c = "blue",
+    plt.plot(PCA_val_loss,label = "Validation loss", c = "blue",
              ls = "--")
     
     plt.yscale("log")
@@ -1198,6 +1198,7 @@ def PCA_plotting(wrk_dir):
     residuals = np.abs((test_pred-test_spec)/test_spec)
     print(f"Maximum residual is {residuals.max()}")
     print(f"Average residual is {residuals.mean()}")
+    print(f"{len(residuals[residuals<0.01])/len(residuals)}% of residuals are below 1%")
     
     plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
@@ -1253,6 +1254,7 @@ def PCA_plotting(wrk_dir):
         axs[1].set_ylabel("Percentage residuals")
         fig.supxlabel("Energy channel")
         fig.suptitle("Comparison of PCA emulator output vs expected")
+        plt.tight_layout()
         plt.savefig(f"samples/PCA_compare_{i}.png")
         plt.close()
         i += 1
