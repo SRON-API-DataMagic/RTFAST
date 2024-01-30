@@ -1203,6 +1203,17 @@ def PCA_plotting(wrk_dir):
     
     recon_resid = np.abs((D-test_spec))
     recon_perc = np.abs((D-test_spec)/test_spec)
+    plt.plot(np.mean(recon_resid,axis=0))
+    plt.xlabel("Energy channel")
+    plt.ylabel("Mean absolute error")
+    plt.savefig("samples/PCA_mean_error.png")
+    plt.close()
+    plt.plot(np.mean(recon_perc,axis=0))
+    plt.xlabel("Energy channel")
+    plt.ylabel("Mean fractional error")
+    plt.savefig("samples/PCA_mean_perc.png")
+    plt.close()
+    print(f"average percentage error: {recon_perc.mean()}")
     
     resid_list = ["Absolute","Percentage"]
     for resid,label in zip([recon_resid,recon_perc],resid_list):
