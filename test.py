@@ -106,4 +106,4 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    test_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 3000)
+                   epochs = 1500)
