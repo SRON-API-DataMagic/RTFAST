@@ -1198,7 +1198,7 @@ def PCA_plotting(wrk_dir):
     residuals = np.abs((test_pred-test_spec)/test_spec)
     print(f"Maximum residual is {residuals.max()}")
     print(f"Average residual is {residuals.mean()}")
-    print(f"{len(residuals[residuals<0.01])/len(residuals)}% of residuals are below 1%")
+    print(f"{residuals[residuals<0.01].size/residuals.size}% of residuals are below 1%")
     
     plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
