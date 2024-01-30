@@ -500,8 +500,6 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     te_loss_arr = []
     
     epoch = 0
-    imp_te = 0
-    imp_tr = 0
     
     print("Beginning training")
     while epoch < epochs:
@@ -512,32 +510,10 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         loss = test(test_dataloader, model, loss_fn, device)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
-        tr_bet = (0.9*last_sig_best_tr) - train_loss
-        te_bet = (0.9*last_sig_best_te) - loss
-        if tr_bet > 0 and te_bet > 0:
-            last_sig_best_tr = train_loss
-            last_sig_best_te = loss
-            imp_te = 0
-            imp_tr = 0
-            print(f"New best training loss: {train_loss}")
+        if loss == np.min(te_loss_arr):
             print(f"New best testing loss: {loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
-        elif tr_bet > 0:
-            imp_tr = 0
-            imp_te += 1
-            last_sig_best_tr = train_loss
-            print(f"New best training loss: {train_loss}")
-        elif te_bet > 0:
-            imp_tr += 1
-            imp_te = 0
-            last_sig_best_te = loss
-            print(f"New best testing loss: {loss}")
-            torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
-        else:
-            imp_te += 1
-            imp_tr += 1
         epoch += 1
-        #print("Time for one epoch:",time.time()-time_st)
     
     print("Completed training")
     print("Final best training loss:", last_sig_best_tr)
