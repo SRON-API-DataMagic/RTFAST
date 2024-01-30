@@ -1181,7 +1181,7 @@ def PCA_plotting(wrk_dir):
     
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
-    model.load_state_dict(torch.load("models/PCA_flux_final.pth"))
+    model.load_state_dict(torch.load("models/PCA_flux.pth"))
     model.eval()
     
     loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
@@ -1193,7 +1193,51 @@ def PCA_plotting(wrk_dir):
         plt.savefig(f"loss/loss_by_{labels[j]}.png")
         plt.close()
     
+    data = []
+    for file in test_data.locations:
+        data.append(np.loadtxt(file).reshape(1, -1))
+    D = np.concatenate(data,axis=0)
+    D[D<1e-11] = 1e-11
+    
     test_pred, test_spec = reconstruct_emulator(test_data, model)
+    
+    recon_resid = np.abs((D-test_spec))
+    recon_perc = np.abs((D-test_spec)/test_spec)
+    
+    resid_list = ["Absolute","Percentage"]
+    for resid,label in zip([recon_resid,recon_perc],resid_list):
+        sort_ind = np.argsort(test_data.pars[:,0])
+        sort_par = test_data.pars[sort_ind,0]
+        percents = np.array([0,0.25,0.5,0.75,0.99])
+        ticks = (len(sort_par)*percents).astype(int)
+        tick_labels = sort_par[(len(sort_par)*percents).astype(int)]
+        resids = resid[sort_ind]
+        zlabel = "Difference between PCA reconstruction and rtdist"
+        """
+        Z_center = -2.5
+        #colormap
+        top = cm.get_cmap('autumn', 128)
+        bottom = cm.get_cmap('winter', 128)
+        middle = cm.get_cmap('summer',128)
+    
+        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                               middle(np.linspace(0, 1/2, 128)),
+                            top(np.linspace(2/3, 1, 128))))
+        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+        """
+        fig = plt.figure(figsize=(10,10))
+        ax = plt.pcolormesh(resids)
+        cbar = plt.colorbar(format='%.0e')
+        plt.yticks(ticks,labels=tick_labels)
+        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        plt.xlabel("Energy in keV")
+        plt.ylabel("Spin")
+        
+        cbar.set_label(zlabel, rotation=270, labelpad=15)
+        fig.tight_layout()
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.savefig(f"heatmaps/{label}.png")
+        plt.close()
     
     residuals = np.abs((test_pred-test_spec)/test_spec)
     print(f"Maximum residual is {residuals.max()}")
