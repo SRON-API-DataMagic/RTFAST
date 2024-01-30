@@ -516,8 +516,8 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         epoch += 1
     
     print("Completed training")
-    print("Final best training loss:", last_sig_best_tr)
-    print("Final best testing loss:", last_sig_best_te)
+    print("Final best training loss:", np.min(tr_loss_arr))
+    print("Final best testing loss:", np.min(te_loss_arr))
     torch.save(model.state_dict(), f"models/{name}_{mode}_final.pth")
     print(f"Saved PyTorch Model State to {name}_{mode}_final.pth")
     

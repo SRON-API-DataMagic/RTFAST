@@ -542,7 +542,7 @@ class PCADataset(Dataset):
             print(f"Attempting n_comp = {comp}")
             self.pca = PCA(n_components = comp)
             self.pca.fit(self.data)
-            if sum(self.pca.explained_variance_ratio_) < 0.999:
+            if sum(self.pca.explained_variance_ratio_) < 0.9999:
                 self.PCA(comp+1)
             else:
                 print("Successfully describes 99.9% of variance")

@@ -23,7 +23,7 @@ from torch.distributed import init_process_group, destroy_process_group
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from joblib import Parallel, delayed
 
-from dataStructures import FluxData, LagsData
+from dataStructures import FluxData, LagsData, PCADataset
 
 from processing import renameData
 import generator
@@ -31,7 +31,7 @@ import network
 
 from training import train_flux, train_lags, test_flux, test_lags
 from training import active_training_loop, grid_training_loop
-from training import FluxLoss, LagLoss
+from training import FluxLoss, LagLoss, PCALoss
 from training import QBDC
 from generator import intialize_dataset
 
@@ -67,18 +67,18 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    #labels = ["a","inc","rin","distance","mass"]
+    labels = ["a","inc","rin","distance","mass"]
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
-    """
+    
     pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
-    """
+    
     lhc_idx = 0
-    theta_lhc = generator.lhc_generation(int(1e4), range_AGN)
+    theta_lhc = generator.lhc_generation(int(1e6), range_AGN)
     #if the first time running this code or you want to refresh the dataset, 
     #make this true
     first = True
@@ -144,18 +144,12 @@ def active_learning(device, wrk_dir, name, world_size=1, parallelism=False):
         lags_data = read_data(lags_pars)
         
         #create initial dataset object to create scaler
-        flux_dataloader = FluxData(flux_pars, flux_data,
-                                       scaler, flux_scaler_name,  
-                                       pars_list=pars_list,
-                                       negatives=negatives,logged=logged,
-                                       scaling=True)
-        lags_dataloader = LagsData(lags_pars, lags_data, 
-                                       scaler, lags_scaler_name,
-                                       pars_list=pars_list,
-                                       negatives=negatives,logged=logged,
-                                       scaling=True)
+        flux_dataset = PCADataset(f"data/locations/{flux_name}",
+                                   pars_list,negatives,logged)
+        lags_dataset = PCADataset(f"data/locations/{lags_name}",
+                                   pars_list,negatives,logged)
         
-        loss_fn_flux = FluxLoss(f"{flux_scaler_name}", device)
+        loss_fn_flux = PCALoss()
         loss_fn_lags = LagLoss(f"{lags_scaler_name}", device)
     else:
         name_num = 30
