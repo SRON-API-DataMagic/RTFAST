@@ -69,12 +69,17 @@ def model_NaN_checker(D,P,model):
 
 class PCALoss(nn.Module):
     
-    def __init__(self):
+    def __init__(self,variances):
         super().__init__()
-        self.loss = nn.MSELoss()
+        self.variances = torch.tensor(variances)
     
     def forward(self,pred,target):
-        return self.loss(torch.squeeze(pred),target)
+        return self.weightedMSELoss(torch.squeeze(pred),target)
+    
+    def weightedMSELoss(self,pred,target):
+        loss = (pred-target)**2
+        weighted_loss = torch.mul(loss,self.variances)
+        return torch.mean(weighted_loss)
 
 class FluxLoss(nn.Module):
     """

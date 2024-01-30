@@ -1213,7 +1213,7 @@ def PCA_plotting(wrk_dir):
     plt.ylabel("Mean fractional error")
     plt.savefig("samples/PCA_mean_perc.png")
     plt.close()
-    print(f"average percentage error: {recon_perc.mean()}")
+    print(f"Average percentage error: {recon_perc.mean()}")
     
     resid_list = ["Absolute","Percentage"]
     for resid,label in zip([recon_resid,recon_perc],resid_list):
@@ -1245,7 +1245,7 @@ def PCA_plotting(wrk_dir):
         plt.ylabel("Spin")
         
         cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
+        #fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"heatmaps/{label}.png")
         plt.close()
@@ -1292,7 +1292,7 @@ def PCA_plotting(wrk_dir):
         plt.ylabel(labels[i])
         
         cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
+        #fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"heatmaps/{labels[i]}.png")
         plt.close()
