@@ -279,29 +279,3 @@ class PCAFluxNetwork(nn.Module):
     
     def forward(self,pars):
         return self.LinearStack(pars)
-
-class PCALagsNetwork(nn.Module):
-    """
-    Neural network class that aims to learn the relationship between the PCA
-    components describing the flux spectrum and the original parameters. Made
-    to be light-weight due to the small amount of input and output components.
-    """
-    
-    def __init__(self,num_pars,output_len):
-        super().__init__()
-        self.LinearStack = nn.Sequential(nn.Linear(num_pars, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU())
-        self.OutputAbsolute = nn.Linear(20, output_len)
-        self.OutputSign = nn.Linear(20, output_len)
-    
-    def forward(self,pars):
-        out = self.LinearStack(pars)
-        return self.OutputAbsolute(out), self.OutputSign(out)
