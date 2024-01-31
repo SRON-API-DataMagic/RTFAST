@@ -67,7 +67,7 @@ def active_learning(device, wrk_dir, name):
     logged = [1,2,3,4]
     
     lhc_idx = 0
-    theta_lhc = generator.lhc_generation(int(1e6), range_AGN)
+    theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited = True)
     
     flux_name = f"{name}_locs_flux.csv"
     flux_test_name = f"{name}_test_locs_flux.csv"
