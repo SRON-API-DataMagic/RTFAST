@@ -114,12 +114,12 @@ def active_learning(device, wrk_dir, name):
     
     flux_model = network.PCAFluxNetwork(num_pars,flux_dataset.data.shape[1])
     flux_model.to(device)
-    lags_model = network.PCAFluxNetwork(num_pars,lags_dataset.data.shape[1])
+    lags_model = network.PCALagsNetwork(num_pars,lags_dataset.data.shape[1])
     lags_model.to(device)
     
-    best_flux_model = network.HeavyFluxNetwork(num_pars,flux_dataset.data.shape[1])
+    best_flux_model = network.PCAFluxNetwork(num_pars,flux_dataset.data.shape[1])
     best_flux_model.to(device)
-    best_lags_model = network.HeavyLagsNetwork(num_pars,lags_dataset.data.shape[1])
+    best_lags_model = network.PCALagsNetwork(num_pars,lags_dataset.data.shape[1])
     best_lags_model.to(device)
     
     optimizer_flux = Adam(flux_model.parameters(),lr = 1e-3)
