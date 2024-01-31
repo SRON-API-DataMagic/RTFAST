@@ -3,21 +3,16 @@ This program deals with generating rtdist models with given parameters. For use
 for generating sampels for training the emulator for rtdist.
 """
 import numpy as np
-from scipy.integrate import quad
 import os
-import time
-import matplotlib.pyplot as plt
 from reltrans import _models
 from joblib import Parallel, delayed
 from processing import nanChecker, saveData, mergeSaveData, renameData
 from processing import readAndRemoveNans, spectraChecker
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.decomposition import PCA
 import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
 from sherpa.astro.ui import unpack_rmf
-from joblib import dump, load
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -112,9 +107,6 @@ def Anorm_wrapper(pars):
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
     F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
-    D = 10**pars[:,7]*3.086e21      #distance of objects in cm
-    L = 4*np.pi*D**2*F              #luminosity of corona
-    Ledd = 1.26e38*10**pars[:,13]   #eddington luminosity
     gamma = pars[:,6]               #photon index
     Afe = pars[:,8]
     z = pars[:,5]
@@ -162,7 +154,6 @@ def lhc_filter(lhc):
         latin hypercube with unphysical parameter sets removed..
 
     """
-    old_size = lhc.shape[0]
     #bad sets indexes all parameter sets that don't fit the filter criteria
     #removes parameter sets that have a ph0ton index higher than 3 AND a iron
     #solar abundance above 6 AND a electron density in the disk of higher than
@@ -533,38 +524,6 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     saveData(test_lags, test_lags_pars, 
              "data/locations/",f"loc_{fname}_lags_test.csv")
     
-    scaler = MinMaxScaler()
-    
-    pars_list = [1,2,3,7,13]
-    negatives = [2]
-    logged = [1,2,3,4]
-    
-    def read_data(csv):
-        locations = csv.iloc[:,-1]
-        data = []
-        for location in locations:
-            datum = np.loadtxt(location).reshape(1, -1)
-            data.append(datum)
-        data = np.asarray(data)
-        return data
-    
-    flux_pars = pd.read_csv(f"data/locations/loc_{fname}_flux.csv")
-    flux_data = read_data(flux_pars)
-    
-    lags_pars = pd.read_csv(f"data/locations/loc_{fname}_lags.csv")
-    lags_data = read_data(lags_pars)
-    
-    flux_dataloader = FluxData(flux_pars, flux_data,
-                                   scaler,f"{fname}_flux_scaler.bin",
-                                   pars_list=pars_list,
-                                   negatives=negatives, logged=logged, 
-                                   scaling=True)
-    lags_dataloader = LagsData(lags_pars, lags_data,
-                                   scaler,f"{fname}_lags_scaler.bin", 
-                                   pars_list=pars_list,
-                                   negatives=negatives, logged=logged, 
-                                   scaling=True)
-    
     return   
 
 def generate_flux_dists(AGN_name):
@@ -743,14 +702,13 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
-    """
-    pars_list = [1,2,3,7,13]
-    negatives = [2]
-    logged = [1,2,3,4]
-    """
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,19]
+    
+    pars_list = [1,2,3,7,13]
+    negatives = [2]
+    logged = [1,2,3,4]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)

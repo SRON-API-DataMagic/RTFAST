@@ -481,10 +481,13 @@ class Parameters():
 class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
-                 scale_bool = True, comps = 1):
+                 scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
+                 comp_loc="scalers/comp_flux.bin"):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
         self.scale_bool = scale_bool
+        self.PCA_loc = PCA_loc
+        self.comp_loc = comp_loc
         self.comps = comps
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
@@ -533,11 +536,11 @@ class PCADataset(Dataset):
         self.scale()
     
     def scale(self):
-        self.PCA(self.comps)
-        self.component_scaler()
+        self.PCA(self.PCA_loc,self.comps)
+        self.component_scaler(self.comp_loc)
         return
     
-    def PCA(self,comp = 1):
+    def PCA(self,scaler_loc,comp = 1):
         if self.scale_bool == True:
             print(f"Attempting n_comp = {comp}")
             self.pca = PCA(n_components = comp)
@@ -548,18 +551,36 @@ class PCADataset(Dataset):
             else:
                 print("Successfully describes 99.9% of variance")
                 self.data = self.pca.transform(self.data)
-                dump(self.pca,"scalers/PCA.bin")
+                dump(self.pca,scaler_loc)
             return
         else:
-            self.pca = load("scalers/PCA.bin")
+            self.pca = load(scaler_loc)
             self.data = self.pca.transform(self.data)
             return
-    def component_scaler(self):
+    def component_scaler(self,scaler_loc):
         if self.scale_bool == True:
             self.PCA_scaler = StandardScaler()
             self.data = self.PCA_scaler.fit_transform(self.data)
-            dump(self.PCA_scaler,"scalers/PCA_comp_scaler.bin")
+            dump(self.PCA_scaler,scaler_loc)
             return
         else:
-            self.PCA_scaler = load("scalers/PCA_comp_scaler.bin")
+            self.PCA_scaler = load(scaler_loc)
             self.data = self.PCA_scaler.transform(self.data)
+
+class PCALagsDataset(PCADataset):
+    
+    def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-6,
+                 scale_bool = True, comps = 1,PCA_loc="scalers/PCA_lags.bin",
+                 comp_loc="scalers/comp_lags.bin"):
+        super().__init__(data_loc,pars_list,negatives,logged,threshold,
+                     scale_bool, comps, PCA_loc, comp_loc)
+    
+    def data_load(self):
+        data = []
+        for file in self.locations:
+            data.append(np.loadtxt(file).reshape(1, -1))
+        D = np.concatenate(data,axis=0)
+        D[(D<self.threshold)&(D>0)] = self.threshold
+        D[(D>-self.threshold)&(D<0)] = -self.threshold
+        self.data = D
+        self.scale()

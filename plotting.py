@@ -1299,8 +1299,14 @@ def PCA_plotting(wrk_dir):
         plt.close()
     
     print("Plotting samples")
+    data = []
+    for file in test_data.locations:
+        data.append(np.loadtxt(file).reshape(1, -1))
+    data = np.concatenate(data,axis=0)
+    data[data<test_data.threshold] = test_data.threshold
+    
     i = 0
-    for pred, D in zip(test_pred, test_spec):
+    for pred, D in zip(test_pred, data):
         fig, axs = plt.subplots(2)
         axs[0].plot(pred,label="Emulator")
         axs[0].plot(D,label="Rtdist", ls = "--")
