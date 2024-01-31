@@ -469,7 +469,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
                             theta_init.append([a,i,r_i,r,m])
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
-    pars_list = [1,2,3,7,13]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     #generate physical models of test set
@@ -607,7 +607,7 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                                flux_name, flux_test_name, lags_name,
                                lags_test_name):
     # compute the physical model for these thetas
-    pars_list = [1,2,3,7,13]
+    pars_list = [1,2,3,4,13]
     negatives = [2]
     logged = [1,2,3,4]
     #generate physical models of test set
