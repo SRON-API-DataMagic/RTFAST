@@ -291,8 +291,10 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
     for i, spec in enumerate(flux):
         if np.any(spec > threshold) != True:
             indexes.append(i)
+        elif np.any(np.isnan(spec)) == True:
+            indexes.append(i)
     if indexes != []:
-        print(f"A total of {len(indexes)} spectra were under the flux thresholds.")
+        print(f"A total of {len(indexes)} spectra were ineligible.")
     else:
         print("There were no uneligible spectra.")
     index = np.unique(indexes).tolist()
