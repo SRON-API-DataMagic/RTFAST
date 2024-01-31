@@ -319,48 +319,6 @@ def lhc_AGN():
     
     return range_all
 
-def lhc_explor():
-    """
-    Generates valid ranges of parameters of AGN to be trained on. This is
-    a function purely used for exploring parameter ranges and generally not
-    intended for use in training of the emulator.
-    
-    Returns
-    -------
-    range_all : list
-        gives parameter ranges for each of the given parameters listed. Used 
-        in the latin hypercube sampling
-    
-    """
-    height_range = [np.log10(1.5),np.log10(100)]
-    spin_range = [0,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(100)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,0.1]
-    Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e6),np.log10(1e10)]
-    Afe_range = [np.log10(0.5),np.log10(10)]
-    logNe_range = [15,20]
-    kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1e1)]
-    boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(1e4),np.log10(1e8)]
-    honr_range = [0,0.176]
-    b1_range = [0,2]
-    b2_range = [-4,4]
-    phiAB_range = [-3.14,3.14]
-    g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-10),np.log10(1e4)]
-    
-    
-    range_all = [height_range,spin_range,inclination_range,r_inner_range,
-                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,nH_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
-    
-    return range_all
-
 def lhc_trimmed_gen():
     """
     Limited form of lhc_range_gen that returns ranges for only a limited amount
@@ -535,7 +493,7 @@ def generate_flux_dists(AGN_name):
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
               "Anorm"]
-    range_AGN = np.asarray(lhc_explor())
+    range_AGN = np.asarray(lhc_AGN())
     
     #pre generate Latin Hypercube samples.
     theta_agn = lhc_generation(int(1e3), range_AGN)
@@ -608,8 +566,8 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                                lags_test_name):
     # compute the physical model for these thetas
     pars_list = [1,2,3,4,13]
-    negatives = [2]
-    logged = [1,2,3,4]
+    negatives = [3]
+    logged = [2,3,4,13]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_query, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_query, 6, pars_list, negatives, logged)
