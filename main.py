@@ -195,7 +195,7 @@ def active_learning(device, wrk_dir, name):
                                                               last_sig_lags_te, last_sig_lags_tr, 
                                                               active_loop_num, loop_lags_epochs, 
                                                               best_lags_model, 
-                                                              train_lags, test_lags,
+                                                              train_flux, test_flux,
                                                               mode = "lags")
             #iterate loop number by 1
             active_loop_num += 1

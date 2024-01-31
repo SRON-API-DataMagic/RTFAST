@@ -298,7 +298,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device):
         optimizer.step()
         loss_b = loss.detach().item()
         if batch % 5 == 0:
-            current = (batch*P.shape[0] + 1)
+            current = ((batch+1)*P.shape[0])
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss_b
     
@@ -347,7 +347,7 @@ def train_lags(dataloader, model, optimizer, loss_fn, device):
         optimizer.step()
         loss_b = loss.detach().item()
         if batch % 5 == 0:
-            current = (batch*P.shape[0] + 1)
+            current = ((batch+1)*P.shape[0])
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss_b
         
@@ -567,8 +567,8 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     for j in tqdm(range(divider),desc="Sample dropout loops"):
         theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
         for i in range(sample_dropout):
-            pred_flux = flux_model(torch.DoubleTensor(theta_query_small).to(device))
-            pred_lags = lags_model(torch.DoubleTensor(theta_query_small).to(device))
+            pred_flux = flux_model(torch.FloatTensor(theta_query_small).to(device))
+            pred_lags = lags_model(torch.FloatTensor(theta_query_small).to(device))
             pred_query_flux[i] = pred_flux.detach().cpu().numpy()
             pred_query_lags[i] = pred_lags.detach().cpu().numpy()
         # find uncertainty (as measured by relative variance)
