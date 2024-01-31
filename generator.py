@@ -428,8 +428,8 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     theta_init = np.asarray(theta_init)
     #convert to rtdist model compatible parameters
     pars_list = [1,2,3,4,13]
-    negatives = [2]
-    logged = [1,2,3,4]
+    negatives = [3]
+    logged = [2,3,4,13]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
@@ -498,9 +498,9 @@ def generate_flux_dists(AGN_name):
     #pre generate Latin Hypercube samples.
     theta_agn = lhc_generation(int(1e3), range_AGN)
     
-    pars_list = [1,2,3,7,13]
-    negatives = [2]
-    logged = [1,2,3,4]
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
     #generate physical models of test set
     iter_agn = nn_pars_to_rtdist(theta_agn, 0, pars_list, negatives, logged)
     
@@ -538,9 +538,9 @@ def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
     range_all = np.asarray(lhc_gen())
     theta_lhc = lhc_generation(size, range_all,limited=limited)
     
-    pars_list = [1,2,3,7,13]
-    negatives = [2]
-    logged = [1,2,3,4]
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
     
     pars_list = [1]
     negatives = []
