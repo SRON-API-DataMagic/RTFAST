@@ -702,13 +702,11 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
     lhc_idx = init_data_size
     #generating a random set of parameters and corresponding data
     theta_init = theta_lhc[:init_data_size]
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,19]
     
-    pars_list = [1,2,3,7,13]
-    negatives = [2]
-    logged = [1,2,3,4]
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
+    
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
     theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
