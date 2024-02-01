@@ -414,7 +414,7 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     spin = np.linspace(0.1,0.998,size)
     inc = np.linspace(np.log10(1),np.log10(80),size)
     r_in = np.linspace(np.log10(1),np.log10(400),size)
-    r_outer_range = [np.log10(400),np.log10(1e5)]
+    r_outer_range = np.linspace(np.log10(400),np.log10(1e5),size)
     mass = np.linspace(np.log10(1e4),np.log10(1e11),size)
     
     #create parameter grid

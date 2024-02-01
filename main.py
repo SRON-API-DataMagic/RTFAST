@@ -298,10 +298,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             
             loss_fn = PCALoss(training_data.pca.explained_variance_ratio_,device)
             
-            if mode == "flux":
-                model = network.PCAFluxNetwork(5,training_data.data.shape[1])
-            elif mode == "lags":
-                model = network.PCALagsNetwork(5,training_data.data.shape[1])
+            model = network.PCAFluxNetwork(5,training_data.data.shape[1])
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 0.001)
             

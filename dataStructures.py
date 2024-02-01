@@ -576,11 +576,22 @@ class PCALagsDataset(PCADataset):
                      scale_bool, comps, PCA_loc, comp_loc)
     
     def data_load(self):
+        """
+        Loads data, takes the logarithm and makes the break between the postive
+        and negative threshold continuous for PCA compatible space.
+
+        Returns
+        -------
+        None.
+
+        """
         data = []
         for file in self.locations:
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[(D<self.threshold)&(D>0)] = self.threshold
         D[(D>-self.threshold)&(D<0)] = -self.threshold
+        D[D<0] = -(np.log10(np.abs(D[D<0]))+6)
+        D[D>0] = np.log10(np.abs(D[D>0]))+6
         self.data = D
         self.scale()
