@@ -499,9 +499,6 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        test_dataloader, loss_fn, device, name, mode, 
                        epochs = 400):
-    
-    last_sig_best_tr = 1e7 #last significant best training loss (set large initially)
-    last_sig_best_te = 1e7 #last significant best testing loss (set large initially)
     tr_loss_arr = []
     te_loss_arr = []
     
