@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import tqdm
 from sklearn.decomposition import PCA
 
 class FluxData(Dataset):
@@ -527,7 +528,7 @@ class PCADataset(Dataset):
     
     def data_load(self):
         data = []
-        for file in self.locations:
+        for file in tqdm.tqdm(self.locations):
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[D<self.threshold] = self.threshold
@@ -586,7 +587,7 @@ class PCALagsDataset(PCADataset):
 
         """
         data = []
-        for file in self.locations:
+        for file in tqdm.tqdm(self.locations):
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[(D<self.threshold)&(D>0)] = self.threshold
