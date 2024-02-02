@@ -273,12 +273,8 @@ def grid_learning(device,wrk_dir,data_gen = False):
         for mode in modes:
             print(f"Training on {mode}")
             if mode == "flux":
-                train = train_flux
-                test = test_flux
                 dataType = PCADataset
             elif mode == "lags":
-                train = train_flux
-                test = test_flux
                 dataType = PCALagsDataset
             training_data = dataType(f"data/locations/loc_{fname}_{mode}.csv",
                                      pars_list,negatives,logged,
@@ -302,7 +298,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             model.to(device)
             optimizer = Adam(model.parameters(),lr = 1e-3)
             
-            grid_training_loop(model, optimizer, train, test, 
+            grid_training_loop(model, optimizer, train_flux, test_flux, 
                                    train_dataloader, test_dataloader,
                                    loss_fn, device,
                                    fname, mode, epochs = 1000)

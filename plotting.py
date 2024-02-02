@@ -1318,7 +1318,6 @@ def PCA_plotting(wrk_dir,name):
         axs[1].set_ylabel("Percentage residuals")
         fig.supxlabel("Energy channel")
         fig.suptitle("Comparison of PCA emulator output vs expected")
-        plt.tight_layout()
         plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
         plt.close()
         i += 1
@@ -1380,8 +1379,8 @@ def main():
              "data/locations/","loc_flux_test.csv")
     """
     set_envir_vars(wrk_dir)
-    names = ["grid_5_flux","grid_6_flux","grid_7_flux","grid_8_flux",
-             "grid_9_flux","grid_10_flux"]
+    names = ["PCA_active_flux","PCA_active_lags","grid_5_flux","grid_6_flux",
+             "grid_7_flux","grid_8_flux","grid_9_flux","grid_10_flux"]
     for name in names:
         PCA_plotting(wrk_dir,name)
     
