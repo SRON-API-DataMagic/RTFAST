@@ -1201,10 +1201,12 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    test_pred, test_spec = reconstruct_emulator(test_data, model)
+    recon_D = 10**test_data.pca.inverse_transform(test_data.pca.transform(np.log10(D)))
     
-    recon_resid = np.abs((D-test_spec))
-    recon_perc = np.abs((D-test_spec)/test_spec)
+    test_pred = reconstruct_emulator(test_data, model)
+    
+    recon_resid = np.abs((D-recon_D))
+    recon_perc = np.abs((D-recon_D)/D)
     plt.plot(np.mean(recon_resid,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean absolute error")
@@ -1215,7 +1217,7 @@ def PCA_plotting(wrk_dir,name):
     plt.ylabel("Mean fractional error")
     plt.savefig(f"samples/{name}_PCA_mean_perc.png")
     plt.close()
-    print(f"Average percentage error: {recon_perc.mean()}")
+    print(f"Average percentage error: {recon_perc.mean()*100}%")
     
     resid_list = ["Absolute","Percentage"]
     for resid,label in zip([recon_resid,recon_perc],resid_list):
@@ -1252,10 +1254,10 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"heatmaps/{name}_{label}.png")
         plt.close()
     
-    residuals = np.abs((test_pred-test_spec)/test_spec)
-    print(f"Maximum residual is {residuals.max()}")
-    print(f"Average residual is {residuals.mean()}")
-    print(f"{residuals[residuals<0.01].size/residuals.size}% of residuals are below 1%")
+    residuals = np.abs((test_pred-D)/D)
+    print(f"Maximum residual is {residuals.max()*100}%")
+    print(f"Average residual is {residuals.mean()*100}%")
+    print(f"{(residuals[residuals<0.01].size/residuals.size)*100}% of residuals are below 1%")
     
     plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
@@ -1341,11 +1343,9 @@ def PCA_plotting(wrk_dir,name):
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
     pred = dataset.PCA_scaler.inverse_transform(np.squeeze(pred))
-    data = dataset.PCA_scaler.inverse_transform(dataset.data)
     pred = dataset.pca.inverse_transform(pred)
-    data = dataset.pca.inverse_transform(data)
-    pred, data = 10**pred, 10**data
-    return pred, data
+    pred = 10**pred
+    return pred
 
 def loss_calc(data,model):
     loss = np.mean((model-np.asarray(data))**2,axis=1)
