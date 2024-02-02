@@ -300,7 +300,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             
             model = network.PCAFluxNetwork(5,training_data.data.shape[1])
             model.to(device)
-            optimizer = Adam(model.parameters(),lr = 0.001)
+            optimizer = Adam(model.parameters(),lr = 1e-3)
             
             grid_training_loop(model, optimizer, train, test, 
                                    train_dataloader, test_dataloader,
