@@ -550,7 +550,7 @@ class PCADataset(Dataset):
                 print(f"Currently achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}%")
                 self.PCA(scaler_loc,comp+1)
             else:
-                print("Successfully describes 99.9% of variance")
+                print("Successfully describes 99.99% of variance")
                 self.data = self.pca.transform(self.data)
                 dump(self.pca,scaler_loc)
             return
