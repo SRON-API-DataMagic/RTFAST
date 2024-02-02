@@ -1139,7 +1139,7 @@ def active_v_grid(wrk_dir, egrid, lags_egrid):
     loss_epochs_plot("loss/", "flux")
     loss_epochs_plot("loss/", "lags")
     
-def PCA_plotting(wrk_dir):
+def PCA_plotting(wrk_dir,name):
     """
     Function dedicated to plotting PCA neural network model outputs. Only plots
     things necessary for PCA model diagnosis
@@ -1155,8 +1155,8 @@ def PCA_plotting(wrk_dir):
 
     """
     #plotting of training and validation loss over time
-    PCA_train_loss = np.loadtxt("loss/PCA_flux_tr_loss.txt")
-    PCA_val_loss = np.loadtxt("loss/PCA_flux_te_loss.txt")
+    PCA_train_loss = np.loadtxt(f"loss/{name}_tr_loss.txt")
+    PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
     
     plt.plot(PCA_train_loss,label = "Training loss", c = "blue",
              ls = "-")
@@ -1166,9 +1166,9 @@ def PCA_plotting(wrk_dir):
     plt.yscale("log")
     plt.xlabel("Training epochs")
     plt.ylabel("Loss")
-    plt.title(f"Loss by epoch")
+    plt.title(f"Loss by epoch for {name}")
     plt.legend()
-    plt.savefig(f"loss/loss_PCA.png")
+    plt.savefig(f"loss/loss_{name}.png")
     plt.close()
     
     #plotting of emulator vs test data performance
@@ -1177,11 +1177,13 @@ def PCA_plotting(wrk_dir):
     logged = [2,3,4,13]
     labels = ["a","inc","rin","rout","mass"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
-                               pars_list,negatives,logged,scale_bool = False)
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc=f"scalers/PCA_{name}=.bin",
+                               comp_loc=f"scalers/comp_{name}.bin")
     
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
-    model.load_state_dict(torch.load("models/PCA_flux.pth"))
+    model.load_state_dict(torch.load(f"models/{name}.pth"))
     model.eval()
     
     loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
@@ -1190,7 +1192,7 @@ def PCA_plotting(wrk_dir):
         plt.scatter(test_data.pars[:,j],loss)
         plt.xlabel(labels[j])
         plt.ylabel("Loss")
-        plt.savefig(f"loss/loss_by_{labels[j]}.png")
+        plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
         plt.close()
     
     data = []
@@ -1206,12 +1208,12 @@ def PCA_plotting(wrk_dir):
     plt.plot(np.mean(recon_resid,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean absolute error")
-    plt.savefig("samples/PCA_mean_error.png")
+    plt.savefig(f"samples/{name}_PCA_mean_error.png")
     plt.close()
     plt.plot(np.mean(recon_perc,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean fractional error")
-    plt.savefig("samples/PCA_mean_perc.png")
+    plt.savefig(f"samples/{name}_PCA_mean_perc.png")
     plt.close()
     print(f"Average percentage error: {recon_perc.mean()}")
     
@@ -1247,7 +1249,7 @@ def PCA_plotting(wrk_dir):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         #fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{label}.png")
+        plt.savefig(f"heatmaps/{name}_{label}.png")
         plt.close()
     
     residuals = np.abs((test_pred-test_spec)/test_spec)
@@ -1259,7 +1261,7 @@ def PCA_plotting(wrk_dir):
     plt.xlabel("Energy channel")
     plt.ylabel("Mean percentage residual")
     plt.tight_layout()
-    plt.savefig("samples/mean_errors.png")
+    plt.savefig(f"samples/{name}_mean_errors.png")
     plt.close()
     
     for i in range(len(pars_list)):
@@ -1295,7 +1297,7 @@ def PCA_plotting(wrk_dir):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         #fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{labels[i]}.png")
+        plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
         plt.close()
     
     print("Plotting samples")
@@ -1317,7 +1319,7 @@ def PCA_plotting(wrk_dir):
         fig.supxlabel("Energy channel")
         fig.suptitle("Comparison of PCA emulator output vs expected")
         plt.tight_layout()
-        plt.savefig(f"samples/PCA_compare_{i}.png")
+        plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
         plt.close()
         i += 1
         if i > 6:
@@ -1334,7 +1336,7 @@ def PCA_plotting(wrk_dir):
             plt.legend()
             plt.xlabel(labels[j])
             plt.ylabel(f"PCA component {i+1}")
-            plt.savefig(f"samples/PCA{i+1}_{labels[j]}.png")
+            plt.savefig(f"samples/{name}_PCA{i+1}_{labels[j]}.png")
             plt.close()
 
 def reconstruct_emulator(dataset,model):
@@ -1378,7 +1380,9 @@ def main():
              "data/locations/","loc_flux_test.csv")
     """
     set_envir_vars(wrk_dir)
-    PCA_plotting(wrk_dir)
+    names = ["grid_5","grid_6","grid_7","grid_8","grid_9","grid_10"]
+    for name in names:
+        PCA_plotting(wrk_dir,name)
     
     
 if __name__ == "__main__":
