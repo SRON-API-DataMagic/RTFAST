@@ -436,38 +436,28 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
-        flux_data_init = parallel(delayed(rtdist_flux)(pars, egrid)
+        flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
+        flux = np.array(flux)
+        flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                      1e-11)
         lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
                                         for pars in theta_lags)
-    flux_data_init = np.array(flux_data_init)
-    lags_data_init = np.array(lags_data_init)
+        lags = np.array(lags_data_init)
     
-    indexes = nanChecker(flux_data_init, theta_flux)
-    flux_data_init = np.delete(flux_data_init,indexes, axis=0)
-    lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-    theta_flux = np.delete(theta_flux,indexes, axis=0)
-    theta_lags = np.delete(theta_lags,indexes, axis=0)
-    
-    indexes = nanChecker(lags_data_init, theta_lags)
-    flux_data_init = np.delete(flux_data_init,indexes, axis=0)
-    lags_data_init = np.delete(lags_data_init,indexes, axis=0)
-    theta_flux = np.delete(theta_flux,indexes, axis=0)
-    theta_lags = np.delete(theta_lags,indexes, axis=0)
-    
-    idxs = np.arange(0,flux_data_init.shape[0])
+    idxs = np.arange(0,flux.shape[0])
     np.random.shuffle(idxs)
     tra_idx = idxs[:int(0.9*len(idxs))]
     tes_idx = idxs[int(0.9*len(idxs)):]
     
     #Splitting data and parameters into training and testing datasets
-    train_flux = flux_data_init[tra_idx]
-    train_lags = lags_data_init[tra_idx]
+    train_flux = flux[tra_idx]
+    train_lags = lags[tra_idx]
     train_flux_pars = theta_flux[tra_idx]
     train_lags_pars = theta_lags[tra_idx]
     
-    test_flux = flux_data_init[tes_idx]
-    test_lags = lags_data_init[tes_idx]
+    test_flux = flux[tes_idx]
+    test_lags = lags[tes_idx]
     test_flux_pars = theta_flux[tes_idx]
     test_lags_pars = theta_lags[tes_idx]
     
@@ -482,7 +472,12 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     saveData(test_lags, test_lags_pars, 
              "data/locations/",f"loc_{fname}_lags_test.csv")
     
-    return   
+    print("Performing data cleanup")
+    readAndRemoveNans(f"data/locations/loc_{fname}_flux.csv", 
+                      f"data/locations/loc_{fname}_lags.csv")
+    readAndRemoveNans(f"data/locations/loc_{fname}_flux_test.csv", 
+                      f"data/locations/loc_{fname}_lags_test.csv")
+    return
 
 def generate_flux_dists(AGN_name):
     wrk_dir = os.getcwd()
