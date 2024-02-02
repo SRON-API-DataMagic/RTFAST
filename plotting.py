@@ -1380,7 +1380,8 @@ def main():
              "data/locations/","loc_flux_test.csv")
     """
     set_envir_vars(wrk_dir)
-    names = ["grid_5","grid_6","grid_7","grid_8","grid_9","grid_10"]
+    names = ["grid_5_flux","grid_6_flux","grid_7_flux","grid_8_flux",
+             "grid_9_flux","grid_10_flux"]
     for name in names:
         PCA_plotting(wrk_dir,name)
     
