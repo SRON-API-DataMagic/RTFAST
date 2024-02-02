@@ -71,13 +71,13 @@ def active_learning(device, wrk_dir, name):
     
     flux_name = f"{name}_locs_flux.csv"
     flux_test_name = f"{name}_test_locs_flux.csv"
-    flux_PCA = f"scalers/{name}_PCA_flux.bin"
-    flux_comp = f"scalers/{name}_comp_flux.bin"
+    flux_PCA = f"scalers/PCA_{name}_flux.bin"
+    flux_comp = f"scalers/comp_{name}_flux.bin"
     
     lags_name = f"{name}_locs_lags.csv"
     lags_test_name = f"{name}_test_locs_lags.csv"
-    lags_PCA = f"scalers/{name}_PCA_lags.bin"
-    lags_comp = f"scalers/{name}_comp_lags.bin"
+    lags_PCA = f"scalers/PCA_{name}_lags.bin"
+    lags_comp = f"scalers/comp_{name}_lags.bin"
     
     num_pars = range_AGN.shape[0]
     
