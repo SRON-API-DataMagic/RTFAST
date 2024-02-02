@@ -277,8 +277,8 @@ def grid_learning(device,wrk_dir,data_gen = False):
                 test = test_flux
                 dataType = PCADataset
             elif mode == "lags":
-                train = train_lags
-                test = test_lags
+                train = train_flux
+                test = test_flux
                 dataType = PCALagsDataset
             training_data = dataType(f"data/locations/loc_{fname}_{mode}.csv",
                                      pars_list,negatives,logged,
@@ -336,8 +336,8 @@ def main():
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    active_learning(device,wrk_dir,"PCA_active")
-    grid_learning(device,wrk_dir,data_gen=True)
+    #active_learning(device,wrk_dir,"PCA_active")
+    grid_learning(device,wrk_dir,data_gen=False)
     
 if __name__ == "__main__":
     main()
