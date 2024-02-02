@@ -1178,7 +1178,7 @@ def PCA_plotting(wrk_dir,name):
     labels = ["a","inc","rin","rout","mass"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc=f"scalers/PCA_{name}=.bin",
+                               PCA_loc=f"scalers/PCA_{name}.bin",
                                comp_loc=f"scalers/comp_{name}.bin")
     
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
