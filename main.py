@@ -332,7 +332,7 @@ def main():
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    #active_learning(device,wrk_dir,"PCA_active")
+    active_learning(device,wrk_dir,"PCA_active")
     grid_learning(device,wrk_dir,data_gen=False)
     
 if __name__ == "__main__":
