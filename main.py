@@ -82,7 +82,7 @@ def active_learning(device, wrk_dir, name):
     num_pars = range_AGN.shape[0]
     
     lhc_idx = intialize_dataset(theta_lhc, egrid, lags_egrid, flux_name, 
-                                lags_name, trimmed = True)
+                                lags_name)
     
     last_sig_flux_tr = 1e7 #last significant best training loss (set large initially)
     last_sig_flux_te = 1e7 #last significant best testing loss (set large initially)

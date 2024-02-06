@@ -649,7 +649,7 @@ def lhc_generation(size,range_all, limited = False):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
-def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=False):
+def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     print("Generating first time dataset")
     init_data_size = 5000
     lhc_idx = init_data_size
@@ -670,8 +670,10 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name,trimmed=Fal
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
+    print({f"There are spectra below threshold: {np.any(flux>1e-11)}"})
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
+    print({f"There are spectra below threshold: {np.any(flux>1e-11)}"})
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/",flux_name)
