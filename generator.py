@@ -670,10 +670,8 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
-    print({f"There are spectra below threshold: {np.all(np.any(flux>1e-11,axis=1))}"})
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
-    print({f"There are spectra below threshold: {np.all(np.any(flux>1e-11,axis=1))}"})
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/",flux_name)
