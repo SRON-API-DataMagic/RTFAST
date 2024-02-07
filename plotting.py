@@ -1220,9 +1220,9 @@ def PCA_plotting(wrk_dir,name):
     print(f"Average percentage error: {recon_perc.mean()*100}%")
     
     resid_list = ["Absolute","Percentage"]
-    for resid,label in zip([recon_resid,recon_perc],resid_list):
-        sort_ind = np.argsort(test_data.pars[:,0])
-        sort_par = test_data.pars[sort_ind,0]
+    for i, (resid,label) in enumerate(zip([recon_resid,recon_perc],resid_list)):
+        sort_ind = np.argsort(test_data.pars[:,i])
+        sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
         tick_labels = sort_par[(len(sort_par)*percents).astype(int)]
@@ -1246,7 +1246,7 @@ def PCA_plotting(wrk_dir,name):
         plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
         plt.xlabel("Energy in keV")
-        plt.ylabel("Spin")
+        plt.ylabel(f"{label}")
         
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         #fig.tight_layout()
@@ -1364,7 +1364,7 @@ def main():
     
     for key in environ_vars:
         os.environ[key] = environ_vars[key]
-    
+    """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_trimmed_gen())
@@ -1388,11 +1388,12 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    
+    """
     set_envir_vars(wrk_dir)
     names = ["PCA_active_flux","grid_5_flux","grid_6_flux",
              "grid_7_flux","grid_8_flux","grid_9_flux","grid_10_flux"]
     for name in names:
+        print(name)
         PCA_plotting(wrk_dir,name)
     
     
