@@ -1225,7 +1225,7 @@ def PCA_plotting(wrk_dir,name):
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = sort_par[(len(sort_par)*percents).astype(int)].astype(str)
+        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
         resids = resid[sort_ind]
         zlabel = "Difference between PCA reconstruction and rtdist"
         """
@@ -1271,7 +1271,7 @@ def PCA_plotting(wrk_dir,name):
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = sort_par[(len(sort_par)*percents).astype(int)].astype(str)
+        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
         resids = residuals[sort_ind]
         zlabel = "Fractional difference between NN model and rtdist"
         Z_center = -2.5
