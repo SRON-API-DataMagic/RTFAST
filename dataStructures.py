@@ -563,10 +563,10 @@ class PCADataset(Dataset):
             self.PCA_scaler = StandardScaler()
             self.data = self.PCA_scaler.fit_transform(self.data)
             dump(self.PCA_scaler,scaler_loc)
-            return
         else:
             self.PCA_scaler = load(scaler_loc)
             self.data = self.PCA_scaler.transform(self.data)
+        return
 
 class PCALagsDataset(PCADataset):
     

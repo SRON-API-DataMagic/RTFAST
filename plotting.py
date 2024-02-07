@@ -1328,12 +1328,12 @@ def PCA_plotting(wrk_dir,name):
     
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = test_data.data
-    pars_comps = test_data.pars
+    pars = test_data.pars
     
-    for j in range(pars_comps.shape[1]):
+    for j in range(pars.shape[1]):
         for i in range(nn_comps.shape[1]):
-            plt.scatter(pars_comps[:,j],train_comps[:,i],label="Training set")
-            plt.scatter(pars_comps[:,j],nn_comps[:,i],label="Emulator")
+            plt.scatter(pars[:,j],train_comps[:,i],label="Training set")
+            plt.scatter(pars[:,j],nn_comps[:,i],label="Emulator")
             plt.legend()
             plt.xlabel(labels[j])
             plt.ylabel(f"PCA component {i+1}")

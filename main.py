@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, SGD
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CyclicLR
+from torch import nn
 
 from joblib import Parallel
 
@@ -109,8 +110,8 @@ def active_learning(device, wrk_dir, name):
                                PCA_loc = lags_PCA,
                                comp_loc= lags_comp)
     
-    loss_fn_flux = PCALoss(flux_dataset.pca.explained_variance_ratio_,device)
-    loss_fn_lags = PCALoss(lags_dataset.pca.explained_variance_ratio_,device)
+    loss_fn_flux = nn.MSELoss()
+    loss_fn_lags = nn.MSELoss()
     
     flux_model = network.PCAFluxNetwork(num_pars,flux_dataset.data.shape[1])
     flux_model.to(device)
@@ -292,7 +293,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
                                           num_workers = num_workers, shuffle=True)
             print("Dataloaders created")
             
-            loss_fn = PCALoss(training_data.pca.explained_variance_ratio_,device)
+            loss_fn = nn.MSELoss()
             
             model = network.PCAFluxNetwork(5,training_data.data.shape[1])
             model.to(device)
