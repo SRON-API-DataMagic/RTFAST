@@ -1353,7 +1353,18 @@ def loss_calc(data,model):
 
 def main():
     wrk_dir = os.getcwd()
-    """
+    #set envionmental variables required in xspec with simrtdist
+    environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
+                    "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
+                    "EMAX_REF2":"10", "SEED_SIM":"-2851043",
+                    "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
+                    "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
+                    "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
+                    "BACKSCL":"1.0"}
+    
+    for key in environ_vars:
+        os.environ[key] = environ_vars[key]
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_trimmed_gen())
@@ -1377,11 +1388,10 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
     names = ["PCA_active_flux","grid_5_flux","grid_6_flux",
-             "grid_7_flux","grid_8_flux","grid_9_flux","grid_10_flux",
-             "PCA_flux"]
+             "grid_7_flux","grid_8_flux","grid_9_flux","grid_10_flux"]
     for name in names:
         PCA_plotting(wrk_dir,name)
     
