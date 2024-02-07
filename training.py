@@ -380,7 +380,7 @@ def test_flux(dataloader, model, loss_fn, device):
     
     with torch.no_grad():
         for batch, (D,P) in enumerate(dataloader):
-            pred = model(P.to(device))[:,None,:]
+            pred = model(P.to(device))
             test_loss += loss_fn(pred,D.to(device)).detach().item()
     test_loss /= batches
     
