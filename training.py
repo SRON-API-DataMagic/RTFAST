@@ -289,7 +289,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device):
     loss_arr = 0
     for batch, (D,P) in enumerate(dataloader):
         optimizer.zero_grad()
-        pred = model(P.to(device))[:,None,:]
+        pred = model(P.to(device))
         loss = loss_fn(pred,D.to(device))
         loss.backward()
         #prevents exploding gradients
