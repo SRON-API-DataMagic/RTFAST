@@ -104,8 +104,8 @@ train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            pars_list,negatives,logged,scale_bool = False)
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
-
-model = PCAFluxNetwork(num_pars, train_dataset.data.shape[1])
+print(val_dataset.data.shape)
+model = PCAFluxNetwork(num_pars, val_dataset.data.shape[1])
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
