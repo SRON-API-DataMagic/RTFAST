@@ -22,6 +22,7 @@ from dataStructures import PCADataset
 from network import PCAFluxNetwork
 
 import torch
+from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam, SGD
 
@@ -39,10 +40,14 @@ pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
 
-range_AGN = np.asarray(generator.lhc_trimmed_gen())
+pars_list = [3]
+negatives = [3]
+logged = [3]
+
+range_AGN = np.asarray(generator.lhc_1())
 num_pars = range_AGN.shape[0]
-"""
-theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
+
+theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
 
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -75,9 +80,10 @@ saveData(train_flux_data, train_flux_pars,
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
 
-"""
+
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                           pars_list,negatives,logged,scale_bool = True)
+                           pars_list,negatives,logged,scale_bool = True,
+                           force=True)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
@@ -96,11 +102,11 @@ model.float()
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 
-loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_,device)
+loss_fn = nn.MSELoss()
 
 train = train_flux
 test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 1500)
+                   epochs = 500)

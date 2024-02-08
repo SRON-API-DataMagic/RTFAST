@@ -222,7 +222,7 @@ def lhc_all():
     
     return range_all
 
-def lhc_2():
+def lhc_1():
     """
     Generates valid ranges of parameters for spin only.
 
@@ -233,9 +233,8 @@ def lhc_2():
         in the latin hypercube sampling
 
     """
-    spin_range = [0,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    range_all = [spin_range,inclination_range]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    range_all = [r_inner_range]
     
     return range_all
 

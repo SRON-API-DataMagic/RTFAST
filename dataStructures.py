@@ -483,9 +483,10 @@ class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
                  scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
-                 comp_loc="scalers/comp_flux.bin"):
+                 comp_loc="scalers/comp_flux.bin", force = False):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
+        self.force = force
         self.scale_bool = scale_bool
         self.PCA_loc = PCA_loc
         self.comp_loc = comp_loc
@@ -542,6 +543,12 @@ class PCADataset(Dataset):
         return
     
     def PCA(self,scaler_loc,comp = 1):
+        if self.force == True:
+            self.pca = PCA(n_components = comp)
+            self.pca.fit(self.data)
+            self.data = self.pca.transform(self.data)
+            dump(self.pca,scaler_loc)
+            return
         if self.scale_bool == True:
             print(f"Attempting n_comp = {comp}")
             self.pca = PCA(n_components = comp)
