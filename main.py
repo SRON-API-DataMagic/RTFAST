@@ -302,7 +302,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             grid_training_loop(model, optimizer, train_flux, test_flux, 
                                    train_dataloader, test_dataloader,
                                    loss_fn, device,
-                                   fname, mode, epochs = 1000)
+                                   fname, mode, epochs = 600)
 def main():
     """
     Calls other methods when the main program is run. Makes sure all environmental
