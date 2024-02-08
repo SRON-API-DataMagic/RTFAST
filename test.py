@@ -32,6 +32,18 @@ rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min #energy grid used to evaluate the xspec model
 
+#set envionmental variables required in xspec with simrtdist
+environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
+                "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
+                "EMAX_REF2":"10", "SEED_SIM":"-2851043",
+                "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
+                "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
+                "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
+                "BACKSCL":"1.0"}
+
+for key in environ_vars:
+    os.environ[key] = environ_vars[key]
+
 pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
