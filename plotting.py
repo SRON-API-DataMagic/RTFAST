@@ -1227,9 +1227,9 @@ def PCA_plotting(wrk_dir,name):
     print(f"Average percentage error: {recon_perc.mean()*100}%")
     
     resid_list = ["Absolute","Percentage"]
-    for i, (resid,label) in enumerate(zip([recon_resid,recon_perc],resid_list)):
-        sort_ind = np.argsort(test_data.pars[:,i])
-        sort_par = test_data.pars[sort_ind,i]
+    for resid,label in zip([recon_resid,recon_perc],resid_list):
+        sort_ind = np.argsort(test_data.pars[:,0])
+        sort_par = test_data.pars[sort_ind,0]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
         tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
