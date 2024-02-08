@@ -123,8 +123,8 @@ def active_learning(device, wrk_dir, name):
     best_lags_model = network.PCAFluxNetwork(num_pars,lags_dataset.data.shape[1])
     best_lags_model.to(device)
     
-    optimizer_flux = Adam(flux_model.parameters(),lr = 1e-3)
-    optimizer_lags = Adam(lags_model.parameters(),lr = 1e-3)
+    optimizer_flux = Adam(flux_model.parameters(),lr = 1e-2)
+    optimizer_lags = Adam(lags_model.parameters(),lr = 1e-2)
     
     batch_size = 1024
     num_workers = 4
@@ -297,7 +297,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
             
             model = network.PCAFluxNetwork(5,training_data.data.shape[1])
             model.to(device)
-            optimizer = Adam(model.parameters(),lr = 1e-3)
+            optimizer = Adam(model.parameters(),lr = 1e-2)
             
             grid_training_loop(model, optimizer, train_flux, test_flux, 
                                    train_dataloader, test_dataloader,
