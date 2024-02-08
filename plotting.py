@@ -1179,7 +1179,7 @@ def PCA_plotting(wrk_dir,name):
     pars_list = [3]
     negatives = [3]
     logged = [3]
-    
+    print(len(pars_list))
     labels = ["a","inc","rin","rout","mass"]
     labels = ["rin"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
@@ -1189,6 +1189,7 @@ def PCA_plotting(wrk_dir,name):
     
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
+    print(f"models/{name}_final.pth")
     model.load_state_dict(torch.load(f"models/{name}_final.pth"))
     model.eval()
     
@@ -1359,18 +1360,7 @@ def loss_calc(data,model):
 
 def main():
     wrk_dir = os.getcwd()
-    #set envionmental variables required in xspec with simrtdist
-    environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
-                    "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
-                    "EMAX_REF2":"10", "SEED_SIM":"-2851043",
-                    "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
-                    "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
-                    "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
-                    "BACKSCL":"1.0"}
-    
-    for key in environ_vars:
-        os.environ[key] = environ_vars[key]
-        
+    """    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_1())
@@ -1394,7 +1384,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    
+    """
     set_envir_vars(wrk_dir)
     PCA_plotting(wrk_dir,"PCA_flux")
     
