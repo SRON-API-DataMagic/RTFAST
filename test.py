@@ -58,7 +58,8 @@ logged = [3]
 
 range_AGN = np.asarray(generator.lhc_1())
 num_pars = len(pars_list)
-
+print(num_pars)
+"""
 theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
 
 #generate physical models of test set
@@ -91,7 +92,7 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-
+"""
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = True,
