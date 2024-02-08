@@ -1175,7 +1175,13 @@ def PCA_plotting(wrk_dir,name):
     pars_list = [1,2,3,4,13]
     negatives = [3]
     logged = [2,3,4,13]
+    
+    pars_list = [3]
+    negatives = [3]
+    logged = [3]
+    
     labels = ["a","inc","rin","rout","mass"]
+    labels = ["rin"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc=f"scalers/PCA_{name}.bin",
@@ -1364,16 +1370,16 @@ def main():
     
     for key in environ_vars:
         os.environ[key] = environ_vars[key]
-    """
+        
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    range_AGN = np.asarray(generator.lhc_trimmed_gen())
+    range_AGN = np.asarray(generator.lhc_1())
     num_pars = range_AGN.shape[0]
     
     theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
-    pars_list = [1,2,3,4,13]
+    pars_list = [3]
     negatives = [3]
-    logged = [2,3,4,13]
+    logged = [3]
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
@@ -1388,13 +1394,9 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
-    names = ["PCA_active_flux","grid_5_flux","grid_6_flux",
-             "grid_7_flux","grid_8_flux","grid_9_flux","grid_10_flux"]
-    for name in names:
-        print(name)
-        PCA_plotting(wrk_dir,name)
+    PCA_plotting(wrk_dir,"PCA_flux")
     
     
 if __name__ == "__main__":
