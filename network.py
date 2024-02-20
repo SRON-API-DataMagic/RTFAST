@@ -273,6 +273,8 @@ class PCAFluxNetwork(nn.Module):
                                          nn.ReLU(),
                                          nn.Linear(40, 40),
                                          nn.ReLU(),
+                                         nn.Linear(40, 40),
+                                         nn.ReLU(),
                                          nn.Linear(40, output_len))
     
     def forward(self,pars):
