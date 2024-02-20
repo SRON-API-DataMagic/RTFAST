@@ -1160,7 +1160,7 @@ def PCA_plotting(wrk_dir,name):
     
     plt.plot(PCA_train_loss,label = "Training loss", c = "blue",
              ls = "-")
-    plt.plot(PCA_val_loss,label = "Validation loss", c = "blue",
+    plt.plot(PCA_val_loss,label = "Validation loss", c = "orange",
              ls = "--")
     
     plt.yscale("log")
@@ -1351,8 +1351,8 @@ def PCA_plotting(wrk_dir,name):
     
     for j in range(pars.shape[1]):
         for i in range(nn_comps.shape[1]):
-            plt.scatter(pars[:,j],train_comps[:,i],label="Training set")
-            plt.scatter(pars[:,j],nn_comps[:,i],label="Emulator")
+            plt.scatter(pars[:,j],train_comps[:,i],label="Training set",marker="o")
+            plt.scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
             plt.legend()
             plt.xlabel(labels[j])
             plt.ylabel(f"PCA component {i+1}")
