@@ -56,7 +56,7 @@ pars_list = [3]
 negatives = [3]
 logged = [3]
 """
-range_AGN = np.asarray(generator.lhc_1())
+range_AGN = np.asarray(generator.lhc_trimmed_gen())
 num_pars = len(pars_list)
 print(num_pars)
 
