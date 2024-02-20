@@ -60,7 +60,7 @@ range_AGN = np.asarray(generator.lhc_AGN())
 num_pars = len(pars_list)
 print(num_pars)
 
-theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=True)
+theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=False)
 
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
