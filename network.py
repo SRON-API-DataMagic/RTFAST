@@ -265,17 +265,13 @@ class PCAFluxNetwork(nn.Module):
     
     def __init__(self,num_pars,output_len):
         super().__init__()
-        self.LinearStack = nn.Sequential(nn.Linear(num_pars, 20),
+        self.LinearStack = nn.Sequential(nn.Linear(num_pars, 40),
                                          nn.ReLU(),
-                                         nn.Linear(20, 20),
+                                         nn.Linear(40, 40),
                                          nn.ReLU(),
-                                         nn.Linear(20, 20),
+                                         nn.Linear(40, 40),
                                          nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, 20),
-                                         nn.ReLU(),
-                                         nn.Linear(20, output_len))
+                                         nn.Linear(40, output_len))
     
     def forward(self,pars):
         return self.LinearStack(pars)
