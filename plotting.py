@@ -1175,13 +1175,14 @@ def PCA_plotting(wrk_dir,name):
     pars_list = [1,2,3,4,13]
     negatives = [3]
     logged = [2,3,4,13]
-    
+    """
     pars_list = [3]
     negatives = [3]
     logged = [3]
+    """
     print(len(pars_list))
     labels = ["a","inc","rin","rout","mass"]
-    labels = ["rin"]
+    #labels = ["rin"]
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc=f"scalers/PCA_flux.bin",
