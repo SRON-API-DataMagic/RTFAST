@@ -1361,16 +1361,16 @@ def loss_calc(data,model):
 
 def main():
     wrk_dir = os.getcwd()
-    """    
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
-    range_AGN = np.asarray(generator.lhc_1())
+    range_AGN = np.asarray(generator.lhc_trimmed_gen())
     num_pars = range_AGN.shape[0]
     
     theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
-    pars_list = [3]
+    pars_list = [1,2,3,4,13]
     negatives = [3]
-    logged = [3]
+    logged = [2,3,4,13]
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
@@ -1385,7 +1385,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
+    
     set_envir_vars(wrk_dir)
     PCA_plotting(wrk_dir,"PCA_flux")
     
