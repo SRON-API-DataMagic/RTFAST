@@ -43,7 +43,7 @@ environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
 
 for key in environ_vars:
     os.environ[key] = environ_vars[key]
-
+"""
 pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
@@ -52,15 +52,16 @@ logged = [0,2,3,4,7,8,10,11,12,13,23]
 pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
+"""
 pars_list = [3]
 negatives = [3]
 logged = [3]
 """
-range_AGN = np.asarray(generator.lhc_AGN())
+range_AGN = np.asarray(generator.lhc_trimmed_gen())
 num_pars = len(pars_list)
 print(num_pars)
 
-theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=False)
+theta_lhc = generator.lhc_generation(int(1e4), range_AGN, limited=True)
 
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -96,7 +97,7 @@ saveData(test_flux_data, test_flux_pars,
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = True,
-                           force=True)
+                           force=True,comps=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
@@ -122,4 +123,4 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 2000)
+                   epochs = 1500)
