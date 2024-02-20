@@ -1236,6 +1236,42 @@ def PCA_plotting(wrk_dir,name):
     plt.title("Fractional error of PCA reconstruction error")
     plt.savefig(f"samples/{name}_PCA_mean_perc.png")
     plt.close()
+    
+    for i in range(len(pars_list)):
+        sort_ind = np.argsort(test_data.pars[:,i])
+        sort_par = test_data.pars[sort_ind,i]
+        percents = np.array([0,0.25,0.5,0.75,0.99])
+        ticks = (len(sort_par)*percents).astype(int)
+        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+        resids = recon_perc[sort_ind]
+        zlabel = "Fractional difference between NN model and rtdist"
+        Z_center = -2.5
+        #colormap
+        top = cm.get_cmap('autumn', 128)
+        bottom = cm.get_cmap('winter', 128)
+        middle = cm.get_cmap('summer',128)
+
+        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                               middle(np.linspace(0, 1/2, 128)),
+                            top(np.linspace(2/3, 1, 128))))
+        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+        
+        fig = plt.figure(figsize=(10,10))
+        norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+        c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                    10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
+        plt.yticks(ticks,labels=tick_labels)
+        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        plt.xlabel("Energy in keV")
+        plt.ylabel(labels[i])
+        
+        cbar.set_label(zlabel, rotation=270, labelpad=15)
+        fig.tight_layout()
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
+        plt.close()
     print(f"Average percentage error: {recon_perc.mean()*100}%")
     
     resid_list = ["Absolute","Percentage"]
