@@ -48,15 +48,15 @@ pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
 
+"""
 pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
-"""
 pars_list = [3]
 negatives = [3]
 logged = [3]
 """
-range_AGN = np.asarray(generator.lhc_trimmed_gen())
+range_AGN = np.asarray(generator.lhc_AGN())
 num_pars = len(pars_list)
 print(num_pars)
 
@@ -122,4 +122,4 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 1000)
+                   epochs = 2000)
