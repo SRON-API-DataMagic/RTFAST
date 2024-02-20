@@ -1380,7 +1380,7 @@ def main():
     range_AGN = np.asarray(generator.lhc_AGN())
     num_pars = range_AGN.shape[0]
     
-    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
+    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=False)
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
