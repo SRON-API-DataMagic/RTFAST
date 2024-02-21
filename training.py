@@ -622,7 +622,7 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
     te_loss_arr = []
     
     
-    early = 25
+    early = 0
     pars = 5
     
     print("Beginning training")
