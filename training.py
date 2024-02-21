@@ -621,15 +621,17 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
     tr_loss_arr = []
     te_loss_arr = []
     
-    epoch = 0
-    imp = 0
+    
     early = 25
     pars = 5
     
     print("Beginning training")
     for par in range(pars):
+        epoch = 0
+        imp = 0
         mask = torch.ones(pars)
         mask[par+1:] = 0
+        print(f"Training on {par+1} parameters")
         while (epoch < epochs) and (imp < early):
             imp += 1
             print(f"Epoch {epoch+1} \n -----------------------")
