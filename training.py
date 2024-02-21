@@ -632,6 +632,8 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
         mask = torch.ones(pars)
         mask[par+1:] = 0
         print(f"Training on {par+1} parameters")
+        print(f"Currently, the mask is {mask}")
+        early += 25
         while (epoch < epochs) and (imp < early):
             imp += 1
             print(f"Epoch {epoch+1} \n -----------------------")
