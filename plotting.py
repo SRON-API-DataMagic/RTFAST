@@ -1177,9 +1177,14 @@ def PCA_plotting(wrk_dir,name):
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
     """
+    """
     pars_list = [1,2,3,4,13]
     negatives = [3]
     logged = [2,3,4,13]
+    """
+    pars_list = [1,2,3,4,6,8,9,10,11,13]
+    negatives = [3]
+    logged = [2,3,4,8,10,11,13]
     """
     pars_list = [3]
     negatives = [3]
@@ -1188,6 +1193,7 @@ def PCA_plotting(wrk_dir,name):
     print(len(pars_list))
     labels = ["a","inc","rin","rout","mass"]
     #labels = ["rin"]
+    labels = ["a","inc","rin","rout","Gamma","Afe","logNe","kte","nH","mass"]
     """
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -1414,7 +1420,7 @@ def loss_calc(data,model):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
-    
+    """
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_10())
@@ -1438,7 +1444,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    
+    """
     
     PCA_plotting(wrk_dir,"PCA_flux")
     
