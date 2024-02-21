@@ -624,7 +624,7 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
     epoch = 0
     imp = 0
     early = 25
-    pars = train_dataloader.pars.shape[1]
+    pars = 5
     
     print("Beginning training")
     for par in range(pars):
