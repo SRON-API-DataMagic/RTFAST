@@ -256,7 +256,57 @@ class LagLoss(nn.Module):
         signed_loss = self.binary(index,index_target)
         loss += signed_loss
         return loss 
-  
+
+def train_bottle(dataloader, model, optimizer, loss_fn, device, mask):
+    """
+    
+
+    Parameters
+    ----------
+    dataloader : torch.nn.utils.data.DataLoader
+        provides iterable shuffled form of the training dataset.
+    model : network.NeuralNetwork
+        the neural network model to be trained.
+    optimizer : torch.optim
+        optimizer used for training the network.
+    loss_fn : torch.nn loss function
+        loss function used to train the network.
+
+    Returns
+    -------
+    model : network.NeuralNetwork
+        the neural network model to be trained.
+    optimizer : Ttorch.optim
+        optimizer used for training the network.
+    avg_loss : float
+        used as to record and determine how many iterations should be trained.
+
+    """
+    model.train()
+    
+    size = len(dataloader.dataset)
+    loss_arr = 0
+    for batch, (D,P) in enumerate(dataloader):
+        P = P*mask
+        optimizer.zero_grad()
+        pred = model(P.to(device))
+        loss = loss_fn(pred,D.to(device))
+        loss.backward()
+        #prevents exploding gradients
+        nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        
+        optimizer.step()
+        loss_b = loss.detach().item()
+        if batch % 5 == 0:
+            current = ((batch+1)*P.shape[0])
+            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
+        loss_arr += loss_b
+    
+    avg_loss = loss_arr/len(dataloader)
+    print(f"Average training loss: {avg_loss:>8f}")
+    return model, optimizer , avg_loss
+
+
 def train_flux(dataloader, model, optimizer, loss_fn, device):
     """
     
@@ -354,6 +404,39 @@ def train_lags(dataloader, model, optimizer, loss_fn, device):
     avg_loss = loss_arr/len(dataloader)
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
+
+def test_bottle(dataloader, model, loss_fn, device,mask):
+    """
+    
+
+    Parameters
+    ----------
+    dataloader : torch.nn.utils.data.DataLoader
+        provides iterable shuffled form of the testing dataset.
+    model : network.NeuralNetwork
+        the neural network model to be tested.
+    loss_fn : torch.nn loss function
+        loss function used to train the network.
+
+    Returns
+    -------
+    test_loss : float
+        used as to record and determine how many iterations should be trained.
+
+    """
+    model.eval()
+    test_loss = 0
+    batches = len(dataloader)
+    
+    with torch.no_grad():
+        for batch, (D,P) in enumerate(dataloader):
+            P = P*mask
+            pred = model(P.to(device))
+            test_loss += loss_fn(pred,D.to(device)).detach().item()
+    test_loss /= batches
+    
+    print(f"Average testing loss: {test_loss:>8f}")
+    return test_loss
 
 def test_flux(dataloader, model, loss_fn, device):
     """
@@ -531,6 +614,49 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     np.savetxt(f"loss/{name}_{mode}_tr_loss.txt",tr_loss_arr)
     
     return
+
+def bottleneck_training_loop(model, optimizer, train_dataloader, 
+                       test_dataloader, loss_fn, device, name, mode, 
+                       epochs = 400):
+    tr_loss_arr = []
+    te_loss_arr = []
+    
+    epoch = 0
+    imp = 0
+    early = 25
+    pars = train_dataloader.pars.shape[1]
+    
+    print("Beginning training")
+    for par in range(pars):
+        mask = torch.ones(pars)
+        mask[par+1:] = 0
+        while (epoch < epochs) and (imp < early):
+            imp += 1
+            print(f"Epoch {epoch+1} \n -----------------------")
+            model, optimizer, train_loss = train_bottle(train_dataloader, model,
+                                                 optimizer, loss_fn, device,
+                                                 mask)
+            loss = test_bottle(test_dataloader, model, loss_fn, device,mask)
+            te_loss_arr.append(loss)
+            tr_loss_arr.append(train_loss)
+            if (train_loss == np.min(tr_loss_arr)) or (loss == np.min(te_loss_arr)):
+                imp = 0
+            if loss == np.min(te_loss_arr):
+                print(f"New best testing loss: {loss}")
+                torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
+            epoch += 1
+    
+    print("Completed training")
+    print("Final best training loss:", np.min(tr_loss_arr))
+    print("Final best testing loss:", np.min(te_loss_arr))
+    torch.save(model.state_dict(), f"models/{name}_{mode}_final.pth")
+    print(f"Saved PyTorch Model State to {name}_{mode}_final.pth")
+    
+    tr_loss_arr = np.asarray(tr_loss_arr)
+    te_loss_arr = np.asarray(te_loss_arr)
+    
+    np.savetxt(f"loss/{name}_{mode}_te_loss.txt",te_loss_arr)
+    np.savetxt(f"loss/{name}_{mode}_tr_loss.txt",tr_loss_arr)
 
 def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num, 
          theta_lhc, lhc_idx, egrid, lags_egrid, flux_model, lags_model, device,
