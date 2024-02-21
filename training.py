@@ -621,21 +621,16 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
     tr_loss_arr = []
     te_loss_arr = []
     
-    
-    early = 0
     pars = 5
     
     print("Beginning training")
     for par in range(pars):
         epoch = 0
-        imp = 0
         mask = torch.ones(pars)
         mask[par+1:] = 0
         print(f"Training on {par+1} parameters")
         print(f"Currently, the mask is {mask}")
-        early += 25
-        while (epoch < epochs) and (imp < early):
-            imp += 1
+        while (epoch < epochs):
             print(f"Epoch {epoch+1} \n -----------------------")
             model, optimizer, train_loss = train_bottle(train_dataloader, model,
                                                  optimizer, loss_fn, device,
@@ -643,8 +638,6 @@ def bottleneck_training_loop(model, optimizer, train_dataloader,
             loss = test_bottle(test_dataloader, model, loss_fn, device,mask)
             te_loss_arr.append(loss)
             tr_loss_arr.append(train_loss)
-            if (train_loss == np.min(tr_loss_arr)) or (loss == np.min(te_loss_arr)):
-                imp = 0
             if loss == np.min(te_loss_arr):
                 print(f"New best testing loss: {loss}")
                 torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
