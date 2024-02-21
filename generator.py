@@ -318,11 +318,38 @@ def lhc_AGN():
     
     return range_all
 
-def lhc_trimmed_gen():
+def lhc_10():
     """
     Limited form of lhc_range_gen that returns ranges for only a limited amount
-    of parameters. Used in the comparitive between grid and active learning
-    strategies.
+    of parameters.
+
+    Returns
+    -------
+    range_all : list
+        a list of ranges of parameter spaces to generate from.
+
+    """
+    spin_range = [0.1,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    Gamma_range = [1.4,3.4]
+    Afe_range = [np.log10(0.5),np.log10(10)]
+    logNe_range = [15,20]
+    kte_range = [np.log10(5),np.log10(500)]
+    nH_range = [np.log10(1e-3),np.log10(200)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
+    
+    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
+                 Gamma_range,Afe_range,logNe_range,kte_range,nH_range,
+                 mass_range]
+    
+    return range_all
+
+def lhc_5():
+    """
+    Limited form of lhc_range_gen that returns ranges for only a limited amount
+    of parameters.
 
     Returns
     -------

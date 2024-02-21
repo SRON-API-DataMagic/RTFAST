@@ -50,15 +50,20 @@ negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
 
 """
+pars_list = [1,2,3,4,6,8,9,10,11,13]
+negatives = [3]
+logged = [2,3,4,8,10,11,13]
+"""
 pars_list = [1,2,3,4,13]
 negatives = [3]
 logged = [2,3,4,13]
+"""
 """
 pars_list = [3]
 negatives = [3]
 logged = [3]
 """
-range_AGN = np.asarray(generator.lhc_trimmed_gen())
+range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
 
