@@ -67,7 +67,7 @@ range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
 
-theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True, 
+theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=False, 
                                      lhc_filter=generator.lhc_filter_10)
 
 #generate physical models of test set
