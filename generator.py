@@ -165,7 +165,7 @@ def Anorm_wrapper_10(pars):
     F = 10**pars[:,9]              #Flux of corona in erg/cm^2/s
     gamma = pars[:,3]               #photon index
     Afe = pars[:,5]
-    z =  0.024917
+    z =  np.ones(gamma.shape)*0.024917
     refl_frac = np.zeros(gamma.shape)
     inc = pars[:,1]
     #calculate normalisation for each flux spectra
