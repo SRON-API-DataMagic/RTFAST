@@ -1234,12 +1234,14 @@ def PCA_plotting(wrk_dir,name):
     plt.xlabel("Energy channel")
     plt.ylabel("Mean absolute error")
     plt.title("Absolute error of PCA reconstruction error")
+    plt.yscale("log")
     plt.savefig(f"samples/{name}_PCA_mean_error.png")
     plt.close()
     plt.plot(np.mean(recon_perc,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean fractional error")
     plt.title("Fractional error of PCA reconstruction error")
+    plt.yscale("log")
     plt.savefig(f"samples/{name}_PCA_mean_perc.png")
     plt.close()
     
@@ -1420,16 +1422,17 @@ def loss_calc(data,model):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
-    """
+    
     egrid = retrieve_egrid(wrk_dir)
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_10())
     num_pars = range_AGN.shape[0]
     
-    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=True)
-    pars_list = [1,2,3,4,6,8,9,10,11,13]
+    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=False,
+                                         lhc_filter=generator.lhc_filter_10)
+    pars_list = [1,2,3,6,7,8,9,11,13,23]
     negatives = [3]
-    logged = [2,3,4,8,10,11,13]
+    logged = [2,3,7,8,11,13,23]
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
@@ -1444,7 +1447,6 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
     
     PCA_plotting(wrk_dir,"PCA_flux")
     
