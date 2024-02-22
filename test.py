@@ -50,9 +50,9 @@ negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
 
 """
-pars_list = [1,2,3,4,6,8,9,10,11,13]
+pars_list = [1,2,3,6,7,8,9,11,13,23]
 negatives = [3]
-logged = [2,3,4,8,10,11,13]
+logged = [2,3,7,8,11,13,23]
 """
 pars_list = [1,2,3,4,13]
 negatives = [3]
@@ -67,7 +67,8 @@ range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
 
-theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True)
+theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=True, 
+                                     lhc_filter=generator.lhc_filter_10)
 
 #generate physical models of test set
 theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -103,7 +104,7 @@ saveData(test_flux_data, test_flux_pars,
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = True,
-                           force=True,comps=2)
+                           force=True,comps=4)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 

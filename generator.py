@@ -137,7 +137,63 @@ def Anorm_wrapper(pars):
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
-def lhc_filter(lhc):
+def Anorm_wrapper_10(pars):
+    """
+    This function recalculates the Anorm input parameter of rtdist from the 
+    generated values of flux. This allows considerably more efficient sampling
+    of Anorm - only physically plausible scenarios are considered and we 
+    have physical reasoning behind the Anorm values chosen.
+
+    Parameters
+    ----------
+    pars : np.ndarray
+        the curated hypercube of parameters that the emulator will eventually
+        be trained on.
+
+    Returns
+    -------
+    new_lhc : np.ndarray
+        latin hypercube with "coronal flux" parameter replaced with Anorm.
+
+    """
+    #calculate g_0
+    h = 6
+    a = pars[:,0]
+    Dh = h**2 -2*h +a**2
+    g_so = np.sqrt(Dh/(h**2 + a**2))
+    #calculate luminosity of corona
+    F = 10**pars[:,9]              #Flux of corona in erg/cm^2/s
+    gamma = pars[:,3]               #photon index
+    Afe = pars[:,5]
+    z =  0.024917
+    refl_frac = np.zeros(gamma.shape)
+    inc = pars[:,1]
+    #calculate normalisation for each flux spectra
+    integrals = np.zeros(gamma.shape)
+    #cutoff in keV
+    E_cut = np.ones(gamma.shape)*300
+    logxi = np.ones(gamma.shape)
+    xnorm = np.ones(gamma.shape)
+    xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
+    #energies from 0.1keV to 1MeV
+    bins = 1000
+    egrid = np.logspace(-1,3,num = bins)
+    e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
+    e_mid = e_mid * 1.60218e-9 #convert to erg
+    
+    def integrate(pars):
+        continuum = _models.lmodxillver(pars, egrid[:-1], egrid[1:])
+        integral = (continuum*e_mid).sum()
+        return integral
+    
+    with Parallel(n_jobs=20,verbose=0) as parallel:
+        integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
+    integrals = np.asarray(integrals)
+    Anorm = F/(g_so**(gamma-2)*integrals)
+    pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
+    return pars
+
+def lhc_filter_20(lhc):
     """
     Removes unphysical parameter sets from the Latin Hypercube. This prevents
     overly bright sources from being generated as well as reducing time spent
@@ -163,8 +219,9 @@ def lhc_filter(lhc):
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
     bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
+    #checks that heights are greater than horizon radius
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
-    bad_heights = np.nonzero((lhc[:,0]<heights))
+    bad_heights = np.nonzero((10**lhc[:,0]<heights))
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
@@ -180,6 +237,49 @@ def lhc_filter(lhc):
     new_lhc = np.delete(lhc,bad_sets,0)
     #convert fluxes to Anorm
     new_lhc = Anorm_wrapper(new_lhc)
+    return new_lhc
+
+def lhc_filter_10(lhc):
+    """
+    Removes unphysical parameter sets from the Latin Hypercube. This prevents
+    overly bright sources from being generated as well as reducing time spent
+    on generating model data for objects that we won't see
+
+    Parameters
+    ----------
+    lhc : np.ndarray
+        latin hypercube containing parameter sets for rtdist.
+
+    Returns
+    -------
+    new_lhc : np.ndarray
+        latin hypercube with unphysical parameter sets removed..
+
+    """
+    #bad sets indexes all parameter sets that don't fit the filter criteria
+    #removes parameter sets that have a photon index higher than 3 AND a iron
+    #solar abundance above 6 AND a electron density in the disk of higher than
+    #10^19.
+    bad_disks = np.nonzero((lhc[:,3]>2.75)&(10**lhc[:,5]>4)&(lhc[:,6]>17))
+    #check if the calculated hubble constant for the set of parameters
+    #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
+    hubble = 0.024917*3e6/(10**lhc[:,4]*0.001)
+    bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
+    #Check luminosities aren't super eddington or too small to see
+    F = 10**lhc[:,9]       #Flux of corona in erg/cm^2/s
+    D = 10**lhc[:,4]        #distance of objects
+    D = 3.086e21 * D        #distance in cm
+    M_solar = 10**lhc[:,8] #mass of the object
+    L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
+    Ledd = 1.26e38*M_solar  #eddington luminosity
+    bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
+    #collates all bad sets together
+    bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,
+                                         bad_Ls),axis=None))
+    #removes all unphysical sets from the parameter sets
+    new_lhc = np.delete(lhc,bad_sets,0)
+    #convert fluxes to Anorm
+    new_lhc = Anorm_wrapper_10(new_lhc)
     return new_lhc
 
 def lhc_all():
@@ -235,6 +335,56 @@ def lhc_1():
     """
     r_inner_range = [np.log10(1),np.log10(400)]
     range_all = [r_inner_range]
+    
+    return range_all
+
+def lhc_5():
+    """
+    Limited form of lhc_range_gen that returns ranges for only a limited amount
+    of parameters.
+
+    Returns
+    -------
+    range_all : list
+        a list of ranges of parameter spaces to generate from.
+
+    """
+    spin_range = [0.1,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
+    
+    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
+                 mass_range]
+    
+    return range_all
+
+def lhc_10():
+    """
+    Limited form of lhc_range_gen that returns ranges for only a limited amount
+    of parameters.
+
+    Returns
+    -------
+    range_all : list
+        a list of ranges of parameter spaces to generate from.
+
+    """
+    spin_range = [0.1,0.998]
+    inclination_range = [np.log10(1),np.log10(80)]
+    r_inner_range = [np.log10(1),np.log10(400)]
+    Gamma_range = [1.4,3.4]
+    distance_range = [np.log10(3.5e5),np.log10(5e7)]
+    Afe_range = [np.log10(0.5),np.log10(10)]
+    logNe_range = [15,20]
+    nH_range = [np.log10(1e-3),np.log10(200)]
+    mass_range = [np.log10(1e4),np.log10(1e11)]
+    flux_range = [np.log10(1e-12),np.log10(1e-8)]
+    
+    range_all = [spin_range,inclination_range,r_inner_range,Gamma_range,
+                 distance_range,Afe_range,logNe_range,nH_range,
+                 mass_range,flux_range]
     
     return range_all
 
@@ -315,56 +465,6 @@ def lhc_AGN():
                  r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
                  logNe_range,kte_range,nH_range,boost_range,mass_range,
                  honr_range,b1_range,b2_range,phiAB_range,g_range,flux_range]
-    
-    return range_all
-
-def lhc_10():
-    """
-    Limited form of lhc_range_gen that returns ranges for only a limited amount
-    of parameters.
-
-    Returns
-    -------
-    range_all : list
-        a list of ranges of parameter spaces to generate from.
-
-    """
-    spin_range = [0.1,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    Gamma_range = [1.4,3.4]
-    Afe_range = [np.log10(0.5),np.log10(10)]
-    logNe_range = [15,20]
-    kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(200)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
-    
-    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
-                 Gamma_range,Afe_range,logNe_range,kte_range,nH_range,
-                 mass_range]
-    
-    return range_all
-
-def lhc_5():
-    """
-    Limited form of lhc_range_gen that returns ranges for only a limited amount
-    of parameters.
-
-    Returns
-    -------
-    range_all : list
-        a list of ranges of parameter spaces to generate from.
-
-    """
-    spin_range = [0.1,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
-    
-    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
-                 mass_range]
     
     return range_all
 
@@ -645,7 +745,7 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
                lags_test_name)
     return
 
-def lhc_generation(size,range_all, limited = False):
+def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
     if limited == False:
         def lhc_cycle(size,range_all):
             sampler = scipy.stats.qmc.LatinHypercube(d=len(range_all))

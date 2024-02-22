@@ -547,6 +547,7 @@ class PCADataset(Dataset):
             self.pca = PCA(n_components = comp)
             self.pca.fit(self.data)
             self.data = self.pca.transform(self.data)
+            print(f"Achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}% with {comp} components")
             dump(self.pca,scaler_loc)
             return
         if self.scale_bool == True:
