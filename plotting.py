@@ -1182,9 +1182,9 @@ def PCA_plotting(wrk_dir,name):
     negatives = [3]
     logged = [2,3,4,13]
     """
-    pars_list = [1,2,3,4,6,8,9,10,11,13]
+    pars_list = [1,2,3,6,7,8,9,11,13,23]
     negatives = [3]
-    logged = [2,3,4,8,10,11,13]
+    logged = [2,3,7,8,11,13,23]
     """
     pars_list = [3]
     negatives = [3]
@@ -1193,7 +1193,7 @@ def PCA_plotting(wrk_dir,name):
     print(len(pars_list))
     labels = ["a","inc","rin","rout","mass"]
     #labels = ["rin"]
-    labels = ["a","inc","rin","rout","Gamma","Afe","logNe","kte","nH","mass"]
+    labels = ["a","inc","rin","Gamma","distance","Afe","logNe","nH","mass","Anorm"]
     """
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
