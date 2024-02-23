@@ -1247,7 +1247,7 @@ def PCA_plotting(wrk_dir,name):
                                middle(np.linspace(0, 1/2, 128)),
                             top(np.linspace(2/3, 1, 128))))
         newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('white')
+        newcmp.set_over('black')
 
         fig = plt.figure(figsize=(10,10))
         norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
@@ -1352,7 +1352,7 @@ def PCA_plotting(wrk_dir,name):
                                middle(np.linspace(0, 1/2, 128)),
                             top(np.linspace(2/3, 1, 128))))
         newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('white')
+        newcmp.set_over('black')
         
         fig = plt.figure(figsize=(10,10))
         norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
