@@ -1265,10 +1265,10 @@ def PCA_plotting(wrk_dir,name):
         matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
         plt.close()
-    print(f"Maximum PCA residual is {recon_perc.max()*100}%")
-    print(f"Average PCA residual is {recon_perc.mean()*100}%")
+    print(f"Maximum PCA residual is {recon_perc[~np.isnan(recon_perc)].max()*100}%")
+    print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
     percent = (recon_perc[(recon_perc<0.01)&~np.isnan(recon_perc)].size/recon_perc[~np.isnan(recon_perc)].size)*100
-    print(f"{(recon_perc[recon_perc<0.01].size/recon_perc.size)*100}% of PCA residuals are below 1%")
+    print(f"{percent}% of PCA residuals are below 1%")
     
     resid_list = ["Absolute","Percentage"]
     for resid,label in zip([recon_resid,recon_perc],resid_list):
