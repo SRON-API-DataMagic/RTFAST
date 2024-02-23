@@ -1267,6 +1267,7 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     print(f"Maximum PCA residual is {recon_perc.max()*100}%")
     print(f"Average PCA residual is {recon_perc.mean()*100}%")
+    percent = (recon_perc[(recon_perc<0.01)&~np.isnan(recon_perc)].size/recon_perc[~np.isnan(recon_perc)].size)*100
     print(f"{(recon_perc[recon_perc<0.01].size/recon_perc.size)*100}% of PCA residuals are below 1%")
     
     resid_list = ["Absolute","Percentage"]
@@ -1324,7 +1325,8 @@ def PCA_plotting(wrk_dir,name):
     residuals = np.abs((test_pred-D)/D)
     print(f"Maximum residual is {residuals.max()*100}%")
     print(f"Average residual is {residuals.mean()*100}%")
-    print(f"{(residuals[residuals<0.01].size/residuals.size)*100}% of residuals are below 1%")
+    percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
+    print(f"{percent}% of residuals are below 1%")
     
     plt.plot(np.mean(residuals,axis=0))
     plt.xlabel("Energy channel")
