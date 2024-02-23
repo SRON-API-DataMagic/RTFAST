@@ -103,7 +103,8 @@ saveData(test_flux_data, test_flux_pars,
 """
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                           pars_list,negatives,logged,scale_bool = False)
+                           pars_list,negatives,logged,scale_bool = True,
+                           force=True,comps=120)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
@@ -122,16 +123,18 @@ model.float()
 
 optimizer = Adam(model.parameters(),lr = 0.001)
 
+loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 loss_fn = nn.MSELoss()
 
 train = train_flux
 test =  test_flux
-"""
+
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
                    epochs = 1000)
-"""
 
+"""
 bottleneck_training_loop(model, optimizer,train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
                    epochs = 500)
+"""
