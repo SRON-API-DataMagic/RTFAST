@@ -1240,6 +1240,7 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     for i in range(len(pars_list)):
+        print(f"Creating plot for {labels[i]}")
         sort_ind = np.argsort(test_data.pars[:,i])
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
