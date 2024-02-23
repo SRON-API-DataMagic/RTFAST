@@ -71,7 +71,8 @@ class PCALoss(nn.Module):
     
     def __init__(self,variances,device):
         super().__init__()
-        self.variances = torch.tensor(variances)
+        log_vars_ratios = np.log10(variances/np.min(variances))+1
+        self.variances = torch.tensor(log_vars_ratios)
         self.device = device
     
     def forward(self,pred,target):
