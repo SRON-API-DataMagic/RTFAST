@@ -753,8 +753,8 @@ def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
             theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
             final_lhc = lhc_filter(theta_lhc)
             return final_lhc
-        if size < 1e6:
-            gen_size = int(1e6)
+        if size < 1e5:
+            gen_size = int(1e5)
         else:
             gen_size = size
         lhc = lhc_cycle(gen_size, range_all)
