@@ -1204,7 +1204,7 @@ def PCA_plotting(wrk_dir,name):
                                comp_loc=f"scalers/comp_flux.bin")
     
     data = []
-    for file in test_data.locations:
+    for file in tqdm.tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
