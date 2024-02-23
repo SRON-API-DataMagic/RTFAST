@@ -1213,6 +1213,7 @@ def PCA_plotting(wrk_dir,name):
     
     recon_resid = np.abs((D-recon_D))
     recon_perc = np.abs((D-recon_D)/D)
+    recon_perc[D==1e-11] = np.nan
     plt.plot(np.mean(recon_resid,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean absolute error")
@@ -1321,7 +1322,6 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals = np.abs((test_pred-D)/D)
-    residuals[D==1e-11] = np.nan
     print(f"Maximum residual is {residuals.max()*100}%")
     print(f"Average residual is {residuals.mean()*100}%")
     print(f"{(residuals[residuals<0.01].size/residuals.size)*100}% of residuals are below 1%")
