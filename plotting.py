@@ -1247,14 +1247,13 @@ def PCA_plotting(wrk_dir,name):
                             top(np.linspace(2/3, 1, 128))))
         newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
         newcmp.set_over('white')
-        newcmp.set_under('black')
 
         fig = plt.figure(figsize=(10,10))
         norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
         ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
+        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
         plt.xlabel("Energy in keV")
@@ -1290,7 +1289,6 @@ def PCA_plotting(wrk_dir,name):
                             top(np.linspace(2/3, 1, 128))))
         newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
         newcmp.set_over('white')
-        newcmp.set_under('black')
         """
         fig = plt.figure(figsize=(10,10))
         ax = plt.pcolormesh(resids)
@@ -1323,6 +1321,7 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals = np.abs((test_pred-D)/D)
+    residuals[D==1e-11] = np.nan
     print(f"Maximum residual is {residuals.max()*100}%")
     print(f"Average residual is {residuals.mean()*100}%")
     print(f"{(residuals[residuals<0.01].size/residuals.size)*100}% of residuals are below 1%")
@@ -1354,14 +1353,13 @@ def PCA_plotting(wrk_dir,name):
                             top(np.linspace(2/3, 1, 128))))
         newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
         newcmp.set_over('white')
-        newcmp.set_under('black')
         
         fig = plt.figure(figsize=(10,10))
         norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
         ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
+        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
         plt.xlabel("Energy in keV")
