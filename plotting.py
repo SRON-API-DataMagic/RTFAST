@@ -1327,6 +1327,7 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals = np.abs((test_pred-D)/D)
+    residuals[D==1e-11] = np.nan
     print(f"Maximum residual is {residuals.max()*100}%")
     print(f"Average residual is {residuals.mean()*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
@@ -1413,7 +1414,7 @@ def PCA_plotting(wrk_dir,name):
             plt.legend()
             plt.xlabel(labels[j])
             plt.ylabel(f"PCA component {i+1}")
-            plt.savefig(f"samples/{name}_PCA{i+1}_{labels[j]}.png")
+            plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
             plt.close()
 
 def reconstruct_emulator(dataset,model):

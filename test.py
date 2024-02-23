@@ -126,13 +126,12 @@ loss_fn = nn.MSELoss()
 
 train = train_flux
 test =  test_flux
-
+"""
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
                    epochs = 1000)
-
 """
+
 bottleneck_training_loop(model, optimizer,train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
                    epochs = 500)
-"""
