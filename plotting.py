@@ -1203,6 +1203,10 @@ def PCA_plotting(wrk_dir,name):
                                PCA_loc=f"scalers/PCA_flux.bin",
                                comp_loc=f"scalers/comp_flux.bin")
     
+    test_data.pars = test_data.pars[::10]
+    test_data.locations = test_data.locations[::10]
+    test_data.data = test_data.data[::10]
+    
     data = []
     for file in tqdm.tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
