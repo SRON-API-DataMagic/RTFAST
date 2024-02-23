@@ -1203,21 +1203,6 @@ def PCA_plotting(wrk_dir,name):
                                PCA_loc=f"scalers/PCA_flux.bin",
                                comp_loc=f"scalers/comp_flux.bin")
     
-    model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
-    
-    print(f"models/{name}_final.pth")
-    model.load_state_dict(torch.load(f"models/{name}_final.pth"))
-    model.eval()
-    
-    loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
-    
-    for j in range(test_data.pars.shape[1]):
-        plt.scatter(test_data.pars[:,j],loss)
-        plt.xlabel(labels[j])
-        plt.ylabel("Loss")
-        plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
-        plt.close()
-    
     data = []
     for file in test_data.locations:
         data.append(np.loadtxt(file).reshape(1, -1))
@@ -1225,8 +1210,6 @@ def PCA_plotting(wrk_dir,name):
     D[D<1e-11] = 1e-11
     
     recon_D = 10**test_data.pca.inverse_transform(test_data.pca.transform(np.log10(D)))
-    
-    test_pred = reconstruct_emulator(test_data, model)
     
     recon_resid = np.abs((D-recon_D))
     recon_perc = np.abs((D-recon_D)/D)
@@ -1319,6 +1302,22 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"heatmaps/{name}_{label}.png")
         plt.close()
     
+    model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
+    
+    print(f"models/{name}_final.pth")
+    model.load_state_dict(torch.load(f"models/{name}_final.pth"))
+    model.eval()
+    
+    loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
+    
+    for j in range(test_data.pars.shape[1]):
+        plt.scatter(test_data.pars[:,j],loss)
+        plt.xlabel(labels[j])
+        plt.ylabel("Loss")
+        plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
+        plt.close()
+    
+    test_pred = reconstruct_emulator(test_data, model)
     residuals = np.abs((test_pred-D)/D)
     print(f"Maximum residual is {residuals.max()*100}%")
     print(f"Average residual is {residuals.mean()*100}%")
