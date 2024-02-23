@@ -1198,14 +1198,10 @@ def PCA_plotting(wrk_dir,name):
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     """
-    test_data = PCADataset("data/locations/PCA_locs_flux.csv",
+    test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc=f"scalers/PCA_flux.bin",
                                comp_loc=f"scalers/comp_flux.bin")
-    
-    test_data.pars = test_data.pars[::10]
-    test_data.locations = test_data.locations[::10]
-    test_data.data = test_data.data[::10]
     
     data = []
     for file in tqdm(test_data.locations):
