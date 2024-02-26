@@ -19,6 +19,8 @@ from joblib import Parallel, delayed
 
 import pandas as pd
 from tqdm import tqdm
+import corner
+import seaborn as sns
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual, PCADataset
@@ -1410,6 +1412,27 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = test_data.data
     pars = test_data.pars
+    
+    data = np.concatenate([pars,nn_comps,train_comps],axis=0)
+    nn_names = [f"nn_{i}" for i in range(nn_comps.shape[1])]
+    train_names = [f"tr_{i}" for i in range(train_comps.shape[1])]
+    column_names = np.array([labels,nn_names,train_names]).flatten()
+    df = pd.DataFrame(data = data,columns=column_names)
+    
+    for i in range(len(pars.shape[1])):
+        fig, axs = plt.subplots((5,5),sharex=True,sharey=True,figsize=(20,20))
+        for j in range(5):
+            axs[4,j].set_xlabel(f"PCA {j}")
+            for k in range(5):
+                axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
+                                 cmap = "flare")
+                if j == 0:
+                    axs[k,0].set_ylabel(f"PCA {k}")
+        fig.delaxes(axs[0,:])
+        fig.delaxes(axs[:,4])
+        plt.tight_layout()
+        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
+        plt.close()
     
     for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
