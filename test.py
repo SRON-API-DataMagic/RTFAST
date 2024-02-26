@@ -120,7 +120,7 @@ model.to(device)
 
 model.float()
 
-optimizer = Adam(model.parameters(),lr = 0.0005)
+optimizer = Adam(model.parameters(),lr = 1e-4)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()

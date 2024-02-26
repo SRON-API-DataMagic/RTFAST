@@ -1411,7 +1411,7 @@ def PCA_plotting(wrk_dir,name):
     train_comps = test_data.data
     pars = test_data.pars
     
-    for j in range(pars.shape[1]):
+    for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
             plt.scatter(pars[:,j],train_comps[:,i],label="Training set",marker="o")
             plt.scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
