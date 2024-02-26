@@ -1209,107 +1209,111 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    recon_D = 10**test_data.pca.inverse_transform(test_data.pca.transform(np.log10(D)))
+    plot_pca = False
     
-    recon_resid = np.abs((D-recon_D))
-    recon_perc = np.abs((D-recon_D)/D)
-    recon_perc[D==1e-11] = np.nan
+    if plot_pca == True:
     
-    print(f"Maximum PCA residual is {recon_perc[~np.isnan(recon_perc)].max()*100}%")
-    print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
-    percent = (recon_perc[(recon_perc<0.01)&~np.isnan(recon_perc)].size/recon_perc[~np.isnan(recon_perc)].size)*100
-    print(f"{percent}% of PCA residuals are below 1%")
-    
-    plt.plot(np.mean(recon_resid,axis=0))
-    plt.xlabel("Energy channel")
-    plt.ylabel("Mean absolute error")
-    plt.title("Absolute error of PCA reconstruction error")
-    plt.yscale("log")
-    plt.savefig(f"samples/{name}_PCA_mean_error.png")
-    plt.close()
-    plt.plot(np.mean(recon_perc,axis=0))
-    plt.xlabel("Energy channel")
-    plt.ylabel("Mean fractional error")
-    plt.title("Fractional error of PCA reconstruction error")
-    plt.yscale("log")
-    plt.savefig(f"samples/{name}_PCA_mean_perc.png")
-    plt.close()
-    
-    for i in range(len(pars_list)):
-        print(f"Creating plot for {labels[i]}")
-        sort_ind = np.argsort(test_data.pars[:,i])
-        sort_par = test_data.pars[sort_ind,i]
-        percents = np.array([0,0.25,0.5,0.75,0.99])
-        ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
-        resids = recon_perc[sort_ind]
-        zlabel = "Fractional difference between NN model and rtdist"
-        Z_center = -2.5
-        #colormap
-        top = cm.get_cmap('autumn', 128)
-        bottom = cm.get_cmap('winter', 128)
-        middle = cm.get_cmap('summer',128)
-
-        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                               middle(np.linspace(0, 1/2, 128)),
-                            top(np.linspace(2/3, 1, 128))))
-        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('black')
-
-        fig = plt.figure(figsize=(10,10))
-        norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
-        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-        c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
-                    10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
-        plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
-        plt.xlabel("Energy in keV")
-        plt.ylabel(labels[i])
+        recon_D = 10**test_data.pca.inverse_transform(test_data.pca.transform(np.log10(D)))
         
-        cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
-        plt.close()
-    
-    
-    resid_list = ["Absolute","Percentage"]
-    for resid,label in zip([recon_resid,recon_perc],resid_list):
-        sort_ind = np.argsort(test_data.pars[:,0])
-        sort_par = test_data.pars[sort_ind,0]
-        percents = np.array([0,0.25,0.5,0.75,0.99])
-        ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
-        resids = resid[sort_ind]
-        zlabel = "Difference between PCA reconstruction and rtdist"
-        """
-        Z_center = -2.5
-        #colormap
-        top = cm.get_cmap('autumn', 128)
-        bottom = cm.get_cmap('winter', 128)
-        middle = cm.get_cmap('summer',128)
-    
-        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                               middle(np.linspace(0, 1/2, 128)),
-                            top(np.linspace(2/3, 1, 128))))
-        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('white')
-        """
-        fig = plt.figure(figsize=(10,10))
-        ax = plt.pcolormesh(resids)
-        cbar = plt.colorbar(format='%.0e')
-        plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
-        plt.xlabel("Energy in keV")
-        plt.ylabel(f"{label}")
+        recon_resid = np.abs((D-recon_D))
+        recon_perc = np.abs((D-recon_D)/D)
+        recon_perc[D==1e-11] = np.nan
         
-        cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{name}_{label}.png")
+        print(f"Maximum PCA residual is {recon_perc[~np.isnan(recon_perc)].max()*100}%")
+        print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
+        percent = (recon_perc[(recon_perc<0.01)&~np.isnan(recon_perc)].size/recon_perc[~np.isnan(recon_perc)].size)*100
+        print(f"{percent}% of PCA residuals are below 1%")
+        
+        plt.plot(np.mean(recon_resid,axis=0))
+        plt.xlabel("Energy channel")
+        plt.ylabel("Mean absolute error")
+        plt.title("Absolute error of PCA reconstruction error")
+        plt.yscale("log")
+        plt.savefig(f"samples/{name}_PCA_mean_error.png")
         plt.close()
+        plt.plot(np.mean(recon_perc,axis=0))
+        plt.xlabel("Energy channel")
+        plt.ylabel("Mean fractional error")
+        plt.title("Fractional error of PCA reconstruction error")
+        plt.yscale("log")
+        plt.savefig(f"samples/{name}_PCA_mean_perc.png")
+        plt.close()
+        
+        for i in range(len(pars_list)):
+            print(f"Creating plot for {labels[i]}")
+            sort_ind = np.argsort(test_data.pars[:,i])
+            sort_par = test_data.pars[sort_ind,i]
+            percents = np.array([0,0.25,0.5,0.75,0.99])
+            ticks = (len(sort_par)*percents).astype(int)
+            tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+            resids = recon_perc[sort_ind]
+            zlabel = "Fractional difference between NN model and rtdist"
+            Z_center = -2.5
+            #colormap
+            top = cm.get_cmap('autumn', 128)
+            bottom = cm.get_cmap('winter', 128)
+            middle = cm.get_cmap('summer',128)
     
+            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                                   middle(np.linspace(0, 1/2, 128)),
+                                top(np.linspace(2/3, 1, 128))))
+            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+            newcmp.set_over('black')
+    
+            fig = plt.figure(figsize=(10,10))
+            norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+            c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                        10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+            cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
+            plt.yticks(ticks,labels=tick_labels)
+            plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+            plt.xlabel("Energy in keV")
+            plt.ylabel(labels[i])
+            
+            cbar.set_label(zlabel, rotation=270, labelpad=15)
+            fig.tight_layout()
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
+            plt.close()
+        
+        
+        resid_list = ["Absolute","Percentage"]
+        for resid,label in zip([recon_resid,recon_perc],resid_list):
+            sort_ind = np.argsort(test_data.pars[:,0])
+            sort_par = test_data.pars[sort_ind,0]
+            percents = np.array([0,0.25,0.5,0.75,0.99])
+            ticks = (len(sort_par)*percents).astype(int)
+            tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+            resids = resid[sort_ind]
+            zlabel = "Difference between PCA reconstruction and rtdist"
+            """
+            Z_center = -2.5
+            #colormap
+            top = cm.get_cmap('autumn', 128)
+            bottom = cm.get_cmap('winter', 128)
+            middle = cm.get_cmap('summer',128)
+        
+            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                                   middle(np.linspace(0, 1/2, 128)),
+                                top(np.linspace(2/3, 1, 128))))
+            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+            newcmp.set_over('white')
+            """
+            fig = plt.figure(figsize=(10,10))
+            ax = plt.pcolormesh(resids)
+            cbar = plt.colorbar(format='%.0e')
+            plt.yticks(ticks,labels=tick_labels)
+            plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+            plt.xlabel("Energy in keV")
+            plt.ylabel(f"{label}")
+            
+            cbar.set_label(zlabel, rotation=270, labelpad=15)
+            fig.tight_layout()
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"heatmaps/{name}_{label}.png")
+            plt.close()
+        
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
     print(f"models/{name}_final.pth")
@@ -1388,7 +1392,7 @@ def PCA_plotting(wrk_dir,name):
     
     i = 0
     for pred, D in zip(test_pred, data):
-        fig, axs = plt.subplots(2)
+        fig, axs = plt.subplots(2,sharex=True,figsize=(5,5))
         axs[0].plot(pred,label="Emulator")
         axs[0].plot(D,label="Rtdist", ls = "--")
         axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
@@ -1397,7 +1401,6 @@ def PCA_plotting(wrk_dir,name):
         axs[1].set_ylabel("Percentage residuals")
         fig.supxlabel("Energy channel")
         fig.suptitle("Comparison of PCA emulator output vs expected")
-        plt.tight_layout()
         plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
         plt.close()
         i += 1
