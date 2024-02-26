@@ -308,7 +308,7 @@ def train_bottle(dataloader, model, optimizer, loss_fn, device, mask):
     return model, optimizer , avg_loss
 
 
-def train_flux(dataloader, model, optimizer, loss_fn, device):
+def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None):
     """
     
 
@@ -347,6 +347,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device):
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         
         optimizer.step()
+        if scheduler != None:
+            scheduler.step()
         loss_b = loss.detach().item()
         if batch % 5 == 0:
             current = ((batch+1)*P.shape[0])
@@ -582,7 +584,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
 
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        test_dataloader, loss_fn, device, name, mode, 
-                       epochs = 400):
+                       epochs = 400, scheduler = None):
     tr_loss_arr = []
     te_loss_arr = []
     
@@ -593,7 +595,8 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
         model, optimizer, train_loss = train(train_dataloader, model,
-                                             optimizer, loss_fn, device)
+                                             optimizer, loss_fn, device,
+                                             scheduler)
         loss = test(test_dataloader, model, loss_fn, device)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)

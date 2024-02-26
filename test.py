@@ -121,16 +121,19 @@ model.to(device)
 model.float()
 
 optimizer = Adam(model.parameters(),lr = 1e-4)
+optimizer = SGD(model.parameters(),lr=0.1,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()
+
+scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.01, max_lr=0.1)
 
 train = train_flux
 test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 1000)
+                   epochs = 1000, scheduler=scheduler)
 
 """
 bottleneck_training_loop(model, optimizer,train_dataloader, 
