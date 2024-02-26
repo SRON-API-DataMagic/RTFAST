@@ -1411,7 +1411,7 @@ def PCA_plotting(wrk_dir,name):
     train_comps = test_data.data
     pars = test_data.pars
     
-    for i in range(len(pars.shape[1])):
+    for i in range(pars.shape[1]):
         fig, axs = plt.subplots((5,5),sharex=True,sharey=True,figsize=(20,20))
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
