@@ -8,6 +8,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
+from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
 import matplotlib
 import imageio
@@ -1327,15 +1328,20 @@ def PCA_plotting(wrk_dir,name):
     for i in range(pars.shape[1]):
         fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
         norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
+        cmap = plt.get_cmap("plasma")
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
             for k in range(5):
-                im = axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
-                                 cmap = "plasma",norm=norm)
+                im = axs[j,k].scatter(train_comps[:,j],train_comps[:,k],
+                                      c=pars[:,i],
+                                      cmap=cmap,norm=norm)
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
         plt.tight_layout()
-        plt.colorbar(im,format='%.0e',norm=norm)
+        sm =  ScalarMappable(norm=norm, cmap=cmap)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ax=axs[:,4],format='%.0e')
+        fig.suptitle(labels[i])
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
