@@ -1325,14 +1325,9 @@ def PCA_plotting(wrk_dir,name):
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
     
-    vis_log = [1,2,4,5,7,8,9]
-    
     for i in range(pars.shape[1]):
         fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
-        if i in vis_log:
-            norm = colors.LogNorm(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
-        else:
-            norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
+        norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
         cmap = plt.get_cmap("plasma")
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
