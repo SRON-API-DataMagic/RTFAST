@@ -1320,6 +1320,26 @@ def PCA_plotting(wrk_dir,name):
     model.load_state_dict(torch.load(f"models/{name}_final.pth"))
     model.eval()
     
+    nn_comps = model(test_data.pars).detach().numpy()
+    train_comps = test_data.data
+    pars = test_data.pars
+    
+    for i in range(pars.shape[1]):
+        fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
+        for j in range(5):
+            axs[4,j].set_xlabel(f"PCA {j}")
+            for k in range(5):
+                axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
+                                 cmap = "plasma")
+                if j == 0:
+                    axs[k,0].set_ylabel(f"PCA {k}")
+        fig.delaxes(axs[0,:])
+        fig.delaxes(axs[:,4])
+        plt.tight_layout()
+        plt.colorbar()
+        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
+        plt.close()
+    
     loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
     
     for j in range(test_data.pars.shape[1]):
@@ -1406,25 +1426,6 @@ def PCA_plotting(wrk_dir,name):
         i += 1
         if i > 6:
             break
-    
-    nn_comps = model(test_data.pars).detach().numpy()
-    train_comps = test_data.data
-    pars = test_data.pars
-    
-    for i in range(pars.shape[1]):
-        fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
-        for j in range(5):
-            axs[4,j].set_xlabel(f"PCA {j}")
-            for k in range(5):
-                axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
-                                 cmap = "flare")
-                if j == 0:
-                    axs[k,0].set_ylabel(f"PCA {k}")
-        fig.delaxes(axs[0,:])
-        fig.delaxes(axs[:,4])
-        plt.tight_layout()
-        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
-        plt.close()
     
     for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
