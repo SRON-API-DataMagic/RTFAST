@@ -1358,6 +1358,22 @@ def PCA_plotting(wrk_dir,name):
     train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy())
     val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy())
     
+    losses = [test_loss,train_loss,val_loss]
+    loss_names = ["Testing","Training","Validation"]
+    batch_size = 1024
+    
+    for typ, loss in enumerate(losses):
+        loss_batchs = []
+        for i in range(np.ceil(loss.size/1024)):
+            loss_batchs.append(np.mean(loss[i*1024:(i+1)*1024]))
+        plt.plot(loss_batchs,label=loss_names[typ])
+    plt.legend()
+    plt.xlabel("Batch")
+    plt.ylabel("Average loss")
+    plt.savefig("loss/batchs_loss.png")
+    plt.close()
+    
+    """
     fig, axs = plt.subplots(1,3,sharey=True,sharex=True,figsize=(10,5))
     axs[0].hist(test_loss,bins=100,density=True)
     axs[0].set_title("Test set")
@@ -1379,7 +1395,7 @@ def PCA_plotting(wrk_dir,name):
     plt.tight_layout()
     plt.savefig("loss/loss_distributions.png")
     plt.close()
-    
+    """
     for j in range(test_data.pars.shape[1]):
         plt.scatter(test_data.pars[:,j],test_loss)
         plt.xlabel(labels[j])
