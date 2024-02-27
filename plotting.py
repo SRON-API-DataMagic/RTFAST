@@ -1333,8 +1333,6 @@ def PCA_plotting(wrk_dir,name):
                                  cmap = "plasma")
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
-        fig.delaxes(axs[0,:])
-        fig.delaxes(axs[:,4])
         plt.tight_layout()
         plt.colorbar()
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
