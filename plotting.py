@@ -1342,7 +1342,6 @@ def PCA_plotting(wrk_dir,name):
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.0e')
         fig.suptitle(labels[i])
         matplotlib.rcParams.update({'font.size': 16})
-        fig.tight_layout()
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
