@@ -1208,9 +1208,9 @@ def PCA_plotting(wrk_dir,name):
     for file in tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
     D = np.concatenate(data,axis=0)
-    D[D<1e-11] = 1e-11
+    D[D<1e-40] = 1e-40
     
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
     
