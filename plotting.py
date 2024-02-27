@@ -1327,7 +1327,10 @@ def PCA_plotting(wrk_dir,name):
     
     for i in range(pars.shape[1]):
         fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
-        norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
+        if i in logged:
+            norm = colors.LogNorm(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
+        else:
+            norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
         cmap = plt.get_cmap("plasma")
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
@@ -1337,11 +1340,12 @@ def PCA_plotting(wrk_dir,name):
                                       cmap=cmap,norm=norm)
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
-        plt.tight_layout()
         sm =  ScalarMappable(norm=norm, cmap=cmap)
         sm.set_array([])
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.0e')
         fig.suptitle(labels[i])
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.tight_layout()
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
