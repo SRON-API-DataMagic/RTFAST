@@ -1326,15 +1326,16 @@ def PCA_plotting(wrk_dir,name):
     
     for i in range(pars.shape[1]):
         fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
+        norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
             for k in range(5):
                 axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
-                                 cmap = "plasma")
+                                 cmap = "plasma",norm=norm)
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
         plt.tight_layout()
-        plt.colorbar()
+        plt.colorbar(format='%.0e',norm=norm)
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
