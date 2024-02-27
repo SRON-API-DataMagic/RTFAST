@@ -1505,7 +1505,7 @@ def reconstruct_emulator(dataset,model):
     pred = 10**pred
     return pred
 
-def loss_calc(data,model,varainces):
+def loss_calc(data,model,variances):
     log_vars_ratios = np.log10(variances/np.min(variances))+1
     loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
     return loss
