@@ -1336,10 +1336,12 @@ def PCA_plotting(wrk_dir,name):
                                  c=pars[:,i],cmap=cmap,norm=norm)
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
+                if k > j:
+                    fig.delaxes(axs[j,k])
         
         sm =  ScalarMappable(norm=norm, cmap=cmap)
         sm.set_array([])
-        cbar = fig.colorbar(sm, ax=axs[:,4],format='%.0e')
+        cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
         fig.suptitle(labels[i])
         matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
