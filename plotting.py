@@ -1330,12 +1330,12 @@ def PCA_plotting(wrk_dir,name):
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
             for k in range(5):
-                axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
+                im = axs[j,k].scatter(train_comps[:,j],train_comps[:,k],c=pars[:,i],
                                  cmap = "plasma",norm=norm)
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
         plt.tight_layout()
-        plt.colorbar(ax=axs.ravel().tolist(),format='%.0e',norm=norm)
+        plt.colorbar(im,format='%.0e',norm=norm)
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
