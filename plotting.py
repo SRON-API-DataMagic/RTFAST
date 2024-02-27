@@ -1364,7 +1364,7 @@ def PCA_plotting(wrk_dir,name):
     
     for typ, loss in enumerate(losses):
         loss_batchs = []
-        for i in range(np.ceil(loss.size/1024)):
+        for i in range(int(np.ceil(loss.size/1024))):
             loss_batchs.append(np.mean(loss[i*1024:(i+1)*1024]))
         plt.plot(loss_batchs,label=loss_names[typ])
     plt.legend()
