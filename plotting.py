@@ -1201,16 +1201,16 @@ def PCA_plotting(wrk_dir,name):
     """
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc=f"scalers/PCA_flux.bin",
-                               comp_loc=f"scalers/comp_flux.bin")
+                               PCA_loc="scalers/PCA_flux.bin",
+                               comp_loc="scalers/comp_flux.bin")
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc=f"scalers/PCA_flux.bin",
-                               comp_loc=f"scalers/comp_flux.bin")
+                               PCA_loc="scalers/PCA_flux.bin",
+                               comp_loc="scalers/comp_flux.bin")
     train_data = PCADataset("data/locations/PCA_locs_flux.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc=f"scalers/PCA_flux.bin",
-                               comp_loc=f"scalers/comp_flux.bin")
+                               PCA_loc="scalers/PCA_flux.bin",
+                               comp_loc="scalers/comp_flux.bin")
     data = []
     for file in tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
@@ -1358,7 +1358,7 @@ def PCA_plotting(wrk_dir,name):
     train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy())
     val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy())
     
-    fig, axs = plt.subplots(3,sharey=True,sharex=True)
+    fig, axs = plt.subplots(1,3,sharey=True,sharex=True)
     axs[0].hist(test_loss,bins=100,density=True)
     axs[0].set_title("Test set")
     axs[1].hist(train_loss,bins=100,density=True)
@@ -1367,6 +1367,7 @@ def PCA_plotting(wrk_dir,name):
     axs[2].set_title("Validation set")
     fig.supxlabel("Loss")
     fig.supylabel("Density of occurences")
+    plt.tight_layout()
     plt.savefig("loss/loss_distributions.png")
     plt.close()
     
