@@ -1322,7 +1322,7 @@ def PCA_plotting(wrk_dir,name):
     
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = test_data.data
-    pars = test_data.pars
+    pars = np.asarray(test_data.pars)
     
     for i in range(pars.shape[1]):
         fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
