@@ -1217,7 +1217,7 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    plot_pca = True
+    plot_pca = False
     
     if plot_pca == True:
     
@@ -1358,7 +1358,7 @@ def PCA_plotting(wrk_dir,name):
     train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy())
     val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy())
     
-    fig, axs = plt.subplots(1,3,sharey=True,sharex=True)
+    fig, axs = plt.subplots(1,3,sharey=True,sharex=True,figsize=(10,5))
     axs[0].hist(test_loss,bins=100,density=True)
     axs[0].set_title("Test set")
     axs[0].axvline(test_loss.max(),ls="--")
