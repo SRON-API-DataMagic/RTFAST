@@ -1324,8 +1324,8 @@ def PCA_plotting(wrk_dir,name):
         
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
-    print(f"models/{name}_final.pth")
-    model.load_state_dict(torch.load(f"models/{name}_final.pth"))
+    print(f"models/{name}.pth")
+    model.load_state_dict(torch.load(f"models/{name}.pth"))
     model.eval()
     
     nn_comps = model(test_data.pars).detach().numpy()
