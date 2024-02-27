@@ -1354,9 +1354,12 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
-    test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
-    train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy())
-    val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy())
+    test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
+                          test_data.pca.explained_variance_ratio_)
+    train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy(),
+                           test_data.pca.explained_variance_ratio_)
+    val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy(),
+                         test_data.pca.explained_variance_ratio_)
     
     losses = [test_loss,train_loss,val_loss]
     loss_names = ["Testing","Training","Validation"]
@@ -1364,8 +1367,8 @@ def PCA_plotting(wrk_dir,name):
     
     for typ, loss in enumerate(losses):
         loss_batchs = []
-        for i in range(int(np.ceil(loss.size/1024))):
-            loss_batchs.append(np.mean(loss[i*1024:(i+1)*1024]))
+        for i in range(int(np.ceil(loss.size/batch_size))):
+            loss_batchs.append(np.mean(loss[i*batch_size:(i+1)*batch_size]))
         plt.plot(loss_batchs,label=loss_names[typ])
     plt.legend()
     plt.xlabel("Batch")
@@ -1502,8 +1505,9 @@ def reconstruct_emulator(dataset,model):
     pred = 10**pred
     return pred
 
-def loss_calc(data,model):
-    loss = np.mean((model-np.asarray(data))**2,axis=1)
+def loss_calc(data,model,varainces):
+    log_vars_ratios = np.log10(variances/np.min(variances))+1
+    loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
     return loss
 
 def main():
