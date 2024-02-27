@@ -1412,7 +1412,7 @@ def PCA_plotting(wrk_dir,name):
     pars = test_data.pars
     
     for i in range(pars.shape[1]):
-        fig, axs = plt.subplots((5,5),sharex=True,sharey=True,figsize=(20,20))
+        fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
         for j in range(5):
             axs[4,j].set_xlabel(f"PCA {j}")
             for k in range(5):
