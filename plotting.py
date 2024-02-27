@@ -1203,12 +1203,19 @@ def PCA_plotting(wrk_dir,name):
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc=f"scalers/PCA_flux.bin",
                                comp_loc=f"scalers/comp_flux.bin")
-    
+    val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc=f"scalers/PCA_flux.bin",
+                               comp_loc=f"scalers/comp_flux.bin")
+    train_data = PCADataset("data/locations/PCA_locs_flux.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc=f"scalers/PCA_flux.bin",
+                               comp_loc=f"scalers/comp_flux.bin")
     data = []
     for file in tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
     D = np.concatenate(data,axis=0)
-    D[D<1e-40] = 1e-40
+    D[D<1e-11] = 1e-11
     
     plot_pca = True
     
@@ -1218,7 +1225,7 @@ def PCA_plotting(wrk_dir,name):
         
         recon_resid = np.abs((D-recon_D))
         recon_perc = np.abs((D-recon_D)/D)
-        recon_perc[D==1e-40] = np.nan
+        recon_perc[D==1e-11] = np.nan
         
         print(f"Maximum PCA residual is {recon_perc[~np.isnan(recon_perc)].max()*100}%")
         print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
@@ -1347,10 +1354,24 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
-    loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
+    test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy())
+    train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy())
+    val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy())
+    
+    fig, axs = plt.subplots(3,sharey=True,sharex=True)
+    axs[0].hist(test_loss,bins=100,density=True)
+    axs[0].set_title("Test set")
+    axs[1].hist(train_loss,bins=100,density=True)
+    axs[1].set_title("Training set")
+    axs[2].hist(val_loss,bins=100,density=True)
+    axs[2].set_title("Validation set")
+    fig.supxlabel("Loss")
+    fig.supylabel("Density of occurences")
+    plt.savefig("loss/loss_distributions.png")
+    plt.close()
     
     for j in range(test_data.pars.shape[1]):
-        plt.scatter(test_data.pars[:,j],loss)
+        plt.scatter(test_data.pars[:,j],test_loss)
         plt.xlabel(labels[j])
         plt.ylabel("Loss")
         plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
