@@ -1218,7 +1218,7 @@ def PCA_plotting(wrk_dir,name):
         
         recon_resid = np.abs((D-recon_D))
         recon_perc = np.abs((D-recon_D)/D)
-        recon_perc[D==1e-11] = np.nan
+        recon_perc[D==1e-40] = np.nan
         
         print(f"Maximum PCA residual is {recon_perc[~np.isnan(recon_perc)].max()*100}%")
         print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
