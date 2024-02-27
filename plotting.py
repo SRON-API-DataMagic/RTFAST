@@ -1321,7 +1321,7 @@ def PCA_plotting(wrk_dir,name):
     model.eval()
     
     nn_comps = model(test_data.pars).detach().numpy()
-    train_comps = test_data.data
+    train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
     
     for i in range(pars.shape[1]):
@@ -1335,7 +1335,7 @@ def PCA_plotting(wrk_dir,name):
                 if j == 0:
                     axs[k,0].set_ylabel(f"PCA {k}")
         plt.tight_layout()
-        plt.colorbar(format='%.0e',norm=norm)
+        plt.colorbar(ax=axs.ravel().tolist(),format='%.0e',norm=norm)
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
     
