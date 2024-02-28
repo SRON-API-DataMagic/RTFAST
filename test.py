@@ -107,13 +107,13 @@ val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = True,
                            force=True,comps=40,
                            threshold=1e-11)
-val_dataloader = DataLoader(val_dataset, batch_size=8192, num_workers = 4, 
+val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            pars_list,negatives,logged,scale_bool = False,
                            threshold=1e-11)
-train_dataloader = DataLoader(train_dataset, batch_size=8192, num_workers = 4, 
+train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 print(val_dataset.data.shape)
 model = PCAFluxNetwork(num_pars, val_dataset.data.shape[1])
