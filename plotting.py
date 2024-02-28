@@ -1201,7 +1201,8 @@ def PCA_plotting(wrk_dir,name):
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     """
     test_data = PCADataset("data/locations/loc_flux_test.csv",
-                               pars_list,negatives,logged,scale_bool = False,
+                               pars_list,negatives,logged,scale_bool = True,
+                               force=True,comps=40,
                                PCA_loc="scalers/PCA_test.bin",
                                comp_loc="scalers/comp_flux.bin")
     """
@@ -1520,7 +1521,7 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
-    
+    """
     egrid = retrieve_egrid(wrk_dir)
     egrid = egrid[egrid>0.1]
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
@@ -1546,7 +1547,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    
+    """
     PCA_plotting(wrk_dir,"PCA_flux")
     
     
