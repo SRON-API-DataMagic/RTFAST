@@ -1201,8 +1201,7 @@ def PCA_plotting(wrk_dir,name):
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     """
     test_data = PCADataset("data/locations/loc_flux_test.csv",
-                               pars_list,negatives,logged,scale_bool = True,
-                               force=True,comps=40,
+                               pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
     """
@@ -1362,6 +1361,7 @@ def PCA_plotting(wrk_dir,name):
     test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
                           test_data.pca.explained_variance_ratio_)
     
+    print(test_loss.shape)
     print(f"Highest test loss is {test_loss.max()}")
     print(f"Average test loss is {test_loss.mean()}")
     
@@ -1473,6 +1473,7 @@ def reconstruct_emulator(dataset,model):
 
 def loss_calc(data,model,variances):
     log_vars_ratios = np.log10(variances/np.min(variances))+1
+    print(log_vars_ratios)
     loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
     return loss
 
