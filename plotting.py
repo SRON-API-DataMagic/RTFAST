@@ -1227,6 +1227,7 @@ def PCA_plotting(wrk_dir,name):
     model.eval()
     
     nn_comps = model(test_data.pars).detach().numpy()
+    nn_comps[:,2] = -1*nn_comps[:,2]
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
     plot_pca = False
@@ -1468,7 +1469,6 @@ def PCA_plotting(wrk_dir,name):
 
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
-    print(pred.shape)
     pred = dataset.PCA_scaler.inverse_transform(pred)
     pred = dataset.pca.inverse_transform(pred)
     pred = 10**pred
