@@ -1203,7 +1203,7 @@ def PCA_plotting(wrk_dir,name):
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = True,
                                force=True,comps=40,
-                               PCA_loc="scalers/PCA_test.bin",
+                               PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
     """
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
@@ -1361,53 +1361,10 @@ def PCA_plotting(wrk_dir,name):
     
     test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
                           test_data.pca.explained_variance_ratio_)
-    """
-    train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy(),
-                           test_data.pca.explained_variance_ratio_)
-    val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy(),
-                         test_data.pca.explained_variance_ratio_)
-    """
     
-    print(f"Highest test loss is {test_loss.max(axis=0)}")
-    """
-    losses = [test_loss,train_loss,val_loss]
-    loss_names = ["Testing","Training","Validation"]
-    batch_size = 1024
+    print(f"Highest test loss is {test_loss.max()}")
+    print(f"Average test loss is {test_loss.mean()}")
     
-    for typ, loss in enumerate(losses):
-        loss_batchs = []
-        for i in range(int(np.ceil(loss.size/batch_size))):
-            loss_batchs.append(np.mean(loss[i*batch_size:(i+1)*batch_size]))
-        plt.plot(loss_batchs,label=loss_names[typ])
-    plt.legend()
-    plt.xlabel("Batch")
-    plt.ylabel("Average loss")
-    plt.savefig("loss/batchs_loss.png")
-    plt.close()
-    """
-    """
-    fig, axs = plt.subplots(1,3,sharey=True,sharex=True,figsize=(10,5))
-    axs[0].hist(test_loss,bins=100,density=True)
-    axs[0].set_title("Test set")
-    axs[0].axvline(test_loss.max(),ls="--",c="r",label="Max")
-    axs[0].axvline(test_loss.mean(),ls="--",c="orange",label="Mean")
-    axs[0].legend()
-    axs[1].hist(train_loss,bins=100,density=True)
-    axs[1].axvline(train_loss.max(),ls="--",c="r",label="Max")
-    axs[1].axvline(train_loss.mean(),ls="--",c="orange",label="Mean")
-    axs[1].set_title("Training set")
-    axs[1].legend()
-    axs[2].hist(val_loss,bins=100,density=True)
-    axs[2].axvline(val_loss.max(),ls="--",c="r",label="Max")
-    axs[2].axvline(val_loss.mean(),ls="--",c="orange",label="Mean")
-    axs[2].set_title("Validation set")
-    axs[2].legend()
-    fig.supxlabel("Loss")
-    fig.supylabel("Density of occurences")
-    plt.tight_layout()
-    plt.savefig("loss/loss_distributions.png")
-    plt.close()
-    """
     for j in range(test_data.pars.shape[1]):
         plt.scatter(test_data.pars[:,j],test_loss)
         plt.xlabel(labels[j])
