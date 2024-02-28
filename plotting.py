@@ -1201,8 +1201,9 @@ def PCA_plotting(wrk_dir,name):
     """
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_flux.bin",
+                               PCA_loc="scalers/PCA_test.bin",
                                comp_loc="scalers/comp_flux.bin")
+    """
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_flux.bin",
@@ -1211,13 +1212,14 @@ def PCA_plotting(wrk_dir,name):
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
+    """
     data = []
     for file in tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
     
@@ -1356,10 +1358,12 @@ def PCA_plotting(wrk_dir,name):
     
     test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
                           test_data.pca.explained_variance_ratio_)
+    """
     train_loss = loss_calc(train_data.data, model(train_data.pars).detach().numpy(),
                            test_data.pca.explained_variance_ratio_)
     val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy(),
                          test_data.pca.explained_variance_ratio_)
+    """
     
     print(f"Highest test loss is {test_loss.max(axis=0)}")
     """
