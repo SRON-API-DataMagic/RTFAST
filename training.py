@@ -15,7 +15,6 @@ import time
 from processing import mergeSaveData, saveLoop
 from math import ceil
 from tqdm import tqdm
-from plotting import distributions, variances
 from generator import active_learning_generation
 
 def model_NaN_checker(D,P,model):
@@ -717,13 +716,9 @@ def QBDC(flux_name, flux_test_name, lags_name, lags_test_name, active_loop_num,
     np.savetxt(f"dists/loop_{active_loop_num}_variances.txt",query_samples)
     query_idx = np.argsort(query_samples)[::-1]
     
-    variances(query_samples, active_loop_num)
-    
     print("Generating data for these samples")
     # get out the top `nsamples` values of theta_query
     theta_query = theta_query_large[query_idx[:n_samples]]
-    
-    distributions(theta_query, labels, f"dists/loop_{active_loop_num}_")
     
     active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
                                 flux_name, flux_test_name, lags_name,
