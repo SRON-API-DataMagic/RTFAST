@@ -1326,6 +1326,31 @@ def PCA_plotting(wrk_dir,name):
             plt.savefig(f"heatmaps/{name}_{label}.png")
             plt.close()
         
+        train_comps = np.asarray(test_data.data)
+        pars = np.asarray(test_data.pars)
+        
+        for i in range(pars.shape[1]):
+            fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
+            norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
+            cmap = plt.get_cmap("plasma")
+            for j in range(5):
+                axs[4,j].set_xlabel(f"PCA {j}")
+                for k in range(5):
+                    axs[j,k].scatter(train_comps[:,j],train_comps[:,k],
+                                     c=pars[:,i],cmap=cmap,norm=norm)
+                    if j == 0:
+                        axs[k,0].set_ylabel(f"PCA {k}")
+                    if k > j:
+                        fig.delaxes(axs[j,k])
+            
+            sm =  ScalarMappable(norm=norm, cmap=cmap)
+            sm.set_array([])
+            cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
+            fig.suptitle(labels[i])
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"samples/corner/{labels[i]}_corner.png")
+            plt.close()
+        
     model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
     
     print(f"models/{name}.pth")
@@ -1333,30 +1358,6 @@ def PCA_plotting(wrk_dir,name):
     model.eval()
     
     nn_comps = model(test_data.pars).detach().numpy()
-    train_comps = np.asarray(test_data.data)
-    pars = np.asarray(test_data.pars)
-    
-    for i in range(pars.shape[1]):
-        fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
-        norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
-        cmap = plt.get_cmap("plasma")
-        for j in range(5):
-            axs[4,j].set_xlabel(f"PCA {j}")
-            for k in range(5):
-                axs[j,k].scatter(train_comps[:,j],train_comps[:,k],
-                                 c=pars[:,i],cmap=cmap,norm=norm)
-                if j == 0:
-                    axs[k,0].set_ylabel(f"PCA {k}")
-                if k > j:
-                    fig.delaxes(axs[j,k])
-        
-        sm =  ScalarMappable(norm=norm, cmap=cmap)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
-        fig.suptitle(labels[i])
-        matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
-        plt.close()
     
     test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
                           test_data.pca.explained_variance_ratio_)
