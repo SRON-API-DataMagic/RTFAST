@@ -378,7 +378,7 @@ def lhc_10():
     distance_range = [np.log10(3.5e5),np.log10(5e7)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
-    nH_range = [np.log10(1e-3),np.log10(200)]
+    nH_range = [np.log10(1e-3),np.log10(1)]
     mass_range = [np.log10(1e4),np.log10(1e11)]
     flux_range = [np.log10(1e-12),np.log10(1e-8)]
     

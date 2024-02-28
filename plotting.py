@@ -1361,6 +1361,8 @@ def PCA_plotting(wrk_dir,name):
     val_loss = loss_calc(val_data.data, model(val_data.pars).detach().numpy(),
                          test_data.pca.explained_variance_ratio_)
     
+    print(f"Highest test loss is {test_loss.max(axis=0)}")
+    """
     losses = [test_loss,train_loss,val_loss]
     loss_names = ["Testing","Training","Validation"]
     batch_size = 1024
@@ -1375,7 +1377,7 @@ def PCA_plotting(wrk_dir,name):
     plt.ylabel("Average loss")
     plt.savefig("loss/batchs_loss.png")
     plt.close()
-    
+    """
     """
     fig, axs = plt.subplots(1,3,sharey=True,sharex=True,figsize=(10,5))
     axs[0].hist(test_loss,bins=100,density=True)

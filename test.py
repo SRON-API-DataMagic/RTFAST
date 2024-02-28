@@ -66,8 +66,8 @@ logged = [3]
 range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
-"""
-theta_lhc = generator.lhc_generation(int(2e5), range_AGN, limited=False, 
+
+theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
                                      lhc_filter=generator.lhc_filter_10)
 
 #generate physical models of test set
@@ -100,7 +100,7 @@ saveData(train_flux_data, train_flux_pars,
          "data/locations/","PCA_locs_flux.csv")
 saveData(test_flux_data, test_flux_pars, 
          "data/locations/","PCA_locs_flux_test.csv")
-"""
+
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = False,
@@ -126,7 +126,7 @@ optimizer = Adam(model.parameters(),lr = 1e-3)
 #optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-loss_fn = nn.MSELoss()
+#loss_fn = nn.MSELoss()
 """
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
                                               max_lr=1e-2)
