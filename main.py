@@ -50,6 +50,7 @@ def active_learning(device, wrk_dir, name):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    egrid = egrid[egrid>0.1]
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     active_loops = 30
@@ -249,6 +250,7 @@ def grid_learning(device,wrk_dir,data_gen = False):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    egrid = egrid[egrid>0.1]
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     
     pars_list = [1,2,3,4,13]

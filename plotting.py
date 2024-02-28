@@ -196,6 +196,7 @@ def retrieve_egrid(wrk_dir):
     rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
     rmf = unpack_rmf(rmf_name)
     egrid = rmf.e_min
+    egrid = egrid[egrid>0.1]
     
     return egrid
 
@@ -1519,8 +1520,9 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
-    """
+    
     egrid = retrieve_egrid(wrk_dir)
+    egrid = egrid[egrid>0.1]
     lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
     range_AGN = np.asarray(generator.lhc_10())
     num_pars = range_AGN.shape[0]
@@ -1544,7 +1546,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
+    
     PCA_plotting(wrk_dir,"PCA_flux")
     
     

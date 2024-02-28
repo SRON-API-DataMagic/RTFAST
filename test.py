@@ -32,6 +32,7 @@ wrk_dir = os.getcwd()
 rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
 rmf = unpack_rmf(rmf_name)
 egrid = rmf.e_min #energy grid used to evaluate the xspec model
+egrid = egrid[egrid>0.1]
 
 #set envionmental variables required in xspec with simrtdist
 environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
@@ -104,13 +105,13 @@ saveData(test_flux_data, test_flux_pars,
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = False,
-                           threshold=1e-40)
+                           threshold=1e-11)
 val_dataloader = DataLoader(val_dataset, batch_size=8192, num_workers = 4, 
                               shuffle=True)
 
 train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
                            pars_list,negatives,logged,scale_bool = False,
-                           threshold=1e-40)
+                           threshold=1e-11)
 train_dataloader = DataLoader(train_dataset, batch_size=8192, num_workers = 4, 
                               shuffle=True)
 print(val_dataset.data.shape)
