@@ -1469,6 +1469,7 @@ def PCA_plotting(wrk_dir,name):
 
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
+    pred[:,2] = -pred[:,2]
     pred = dataset.PCA_scaler.inverse_transform(pred)
     pred = dataset.pca.inverse_transform(pred)
     pred = 10**pred
