@@ -1356,9 +1356,11 @@ def PCA_plotting(wrk_dir,name):
             matplotlib.rcParams.update({'font.size': 16})
             plt.savefig(f"samples/corner/{labels[i]}_corner.png")
             plt.close()
-        
     
-    test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
+    pred = model(test_data.pars).detach().numpy()
+    pred[:,2] = -pred[:,2]
+    
+    test_loss = loss_calc(test_data.data, pred,
                           test_data.pca.explained_variance_ratio_)
     
     print(test_loss.shape)
