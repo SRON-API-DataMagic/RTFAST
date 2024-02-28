@@ -1220,6 +1220,15 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
+    model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
+    
+    print(f"models/{name}.pth")
+    model.load_state_dict(torch.load(f"models/{name}.pth"))
+    model.eval()
+    
+    nn_comps = model(test_data.pars).detach().numpy()
+    train_comps = np.asarray(test_data.data)
+    pars = np.asarray(test_data.pars)
     plot_pca = False
     
     if plot_pca == True:
@@ -1325,9 +1334,6 @@ def PCA_plotting(wrk_dir,name):
             plt.savefig(f"heatmaps/{name}_{label}.png")
             plt.close()
         
-        train_comps = np.asarray(test_data.data)
-        pars = np.asarray(test_data.pars)
-        
         for i in range(pars.shape[1]):
             fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
             norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
@@ -1350,13 +1356,6 @@ def PCA_plotting(wrk_dir,name):
             plt.savefig(f"samples/corner/{labels[i]}_corner.png")
             plt.close()
         
-    model = network.PCAFluxNetwork(len(pars_list), test_data.pca.components_.shape[0])
-    
-    print(f"models/{name}.pth")
-    model.load_state_dict(torch.load(f"models/{name}.pth"))
-    model.eval()
-    
-    nn_comps = model(test_data.pars).detach().numpy()
     
     test_loss = loss_calc(test_data.data, model(test_data.pars).detach().numpy(),
                           test_data.pca.explained_variance_ratio_)
@@ -1364,6 +1363,10 @@ def PCA_plotting(wrk_dir,name):
     print(test_loss.shape)
     print(f"Highest test loss is {test_loss.max()}")
     print(f"Average test loss is {test_loss.mean()}")
+    plt.hist(test_loss,bins=50)
+    plt.xlabel("Loss")
+    plt.savefig("loss/test_dists.png")
+    plt.close()
     
     for j in range(test_data.pars.shape[1]):
         plt.scatter(test_data.pars[:,j],test_loss)
