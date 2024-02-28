@@ -26,6 +26,7 @@ from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual, PCAData
 from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc_AGN, lhc_BH
 import generator
 from processing import saveData, nanChecker, spectraChecker
+from training import PCALoss
             
 def inverse(scaler,data):
     """
@@ -1363,6 +1364,9 @@ def PCA_plotting(wrk_dir,name):
     test_loss = loss_calc(test_data.data, pred,
                           test_data.pca.explained_variance_ratio_)
     
+    loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
+    print(f"PCA loss reports: {loss_fn(model(test_data.pars),test_data.data)}")
+    
     print(test_loss.shape)
     print(f"Highest test loss is {test_loss.max()}")
     print(f"Average test loss is {test_loss.mean()}")
@@ -1479,7 +1483,7 @@ def reconstruct_emulator(dataset,model):
 
 def loss_calc(data,model,variances):
     log_vars_ratios = np.log10(variances/np.min(variances))+1
-    loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
+    loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios)
     return loss
 
 def main():
