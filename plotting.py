@@ -1462,6 +1462,9 @@ def PCA_plotting(wrk_dir,name):
         if i > 6:
             break
     
+    rescaled_train_comps = val_data.PCA_scaler.inverse_transform(train_comps)
+    rescaled_nn_comps = val_data.PCA_scaler.inverse_transform(nn_comps)
+    
     for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
             fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
@@ -1473,6 +1476,16 @@ def PCA_plotting(wrk_dir,name):
             axs[1].set_ylabel("Residuals")
             fig.supxlabel(labels[j])
             plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
+            plt.close()
+            fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
+            axs[0].scatter(pars[:,j],rescaled_train_comps[:,i],label="Training set",marker="o")
+            axs[0].scatter(pars[:,j],rescaled_nn_comps[:,i],label="Emulator",marker="x")
+            axs[0].legend()
+            axs[0].set_ylabel(f"PCA component {i+1}")
+            axs[1].scatter(pars[:,j],rescaled_train_comps[:,i]-rescaled_nn_comps[:,i],marker="x")
+            axs[1].set_ylabel("Residuals")
+            fig.supxlabel(labels[j])
+            plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}_rescaled.png")
             plt.close()
 
 def reconstruct_emulator(dataset,model):
