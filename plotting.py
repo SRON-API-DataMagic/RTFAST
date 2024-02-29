@@ -1363,10 +1363,10 @@ def PCA_plotting(wrk_dir,name):
     test_loss = loss_calc(test_data.data, test_pred,
                           test_data.pca.explained_variance_ratio_)
     
-    val_pred = model(val_data.pars).detach().numpy()
+    val_pred = model(val_data.pars)
     
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
-    print(f"PCA loss reports: {loss_fn(test_pred,test_data.data)}")
+    print(f"PCA loss reports: {loss_fn(model(test_data.pars).detach().numpy(),test_data.data)}")
     print(f"PCA loss reports: {loss_fn(val_pred,val_data.data)}")
     
     print(test_loss.shape)
