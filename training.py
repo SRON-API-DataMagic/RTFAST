@@ -68,7 +68,7 @@ def model_NaN_checker(D,P,model):
 
 class PCALoss(nn.Module):
     
-    def __init__(self,variances,scale,device,verbose=False):
+    def __init__(self,variances,device,verbose=False):
         super().__init__()
         log_vars_ratios = np.log10(variances/np.min(variances))+1
         self.variances = torch.tensor(log_vars_ratios)
@@ -80,7 +80,7 @@ class PCALoss(nn.Module):
         return self.weightedMSELoss(torch.squeeze(pred),target)
     
     def weightedMSELoss(self,pred,target):
-        loss = ((pred-target)/((target+pred)/2))**2
+        loss = (pred-target)**2
         weighted_loss = torch.mul(loss,self.variances.to(self.device))
         return torch.mean(weighted_loss)
 

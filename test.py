@@ -124,8 +124,7 @@ model.float()
 optimizer = AdamW(model.parameters(),lr = 1e-3)
 #optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
-loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_,
-                  val_dataset.PCA_scaler.scale_, device)
+loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()
 """
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
