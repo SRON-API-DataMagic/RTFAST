@@ -1364,8 +1364,6 @@ def PCA_plotting(wrk_dir,name):
                           test_data.pca.explained_variance_ratio_)
     
     val_pred = model(val_data.pars)
-    print(val_pred)
-    print(test_pred)
     
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
     print(f"PCA loss reports: {loss_fn(model(test_data.pars),test_data.data)}")
@@ -1466,8 +1464,7 @@ def PCA_plotting(wrk_dir,name):
     
     rescaled_train_comps = val_data.PCA_scaler.inverse_transform(train_comps)
     rescaled_nn_comps = val_data.PCA_scaler.inverse_transform(nn_comps)
-    print(nn_comps)
-    print(rescaled_nn_comps)
+    print((rescaled_nn_comps-rescaled_train_comps)/rescaled_train_comps)
     
     for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
