@@ -340,7 +340,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None):
     model.train()
     
     size = len(dataloader.dataset)
-    loss_arr = 0
+    loss_tot = 0
+    loss_arr = []
     for batch, (D,P) in enumerate(dataloader):
         optimizer.zero_grad()
         pred = model(P.to(device))
@@ -356,9 +357,10 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None):
         if batch % 5 == 0:
             current = ((batch+1)*P.shape[0])
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
-        loss_arr += loss_b
+        loss_tot += loss_b
+        loss_arr.append(loss_b)
     
-    avg_loss = loss_arr/len(dataloader)
+    avg_loss = loss_tot/len(dataloader)
     med_loss = np.median(loss_arr)
     print(f"Average training loss: {avg_loss:>8f}")
     print(f"Median training loss: {med_loss:>8f}")
