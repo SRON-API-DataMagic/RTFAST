@@ -1463,9 +1463,7 @@ def PCA_plotting(wrk_dir,name):
             break
     
     rescaled_train_comps = val_data.PCA_scaler.inverse_transform(train_comps)
-    print(rescaled_train_comps)
     rescaled_nn_comps = val_data.PCA_scaler.inverse_transform(nn_comps)
-    print((rescaled_nn_comps-rescaled_train_comps)/rescaled_train_comps)
     
     for j in tqdm(range(pars.shape[1])):
         for i in range(nn_comps.shape[1]):
