@@ -14,7 +14,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
-from processing import saveData, spectraChecker
+from processing import saveData, spectraChecker, mergeSaveData
 
 from joblib import Parallel, delayed, dump, load
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
@@ -26,6 +26,54 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW, SGD
+
+def new_set():
+    
+    theta_lhc = generator.lhc_generation(int(4e5), range_AGN, limited=False, 
+                                         lhc_filter=generator.lhc_filter_10)
+    
+    #generate physical models of test set
+    theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    print("Parallelized model generation")
+    
+    print("Generating flux models")
+    flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+                                    for pars in theta_flux)
+    flux = np.asarray(flux)
+    print("Checking for spectra below threshold")
+    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                  1e-11)
+    
+    idxs = np.arange(0,flux.shape[0])
+    np.random.shuffle(idxs)
+    tra_idx = idxs[:int(0.9*len(idxs))]
+    tes_idx = idxs[int(0.9*len(idxs)):]
+    
+    #Splitting data and parameters into training and testing datasets
+    train_flux_data = flux[tra_idx]
+    train_flux_pars = theta_flux[tra_idx]
+    
+    test_flux_data = flux[tes_idx]
+    test_flux_pars = theta_flux[tes_idx]
+    
+    print("Saving flux data")
+    saveData(train_flux_data, train_flux_pars, 
+             "data/locations/","PCA_locs_flux_temp.csv")
+    saveData(test_flux_data, test_flux_pars, 
+             "data/locations/","PCA_locs_flux_test_temp.csv")
+
+def merge():
+    train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
+    test = pd.read_csv("data/locations/PCA_locs_flux_test_temp.csv")
+    
+    train_name = "PCA_locs_flux.csv"
+    test_name = "PCA_locs_flux_test.csv"
+    #save final curated datasets back to disk for use
+    mergeSaveData(train, pd.read_csv(f"data/locations/{train_name}"),
+                  "data/locations/", train_name)
+    mergeSaveData(test, pd.read_csv(f"data/locations/{test_name}"),
+                  "data/locations/",test_name)
 
 wrk_dir = os.getcwd()
 
@@ -67,42 +115,10 @@ logged = [3]
 range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
-"""
-theta_lhc = generator.lhc_generation(int(1e5), range_AGN, limited=False, 
-                                     lhc_filter=generator.lhc_filter_10)
 
-#generate physical models of test set
-theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-print("Parallelized model generation")
+new_set()
+merge()
 
-print("Generating flux models")
-flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
-                                for pars in theta_flux)
-flux = np.asarray(flux)
-print("Checking for spectra below threshold")
-flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                              1e-11)
-
-idxs = np.arange(0,flux.shape[0])
-np.random.shuffle(idxs)
-tra_idx = idxs[:int(0.9*len(idxs))]
-tes_idx = idxs[int(0.9*len(idxs)):]
-
-#Splitting data and parameters into training and testing datasets
-train_flux_data = flux[tra_idx]
-train_flux_pars = theta_flux[tra_idx]
-
-test_flux_data = flux[tes_idx]
-test_flux_pars = theta_flux[tes_idx]
-
-print("Saving flux data")
-saveData(train_flux_data, train_flux_pars, 
-         "data/locations/","PCA_locs_flux.csv")
-saveData(test_flux_data, test_flux_pars, 
-         "data/locations/","PCA_locs_flux_test.csv")
-
-"""
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = False)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
