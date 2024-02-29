@@ -25,7 +25,7 @@ from network import PCAFluxNetwork
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from torch.optim import Adam, SGD
+from torch.optim import Adam, AdamW, SGD
 
 wrk_dir = os.getcwd()
 
@@ -121,7 +121,7 @@ model.to(device)
 
 model.float()
 
-optimizer = Adam(model.parameters(),lr = 1e-4)
+optimizer = AdamW(model.parameters(),lr = 1e-3)
 #optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)

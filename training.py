@@ -357,8 +357,10 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None):
         loss_arr += loss_b
     
     avg_loss = loss_arr/len(dataloader)
+    med_loss = np.median(loss_arr)
     print(f"Average training loss: {avg_loss:>8f}")
-    return model, optimizer , avg_loss
+    print(f"Median training loss: {med_loss:>8f}")
+    return model, optimizer , avg_loss, med_loss
 
 def train_lags(dataloader, model, optimizer, loss_fn, device):
     """
@@ -587,6 +589,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
                        test_dataloader, loss_fn, device, name, mode, 
                        epochs = 400, scheduler = None):
     tr_loss_arr = []
+    med_tr_loss_arr = []
     te_loss_arr = []
     
     epoch = 0
@@ -595,12 +598,13 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     while epoch < epochs:
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
-        model, optimizer, train_loss = train(train_dataloader, model,
+        model, optimizer, train_loss, med_loss = train(train_dataloader, model,
                                              optimizer, loss_fn, device,
                                              scheduler)
         loss = test(test_dataloader, model, loss_fn, device)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
+        med_tr_loss_arr.append(med_loss)
         if loss == np.min(te_loss_arr):
             print(f"New best testing loss: {loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
@@ -614,9 +618,11 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
+    med_tr_loss_arr = np.asarray(med_tr_loss_arr)
     
     np.savetxt(f"loss/{name}_{mode}_te_loss.txt",te_loss_arr)
     np.savetxt(f"loss/{name}_{mode}_tr_loss.txt",tr_loss_arr)
+    np.savetxt(f"loss/{name}_{mode}_med_tr_loss.txt",med_tr_loss_arr)
     
     return
 
