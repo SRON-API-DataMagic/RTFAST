@@ -80,7 +80,7 @@ class PCALoss(nn.Module):
         return self.weightedMSELoss(torch.squeeze(pred),target)
     
     def weightedMSELoss(self,pred,target):
-        loss = (pred-target)**2
+        loss = ((pred-target)/target)**2
         weighted_loss = torch.mul(loss,self.variances.to(self.device))
         return torch.mean(weighted_loss)
 
