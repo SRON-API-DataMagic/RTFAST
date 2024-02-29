@@ -1472,8 +1472,10 @@ def PCA_plotting(wrk_dir,name):
             axs[0].scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
             axs[0].legend()
             axs[0].set_ylabel(f"PCA component {i+1}")
-            axs[1].scatter(pars[:,j],train_comps[:,i]-nn_comps[:,i],marker="x")
-            axs[1].set_ylabel("Residuals")
+            axs[1].scatter(pars[:,j],
+                           np.abs((train_comps[:,i]-nn_comps[:,i])/train_comps[:,i]),
+                           marker="x")
+            axs[1].set_ylabel("Fractional residuals")
             fig.supxlabel(labels[j])
             plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
             plt.close()
@@ -1482,8 +1484,10 @@ def PCA_plotting(wrk_dir,name):
             axs[0].scatter(pars[:,j],rescaled_nn_comps[:,i],label="Emulator",marker="x")
             axs[0].legend()
             axs[0].set_ylabel(f"PCA component {i+1}")
-            axs[1].scatter(pars[:,j],rescaled_train_comps[:,i]-rescaled_nn_comps[:,i],marker="x")
-            axs[1].set_ylabel("Residuals")
+            axs[1].scatter(pars[:,j],
+                           np.abs((rescaled_train_comps[:,i]-rescaled_nn_comps[:,i])/rescaled_train_comps[:,i]),
+                           marker="x")
+            axs[1].set_ylabel("Fractional residuals")
             fig.supxlabel(labels[j])
             plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}_rescaled.png")
             plt.close()
