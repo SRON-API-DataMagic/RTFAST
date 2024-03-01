@@ -1171,6 +1171,7 @@ def PCA_plotting(wrk_dir,name):
              ls = "-.")
     
     plt.yscale("log")
+    plt.xscale("log")
     plt.xlabel("Training epochs")
     plt.ylabel("Loss")
     plt.title(f"Loss by epoch for {name}")
