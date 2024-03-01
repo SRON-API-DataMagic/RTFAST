@@ -116,8 +116,8 @@ range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
 
-new_set()
-merge()
+#new_set()
+#merge()
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
                            pars_list,negatives,logged,scale_bool = False)
@@ -151,7 +151,7 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 1000)
+                   epochs = 2000)
 
 """
 bottleneck_training_loop(model, optimizer,train_dataloader, 
