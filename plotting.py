@@ -1176,6 +1176,7 @@ def PCA_plotting(wrk_dir,name):
     plt.ylabel("Loss")
     plt.title(f"Loss by epoch for {name}")
     plt.legend()
+    plt.tight_layout()
     plt.savefig(f"loss/loss_{name}.png")
     plt.close()
     
