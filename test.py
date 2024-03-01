@@ -143,6 +143,14 @@ optimizer = AdamW(model.parameters(),lr = 1e-3)
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()
 """
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
+                                                                T_0=20, 
+                                                                T_mult=1, 
+                                                                eta_min=1e-5, 
+                                                                last_epoch=-1)
+"""
+"""
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
                                               max_lr=1e-2)
 """
@@ -151,7 +159,7 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 2000)
+                   epochs = 500)
 
 """
 bottleneck_training_loop(model, optimizer,train_dataloader, 
