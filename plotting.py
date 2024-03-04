@@ -1162,13 +1162,13 @@ def PCA_plotting(wrk_dir,name):
     PCA_train_loss_med = np.loadtxt(f"loss/{name}_med_tr_loss.txt")
     PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
     
-    
+    epochs = np.arange(1,len(PCA_train_loss)+1)
     plt.plot(PCA_train_loss,label = "Training loss", c = "blue",
-             ls = "-")
+             ls = "-",ms="o")
     plt.plot(PCA_val_loss,label = "Validation loss", c = "orange",
-             ls = "--")
+             ls = "--",ms="o")
     plt.plot(PCA_train_loss_med,label = "Median training loss", c = "green",
-             ls = "-.")
+             ls = "-.",ms="o")
     
     plt.yscale("log")
     plt.xscale("log")
@@ -1178,6 +1178,13 @@ def PCA_plotting(wrk_dir,name):
     plt.legend()
     plt.tight_layout()
     plt.savefig(f"loss/loss_{name}.png")
+    plt.close()
+    
+    plt.plot(PCA_train_loss/PCA_val_loss,c="b",ls="-")
+    plt.axhline(1,c="orange",ls="--")
+    plt.xlabel("Epoch")
+    plt.ylabel("Ratio between training loss and validation loss")
+    plt.savefig("loss/loss_ratio.png")
     plt.close()
     
     #plotting of emulator vs test data performance

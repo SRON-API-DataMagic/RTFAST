@@ -68,11 +68,12 @@ def model_NaN_checker(D,P,model):
 
 class PCALoss(nn.Module):
     
-    def __init__(self,variances,device,verbose=False):
+    def __init__(self,variances,device,verbose=False,individual=False):
         super().__init__()
         log_vars_ratios = np.log10(variances/np.min(variances))+1
         self.variances = torch.tensor(log_vars_ratios)
         self.device = device
+        self.individual = individual
         if verbose==True:
             print(self.variances)
     
@@ -82,7 +83,10 @@ class PCALoss(nn.Module):
     def weightedMSELoss(self,pred,target):
         loss = (pred-target)**2
         weighted_loss = torch.mul(loss,self.variances.to(self.device))
-        return torch.mean(weighted_loss)
+        if self.individual == False:
+            return torch.mean(weighted_loss)
+        else:
+            return torch.mean(weighted_loss,1)
 
 class FluxLoss(nn.Module):
     """
@@ -337,6 +341,14 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     """
     
     model.train()
+    
+    if epoch == 1: #after first epoch remove 1% of worst outliers
+        pred = model(dataloader.pars)
+        losses = loss_fn(pred,dataloader.data)
+        quantile = torch.quantile(losses,0.99)
+        mask = losses>quantile
+        dataloader.data = dataloader.data[mask]
+        dataloader.pars = dataloader.pars[mask]
     
     size = len(dataloader.dataset)
     loss_tot = 0
