@@ -1165,7 +1165,7 @@ def PCA_plotting(wrk_dir,name):
     
     epochs = np.arange(1,len(PCA_train_loss)+1)
     plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
-                     PCA_train_loss-PCA_train_loss_std,c="b",alpha=0.5)
+                     PCA_train_loss-PCA_train_loss_std,color="b",alpha=0.5)
     plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
              ls = "-")
     plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
