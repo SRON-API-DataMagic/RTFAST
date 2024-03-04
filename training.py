@@ -342,14 +342,6 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     
     model.train()
     
-    if epoch == 1: #after first epoch remove 1% of worst outliers
-        pred = model(dataloader.dataset.pars.to(device))
-        losses = loss_fn(pred,dataloader.dataset.data.to(device))
-        quantile = torch.quantile(losses,0.99)
-        mask = losses>quantile
-        dataloader.dataset.data = dataloader.dataset.data[mask]
-        dataloader.dataset.pars = dataloader.dataset.pars[mask]
-    
     size = len(dataloader.dataset)
     loss_tot = 0
     loss_arr = []
@@ -374,9 +366,10 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     
     avg_loss = loss_tot/len(dataloader)
     med_loss = np.median(loss_arr)
+    std_loss = np.std(loss_arr)
     print(f"Average training loss: {avg_loss:>8f}")
     print(f"Median training loss: {med_loss:>8f}")
-    return model, optimizer , avg_loss, med_loss
+    return model, optimizer , avg_loss, med_loss, std_loss
 
 def train_lags(dataloader, model, optimizer, loss_fn, device):
     """
@@ -607,6 +600,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     tr_loss_arr = []
     med_tr_loss_arr = []
     te_loss_arr = []
+    std_tr_loss_arr = []
     
     epoch = 0
     
@@ -614,13 +608,15 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     while epoch < epochs:
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
-        model, optimizer, train_loss, med_loss = train(train_dataloader, model,
+        model,optimizer,train_loss,med_loss,std_loss = train(train_dataloader, 
+                                                             model,
                                              optimizer, loss_fn, device,
                                              scheduler,epoch)
         loss = test(test_dataloader, model, loss_fn, device)
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         med_tr_loss_arr.append(med_loss)
+        std_tr_loss_arr.append(std_loss)
         if loss == np.min(te_loss_arr):
             print(f"New best testing loss: {loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
@@ -635,10 +631,12 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
     med_tr_loss_arr = np.asarray(med_tr_loss_arr)
+    std_tr_loss_arr = np.asarray(std_tr_loss_arr)
     
     np.savetxt(f"loss/{name}_{mode}_te_loss.txt",te_loss_arr)
     np.savetxt(f"loss/{name}_{mode}_tr_loss.txt",tr_loss_arr)
     np.savetxt(f"loss/{name}_{mode}_med_tr_loss.txt",med_tr_loss_arr)
+    np.savetxt(f"loss/{name}_{mode}_std_tr_loss.txt",std_tr_loss_arr)
     
     return
 
