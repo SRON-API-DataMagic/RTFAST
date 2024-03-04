@@ -145,7 +145,7 @@ loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
-                                                                T_0=10, 
+                                                                T_0=50, 
                                                                 T_mult=1, 
                                                                 eta_min=1e-5, 
                                                                 last_epoch=-1)
