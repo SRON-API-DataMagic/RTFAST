@@ -347,8 +347,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
         losses = loss_fn(pred,dataloader.Dataset.data)
         quantile = torch.quantile(losses,0.99)
         mask = losses>quantile
-        dataloader.data = dataloader.Dataset.data[mask]
-        dataloader.pars = dataloader.Dataset.pars[mask]
+        dataloader.Dataset.data = dataloader.Dataset.data[mask]
+        dataloader.Dataset.pars = dataloader.Dataset.pars[mask]
     
     size = len(dataloader.dataset)
     loss_tot = 0
