@@ -343,8 +343,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     model.train()
     
     if epoch == 1: #after first epoch remove 1% of worst outliers
-        pred = model(dataloader.dataset.pars)
-        losses = loss_fn(pred,dataloader.dataset.data)
+        pred = model(dataloader.dataset.pars.to(device))
+        losses = loss_fn(pred,dataloader.dataset.data.to(device))
         quantile = torch.quantile(losses,0.99)
         mask = losses>quantile
         dataloader.dataset.data = dataloader.dataset.data[mask]
