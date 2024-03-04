@@ -1160,15 +1160,18 @@ def PCA_plotting(wrk_dir,name):
     #plotting of training and validation loss over time
     PCA_train_loss = np.loadtxt(f"loss/{name}_tr_loss.txt")
     PCA_train_loss_med = np.loadtxt(f"loss/{name}_med_tr_loss.txt")
+    PCA_train_loss_std = np.loadtxt(f"loss/{name}_std_tr_loss.txt")
     PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
     
     epochs = np.arange(1,len(PCA_train_loss)+1)
-    plt.plot(PCA_train_loss,label = "Training loss", c = "blue",
-             ls = "-",ms="o")
-    plt.plot(PCA_val_loss,label = "Validation loss", c = "orange",
-             ls = "--",ms="o")
-    plt.plot(PCA_train_loss_med,label = "Median training loss", c = "green",
-             ls = "-.",ms="o")
+    plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
+                     PCA_train_loss-PCA_train_loss_std,c="b",alpha=0.5)
+    plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
+             ls = "-")
+    plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
+             ls = "--")
+    plt.plot(epochs,PCA_train_loss_med,label = "Median training loss", c = "green",
+             ls = "-.")
     
     plt.yscale("log")
     plt.xscale("log")
