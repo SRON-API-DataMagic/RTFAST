@@ -20,7 +20,7 @@ from joblib import Parallel, delayed, dump, load
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.decomposition import PCA
 from dataStructures import PCADataset
-from network import PCAFluxNetwork
+from network import PCAFluxNetwork, PCANetwork
 
 import torch
 from torch import nn
@@ -129,7 +129,7 @@ train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 print(val_dataset.data.shape)
-model = PCAFluxNetwork(num_pars, val_dataset.data.shape[1])
+model = PCANetwork(num_pars, val_dataset.data.shape[1])
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -137,20 +137,19 @@ model.to(device)
 
 model.float()
 
-optimizer = Adam(model.parameters(),lr = 1e-3)
+#optimizer = Adam(model.parameters(),lr = 1e-3)
 #optimizer = AdamW(model.parameters(),lr = 1e-3)
-#optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()
-"""
+
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
                                                                 T_0=5, 
                                                                 T_mult=1, 
                                                                 eta_min=1e-5, 
                                                                 last_epoch=-1)
-"""
+
 """
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
                                               max_lr=1e-2)

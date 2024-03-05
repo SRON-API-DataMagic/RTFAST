@@ -22,3 +22,5 @@ compare/
 *.gif
 *.pdf
 inference.ipynb
+sbi-logs/
+
