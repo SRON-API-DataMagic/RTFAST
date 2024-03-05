@@ -120,7 +120,8 @@ print(num_pars)
 #merge()
 
 val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                           pars_list,negatives,logged,scale_bool = False)
+                           pars_list,negatives,logged,scale_bool = True,
+                           force = True,comps=20)
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
@@ -137,7 +138,7 @@ model.to(device)
 
 model.float()
 
-optimizer = AdamW(model.parameters(),lr = 1e-4)
+optimizer = AdamW(model.parameters(),lr = 1e-3)
 #optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)

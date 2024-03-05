@@ -483,13 +483,15 @@ class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
                  scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
-                 comp_loc="scalers/comp_flux.bin", force = False):
+                 comp_loc="scalers/comp_flux.bin",
+                 spec_scal_loc="scalers/spec_flux.bin",force = False):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
         self.force = force
         self.scale_bool = scale_bool
         self.PCA_loc = PCA_loc
         self.comp_loc = comp_loc
+        self.spec_scal_loc = spec_scal_loc
         self.comps = comps
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
@@ -538,8 +540,19 @@ class PCADataset(Dataset):
         self.scale()
     
     def scale(self):
+        self.spectra_scaler(self.spec_scal_loc)
         self.PCA(self.PCA_loc,self.comps)
         self.component_scaler(self.comp_loc)
+        return
+    
+    def spectra_scaler(self,scaler_loc):
+        if self.scale_bool == True:
+            self.spec_scaler = StandardScaler()
+            self.data = self.spec_scaler.fit_transform(self.data)
+            dump(self.PCA_scaler,scaler_loc)
+        else:
+            self.spec_scaler = load(scaler_loc)
+            self.data = self.spec_scaler.transform(self.data)
         return
     
     def PCA(self,scaler_loc,comp = 1):
