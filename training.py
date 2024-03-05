@@ -65,6 +65,8 @@ def model_NaN_checker(D,P,model):
             print(f"Param is {param.data}")
             print("Exiting program")
             quit()
+        if torch.any(param.data > 100) == True:
+            print(f"Parameters exceed 100: {param.data}")
 
 class PCALoss(nn.Module):
     
