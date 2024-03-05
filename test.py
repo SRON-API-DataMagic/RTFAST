@@ -137,7 +137,7 @@ model.to(device)
 
 model.float()
 
-optimizer = AdamW(model.parameters(),lr = 1e-3)
+optimizer = AdamW(model.parameters(),lr = 1e-4)
 #optimizer = SGD(model.parameters(),lr=1e-2,momentum=0.9)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
