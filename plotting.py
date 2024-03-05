@@ -27,6 +27,7 @@ from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc
 import generator
 from processing import saveData, nanChecker, spectraChecker
 from training import PCALoss
+from sklearn.preprocessing import StandardScaler
             
 def inverse(scaler,data):
     """
@@ -1252,11 +1253,13 @@ def PCA_plotting(wrk_dir,name):
     if plot_pca == True:
         
         pca = load("scalers/PCA_test.bin")
-        scaler = load("scalers/spectra_test.bin")
+        spectra_scaler = load("scalers/spectra_test.bin")
+        comp_scaler = StandardScaler()
         
-        scaled = scaler.transform(np.log10(D))
+        scaled = spectra_scaler.transform(np.log10(D))
         pca_comps = pca.transform(scaled)
-        recon_D = 10**scaler.inverse_transform(pca.inverse_transform(pca.transform(scaled)))
+        scaled_pca_comps = comp_scaler.fit_transform(pca_comps)
+        recon_D = 10**spectra_scaler.inverse_transform(pca.inverse_transform(pca.transform(scaled)))
         
         recon_resid = np.abs((D-recon_D))
         recon_perc = np.abs((D-recon_D)/D)
@@ -1364,7 +1367,7 @@ def PCA_plotting(wrk_dir,name):
             for j in range(5):
                 axs[4,j].set_xlabel(f"PCA {j}")
                 for k in range(5):
-                    axs[j,k].scatter(pca_comps[:,j],pca_comps[:,k],
+                    axs[j,k].scatter(scaled_pca_comps[:,j],scaled_pca_comps[:,k],
                                      c=pars[:,i],cmap=cmap,norm=norm)
                     if j == 0:
                         axs[k,0].set_ylabel(f"PCA {k}")
