@@ -549,7 +549,7 @@ class PCADataset(Dataset):
         if self.scale_bool == True:
             self.spec_scaler = StandardScaler()
             self.data = self.spec_scaler.fit_transform(self.data)
-            dump(self.PCA_scaler,scaler_loc)
+            dump(self.spec_scaler,scaler_loc)
         else:
             self.spec_scaler = load(scaler_loc)
             self.data = self.spec_scaler.transform(self.data)
