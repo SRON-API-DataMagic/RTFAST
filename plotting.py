@@ -1247,11 +1247,16 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
+        
+        pca = load("scalers/PCA_test.bin")
+        scaler = load("scalers/spectra_test.bin")
+        
+        scaled = scaler.transform(np.log10(D))
     
-        recon_D = 10**test_data.pca.inverse_transform(test_data.pca.transform(np.log10(D)))
+        recon_D = 10**scaler.inverse_transform(pca.inverse_transform(pca.transform(scaled)))
         
         recon_resid = np.abs((D-recon_D))
         recon_perc = np.abs((D-recon_D)/D)
