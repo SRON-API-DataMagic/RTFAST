@@ -1222,11 +1222,12 @@ def PCA_plotting(wrk_dir,name):
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
-    
+    """
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
+    """
     """
     train_data = PCADataset("data/locations/PCA_locs_flux.csv",
                                pars_list,negatives,logged,scale_bool = False,
@@ -1387,11 +1388,8 @@ def PCA_plotting(wrk_dir,name):
     test_loss = loss_calc(test_data.data, test_pred,
                           test_data.pca.explained_variance_ratio_)
     
-    val_pred = model(val_data.pars)
-    
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
     print(f"PCA loss reports: {loss_fn(model(test_data.pars),test_data.data)}")
-    print(f"PCA loss reports: {loss_fn(val_pred,val_data.data)}")
     
     print(test_loss.shape)
     print(f"Highest test loss is {test_loss.max()}")

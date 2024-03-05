@@ -21,3 +21,4 @@ compare/
 *.csv
 *.gif
 *.pdf
+inference.ipynb
