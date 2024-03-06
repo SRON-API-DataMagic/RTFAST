@@ -166,7 +166,7 @@ train = train_flux
 test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
-                   val_dataloader, loss_fn, device, "PCA", "flux", 
+                   val_dataloader, loss_fn, device, "20_pars", "flux", 
                    epochs = 2000)
 
 """
