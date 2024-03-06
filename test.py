@@ -29,8 +29,8 @@ from torch.optim import Adam, AdamW, SGD
 
 def new_set():
     
-    theta_lhc = generator.lhc_generation(int(4e5), range_AGN, limited=False, 
-                                         lhc_filter=generator.lhc_filter_10)
+    theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
+                                         lhc_filter=generator.lhc_filter_20)
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -48,20 +48,20 @@ def new_set():
     idxs = np.arange(0,flux.shape[0])
     np.random.shuffle(idxs)
     tra_idx = idxs[:int(0.9*len(idxs))]
-    tes_idx = idxs[int(0.9*len(idxs)):]
+    val_idx = idxs[int(0.9*len(idxs)):]
     
-    #Splitting data and parameters into training and testing datasets
+    #Splitting data and parameters into training and valting datasets
     train_flux_data = flux[tra_idx]
     train_flux_pars = theta_flux[tra_idx]
     
-    test_flux_data = flux[tes_idx]
-    test_flux_pars = theta_flux[tes_idx]
+    val_flux_data = flux[val_idx]
+    val_flux_pars = theta_flux[val_idx]
     
     print("Saving flux data")
     saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","PCA_locs_flux_temp.csv")
-    saveData(test_flux_data, test_flux_pars, 
-             "data/locations/","PCA_locs_flux_test_temp.csv")
+             "data/locations/","locs_20_spectra_tra.csv")
+    saveData(val_flux_data, val_flux_pars, 
+             "data/locations/","locs_20_spectra_val.csv")
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
@@ -93,7 +93,7 @@ environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
 
 for key in environ_vars:
     os.environ[key] = environ_vars[key]
-"""
+    
 pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,11,12,13,23]
@@ -102,6 +102,7 @@ logged = [0,2,3,4,7,8,10,11,12,13,23]
 pars_list = [1,2,3,6,7,8,9,11,13,23]
 negatives = [3]
 logged = [2,3,7,8,11,13,23]
+"""
 """
 pars_list = [1,2,3,4,13]
 negatives = [3]
@@ -112,20 +113,27 @@ pars_list = [3]
 negatives = [3]
 logged = [3]
 """
-range_AGN = np.asarray(generator.lhc_10())
+range_AGN = np.asarray(generator.lhc_AGN())
 num_pars = len(pars_list)
 print(num_pars)
 
-#new_set()
+new_set()
 #merge()
 
-val_dataset = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                           pars_list,negatives,logged,scale_bool = False)
+val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
+                           pars_list,negatives,logged,scale_bool = True,
+                           comps = 20,
+                           PCA_loc="scalers/PCA_20_spec.bin",
+                           comp_loc="scalers/comp_20_spec.bin",
+                           spec_scal_loc="scalers/spec_20_spec.bin")
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
-train_dataset = PCADataset("data/locations/PCA_locs_flux.csv",
-                           pars_list,negatives,logged,scale_bool = False)
+train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
+                           pars_list,negatives,logged,scale_bool = False,
+                           PCA_loc="scalers/PCA_20_spec.bin",
+                           comp_loc="scalers/comp_20_spec.bin",
+                           spec_scal_loc="scalers/spec_20_spec.bin")
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 print(val_dataset.data.shape)
