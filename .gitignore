@@ -23,4 +23,5 @@ compare/
 *.pdf
 inference.ipynb
 sbi-logs/
-
+nextspec/
+ResponseFiles/
