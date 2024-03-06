@@ -222,6 +222,7 @@ def lhc_filter_20(lhc):
     #checks that heights are greater than horizon radius
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero((10**lhc[:,0]<1.5*heights))
+    print(bad_heights.shape)
     #Check luminosities aren't super eddington or too small to see
     F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
