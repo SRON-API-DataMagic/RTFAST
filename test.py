@@ -159,7 +159,7 @@ test =  test_flux
 
 grid_training_loop(model, optimizer, train, test, train_dataloader, 
                    val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 500)
+                   epochs = 2000)
 
 """
 bottleneck_training_loop(model, optimizer,train_dataloader, 
