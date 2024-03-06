@@ -137,19 +137,19 @@ model.to(device)
 
 model.float()
 
-#optimizer = Adam(model.parameters(),lr = 1e-3)
+optimizer = Adam(model.parameters(),lr = 1e-3)
 #optimizer = AdamW(model.parameters(),lr = 1e-3)
 
 loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 #loss_fn = nn.MSELoss()
-
+"""
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
                                                                 T_0=5, 
                                                                 T_mult=1, 
                                                                 eta_min=1e-5, 
                                                                 last_epoch=-1)
-
+"""
 """
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
                                               max_lr=1e-2)
