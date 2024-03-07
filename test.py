@@ -38,7 +38,7 @@ def new_set():
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=10,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+    flux =  Parallel(n_jobs=20,verbose=1,backend="threading")(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
