@@ -117,13 +117,13 @@ range_AGN = np.asarray(generator.lhc_AGN())
 num_pars = len(pars_list)
 print(num_pars)
 
-#new_set()
+new_set()
 #merge()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
 val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                           pars_list,negatives,logged,scale_bool = False,
+                           pars_list,negatives,logged,scale_bool = True,
                            PCA_loc="scalers/PCA_20_spec.bin",
                            comp_loc="scalers/comp_20_spec.bin",
                            spec_scal_loc="scalers/spec_20_spec.bin")
