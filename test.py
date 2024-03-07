@@ -15,8 +15,6 @@ import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
 from processing import saveData, spectraChecker, mergeSaveData
-import joblib.externals.loky
-joblib.externals.loky.process_executor._MAX_MEMORY_LEAK_SIZE = int(3e12)
 from joblib import Parallel, delayed, dump, load
 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
@@ -40,7 +38,8 @@ def new_set():
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
+    timeout = 99999
+    flux =  Parallel(n_jobs=20,verbose=5,timeout=timeout)(delayed(rtdist_flux)(pars, egrid)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
