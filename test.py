@@ -14,6 +14,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 from sherpa.astro.ui import unpack_rmf
+from sherpa.astro.io import read_arf
 from processing import saveData, spectraChecker, mergeSaveData
 from joblib import Parallel, delayed, dump, load
 
@@ -38,7 +39,7 @@ def new_set():
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars, egrid)
+    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
@@ -77,10 +78,9 @@ def merge():
 
 wrk_dir = os.getcwd()
 
-rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-rmf = unpack_rmf(rmf_name)
-egrid = rmf.e_min #energy grid used to evaluate the xspec model
-egrid = egrid[egrid>0.1]
+arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+arf = read_arf(arf_name)
+egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
 
 #set envionmental variables required in xspec with simrtdist
 environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
