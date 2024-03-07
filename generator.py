@@ -38,7 +38,7 @@ def rtdist_erg_flux(pars, egrid):
     flux = model[start:end].sum()
     return flux
 
-def rtdist_flux(pars, egrid):
+def rtdist_flux(pars, egrid_lo, egrid_hi):
     """
     
 
@@ -55,7 +55,7 @@ def rtdist_flux(pars, egrid):
         outputted simulated data.
 
     """
-    model = _models.tdrtdist(pars, egrid)
+    model = _models.tdrtdist(pars, egrid_lo, egrid_hi)
     return model
 
 def rtdist_lags(pars, egrid):
