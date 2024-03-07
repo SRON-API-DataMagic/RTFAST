@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from sherpa.astro.ui import unpack_rmf
 from processing import saveData, spectraChecker, mergeSaveData
 import joblib.externals.loky
-joblib.externals.loky.process_executor._MAX_MEMORY_LEAK_SIZE = int(3e10)
+joblib.externals.loky.process_executor._MAX_MEMORY_LEAK_SIZE = int(3e12)
 from joblib import Parallel, delayed, dump, load
 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
