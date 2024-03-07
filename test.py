@@ -117,12 +117,11 @@ range_AGN = np.asarray(generator.lhc_AGN())
 num_pars = len(pars_list)
 print(num_pars)
 
-new_set()
+#new_set()
 #merge()
 
 val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                           pars_list,negatives,logged,scale_bool = True,
-                           comps = 20,
+                           pars_list,negatives,logged,scale_bool = False,
                            PCA_loc="scalers/PCA_20_spec.bin",
                            comp_loc="scalers/comp_20_spec.bin",
                            spec_scal_loc="scalers/spec_20_spec.bin")
@@ -136,11 +135,11 @@ train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
                            spec_scal_loc="scalers/spec_20_spec.bin")
 train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
-print(val_dataset.data.shape)
+
 model = PCANetwork(num_pars, val_dataset.data.shape[1])
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+print(device)
 model.to(device)
 
 model.float()
