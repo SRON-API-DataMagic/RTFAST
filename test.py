@@ -119,6 +119,8 @@ print(num_pars)
 
 #new_set()
 #merge()
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(device)
 
 val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                            pars_list,negatives,logged,scale_bool = False,
@@ -138,8 +140,6 @@ train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4,
 
 model = PCANetwork(num_pars, val_dataset.data.shape[1])
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(device)
 model.to(device)
 
 model.float()
