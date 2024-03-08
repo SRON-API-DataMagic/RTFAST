@@ -1242,7 +1242,7 @@ def PCA_plotting(wrk_dir,name):
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     
     percents = np.array([0,0.25,0.5,0.75,1])
-    e_ticks = np.round(egrid_lo[len(egrid_lo)*percents].astype(float),1).astype(str)
+    e_ticks = np.round(egrid_lo[(len(egrid_lo)*percents).astype(int)],1).astype(str)
     
     data = []
     for file in tqdm(test_data.locations):
