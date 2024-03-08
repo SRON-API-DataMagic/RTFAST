@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual, PCADataset
-from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc_AGN, lhc_BH
+from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc_AGN, lhc_BH, rtdist_flux
 import generator
 from processing import saveData, nanChecker, spectraChecker
 from training import PCALoss
@@ -1531,7 +1531,7 @@ def test_set(wrk_dir):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(generator.rtdist_flux)(pars,egrid_lo,egrid_hi)
+    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
