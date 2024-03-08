@@ -1514,25 +1514,22 @@ def loss_calc(data,model,variances):
     loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
     return loss
 
-def main():
-    wrk_dir = os.getcwd()
-    set_envir_vars(wrk_dir)
-    
+def test_set(wrk_dir):
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(generator.lhc_10())
-    num_pars = range_AGN.shape[0]
     
-    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=False,
+    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=False, 
                                          lhc_filter=generator.lhc_filter_10)
     pars_list = [1,2,3,6,7,8,9,11,13,23]
     negatives = [3]
     logged = [2,3,7,8,11,13,23]
+    #generate physical models of test set
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
-
+    
     print("Generating flux models")
     flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(generator.rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
@@ -1540,9 +1537,16 @@ def main():
     print("Checking for spectra below threshold")
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
+    
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
+
+def main():
+    wrk_dir = os.getcwd()
+    set_envir_vars(wrk_dir)
+    
+    test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"PCA_flux")
     
