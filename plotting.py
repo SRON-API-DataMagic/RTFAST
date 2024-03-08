@@ -1243,6 +1243,8 @@ def PCA_plotting(wrk_dir,name):
     
     emid = (egrid_lo+egrid_hi)/2
     
+    bin_width = egrid_hi-egrid_lo
+    
     percents = np.array([0,0.25,0.5,0.75,0.99])
     e_ticks = np.round(egrid_lo[(len(egrid_lo)*percents).astype(int)],1).astype(str)
     
@@ -1484,8 +1486,8 @@ def PCA_plotting(wrk_dir,name):
     i = 0
     for pred, D in zip(test_pred, data):
         fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
-        axs[0].plot(emid,pred,label="Emulator")
-        axs[0].plot(emid,D,label="Rtdist", ls = "--")
+        axs[0].plot(emid,pred/bin_width,label="Emulator")
+        axs[0].plot(emid,D/bin_width,label="Rtdist", ls = "--")
         axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
         axs[0].legend()
         axs[1].plot(emid,(pred-D)/D)
