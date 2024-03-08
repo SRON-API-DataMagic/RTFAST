@@ -1461,7 +1461,7 @@ def PCA_plotting(wrk_dir,name):
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,recon_resid.shape[1],recon_resid.shape[1]/5), 
+        plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
                    labels=e_ticks)
         plt.xlabel("Energy in keV")
         plt.ylabel(labels[i])
