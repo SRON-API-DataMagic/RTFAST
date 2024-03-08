@@ -117,7 +117,7 @@ range_AGN = np.asarray(generator.lhc_10())
 num_pars = len(pars_list)
 print(num_pars)
 
-#new_set()
+new_set()
 #merge()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
