@@ -1259,7 +1259,7 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = True
+    plot_pca = False
     
     if plot_pca == True:
         
@@ -1419,7 +1419,7 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals = np.abs((test_pred-D)/D)
-    residuals[D==1e-11] = np.nan
+    residuals[(D==1e-11)&(test_pred<=1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
     print(f"Average residual is {residuals[~np.isnan(residuals)].mean()*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
