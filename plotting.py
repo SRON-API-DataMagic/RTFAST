@@ -1241,7 +1241,7 @@ def PCA_plotting(wrk_dir,name):
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     
-    percents = np.array([0,0.25,0.5,0.75,1])
+    percents = np.array([0,0.25,0.5,0.75,0.99])
     e_ticks = np.round(egrid_lo[(len(egrid_lo)*percents).astype(int)],1).astype(str)
     
     data = []
