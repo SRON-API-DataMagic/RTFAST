@@ -1531,7 +1531,7 @@ def test_set(wrk_dir):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=5,verbose=5)(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+    flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
