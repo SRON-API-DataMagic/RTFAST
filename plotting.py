@@ -2,6 +2,8 @@
 This program serves to visualise a neural network's outputs vs the true values.
 """
 from sherpa.astro.ui import unpack_rmf
+from sherpa.astro.io import read_arf
+
 import torch
 import os
 
@@ -1515,10 +1517,10 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
-    """
-    egrid = retrieve_egrid(wrk_dir)
-    egrid = egrid[egrid>0.1]
-    lags_egrid = np.logspace(np.log10(0.5),np.log10(11),num=26)
+    
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(generator.lhc_10())
     num_pars = range_AGN.shape[0]
     
@@ -1532,7 +1534,7 @@ def main():
     print("Parallelized model generation")
 
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5)(delayed(generator.rtdist_flux)(pars, egrid)
+    flux =  Parallel(n_jobs=20,verbose=5)(delayed(generator.rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
@@ -1541,7 +1543,7 @@ def main():
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","loc_flux_test.csv")
-    """
+    
     PCA_plotting(wrk_dir,"PCA_flux")
     
     
