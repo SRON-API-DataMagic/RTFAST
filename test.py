@@ -31,7 +31,7 @@ from torch.optim import Adam, AdamW, SGD
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
-                                         lhc_filter=generator.lhc_filter_10)
+                                         lhc_filter=generator.lhc_filter_20)
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
