@@ -1256,9 +1256,9 @@ def PCA_plotting(wrk_dir,name):
     
     if plot_pca == True:
         
-        pca = load("scalers/PCA_test.bin")
-        spectra_scaler = load("scalers/spectra_test.bin")
-        comp_scaler = StandardScaler()
+        pca = load("scalers/PCA_10_spec.bin")
+        spectra_scaler = load("scalers/spec_10_spec.bin")
+        comp_scaler = load("scalers/comp_10_spec.bin")
         
         scaled = spectra_scaler.transform(np.log10(D))
         pca_comps = pca.transform(scaled)
