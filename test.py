@@ -123,15 +123,14 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
 val_dataset = PCADataset("data/locations/locs_10_spectra_val.csv",
-                           pars_list,negatives,logged,scale_bool = True,
-                           comps = 20,
+                           pars_list,negatives,logged,scale_bool = False,
                            PCA_loc="scalers/PCA_10_spec.bin",
                            comp_loc="scalers/comp_10_spec.bin",
                            spec_scal_loc="scalers/spec_10_spec.bin")
 val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                               shuffle=True)
 
-train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
+train_dataset = PCADataset("data/locations/locs_10_spectra_tra.csv",
                            pars_list,negatives,logged,scale_bool = False,
                            PCA_loc="scalers/PCA_10_spec.bin",
                            comp_loc="scalers/comp_10_spec.bin",
