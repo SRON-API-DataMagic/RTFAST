@@ -28,7 +28,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW, SGD
 
-def new_set():
+def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
                                          lhc_filter=generator.lhc_filter_10)
@@ -76,100 +76,104 @@ def merge():
     mergeSaveData(test, pd.read_csv(f"data/locations/{test_name}"),
                   "data/locations/",test_name)
 
-wrk_dir = os.getcwd()
-
-arf_name = wrk_dir+"/ResponseFiles/PN.arf"
-arf = read_arf(arf_name)
-egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
-
-#set envionmental variables required in xspec with simrtdist
-environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
-                "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
-                "EMAX_REF2":"10", "SEED_SIM":"-2851043",
-                "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
-                "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
-                "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
-                "BACKSCL":"1.0"}
-
-for key in environ_vars:
-    os.environ[key] = environ_vars[key]
-
-"""
-pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-negatives = [3]
-logged = [0,2,3,4,7,8,10,11,12,13,23]
-"""
-pars_list = [1,2,3,6,7,8,9,11,13,23]
-negatives = [3]
-logged = [2,3,7,8,11,13,23]
+def main():
+    wrk_dir = os.getcwd()
     
-"""
-pars_list = [1,2,3,4,13]
-negatives = [3]
-logged = [2,3,4,13]
-"""
-"""
-pars_list = [3]
-negatives = [3]
-logged = [3]
-"""
-range_AGN = np.asarray(generator.lhc_10())
-num_pars = len(pars_list)
-print(num_pars)
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
+    
+    #set envionmental variables required in xspec with simrtdist
+    environ_vars = {"REV_VERB":"0","MU_ZONES":"1","ION_ZONES":"1","A_DENSITY":"1",
+                    "EMIN_REF":"0.5","EMAX_REF":"10","EMIN_REF2":"0.5",
+                    "EMAX_REF2":"10", "SEED_SIM":"-2851043",
+                    "RMF_SET":wrk_dir+"/ResponseFiles/PN.rmf",
+                    "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
+                    "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
+                    "BACKSCL":"1.0"}
+    
+    for key in environ_vars:
+        os.environ[key] = environ_vars[key]
+    
+    """
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    """
+    pars_list = [1,2,3,6,7,8,9,11,13,23]
+    negatives = [3]
+    logged = [2,3,7,8,11,13,23]
+        
+    """
+    pars_list = [1,2,3,4,13]
+    negatives = [3]
+    logged = [2,3,4,13]
+    """
+    """
+    pars_list = [3]
+    negatives = [3]
+    logged = [3]
+    """
+    range_AGN = np.asarray(generator.lhc_10())
+    num_pars = len(pars_list)
+    print(num_pars)
+    
+    new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
+    #merge()
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
+    
+    val_dataset = PCADataset("data/locations/locs_10_spectra_val.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_10_spec.bin",
+                               comp_loc="scalers/comp_10_spec.bin",
+                               spec_scal_loc="scalers/spec_10_spec.bin")
+    val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    
+    train_dataset = PCADataset("data/locations/locs_10_spectra_tra.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_10_spec.bin",
+                               comp_loc="scalers/comp_10_spec.bin",
+                               spec_scal_loc="scalers/spec_10_spec.bin")
+    train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    
+    model = PCANetwork(num_pars, val_dataset.data.shape[1])
+    
+    model.to(device)
+    
+    model.float()
+    
+    optimizer = Adam(model.parameters(),lr = 1e-3)
+    #optimizer = AdamW(model.parameters(),lr = 1e-3)
+    
+    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
+    #loss_fn = nn.MSELoss()
+    """
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
+                                                                    T_0=5, 
+                                                                    T_mult=1, 
+                                                                    eta_min=1e-5, 
+                                                                    last_epoch=-1)
+    """
+    """
+    scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
+                                                  max_lr=1e-2)
+    """
+    train = train_flux
+    test =  test_flux
+    
+    grid_training_loop(model, optimizer, train, test, train_dataloader, 
+                       val_dataloader, loss_fn, device, "20_pars", "flux", 
+                       epochs = 2000)
+    
+    """
+    bottleneck_training_loop(model, optimizer,train_dataloader, 
+                       val_dataloader, loss_fn, device, "PCA", "flux", 
+                       epochs = 500)
+    """
 
-new_set()
-#merge()
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(device)
-
-val_dataset = PCADataset("data/locations/locs_10_spectra_val.csv",
-                           pars_list,negatives,logged,scale_bool = False,
-                           PCA_loc="scalers/PCA_10_spec.bin",
-                           comp_loc="scalers/comp_10_spec.bin",
-                           spec_scal_loc="scalers/spec_10_spec.bin")
-val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                              shuffle=True)
-
-train_dataset = PCADataset("data/locations/locs_10_spectra_tra.csv",
-                           pars_list,negatives,logged,scale_bool = False,
-                           PCA_loc="scalers/PCA_10_spec.bin",
-                           comp_loc="scalers/comp_10_spec.bin",
-                           spec_scal_loc="scalers/spec_10_spec.bin")
-train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                              shuffle=True)
-
-model = PCANetwork(num_pars, val_dataset.data.shape[1])
-
-model.to(device)
-
-model.float()
-
-optimizer = Adam(model.parameters(),lr = 1e-3)
-#optimizer = AdamW(model.parameters(),lr = 1e-3)
-
-loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-#loss_fn = nn.MSELoss()
-"""
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
-                                                                T_0=5, 
-                                                                T_mult=1, 
-                                                                eta_min=1e-5, 
-                                                                last_epoch=-1)
-"""
-"""
-scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
-                                              max_lr=1e-2)
-"""
-train = train_flux
-test =  test_flux
-
-grid_training_loop(model, optimizer, train, test, train_dataloader, 
-                   val_dataloader, loss_fn, device, "20_pars", "flux", 
-                   epochs = 2000)
-
-"""
-bottleneck_training_loop(model, optimizer,train_dataloader, 
-                   val_dataloader, loss_fn, device, "PCA", "flux", 
-                   epochs = 500)
-"""
+if __name__ == "__main__":
+    main()

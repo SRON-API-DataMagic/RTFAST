@@ -1222,8 +1222,9 @@ def PCA_plotting(wrk_dir,name):
     """
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_flux.bin",
-                               comp_loc="scalers/comp_flux.bin")
+                               PCA_loc="scalers/PCA_10_spec.bin",
+                               comp_loc="scalers/comp_10_spec.bin",
+                               spec_scal_loc="scalers/spec_10_spec.bin")
     """
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
@@ -1546,7 +1547,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"PCA_flux")
     
