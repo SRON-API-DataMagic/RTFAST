@@ -1237,6 +1237,13 @@ def PCA_plotting(wrk_dir,name):
                                PCA_loc="scalers/PCA_flux.bin",
                                comp_loc="scalers/comp_flux.bin")
     """
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
+    
+    percents = np.array([0,0.25,0.5,0.75,1])
+    e_ticks = np.round(egrid_lo(len(egrid_lo)*percents).astype(float),1).astype(str)
+    
     data = []
     for file in tqdm(test_data.locations):
         data.append(np.loadtxt(file).reshape(1, -1))
@@ -1317,7 +1324,7 @@ def PCA_plotting(wrk_dir,name):
                         10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
             cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
             plt.yticks(ticks,labels=tick_labels)
-            plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+            plt.xticks(np.arange(0,recon_resid.shape[0],recon_resid.shape[0]/4), labels=e_ticks)
             plt.xlabel("Energy in keV")
             plt.ylabel(labels[i])
             
@@ -1354,7 +1361,7 @@ def PCA_plotting(wrk_dir,name):
             ax = plt.pcolormesh(resids)
             cbar = plt.colorbar(format='%.0e')
             plt.yticks(ticks,labels=tick_labels)
-            plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+            plt.xticks(np.arange(0,recon_resid.shape[0],recon_resid.shape[0]/4),labels = e_ticks)
             plt.xlabel("Energy in keV")
             plt.ylabel(f"{label}")
             
@@ -1453,7 +1460,8 @@ def PCA_plotting(wrk_dir,name):
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,4096,4096/4), labels=np.arange(0,20,5))
+        plt.xticks(np.arange(0,recon_resid.shape[0],recon_resid.shape[0]/4), 
+                   labels=e_ticks)
         plt.xlabel("Energy in keV")
         plt.ylabel(labels[i])
         
