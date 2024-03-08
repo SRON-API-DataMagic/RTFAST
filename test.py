@@ -60,9 +60,9 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     print("Saving flux data")
     saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","locs_10_spectra_tra.csv")
+             "data/locations/","locs_20_spectra_tra.csv")
     saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","locs_10_spectra_val.csv")
+             "data/locations/","locs_20_spectra_val.csv")
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
@@ -95,15 +95,16 @@ def main():
     for key in environ_vars:
         os.environ[key] = environ_vars[key]
     
-    """
+    
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
+    
     """
     pars_list = [1,2,3,6,7,8,9,11,13,23]
     negatives = [3]
     logged = [2,3,7,8,11,13,23]
-        
+    """
     """
     pars_list = [1,2,3,4,13]
     negatives = [3]
@@ -114,7 +115,7 @@ def main():
     negatives = [3]
     logged = [3]
     """
-    range_AGN = np.asarray(generator.lhc_10())
+    range_AGN = np.asarray(generator.lhc_20())
     num_pars = len(pars_list)
     print(num_pars)
     
@@ -123,19 +124,20 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    val_dataset = PCADataset("data/locations/locs_10_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_10_spec.bin",
-                               comp_loc="scalers/comp_10_spec.bin",
-                               spec_scal_loc="scalers/spec_10_spec.bin")
+    val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
+                               pars_list,negatives,logged,scale_bool = True,
+                               comps=40,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
     val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
-    train_dataset = PCADataset("data/locations/locs_10_spectra_tra.csv",
+    train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_10_spec.bin",
-                               comp_loc="scalers/comp_10_spec.bin",
-                               spec_scal_loc="scalers/spec_10_spec.bin")
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
     train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
