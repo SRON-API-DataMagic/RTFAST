@@ -115,7 +115,7 @@ def main():
     negatives = [3]
     logged = [3]
     """
-    range_AGN = np.asarray(generator.lhc_20())
+    range_AGN = np.asarray(generator.lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
     
