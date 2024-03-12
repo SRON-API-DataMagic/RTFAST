@@ -25,3 +25,5 @@ inference.ipynb
 sbi-logs/
 nextspec/
 ResponseFiles/
+*.h5
+likelihoods.py

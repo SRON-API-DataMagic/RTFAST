@@ -27,11 +27,20 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW, SGD
+import corner
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
                                          lhc_filter=generator.lhc_filter_20)
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
+              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    figure = corner.corner(
+        theta_lhc,
+        labels=labels,
+        )
+    plt.savefig("loss/parameter_dists.png")
+    plt.close()
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
