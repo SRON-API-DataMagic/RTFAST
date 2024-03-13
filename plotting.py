@@ -1194,37 +1194,38 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     #plotting of emulator vs test data performance
-    """
+    
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
-    """
     """
     pars_list = [1,2,3,4,13]
     negatives = [3]
     logged = [2,3,4,13]
     """
+    """
     pars_list = [1,2,3,6,7,8,9,11,13,23]
     negatives = [3]
     logged = [2,3,7,8,11,13,23]
+    """
     """
     pars_list = [3]
     negatives = [3]
     logged = [3]
     """
     print(len(pars_list))
-    labels = ["a","inc","rin","rout","mass"]
+    #labels = ["a","inc","rin","rout","mass"]
     #labels = ["rin"]
-    labels = ["a","inc","rin","Gamma","distance","Afe","logNe","nH","mass","Anorm"]
-    """
+    #labels = ["a","inc","rin","Gamma","distance","Afe","logNe","nH","mass","Anorm"]
+    
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
-    """
+    
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_10_spec.bin",
-                               comp_loc="scalers/comp_10_spec.bin",
-                               spec_scal_loc="scalers/spec_10_spec.bin")
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
     """
     val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
@@ -1267,9 +1268,9 @@ def PCA_plotting(wrk_dir,name):
     
     if plot_pca == True:
         
-        pca = load("scalers/PCA_10_spec.bin")
-        spectra_scaler = load("scalers/spec_10_spec.bin")
-        comp_scaler = load("scalers/comp_10_spec.bin")
+        pca = test_data.pca
+        spectra_scaler = test_data.spec_scaler
+        comp_scaler = test_data.PCA_scaler
         
         scaled = spectra_scaler.transform(np.log10(D))
         pca_comps = pca.transform(scaled)
@@ -1377,7 +1378,10 @@ def PCA_plotting(wrk_dir,name):
             plt.close()
         
         for i in range(pars.shape[1]):
-            fig, axs = plt.subplots(5,5,sharex=True,sharey=True,figsize=(20,20))
+            fig, axs = plt.subplots(5,5,
+                                    sharex=True,
+                                    sharey=True,
+                                    figsize=(20,20))
             norm = colors.Normalize(vmin=np.min(pars[:,i]),vmax=np.max(pars[:,i]))
             cmap = plt.get_cmap("plasma")
             for j in range(5):
@@ -1534,13 +1538,13 @@ def test_set(wrk_dir):
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
-    range_AGN = np.asarray(generator.lhc_10())
+    range_AGN = np.asarray(generator.lhc_AGN())
     
-    theta_lhc = generator.lhc_generation(int(1e3), range_AGN, limited=False, 
-                                         lhc_filter=generator.lhc_filter_10)
-    pars_list = [1,2,3,6,7,8,9,11,13,23]
+    theta_lhc = generator.lhc_generation(int(1300), range_AGN, limited=False, 
+                                         lhc_filter=generator.lhc_filter_20)
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [2,3,7,8,11,13,23]
+    logged = [0,2,3,4,7,8,10,11,12,13,23]
     #generate physical models of test set
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -1562,9 +1566,9 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    #test_set(wrk_dir)
+    test_set(wrk_dir)
     
-    PCA_plotting(wrk_dir,"10_pars_flux")
+    PCA_plotting(wrk_dir,"20_pars_flux")
     
     
 if __name__ == "__main__":
