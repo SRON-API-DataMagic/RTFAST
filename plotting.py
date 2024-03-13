@@ -25,7 +25,8 @@ from tqdm import tqdm
 
 import network
 from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual, PCADataset
-from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux, lhc_AGN, lhc_BH, rtdist_flux
+from generator import generate_test_set, readAndRemoveNans, rtdist_erg_flux 
+from generator import lhc_AGN, lhc_BH, rtdist_flux
 import generator
 from processing import saveData, nanChecker, spectraChecker
 from training import PCALoss
@@ -1264,7 +1265,7 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
         
@@ -1566,7 +1567,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
