@@ -450,7 +450,7 @@ def lhc_AGN():
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(200)]
+    nH_range = [np.log10(1e-3),np.log10(1)]
     boost_range = [np.log10(1e-2),np.log10(10)]
     mass_range = [np.log10(1e4),np.log10(1e11)]
     honr_range = [0,0.176]
