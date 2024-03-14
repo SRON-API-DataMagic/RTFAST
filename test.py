@@ -98,7 +98,7 @@ def build_optimizer(model,optimizer_name,learning_rate):
 def wandb_sweep(config=None):
     # Initialize a new wandb run
     with wandb.init(config=config) as run:
-        name = f"{config['optimizer']}_{config['num_layers']}_{config['nodes']}_{config['learning_rate']}_{config['activation']}"
+        name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
         run.log_model(path=f"models/{name}.pt", name=f"{name}")
         # If called by wandb.agent, as below,
         # this config will be set by Sweep Controller
@@ -147,7 +147,11 @@ def wandb_sweep(config=None):
                        "epoch": epoch}) 
             if loss == np.min(loss_arr):
                 torch.save(model.state_dict(), f"models/{name}.pth")
-                
+
+def sweep_call():
+    wandb_sweep(wandb.config)
+    return
+
 def main():
     wrk_dir = os.getcwd()
     
@@ -227,7 +231,7 @@ def main():
     
     sweep_id = wandb.sweep(sweep_config, project="rtdist-emulator")
     
-    wandb.agent(sweep_id=sweep_id, function=wandb_sweep)
+    wandb.agent(sweep_id=sweep_id, function=sweep_call)
     """
     model = PCANetwork(num_pars, val_dataset.data.shape[1])
     
