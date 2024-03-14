@@ -123,20 +123,8 @@ def removeRedundantData():
 
     """
     locations = "./data/locations/"
-    labels = ["loc_flux_test.csv","loc_lags_test.csv",
-              "loc_flux_40.csv","loc_lags_40.csv",
-              "loc_grid_5_lags.csv","loc_grid_5_lags_test.csv",
-              "loc_grid_6_lags.csv","loc_grid_6_lags_test.csv",
-              "loc_grid_7_lags.csv","loc_grid_7_lags_test.csv",
-              "loc_grid_8_lags.csv","loc_grid_8_lags_test.csv",
-              "loc_grid_9_lags.csv","loc_grid_9_lags_test.csv",
-              "loc_grid_10_lags.csv","loc_grid_10_lags_test.csv",
-              "loc_grid_5_flux.csv","loc_grid_5_flux_test.csv",
-              "loc_grid_6_flux.csv","loc_grid_6_flux_test.csv",
-              "loc_grid_7_flux.csv","loc_grid_7_flux_test.csv",
-              "loc_grid_8_flux.csv","loc_grid_8_flux_test.csv",
-              "loc_grid_9_flux.csv","loc_grid_9_flux_test.csv",
-              "loc_grid_10_flux.csv","loc_grid_10_flux_test.csv"]
+    labels = ["locs_10_spectra_tra.csv","locs_10_spectra_val.csv",
+              "locs_20_spectra_tra.csv","locs_20_spectra_val.csv"]
     
     spectra_names = []
     for fname in labels:
