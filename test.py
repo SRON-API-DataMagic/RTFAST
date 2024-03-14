@@ -97,7 +97,7 @@ def build_optimizer(model,optimizer_name,learning_rate):
 
 def wandb_sweep():
     config = wandb.config
-    run = wandb.init(config=config)
+    run = wandb.init(config=config,project="rtdist-emulator")
     # Initialize a new wandb run
     name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
     
