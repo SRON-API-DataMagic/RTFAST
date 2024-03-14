@@ -98,10 +98,9 @@ def build_optimizer(model,optimizer_name,learning_rate):
 def wandb_sweep(run,config=None):
     # Initialize a new wandb run
     name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
-    run.log_model(path=f"models/{name}.pt", name=f"{name}")
+    
     # If called by wandb.agent, as below,
     # this config will be set by Sweep Controller
-    config = wandb.config
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
@@ -132,6 +131,8 @@ def wandb_sweep(run,config=None):
                            config.num_layers,config.nodes,
                            config.activation)
     model.to(device)
+    torch.save(model.state_dict(), f"models/{name}.pth")
+    run.log_model(path=f"models/{name}.pt", name=f"{name}")
     optimizer = build_optimizer(model, config.optimizer, 
                                 config.learning_rate)
     
@@ -149,6 +150,7 @@ def wandb_sweep(run,config=None):
 
 def sweep_call():
     config = wandb.config
+    print(config)
     run = wandb.init(config=config)
     wandb_sweep(run,config)
     return
