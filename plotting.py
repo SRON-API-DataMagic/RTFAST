@@ -1567,7 +1567,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
