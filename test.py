@@ -128,7 +128,7 @@ def main():
     num_pars = len(pars_list)
     print(num_pars)
     
-    new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
+    #new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
     #merge()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
