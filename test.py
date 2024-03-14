@@ -97,56 +97,56 @@ def build_optimizer(model,optimizer_name,learning_rate):
 
 def wandb_sweep(config=None):
     # Initialize a new wandb run
-    with wandb.init(config=config) as run:
-        name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
-        run.log_model(path=f"models/{name}.pt", name=f"{name}")
-        # If called by wandb.agent, as below,
-        # this config will be set by Sweep Controller
-        config = wandb.config
-        pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-        negatives = [3]
-        logged = [0,2,3,4,7,8,10,11,12,13,23]
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        
-        val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                                   pars_list,negatives,logged,scale_bool = True,
-                                   comps=40,
-                                   PCA_loc="scalers/PCA_20_spec.bin",
-                                   comp_loc="scalers/comp_20_spec.bin",
-                                   spec_scal_loc="scalers/spec_20_spec.bin")
-        val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                      shuffle=True)
-        
-        train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
-                                   pars_list,negatives,logged,scale_bool = False,
-                                   PCA_loc="scalers/PCA_20_spec.bin",
-                                   comp_loc="scalers/comp_20_spec.bin",
-                                   spec_scal_loc="scalers/spec_20_spec.bin")
-        tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                      shuffle=True)
-        loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
+    run = wandb.init(config=config)
+    name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
+    run.log_model(path=f"models/{name}.pt", name=f"{name}")
+    # If called by wandb.agent, as below,
+    # this config will be set by Sweep Controller
+    config = wandb.config
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
+                               pars_list,negatives,logged,scale_bool = True,
+                               comps=40,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
+    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    
+    train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
+    tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 
-        tra_loader,val_loader = config.tra_loader,config.val_loader
-        loss_fn,device = config.loss_fn,config.device
-        
-        model = DynamicNetwork(20, 40,
-                               config.num_layers,config.nodes,
-                               config.activation)
-        model.to(device)
-        optimizer = build_optimizer(model, config.optimizer, 
-                                    config.learning_rate)
-        
-        loss_arr = []
-        for epoch in range(config.epochs):
-            (model,optimizer,
-             train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
-                                                 optimizer, loss_fn, device)
-            loss = test_flux(val_loader, model, loss_fn, device)
-            loss_arr.append(loss)
-            wandb.log({"loss": loss,"med_loss": med_loss,"std_loss":std_loss,
-                       "epoch": epoch}) 
-            if loss == np.min(loss_arr):
-                torch.save(model.state_dict(), f"models/{name}.pth")
+    tra_loader,val_loader = config.tra_loader,config.val_loader
+    loss_fn,device = config.loss_fn,config.device
+    
+    model = DynamicNetwork(20, 40,
+                           config.num_layers,config.nodes,
+                           config.activation)
+    model.to(device)
+    optimizer = build_optimizer(model, config.optimizer, 
+                                config.learning_rate)
+    
+    loss_arr = []
+    for epoch in range(config.epochs):
+        (model,optimizer,
+         train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
+                                             optimizer, loss_fn, device)
+        loss = test_flux(val_loader, model, loss_fn, device)
+        loss_arr.append(loss)
+        wandb.log({"loss": loss,"med_loss": med_loss,"std_loss":std_loss,
+                   "epoch": epoch}) 
+        if loss == np.min(loss_arr):
+            torch.save(model.state_dict(), f"models/{name}.pth")
 
 def sweep_call():
     wandb_sweep(wandb.config)
