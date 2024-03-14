@@ -98,7 +98,7 @@ def build_optimizer(model,optimizer_name,learning_rate):
 def wandb_sweep(config=None):
     # Initialize a new wandb run
     with wandb.init(config=config) as run:
-        name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
+        name = f"{config['optimizer']}_{config['num_layers']}_{config['nodes']}_{config['learning_rate']}_{config['activation']}"
         run.log_model(path=f"models/{name}.pt", name=f"{name}")
         # If called by wandb.agent, as below,
         # this config will be set by Sweep Controller
