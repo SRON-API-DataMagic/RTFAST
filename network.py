@@ -311,3 +311,27 @@ class PCANetwork(nn.Module):
     
     def forward(self,pars):
         return self.LinearStack(pars)
+    
+class DynamicNetwork(nn.Module):
+    """
+    
+    """
+    
+    def __init__(self,num_pars,output_len,num_layers,nodes,activation):
+        super().__init__()
+        modules = []
+        #specify input stack
+        modules.append(nn.Linear(num_pars, nodes))
+        modules.append(activation)
+        #dynamically add layers
+        for i in range(num_layers):
+            modules.append(nn.Linear(nodes, nodes))
+            modules.append(activation)
+        #add output stack
+        modules.append(nn.Linear(nodes, output_len))
+        self.LinearStack = nn.Sequential(*modules)
+        
+    def forward(self,pars):
+        return self.LinearStack(pars)
+        
+            
