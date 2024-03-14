@@ -311,6 +311,10 @@ class PCANetwork(nn.Module):
                                          nn.GELU(),
                                          nn.Linear(512, 512),
                                          nn.GELU(), 
+                                         nn.Linear(512, 512),
+                                         nn.GELU(),
+                                         nn.Linear(512, 512),
+                                         nn.GELU(), 
                                          nn.Linear(512, output_len))
     
     def forward(self,pars):
