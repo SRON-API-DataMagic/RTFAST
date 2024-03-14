@@ -103,6 +103,28 @@ def wandb_sweep(config=None):
         # If called by wandb.agent, as below,
         # this config will be set by Sweep Controller
         config = wandb.config
+        pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+        negatives = [3]
+        logged = [0,2,3,4,7,8,10,11,12,13,23]
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
+        val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
+                                   pars_list,negatives,logged,scale_bool = True,
+                                   comps=40,
+                                   PCA_loc="scalers/PCA_20_spec.bin",
+                                   comp_loc="scalers/comp_20_spec.bin",
+                                   spec_scal_loc="scalers/spec_20_spec.bin")
+        val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                      shuffle=True)
+        
+        train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
+                                   pars_list,negatives,logged,scale_bool = False,
+                                   PCA_loc="scalers/PCA_20_spec.bin",
+                                   comp_loc="scalers/comp_20_spec.bin",
+                                   spec_scal_loc="scalers/spec_20_spec.bin")
+        tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                      shuffle=True)
+        loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
 
         tra_loader,val_loader = config.tra_loader,config.val_loader
         loss_fn,device = config.loss_fn,config.device
@@ -174,24 +196,6 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     
-    val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = True,
-                               comps=40,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
-    val_dataloader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                  shuffle=True)
-    
-    train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
-    train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                  shuffle=True)
-    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-    
     sweep_config = {
     'method': 'grid'
     }
@@ -221,11 +225,6 @@ def main():
         }
     }
     sweep_config['parameters'] = parameters_dict
-    
-    sweep_config['tra_loader'] = {'values':train_dataloader}
-    sweep_config['val_loader'] = {'values':val_dataloader}
-    sweep_config['loss_fn'] = {'values':loss_fn}
-    sweep_config['device'] = {'values':device}
     
     sweep_id = wandb.sweep(sweep_config, project="rtdist-emulator")
     
