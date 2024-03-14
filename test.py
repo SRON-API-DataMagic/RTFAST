@@ -21,13 +21,15 @@ from joblib import Parallel, delayed, dump, load
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.decomposition import PCA
 from dataStructures import PCADataset
-from network import PCAFluxNetwork, PCANetwork
+from network import PCAFluxNetwork, PCANetwork, DynamicNetwork
 
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW, SGD
 import corner
+
+import wandb
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
@@ -85,6 +87,45 @@ def merge():
     mergeSaveData(test, pd.read_csv(f"data/locations/{test_name}"),
                   "data/locations/",test_name)
 
+def build_optimizer(model,optimizer_name,learning_rate):
+    if optimizer_name == "adam":
+        optimizer = Adam(model.parameters(),lr=learning_rate)
+    elif optimizer_name == "adamW":
+        optimizer = AdamW(model.parameters(),lr=learning_rate)
+    
+    return optimizer
+
+def wandb_sweep(config=None):
+    # Initialize a new wandb run
+    with wandb.init(config=config) as run:
+        name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
+        run.log_model(path=f"models/{name}.pt", name=f"{name}")
+        # If called by wandb.agent, as below,
+        # this config will be set by Sweep Controller
+        config = wandb.config
+
+        tra_loader,val_loader = config.tra_loader,config.val_loader
+        loss_fn,device = config.loss_fn,config.device
+        
+        model = DynamicNetwork(20, 40,
+                               config.num_layers,config.nodes,
+                               config.activation)
+        model.to(device)
+        optimizer = build_optimizer(model, config.optimizer, 
+                                    config.learning_rate)
+        
+        loss_arr = []
+        for epoch in range(config.epochs):
+            (model,optimizer,
+             train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
+                                                 optimizer, loss_fn, device)
+            loss = test_flux(val_loader, model, loss_fn, device)
+            loss_arr.append(loss)
+            wandb.log({"loss": loss,"med_loss": med_loss,"std_loss":std_loss,
+                       "epoch": epoch}) 
+            if loss == np.min(loss_arr):
+                torch.save(model.state_dict(), f"models/{name}.pth")
+                
 def main():
     wrk_dir = os.getcwd()
     
@@ -149,7 +190,47 @@ def main():
                                spec_scal_loc="scalers/spec_20_spec.bin")
     train_dataloader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
+    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
     
+    sweep_config = {
+    'method': 'grid'
+    }
+    metric = {'name':'weighted_loss',
+               'goal':'minimize',
+               'class':PCALoss}
+    sweep_config['metric'] = metric
+    
+    parameters_dict = {
+    'optimizer': {
+        'values': ['adam', 'adamW']
+        },
+    'num_layers': {
+        'values': [4,6,8]
+        },
+    'nodes': {
+        'values': [256,512,1024]
+        },
+    'epochs': {
+          'values': [1500]
+        },
+    'learning_rate': {
+        'values': [1e-4,5e-3,1e-3]
+        },
+    'activation': {
+        'values': ["ReLU","GELU"]
+        }
+    }
+    sweep_config['parameters'] = parameters_dict
+    
+    sweep_config['tra_loader'] = {'values':train_dataloader}
+    sweep_config['val_loader'] = {'values':val_dataloader}
+    sweep_config['loss_fn'] = {'values':loss_fn}
+    sweep_config['device'] = {'values':device}
+    
+    sweep_id = wandb.sweep(sweep_config, project="rtdist-emulator")
+    
+    wandb.agent(sweep_id=sweep_id, function=wandb_sweep)
+    """
     model = PCANetwork(num_pars, val_dataset.data.shape[1])
     
     model.to(device)
@@ -157,33 +238,12 @@ def main():
     model.float()
     
     optimizer = Adam(model.parameters(),lr = 1e-3)
-    #optimizer = AdamW(model.parameters(),lr = 1e-3)
-    
-    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-    #loss_fn = nn.MSELoss()
-    """
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-    lr_sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 
-                                                                    T_0=5, 
-                                                                    T_mult=1, 
-                                                                    eta_min=1e-5, 
-                                                                    last_epoch=-1)
-    """
-    """
-    scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, 
-                                                  max_lr=1e-2)
-    """
     train = train_flux
     test =  test_flux
     
     grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        val_dataloader, loss_fn, device, "20_pars", "flux", 
                        epochs = 2000)
-    
-    """
-    bottleneck_training_loop(model, optimizer,train_dataloader, 
-                       val_dataloader, loss_fn, device, "PCA", "flux", 
-                       epochs = 500)
     """
 
 if __name__ == "__main__":

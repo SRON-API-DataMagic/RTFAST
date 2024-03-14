@@ -17,6 +17,8 @@ from math import ceil
 from tqdm import tqdm
 from generator import active_learning_generation
 
+import wandb
+
 def model_NaN_checker(D,P,model):
     """
     This function checks for the cause of models parameters going to zero by
@@ -349,7 +351,6 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     loss_arr = []
     iters = len(dataloader)
     for batch, (D,P) in enumerate(dataloader):
-        model_NaN_checker(D, P, model)
         optimizer.zero_grad()
         pred = model(P.to(device))
         loss = loss_fn(pred,D.to(device))
