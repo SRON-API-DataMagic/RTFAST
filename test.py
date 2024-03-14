@@ -200,8 +200,7 @@ def main():
     'method': 'grid'
     }
     metric = {'name':'weighted_loss',
-               'goal':'minimize',
-               'class':PCALoss}
+               'goal':'minimize'}
     sweep_config['metric'] = metric
     
     parameters_dict = {
