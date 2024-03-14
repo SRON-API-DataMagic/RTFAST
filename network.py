@@ -297,25 +297,17 @@ class PCANetwork(nn.Module):
     
     def __init__(self,num_pars,output_len):
         super().__init__()
-        self.LinearStack = nn.Sequential(nn.Linear(num_pars, 512),
+        self.LinearStack = nn.Sequential(nn.Linear(num_pars, 1024),
                                          nn.GELU(),
-                                         nn.Linear(512, 512),
+                                         nn.Linear(1024, 1024),
                                          nn.GELU(),
-                                         nn.Linear(512, 512),
+                                         nn.Linear(1024, 1024),
                                          nn.GELU(),
-                                         nn.Linear(512, 512),
+                                         nn.Linear(1024, 1024),
                                          nn.GELU(),
-                                         nn.Linear(512, 512),
+                                         nn.Linear(1024, 1024),
                                          nn.GELU(),
-                                         nn.Linear(512, 512),
-                                         nn.GELU(),
-                                         nn.Linear(512, 512),
-                                         nn.GELU(), 
-                                         nn.Linear(512, 512),
-                                         nn.GELU(),
-                                         nn.Linear(512, 512),
-                                         nn.GELU(), 
-                                         nn.Linear(512, output_len))
+                                         nn.Linear(1024, output_len))
     
     def forward(self,pars):
         return self.LinearStack(pars)
