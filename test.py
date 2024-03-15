@@ -139,7 +139,8 @@ def wandb_sweep():
                                              optimizer, loss_fn, device)
         loss = test_flux(val_loader, model, loss_fn, device)
         loss_arr.append(loss)
-        wandb.log({"loss": loss,"med_loss": med_loss,"std_loss":std_loss,
+        wandb.log({"loss": loss,"train_loss":train_loss,
+                   "med_loss": med_loss,"std_loss":std_loss,
                    "epoch": epoch}) 
         if loss == np.min(loss_arr):
             torch.save(model.state_dict(), f"models/{name}.pth")
