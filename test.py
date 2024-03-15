@@ -124,9 +124,6 @@ def wandb_sweep():
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-
-    tra_loader,val_loader = config.tra_loader,config.val_loader
-    loss_fn,device = config.loss_fn,config.device
     
     model = DynamicNetwork(20, 40,
                            config.num_layers,config.nodes,
