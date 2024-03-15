@@ -3,7 +3,7 @@ This program holds custom pytorch data structures for use in this project.
 """
 from torch.utils.data import Dataset
 
-from joblib import dump, load
+from joblib import dump, load, Parallel, delayed
 import pandas as pd
 import torch
 import numpy as np
@@ -530,9 +530,11 @@ class PCADataset(Dataset):
                 self.pars[:,i] = np.log10(self.pars[:,i])
     
     def data_load(self):
-        data = []
-        for file in tqdm.tqdm(self.locations):
-            data.append(np.loadtxt(file).reshape(1, -1))
+        
+        def file_load(file):
+            return np.loadtxt(file).reshape(1, -1)
+        
+        data = Parallel(n_jobs=20)(delayed(file_load)(file) for file in self.locations)
         D = np.concatenate(data,axis=0)
         D[D<self.threshold] = self.threshold
         D = np.log10(D)
