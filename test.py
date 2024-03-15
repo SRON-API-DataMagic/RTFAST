@@ -200,8 +200,6 @@ def main():
     
     #new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
     #merge()
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(device)
     
     sweep_config = {
     'method': 'grid'
@@ -215,10 +213,10 @@ def main():
         'values': ['adam']
         },
     'num_layers': {
-        'values': [4,6,8]
+        'values': [8,10,12,14,16]
         },
     'nodes': {
-        'values': [256,512,1024]
+        'values': [256]
         },
     'epochs': {
           'values': [1500]
