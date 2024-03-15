@@ -96,6 +96,7 @@ def build_optimizer(model,optimizer_name,learning_rate):
     return optimizer
 
 def wandb_sweep():
+    wandb.init(project="rtdist-emulator")
     config = wandb.config
     # Initialize a new wandb run
     name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
@@ -132,8 +133,6 @@ def wandb_sweep():
                            config.num_layers,config.nodes,
                            config.activation)
     model.to(device)
-    torch.save(model.state_dict(), f"models/{name}.pth")
-    run.log_model(path=f"models/{name}.pt", name=f"{name}")
     optimizer = build_optimizer(model, config.optimizer, 
                                 config.learning_rate)
     
