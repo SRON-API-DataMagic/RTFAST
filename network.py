@@ -319,14 +319,16 @@ class DynamicNetwork(nn.Module):
     
     def __init__(self,num_pars,output_len,num_layers,nodes,activation):
         super().__init__()
+        if activation == "GELU":
+            act_type = nn.GELU()
         modules = []
         #specify input stack
         modules.append(nn.Linear(num_pars, nodes))
-        modules.append(activation)
+        modules.append(act_type)
         #dynamically add layers
         for i in range(num_layers):
             modules.append(nn.Linear(nodes, nodes))
-            modules.append(activation)
+            modules.append(act_type)
         #add output stack
         modules.append(nn.Linear(nodes, output_len))
         self.LinearStack = nn.Sequential(*modules)
