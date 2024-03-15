@@ -132,8 +132,11 @@ def wandb_sweep():
     optimizer = build_optimizer(model, config.optimizer, 
                                 config.learning_rate)
     
+    early_stopping = 100
+    imp = 0
     loss_arr = []
     for epoch in range(config.epochs):
+        imp += 1
         (model,optimizer,
          train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
                                              optimizer, loss_fn, device)
@@ -144,6 +147,9 @@ def wandb_sweep():
                    "epoch": epoch}) 
         if loss == np.min(loss_arr):
             torch.save(model.state_dict(), f"models/{name}.pth")
+            imp = 0
+        if imp >= early_stopping:
+            break
 
 def sweep_call():
     wandb_sweep()
