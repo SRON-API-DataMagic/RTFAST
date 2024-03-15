@@ -99,7 +99,7 @@ def wandb_sweep():
     wandb.init(project="rtdist-emulator")
     config = wandb.config
     # Initialize a new wandb run
-    name = f"{config.optimizer}_{config.num_layers}_{config.nodes}_{config.learning_rate}_{config.activation}"
+    name = f"{config.num_layers}_{config.nodes}"
     
     # If called by wandb.agent, as below,
     # this config will be set by Sweep Controller
@@ -208,7 +208,7 @@ def main():
     
     parameters_dict = {
     'optimizer': {
-        'values': ['adam', 'adamW']
+        'values': ['adam']
         },
     'num_layers': {
         'values': [4,6,8]
@@ -220,10 +220,10 @@ def main():
           'values': [1500]
         },
     'learning_rate': {
-        'values': [1e-4,5e-3,1e-3]
+        'values': [1e-3]
         },
     'activation': {
-        'values': ["ReLU","GELU"]
+        'values': ["GELU"]
         }
     }
     sweep_config['parameters'] = parameters_dict
