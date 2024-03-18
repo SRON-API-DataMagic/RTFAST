@@ -1161,38 +1161,41 @@ def PCA_plotting(wrk_dir,name):
     None.
 
     """
-    #plotting of training and validation loss over time
-    PCA_train_loss = np.loadtxt(f"loss/{name}_tr_loss.txt")
-    PCA_train_loss_med = np.loadtxt(f"loss/{name}_med_tr_loss.txt")
-    PCA_train_loss_std = np.loadtxt(f"loss/{name}_std_tr_loss.txt")
-    PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
+    plot_loss = False
     
-    epochs = np.arange(1,len(PCA_train_loss)+1)
-    plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
-                     PCA_train_loss-PCA_train_loss_std,color="b",alpha=0.5)
-    plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
-             ls = "-")
-    plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
-             ls = "--")
-    plt.plot(epochs,PCA_train_loss_med,label = "Median training loss", c = "green",
-             ls = "-.")
-    
-    plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Training epochs")
-    plt.ylabel("Loss")
-    plt.title(f"Loss by epoch for {name}")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(f"loss/loss_{name}.png")
-    plt.close()
-    
-    plt.plot(PCA_train_loss/PCA_val_loss,c="b",ls="-")
-    plt.axhline(1,c="orange",ls="--")
-    plt.xlabel("Epoch")
-    plt.ylabel("Ratio between training loss and validation loss")
-    plt.savefig("loss/loss_ratio.png")
-    plt.close()
+    if plot_loss == True:
+        #plotting of training and validation loss over time
+        PCA_train_loss = np.loadtxt(f"loss/{name}_tr_loss.txt")
+        PCA_train_loss_med = np.loadtxt(f"loss/{name}_med_tr_loss.txt")
+        PCA_train_loss_std = np.loadtxt(f"loss/{name}_std_tr_loss.txt")
+        PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
+        
+        epochs = np.arange(1,len(PCA_train_loss)+1)
+        plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
+                         PCA_train_loss-PCA_train_loss_std,color="b",alpha=0.5)
+        plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
+                 ls = "-")
+        plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
+                 ls = "--")
+        plt.plot(epochs,PCA_train_loss_med,label = "Median training loss", c = "green",
+                 ls = "-.")
+        
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.xlabel("Training epochs")
+        plt.ylabel("Loss")
+        plt.title(f"Loss by epoch for {name}")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f"loss/loss_{name}.png")
+        plt.close()
+        
+        plt.plot(PCA_train_loss/PCA_val_loss,c="b",ls="-")
+        plt.axhline(1,c="orange",ls="--")
+        plt.xlabel("Epoch")
+        plt.ylabel("Ratio between training loss and validation loss")
+        plt.savefig("loss/loss_ratio.png")
+        plt.close()
     
     #plotting of emulator vs test data performance
     
