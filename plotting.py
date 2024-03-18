@@ -1260,6 +1260,7 @@ def PCA_plotting(wrk_dir,name):
     D[D<1e-11] = 1e-11
     
     model = network.PCANetwork(len(pars_list), test_data.pca.components_.shape[0])
+    model = network.DynamicNetwork(20, 40, 8, 256, "GELU")
     
     print(f"models/{name}.pth")
     model.load_state_dict(torch.load(f"models/{name}.pth"))
