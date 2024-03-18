@@ -136,13 +136,15 @@ def wandb_sweep():
     imp = 0
     loss_arr = []
     for epoch in range(config.epochs):
+        print(f"Epoch {epoch+1}")
+        print("-----------------")
         imp += 1
         (model,optimizer,
          train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
                                              optimizer, loss_fn, device)
         loss = test_flux(val_loader, model, loss_fn, device)
         loss_arr.append(loss)
-        wandb.log({"loss": loss,"train_loss":train_loss,
+        wandb.log({"val_loss": loss,"train_loss":train_loss,
                    "med_loss": med_loss,"std_loss":std_loss,
                    "epoch": epoch}) 
         if loss == np.min(loss_arr):
@@ -210,7 +212,7 @@ def main():
     
     parameters_dict = {
     'optimizer': {
-        'values': ['adam','adamW']
+        'values': ['adam']
         },
     'num_layers': {
         'values': [8,10,12,14,16]
@@ -219,7 +221,7 @@ def main():
         'values': [256]
         },
     'epochs': {
-          'values': [1500]
+          'values': [2000]
         },
     'learning_rate': {
         'values': [1e-4,5e-4,1e-3]
