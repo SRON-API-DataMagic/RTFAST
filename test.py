@@ -71,16 +71,16 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     print("Saving flux data")
     saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","locs_20_spectra_tra.csv")
+             "data/locations/","PCA_locs_flux_temp.csv")
     saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","locs_20_spectra_val.csv")
+             "data/locations/","PCA_locs_flux_test_val.csv")
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
-    test = pd.read_csv("data/locations/PCA_locs_flux_test_temp.csv")
+    test = pd.read_csv("data/locations/PCA_locs_flux_test_val.csv")
     
-    train_name = "PCA_locs_flux.csv"
-    test_name = "PCA_locs_flux_test.csv"
+    train_name = "locs_20_spectra_tra.csv"
+    test_name = "locs_20_spectra_val.csv"
     #save final curated datasets back to disk for use
     mergeSaveData(train, pd.read_csv(f"data/locations/{train_name}"),
                   "data/locations/", train_name)
@@ -144,7 +144,7 @@ def wandb_sweep():
                                              optimizer, loss_fn, device)
         loss = test_flux(val_loader, model, loss_fn, device)
         loss_arr.append(loss)
-        wandb.log({"val_loss": loss,"train_loss":train_loss,
+        wandb.log({"loss": loss,"train_loss":train_loss,
                    "med_loss": med_loss,"std_loss":std_loss,
                    "epoch": epoch}) 
         if loss == np.min(loss_arr):
@@ -200,13 +200,13 @@ def main():
     num_pars = len(pars_list)
     print(num_pars)
     
-    #new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
-    #merge()
+    new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
+    merge()
     
     sweep_config = {
     'method': 'grid'
     }
-    metric = {'name':'weighted_loss',
+    metric = {'name':'loss',
                'goal':'minimize'}
     sweep_config['metric'] = metric
     
