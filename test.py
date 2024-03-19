@@ -33,7 +33,7 @@ import wandb
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
-    theta_lhc = generator.lhc_generation(int(5e5), range_AGN, limited=False, 
+    theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited=False, 
                                          lhc_filter=generator.lhc_filter_20)
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]

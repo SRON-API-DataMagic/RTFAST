@@ -65,6 +65,8 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     None.
 
     """
+    #find the last spectra's name and use that to save new spectra without
+    #overwriting
     try:
         if lags == None:
             files = glob.glob("./data/spectra/*.txt")
@@ -83,6 +85,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     except:
         start = 0
     
+    #save data to disk and save location to dataset
     locations = []
     for i,item in enumerate(tqdm.tqdm(dataset),start=start):
         if lags == None:
