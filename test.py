@@ -202,7 +202,7 @@ def main():
     
     new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
     merge()
-    
+    """
     sweep_config = {
     'method': 'grid'
     }
@@ -236,20 +236,38 @@ def main():
     
     wandb.agent(sweep_id=sweep_id, function=sweep_call)
     """
-    model = PCANetwork(num_pars, val_dataset.data.shape[1])
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
+    val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
+    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    
+    train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
+    tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                  shuffle=True)
+    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
+    
+    model = DynamicNetwork(20, 40,
+                           8,256,
+                           "GELU")
     model.to(device)
+    optimizer = Adam(model.parameters(), lr=1e-4)
     
-    model.float()
-    
-    optimizer = Adam(model.parameters(),lr = 1e-3)
     train = train_flux
     test =  test_flux
     
-    grid_training_loop(model, optimizer, train, test, train_dataloader, 
-                       val_dataloader, loss_fn, device, "20_pars", "flux", 
+    grid_training_loop(model, optimizer, train, test, tra_loader, 
+                       val_loader, loss_fn, device, "20_pars", "flux", 
                        epochs = 2000)
-    """
+    
 
 if __name__ == "__main__":
     main()
