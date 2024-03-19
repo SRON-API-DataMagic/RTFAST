@@ -1573,7 +1573,7 @@ def main():
     
     #test_set(wrk_dir)
     
-    PCA_plotting(wrk_dir,"8_256_adam_0.0001")
+    PCA_plotting(wrk_dir,"20_pars_flux")
     
     
 if __name__ == "__main__":
