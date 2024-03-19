@@ -1435,6 +1435,7 @@ def PCA_plotting(wrk_dir,name):
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
     print(f"Average residual is {residuals[~np.isnan(residuals)].mean()*100}%")
+    print(f"Median residual is {np.median(residuals[~np.isnan(residuals)])*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
     
