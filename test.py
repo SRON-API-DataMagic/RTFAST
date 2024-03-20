@@ -199,9 +199,12 @@ def main():
     range_AGN = np.asarray(generator.lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
-    
+    """
     new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
+    print("Successfully saved")
     merge()
+    print("Successfully merged")
+    """
     """
     sweep_config = {
     'method': 'grid'
