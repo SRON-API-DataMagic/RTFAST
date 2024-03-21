@@ -1161,7 +1161,7 @@ def PCA_plotting(wrk_dir,name):
     None.
 
     """
-    plot_loss = False
+    plot_loss = True
     
     if plot_loss == True:
         #plotting of training and validation loss over time
@@ -1187,6 +1187,7 @@ def PCA_plotting(wrk_dir,name):
         plt.title(f"Loss by epoch for {name}")
         plt.legend()
         plt.tight_layout()
+        plt.ylim(top = 1e1)
         plt.savefig(f"loss/loss_{name}.png")
         plt.close()
         
