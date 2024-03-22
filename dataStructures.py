@@ -493,7 +493,7 @@ class PCADataset(Dataset):
         self.spec_scal_loc = spec_scal_loc
         self.scale_bool = scale_bool
         if scale_bool == False:
-            self.spec_scaler = load(self.scaler_loc)
+            self.spec_scaler = load(self.spec_scal_loc)
             self.pca = load(self.PCA_loc)
             self.PCA_scaler = load(self.comp_loc)
         self.comps = comps
