@@ -544,9 +544,9 @@ class PCADataset(Dataset):
         no_loads = int(np.ceil(len(self.locations)/1e6))
         for i in range(no_loads):
             if i != (no_loads-1):
-                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*1e6:(i+1)*1e6])
+                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[int(i*1e6):(i+1)*int(1e6)])
             else:
-                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*1e6:])
+                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*int(1e6):])
             data = np.concatenate(data,axis=0)
             data[data<self.threshold] = self.threshold
             data = np.log10(data)
