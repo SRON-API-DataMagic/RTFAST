@@ -534,27 +534,28 @@ class PCADataset(Dataset):
                 self.pars[:,i] = np.log10(self.pars[:,i])
     
     def data_load(self):
-        
-        def file_load_scale(file):
-            data = np.loadtxt(file).reshape(1, -1)
-            data[data<self.threshold] = self.threshold
-            data = np.log10(data)
-            data = self.scale(data)
-            return data
-        
+        """
+        Loads data from disk and scales it to NN friendly outputs. Automatically
+        splits large loads into 1e6 portions to prevent memory overflow.
+        """
         def file_load(file):
             return np.loadtxt(file).reshape(1, -1)
         
-        if self.scale_bool == True:
-            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
-            D = np.concatenate(data,axis=0)
-            D[D<self.threshold] = self.threshold
-            D = np.log10(D)
-            self.data = self.scale(D)
-        else:
-            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load_scale)(file) for file in self.locations)
-            D = np.concatenate(data,axis=0)
-            self.data = D
+        no_loads = np.ceil(len(self.locations)/1e6)
+        for i in range(no_loads):
+            if i != (no_loads-1):
+                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*1e6:(i+1)*1e6])
+            else:
+                data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*1e6:])
+            data = np.concatenate(data,axis=0)
+            data[data<self.threshold] = self.threshold
+            data = np.log10(data)
+            data = self.scale(data)
+            if i == 0:
+                overall_data = data
+            else:
+                overall_data = np.concatenate([overall_data,data],axis=0)
+        self.data = overall_data
         return
     
     def scale(self,data):
@@ -568,6 +569,7 @@ class PCADataset(Dataset):
             self.spec_scaler = StandardScaler()
             data = self.spec_scaler.fit_transform(data)
             dump(self.spec_scaler,self.scaler_loc)
+            self.scale_bool = False
         else:
             data = self.spec_scaler.transform(data)
         return data
@@ -580,6 +582,7 @@ class PCADataset(Dataset):
             print(f"Achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}% with {comp} components")
             print(f"Distribution of explained variance is {self.pca.explained_variance_ratio_}")
             dump(self.pca,self.PCA_loc)
+            self.scale_bool = False
             return data
         if self.scale_bool == True:
             print(f"Attempting n_comp = {comp}")
@@ -592,6 +595,7 @@ class PCADataset(Dataset):
                 print(f"Successfully describes {.99999*100}% of variance")
                 data = self.pca.transform(data)
                 dump(self.pca,self.PCA_loc)
+                self.scale_bool = False
         else:
             data = self.pca.transform(data)
         
@@ -602,6 +606,7 @@ class PCADataset(Dataset):
             self.PCA_scaler = StandardScaler()
             data = self.PCA_scaler.fit_transform(data)
             dump(self.PCA_scaler,self.comp_loc)
+            self.scale_bool = False
         else:
             data = self.PCA_scaler.transform(data)
         return data
