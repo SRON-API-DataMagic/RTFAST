@@ -541,7 +541,7 @@ class PCADataset(Dataset):
         def file_load(file):
             return np.loadtxt(file).reshape(1, -1)
         
-        no_loads = np.ceil(len(self.locations)/1e6)
+        no_loads = int(np.ceil(len(self.locations)/1e6))
         for i in range(no_loads):
             if i != (no_loads-1):
                 data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*1e6:(i+1)*1e6])
