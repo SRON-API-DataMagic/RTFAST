@@ -534,7 +534,7 @@ class PCADataset(Dataset):
         def file_load(file):
             return np.loadtxt(file).reshape(1, -1)
         
-        data = Parallel(n_jobs=20)(delayed(file_load)(file) for file in self.locations)
+        data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
         D = np.concatenate(data,axis=0)
         D[D<self.threshold] = self.threshold
         D = np.log10(D)
