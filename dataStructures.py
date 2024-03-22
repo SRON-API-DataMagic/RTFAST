@@ -488,10 +488,14 @@ class PCADataset(Dataset):
         data_table = pd.read_csv(data_loc)
         self.threshold = threshold
         self.force = force
-        self.scale_bool = scale_bool
         self.PCA_loc = PCA_loc
         self.comp_loc = comp_loc
         self.spec_scal_loc = spec_scal_loc
+        self.scale_bool = scale_bool
+        if scale_bool == False:
+            self.spec_scaler = load(self.scaler_loc)
+            self.pca = load(self.PCA_loc)
+            self.PCA_scaler = load(self.comp_loc)
         self.comps = comps
         self.locations = data_table.iloc[:,-1]
         self.pars = np.asarray(data_table.iloc[:,pars_list])
@@ -530,67 +534,76 @@ class PCADataset(Dataset):
                 self.pars[:,i] = np.log10(self.pars[:,i])
     
     def data_load(self):
-        
-        def file_load(file):
-            return np.loadtxt(file).reshape(1, -1)
-        
-        data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
-        D = np.concatenate(data,axis=0)
-        D[D<self.threshold] = self.threshold
-        D = np.log10(D)
-        self.data = D
-        self.scale()
-    
-    def scale(self):
-        self.spectra_scaler(self.spec_scal_loc)
-        self.PCA(self.PCA_loc,self.comps)
-        self.component_scaler(self.comp_loc)
+        if self.scale_bool == True:
+            def file_load(file):
+                return np.loadtxt(file).reshape(1, -1)
+            
+            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
+            D = np.concatenate(data,axis=0)
+            D[D<self.threshold] = self.threshold
+            D = np.log10(D)
+            self.data = self.scale(D)
+        else:
+            def file_load_scale(file):
+                data = np.loadtxt(file).reshape(1, -1)
+                data[data<self.threshold] = self.threshold
+                data = np.log10(data)
+                data = self.scale(data)
+                return data
+            
+            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
+            D = np.concatenate(data,axis=0)
+            self.data = D
         return
     
-    def spectra_scaler(self,scaler_loc):
+    def scale(self,data):
+        data = self.spectra_scaler(data)
+        data = self.PCA(data,self.comps)
+        data = self.component_scaler()
+        return data
+    
+    def spectra_scaler(self,data):
         if self.scale_bool == True:
             self.spec_scaler = StandardScaler()
-            self.data = self.spec_scaler.fit_transform(self.data)
-            dump(self.spec_scaler,scaler_loc)
+            data = self.spec_scaler.fit_transform(data)
+            dump(self.spec_scaler,self.scaler_loc)
         else:
-            self.spec_scaler = load(scaler_loc)
-            self.data = self.spec_scaler.transform(self.data)
-        return
+            data = self.spec_scaler.transform(data)
+        return data
     
-    def PCA(self,scaler_loc,comp = 1):
+    def PCA(self,data,comp = 1):
         if self.force == True:
             self.pca = PCA(n_components = comp)
-            self.pca.fit(self.data)
-            self.data = self.pca.transform(self.data)
+            self.pca.fit(data)
+            data = self.pca.transform(data)
             print(f"Achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}% with {comp} components")
             print(f"Distribution of explained variance is {self.pca.explained_variance_ratio_}")
-            dump(self.pca,scaler_loc)
-            return
+            dump(self.pca,self.PCA_loc)
+            return data
         if self.scale_bool == True:
             print(f"Attempting n_comp = {comp}")
             self.pca = PCA(n_components = comp)
-            self.pca.fit(self.data)
+            self.pca.fit(data)
             if sum(self.pca.explained_variance_ratio_) < 0.99999:
                 print(f"Currently achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}%")
-                self.PCA(scaler_loc,comp+1)
+                self.PCA(comp+1)
             else:
-                print("Successfully describes 99.99% of variance")
-                self.data = self.pca.transform(self.data)
-                dump(self.pca,scaler_loc)
-            return
+                print(f"Successfully describes {.99999*100}% of variance")
+                data = self.pca.transform(data)
+                dump(self.pca,self.PCA_loc)
         else:
-            self.pca = load(scaler_loc)
-            self.data = self.pca.transform(self.data)
-            return
-    def component_scaler(self,scaler_loc):
+            data = self.pca.transform(data)
+        
+        return data
+    
+    def component_scaler(self,data):
         if self.scale_bool == True:
             self.PCA_scaler = StandardScaler()
-            self.data = self.PCA_scaler.fit_transform(self.data)
-            dump(self.PCA_scaler,scaler_loc)
+            data = self.PCA_scaler.fit_transform(data)
+            dump(self.PCA_scaler,self.comp_loc)
         else:
-            self.PCA_scaler = load(scaler_loc)
-            self.data = self.PCA_scaler.transform(self.data)
-        return
+            data = self.PCA_scaler.transform(data)
+        return data
 
 class PCALagsDataset(PCADataset):
     
