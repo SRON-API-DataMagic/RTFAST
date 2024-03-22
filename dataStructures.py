@@ -560,7 +560,7 @@ class PCADataset(Dataset):
     def scale(self,data):
         data = self.spectra_scaler(data)
         data = self.PCA(data,self.comps)
-        data = self.component_scaler()
+        data = self.component_scaler(data)
         return data
     
     def spectra_scaler(self,data):
