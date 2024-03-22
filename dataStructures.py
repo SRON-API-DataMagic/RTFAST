@@ -534,24 +534,25 @@ class PCADataset(Dataset):
                 self.pars[:,i] = np.log10(self.pars[:,i])
     
     def data_load(self):
+        
+        def file_load_scale(file):
+            data = np.loadtxt(file).reshape(1, -1)
+            data[data<self.threshold] = self.threshold
+            data = np.log10(data)
+            data = self.scale(data)
+            return data
+        
+        def file_load(file):
+            return np.loadtxt(file).reshape(1, -1)
+        
         if self.scale_bool == True:
-            def file_load(file):
-                return np.loadtxt(file).reshape(1, -1)
-            
             data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
             D = np.concatenate(data,axis=0)
             D[D<self.threshold] = self.threshold
             D = np.log10(D)
             self.data = self.scale(D)
         else:
-            def file_load_scale(file):
-                data = np.loadtxt(file).reshape(1, -1)
-                data[data<self.threshold] = self.threshold
-                data = np.log10(data)
-                data = self.scale(data)
-                return data
-            
-            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations)
+            data = Parallel(n_jobs=20,verbose=1)(delayed(file_load_scale)(file) for file in self.locations)
             D = np.concatenate(data,axis=0)
             self.data = D
         return
