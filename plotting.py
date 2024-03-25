@@ -1203,25 +1203,6 @@ def PCA_plotting(wrk_dir,name):
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
-    """
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    """
-    """
-    pars_list = [1,2,3,6,7,8,9,11,13,23]
-    negatives = [3]
-    logged = [2,3,7,8,11,13,23]
-    """
-    """
-    pars_list = [3]
-    negatives = [3]
-    logged = [3]
-    """
-    print(len(pars_list))
-    #labels = ["a","inc","rin","rout","mass"]
-    #labels = ["rin"]
-    #labels = ["a","inc","rin","Gamma","distance","Afe","logNe","nH","mass","Anorm"]
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -1231,18 +1212,7 @@ def PCA_plotting(wrk_dir,name):
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
-    """
-    val_data = PCADataset("data/locations/PCA_locs_flux_test.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_flux.bin",
-                               comp_loc="scalers/comp_flux.bin")
-    """
-    """
-    train_data = PCADataset("data/locations/PCA_locs_flux.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_flux.bin",
-                               comp_loc="scalers/comp_flux.bin")
-    """
+    
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
