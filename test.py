@@ -4,7 +4,7 @@ lightweight NNs is a viable alternative to what we've been doing up until now.
 """
 
 from generator import intialize_dataset, rtdist_flux, nn_pars_to_rtdist
-import generator
+from generator import rtdist_lags, lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
 from training import bottleneck_training_loop
 import numpy as np
@@ -31,10 +31,53 @@ import corner
 
 import wandb
 
+def generate_lags_from_parameters(ReIm=3):
+    """
+    Generates lags from previously chosen parameters
+
+    Parameters
+    ----------
+    ReIm : int
+        Sets output of rtdist. The default is 3 (real parts of the cross
+        spectrum).
+
+    Returns
+    -------
+    None.
+
+    """
+    egrid = np.logspace(np.log10(0.5),np.log10(10),25)
+    
+    pars_val = pd.read_csv("data/locations/locs_20_spectra_val.csv")
+    pars_tra = pd.read_csv("data/locations/locs_20_spectra_tra.csv")
+    
+    pars_val["ReIm"] = ReIm
+    pars_tra["ReIm"] = ReIm
+    
+    theta_val = pars_val.iloc[:,:-1]
+    theta_tra = pars_tra.iloc[:,:-1]
+    
+    theta_val = np.asarray(theta_val)
+    theta_tra = np.asarray(theta_tra)
+    
+    val =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
+                                    for pars in theta_val)
+    val = np.asarray(val)
+    tra =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
+                                    for pars in theta_tra)
+    tra = np.asarray(tra)
+    
+    print("Saving lags data")
+    saveData(tra, theta_tra, 
+             "data/locations/","locs_20_lags_tra.csv")
+    saveData(val, theta_val, 
+             "data/locations/","locs_20_val_tra.csv")
+    
+
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
-    theta_lhc = generator.lhc_generation(int(1e6), range_AGN, limited=False, 
-                                         lhc_filter=generator.lhc_filter_20)
+    theta_lhc = lhc_generation(int(5e5), range_AGN, limited=False, 
+                                         lhc_filter=lhc_filter_20)
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
     figure = corner.corner(
@@ -46,7 +89,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_lhc, 6, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
@@ -196,7 +239,7 @@ def main():
     negatives = [3]
     logged = [3]
     """
-    range_AGN = np.asarray(generator.lhc_AGN())
+    range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
     """
@@ -258,9 +301,7 @@ def main():
                                   shuffle=True)
     loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
     
-    model = DynamicNetwork(20, 40,
-                           8,256,
-                           "GELU")
+    model = DynamicNetwork(20,40,8,256,"GELU")
     model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-4)
     
