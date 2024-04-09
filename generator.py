@@ -126,8 +126,8 @@ def Anorm_wrapper(pars):
     e_mid = e_mid * 1.60218e-9 #convert to erg
     
     def integrate(pars):
-        continuum = _models.lmodxillver(pars, egrid[:-1], egrid[1:])
-        integral = (continuum*e_mid).sum()
+        continuum = _models.lmodxillver(pars, egrid)
+        integral = np.trapz(continuum,egrid)*1.60218e-9
         return integral
     
     with Parallel(n_jobs=20,verbose=0) as parallel:
@@ -178,12 +178,10 @@ def Anorm_wrapper_10(pars):
     #energies from 0.1keV to 1MeV
     bins = 1000
     egrid = np.logspace(-1,3,num = bins)
-    e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
-    e_mid = e_mid * 1.60218e-9 #convert to erg
     
     def integrate(pars):
-        continuum = _models.lmodxillver(pars, egrid[:-1], egrid[1:])
-        integral = (continuum*e_mid).sum()
+        continuum = _models.lmodxillver(pars, egrid)
+        integral = np.trapz(continuum,egrid)*1.60218e-9
         return integral
     
     with Parallel(n_jobs=20,verbose=0) as parallel:
@@ -211,7 +209,7 @@ def lhc_filter_20(lhc):
 
     """
     #bad sets indexes all parameter sets that don't fit the filter criteria
-    #removes parameter sets that have a ph0ton index higher than 3 AND a iron
+    #removes parameter sets that have a photon index higher than 3 AND a iron
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
