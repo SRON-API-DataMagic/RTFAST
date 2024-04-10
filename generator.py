@@ -130,7 +130,9 @@ def Anorm_wrapper(pars):
         integral = np.trapz(continuum,egrid)*1.60218e-9
         return integral
     
-    with Parallel(n_jobs=20,verbose=0) as parallel:
+    cpu_num = os.cpu_count()
+    
+    with Parallel(n_jobs=cpu_num,verbose=0) as parallel:
         integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)

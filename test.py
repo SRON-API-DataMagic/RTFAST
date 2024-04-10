@@ -3,30 +3,24 @@ This is a quick training exercise to test if using PCA on spectra and using very
 lightweight NNs is a viable alternative to what we've been doing up until now.
 """
 
-from generator import intialize_dataset, rtdist_flux, nn_pars_to_rtdist
+from generator import rtdist_flux, nn_pars_to_rtdist
 from generator import rtdist_lags, lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
-from training import bottleneck_training_loop
 import numpy as np
 import os
 import pandas as pd
-import scipy
 import matplotlib.pyplot as plt
 
-from sherpa.astro.ui import unpack_rmf
 from sherpa.astro.io import read_arf
 from processing import saveData, spectraChecker, mergeSaveData
-from joblib import Parallel, delayed, dump, load
+from joblib import Parallel, delayed
 
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.decomposition import PCA
 from dataStructures import PCADataset
-from network import PCAFluxNetwork, PCANetwork, DynamicNetwork
+from network import DynamicNetwork
 
 import torch
-from torch import nn
 from torch.utils.data import DataLoader
-from torch.optim import Adam, AdamW, SGD
+from torch.optim import Adam, AdamW
 import corner
 
 import wandb
@@ -76,7 +70,9 @@ def generate_lags_from_parameters(ReIm=3):
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
-    theta_lhc = lhc_generation(int(5e5), range_AGN, limited=False, 
+    cpu_num = os.cpu_count()
+    
+    theta_lhc = lhc_generation(int(2.5e6), range_AGN, limited=False, 
                                          lhc_filter=lhc_filter_20)
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -93,7 +89,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+    flux =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
@@ -148,7 +144,7 @@ def wandb_sweep():
     # this config will be set by Sweep Controller
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,11,12,13]
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
@@ -222,7 +218,7 @@ def main():
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,11,12,13]
     
     """
     pars_list = [1,2,3,6,7,8,9,11,13,23]
@@ -242,12 +238,14 @@ def main():
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
-    """
-    new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
-    print("Successfully saved")
-    merge()
-    print("Successfully merged")
-    """
+    
+    for i in range(4):
+        print(f"loop {i}")
+        new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
+        print("Successfully saved")
+        merge()
+        print("Successfully merged")
+    
     """
     sweep_config = {
     'method': 'grid'
