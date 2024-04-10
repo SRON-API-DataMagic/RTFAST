@@ -25,7 +25,7 @@ import corner
 
 import wandb
 
-def generate_lags_from_parameters(ReIm=3):
+def generate_lags_from_parameters(ReIm=1):
     """
     Generates lags from previously chosen parameters
 
@@ -42,6 +42,11 @@ def generate_lags_from_parameters(ReIm=3):
     """
     egrid = np.logspace(np.log10(0.5),np.log10(10),25)
     
+    if ReIm == 1:
+        cross_type = "real"
+    elif ReIm == 2:
+        cross_type = "imag"
+    
     pars_val = pd.read_csv("data/locations/locs_20_spectra_val.csv")
     pars_tra = pd.read_csv("data/locations/locs_20_spectra_tra.csv")
     
@@ -54,18 +59,20 @@ def generate_lags_from_parameters(ReIm=3):
     theta_val = np.asarray(theta_val)
     theta_tra = np.asarray(theta_tra)
     
-    val =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
+    cpu_num = os.cpu_count()
+    
+    val =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
                                     for pars in theta_val)
     val = np.asarray(val)
-    tra =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
+    tra =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
                                     for pars in theta_tra)
     tra = np.asarray(tra)
     
     print("Saving lags data")
     saveData(tra, theta_tra, 
-             "data/locations/","locs_20_lags_tra.csv")
+             "data/locations/",f"locs_20_{cross_type}_tra.csv")
     saveData(val, theta_val, 
-             "data/locations/","locs_20_val_tra.csv")
+             "data/locations/",f"locs_20_{cross_type}_val.csv")
     
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
