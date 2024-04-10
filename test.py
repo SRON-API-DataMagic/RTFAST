@@ -246,6 +246,7 @@ def main():
         merge()
         print("Successfully merged")
     
+    exit()
     """
     sweep_config = {
     'method': 'grid'
