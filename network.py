@@ -315,10 +315,50 @@ class PCANetwork(nn.Module):
     
     def forward(self,pars):
         return self.LinearStack(pars)
+
+class rtdist_ta_spec_emu(nn.Module):
+    """
+    Final neural network emulator architecture. Translates parameters into
+    rtdist's time averaged spectrum output. Distinct from the cross-spectrum
+    emulator.
+    
+    Composed of 8 hidden layers, each with 256 nodes. Must be paired with the
+    standard scalers and PCA trained with the network to output rtdist
+    values directly.
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.LinearStack = nn.Sequential(nn.Linear(20, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 36))
+        
+        def forward(self,pars):
+            return self.LinearStack(pars)
     
 class DynamicNetwork(nn.Module):
     """
-    
+    Neural network used in hyperparameter sweeps. The number of layers and
+    number of nodes in each layer can be adjusted at intialisation. It is
+    recommended that any DynamicNetworks that are fully trained have their
+    own fixed class written after a best model is found for the ease of the
+    final user.
     """
     
     def __init__(self,num_pars,output_len,num_layers,nodes,activation):
