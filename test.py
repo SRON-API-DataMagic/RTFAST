@@ -25,7 +25,7 @@ import corner
 
 import wandb
 
-def generate_lags_from_parameters(ReIm=1):
+def generate_lags_from_parameters(ReIm=-1):
     """
     Generates lags from previously chosen parameters
 
@@ -42,9 +42,9 @@ def generate_lags_from_parameters(ReIm=1):
     """
     egrid = np.logspace(np.log10(0.5),np.log10(10),25)
     
-    if ReIm == 1:
+    if ReIm == -1:
         cross_type = "real"
-    elif ReIm == 2:
+    elif ReIm == -2:
         cross_type = "imag"
     
     pars_val = pd.read_csv("data/locations/locs_20_spectra_val.csv")
@@ -79,7 +79,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     cpu_num = os.cpu_count()
     
-    theta_lhc = lhc_generation(int(2.5e6), range_AGN, limited=False, 
+    theta_lhc = lhc_generation(int(1e6), range_AGN, limited=False, 
                                          lhc_filter=lhc_filter_20)
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -96,7 +96,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+    flux =  Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
@@ -226,27 +226,14 @@ def main():
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13]
+    #note that Anorm should be added to logged when training - Anorm wrapper
+    #calculates the real value of Anorm rather than the logarithm
     
-    """
-    pars_list = [1,2,3,6,7,8,9,11,13,23]
-    negatives = [3]
-    logged = [2,3,7,8,11,13,23]
-    """
-    """
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    """
-    """
-    pars_list = [3]
-    negatives = [3]
-    logged = [3]
-    """
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
     
-    for i in range(4):
+    for i in range(10):
         print(f"loop {i}")
         new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
         print("Successfully saved")
@@ -254,40 +241,7 @@ def main():
         print("Successfully merged")
     
     exit()
-    """
-    sweep_config = {
-    'method': 'grid'
-    }
-    metric = {'name':'loss',
-               'goal':'minimize'}
-    sweep_config['metric'] = metric
     
-    parameters_dict = {
-    'optimizer': {
-        'values': ['adam']
-        },
-    'num_layers': {
-        'values': [8,10,12,14,16]
-        },
-    'nodes': {
-        'values': [256]
-        },
-    'epochs': {
-          'values': [2000]
-        },
-    'learning_rate': {
-        'values': [1e-4,5e-4,1e-3]
-        },
-    'activation': {
-        'values': ["GELU"]
-        }
-    }
-    sweep_config['parameters'] = parameters_dict
-    
-    sweep_id = wandb.sweep(sweep_config, project="rtdist-emulator")
-    
-    wandb.agent(sweep_id=sweep_id, function=sweep_call)
-    """
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
