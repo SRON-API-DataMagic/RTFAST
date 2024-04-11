@@ -233,22 +233,21 @@ def main():
     num_pars = len(pars_list)
     print(num_pars)
     
-    for i in range(10):
+    for i in range(9):
         print(f"loop {i}")
         new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
         print("Successfully saved")
         merge()
         print("Successfully merged")
     
-    exit()
-    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = False,
+                               pars_list,negatives,logged,scale_bool = True,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
+                               spec_scal_loc="scalers/spec_20_spec.bin",
+                               comps=36)
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
