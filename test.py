@@ -242,6 +242,10 @@ def main():
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13,23] #Anorm is relogged when actually training
+    
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                                pars_list,negatives,logged,scale_bool = True,
                                PCA_loc="scalers/PCA_20_spec.bin",
