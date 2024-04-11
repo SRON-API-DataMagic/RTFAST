@@ -119,19 +119,19 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     saveData(train_flux_data, train_flux_pars, 
              "data/locations/","PCA_locs_flux_temp.csv")
     saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","PCA_locs_flux_test_val.csv")
+             "data/locations/","PCA_locs_flux_val.csv")
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
-    test = pd.read_csv("data/locations/PCA_locs_flux_test_val.csv")
+    val = pd.read_csv("data/locations/PCA_locs_flux_val.csv")
     
     train_name = "locs_20_spectra_tra.csv"
-    test_name = "locs_20_spectra_val.csv"
+    val_name = "locs_20_spectra_val.csv"
     #save final curated datasets back to disk for use
     mergeSaveData(train, pd.read_csv(f"data/locations/{train_name}"),
                   "data/locations/", train_name)
-    mergeSaveData(test, pd.read_csv(f"data/locations/{test_name}"),
-                  "data/locations/",test_name)
+    mergeSaveData(val, pd.read_csv(f"data/locations/{val_name}"),
+                  "data/locations/",val_name)
 
 def build_optimizer(model,optimizer_name,learning_rate):
     if optimizer_name == "adam":

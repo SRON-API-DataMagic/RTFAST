@@ -7,7 +7,7 @@ from joblib import dump, load, Parallel, delayed
 import pandas as pd
 import torch
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 import tqdm
 from sklearn.decomposition import PCA
 

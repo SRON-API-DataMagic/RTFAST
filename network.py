@@ -4,7 +4,7 @@ rtdist emulator.
 """
 import torch
 from torch import nn
-from torch.nn.parameter import Parameter # import Parameter for custom activations
+from torch.nn.parameter import Parameter #needed for custom activation functions
 
 class SharpActivation(nn.Module):
     """
