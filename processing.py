@@ -9,6 +9,7 @@ import glob
 import pandas as pd
 import torch
 import os
+from joblib import Parallel, delayed
 
 def mergeSaveData(new_data,old_data,destination,fname):
     """
@@ -85,15 +86,17 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     except:
         start = 0
     
-    #save data to disk and save location to dataset
-    locations = []
-    for i,item in enumerate(tqdm.tqdm(dataset),start=start):
+    def save_file(i,item,lags):
         if lags == None:
             loc = f"data/spectra/spectra_{i}.txt"
         else:
             loc = f"data/lags/lags_{i}.txt"
         np.savetxt(loc,item)
-        locations.append(loc)
+        return loc
+    
+    cpu_num = os.cpu_count()
+    #save data to disk and save location to dataset
+    locations = Parallel(n_jobs=cpu_num,verbose=1)(delayed(save_file)(i,item,lags) for i,item in enumerate(dataset,start=start))
     
     locations = np.asarray(locations)
     column_names = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
