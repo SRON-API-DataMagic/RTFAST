@@ -61,12 +61,13 @@ def generate_lags_from_parameters(ReIm=-1):
     
     cpu_num = os.cpu_count()
     
-    val =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
-                                    for pars in theta_val)
-    val = np.asarray(val)
-    tra =  Parallel(n_jobs=cpu_num,verbose=5,backend="multiprocessing")(delayed(rtdist_lags)(pars,egrid)
-                                    for pars in theta_tra)
-    tra = np.asarray(tra)
+    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
+        val =  parallel(delayed(rtdist_lags)(pars,egrid)
+                                        for pars in theta_val)
+        val = np.asarray(val)
+        tra =  parallel(delayed(rtdist_lags)(pars,egrid)
+                                        for pars in theta_tra)
+        tra = np.asarray(tra)
     
     print("Saving lags data")
     saveData(tra, theta_tra, 
@@ -96,9 +97,11 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
-                                    for pars in theta_flux)
-    flux = np.asarray(flux)
+    
+    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
+        flux =  parallel(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+                                        for pars in theta_flux)
+        flux = np.asarray(flux)
     print("Checking for spectra below threshold")
     flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
                                                   1e-11)
