@@ -222,6 +222,9 @@ def main():
     for key in environ_vars:
         os.environ[key] = environ_vars[key]
     
+    os.environ['MKL_NUM_THREADS'] = '1'
+    os.environ['OMP_NUM_THREADS'] = '1'
+    os.environ['MKL_DYNAMIC'] = 'FALSE'
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
@@ -233,7 +236,7 @@ def main():
     num_pars = len(pars_list)
     print(num_pars)
     
-    for i in range(9):
+    for i in range(8):
         print(f"loop {i}")
         new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
         print("Successfully saved")
