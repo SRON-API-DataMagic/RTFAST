@@ -58,7 +58,7 @@ def rtdist_flux(pars, egrid_lo, egrid_hi):
     model = _models.tdrtdist(pars, egrid_lo, egrid_hi)
     return model
 
-def rtdist_lags(pars, egrid):
+def rtdist_lags(pars, egrid_lo, egrid_hi):
     """
     
 
@@ -76,9 +76,8 @@ def rtdist_lags(pars, egrid):
         outputted simulated data.
 
     """
-    y = _models.tdrtdist(pars, egrid)
-    dE = np.diff(egrid)
-    output = y[:-1]/dE
+    y = _models.tdrtdist(pars, egrid_lo, egrid_hi)
+    output = y[:-1]/(egrid_hi-egrid_lo)
     return output
 
 def Anorm_wrapper(pars):
