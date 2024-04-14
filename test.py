@@ -25,7 +25,7 @@ import corner
 
 import wandb
 
-def generate_lags_from_parameters(ReIm=-1):
+def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     """
     Generates lags from previously chosen parameters
 
@@ -40,7 +40,6 @@ def generate_lags_from_parameters(ReIm=-1):
     None.
 
     """
-    egrid = np.logspace(np.log10(0.5),np.log10(10),25)
     
     if ReIm == -1:
         cross_type = "real"
@@ -62,10 +61,10 @@ def generate_lags_from_parameters(ReIm=-1):
     cpu_num = os.cpu_count()
     
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
-        val =  parallel(delayed(rtdist_lags)(pars,egrid)
+        val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
                                         for pars in theta_val)
         val = np.asarray(val)
-        tra =  parallel(delayed(rtdist_lags)(pars,egrid)
+        tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
                                         for pars in theta_tra)
         tra = np.asarray(tra)
     
@@ -238,14 +237,17 @@ def main():
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
-    
+    '''
     for i in range(8):
         print(f"loop {i}")
         new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
         print("Successfully saved")
         merge()
         print("Successfully merged")
-    
+    '''
+    generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1)
+    generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-2)
+    exit()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
