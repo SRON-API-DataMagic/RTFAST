@@ -52,12 +52,13 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     pars_val["ReIm"] = ReIm
     pars_tra["ReIm"] = ReIm
     
-    theta_val = pars_val.iloc[:,:-1]
-    theta_tra = pars_tra.iloc[:,:-1]
+    theta_val = np.asarray(pars_val)
+    theta_tra = np.asarray(pars_tra)
     
-    theta_val = np.asarray(theta_val)
-    theta_tra = np.asarray(theta_tra)
+    theta_val = theta_val[:,:-1]
+    theta_tra = theta_tra[:,:-1]
     
+    print(theta_val)
     cpu_num = os.cpu_count()
     
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
