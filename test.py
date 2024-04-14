@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW
 import corner
 
-import wandb
+#import wandb
 
 def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     """
@@ -70,9 +70,9 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     
     print("Saving lags data")
     saveData(tra, theta_tra, 
-             "data/locations/",f"locs_20_{cross_type}_tra.csv")
+             "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
     saveData(val, theta_val, 
-             "data/locations/",f"locs_20_{cross_type}_val.csv")
+             "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
     
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
@@ -142,7 +142,7 @@ def build_optimizer(model,optimizer_name,learning_rate):
         optimizer = AdamW(model.parameters(),lr=learning_rate)
     
     return optimizer
-
+"""
 def wandb_sweep():
     wandb.init(project="rtdist-emulator")
     config = wandb.config
@@ -204,7 +204,7 @@ def wandb_sweep():
 def sweep_call():
     wandb_sweep()
     return
-
+"""
 def main():
     wrk_dir = os.getcwd()
     
