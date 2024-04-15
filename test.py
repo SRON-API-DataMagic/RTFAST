@@ -55,8 +55,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     theta_val = np.asarray(pars_val)
     theta_tra = np.asarray(pars_tra)
     
-    theta_val = theta_val[:,:-1]
-    theta_tra = theta_tra[:,:-1]
+    theta_val = theta_val[:,1:-1]
+    theta_tra = theta_tra[:,1:-1]
     
     print(theta_val)
     cpu_num = os.cpu_count()
