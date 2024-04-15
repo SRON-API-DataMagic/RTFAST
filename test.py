@@ -52,6 +52,12 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     pars_val["ReIm"] = ReIm
     pars_tra["ReIm"] = ReIm
     
+    pars_val["fmin"] = 5e-5
+    pars_tra["fmin"] = 5e-5
+    
+    pars_val["fmax"] = 1e-4
+    pars_tra["fmax"] = 1e-4
+    
     theta_val = np.asarray(pars_val)
     theta_tra = np.asarray(pars_tra)
     
@@ -260,7 +266,7 @@ def main():
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin",
-                               comps=36)
+                               comps=40)
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
