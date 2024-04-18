@@ -67,20 +67,33 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     print(theta_val)
     cpu_num = os.cpu_count()
     
+    no_loads = int(np.ceil(len(theta_val)/1e6))
+    
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
         val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
                                         for pars in theta_val)
         val = np.asarray(val)
-        tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                        for pars in theta_tra)
-        tra = np.asarray(tra)
-    
-    print("Saving lags data")
-    saveData(tra, theta_tra, 
-             "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
-    saveData(val, theta_val, 
-             "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
-    
+        saveData(val, theta_val, 
+                 "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
+        for i in range(no_loads):
+            if i != no_loads-1:
+                pars_tra = theta_tra[i*1e6:(i+1)*1e6]
+            else:
+                pars_val = theta_tra[i*1e6:]
+            tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
+                                            for pars in theta_tra)
+            tra = np.asarray(tra)
+        
+            print("Saving data")
+            if i == 0:
+                saveData(tra, theta_tra, 
+                         "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
+            else:
+                saveData(tra, theta_tra, 
+                         "data/locations/","locs_temp.csv",lags=True)
+                train = pd.read_csv("data/locations/locs_temp.csv")
+                mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                              "data/locations/", "locs_20_{cross_type}_tra.csv")
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
