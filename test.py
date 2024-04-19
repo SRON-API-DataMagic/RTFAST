@@ -69,7 +69,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     
     no_loads = int(np.ceil(len(theta_val)/1e6))
     
-    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
+    with Parallel(n_jobs=cpu_num,verbose=1) as parallel:
         val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
                                         for pars in theta_val)
         val = np.asarray(val)
