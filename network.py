@@ -31,7 +31,7 @@ class SharpActivation(nn.Module):
         result = torch.mul(a,x)
         return result
 
-class rtdist_spec_emu(nn.Module):
+class RtdistSpec(nn.Module):
     """
     Final neural network emulator architecture. Translates parameters into
     rtdist's time averaged spectrum output. Distinct from the cross-spectrum
