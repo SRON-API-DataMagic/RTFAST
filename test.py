@@ -257,16 +257,18 @@ def main():
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     print(num_pars)
-    '''
-    for i in range(8):
+    
+    for i in range(10):
         print(f"loop {i}")
         new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
         print("Successfully saved")
         merge()
         print("Successfully merged")
-    '''
+        
+    """
     generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1)
     generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-2)
+    """
     exit()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
