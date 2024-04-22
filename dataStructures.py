@@ -570,7 +570,6 @@ class PCADataset(Dataset):
             self.spec_scaler = StandardScaler()
             data = self.spec_scaler.fit_transform(data)
             dump(self.spec_scaler,self.scaler_loc)
-            self.scale_bool = False
         else:
             data = self.spec_scaler.transform(data)
         return data
@@ -596,7 +595,6 @@ class PCADataset(Dataset):
                 print(f"Successfully describes {.99999*100}% of variance")
                 data = self.pca.transform(data)
                 dump(self.pca,self.PCA_loc)
-                self.scale_bool = False
         else:
             data = self.pca.transform(data)
         
