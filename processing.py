@@ -140,7 +140,7 @@ def removeRedundantData():
         spectra_names.extend(names)
     
     spectra_names = np.asarray(spectra_names)
-    files = glob.glob("data/spectra/*.txt")
+    files = glob.glob("data/lags/*.txt")
     files = np.asarray(files)
     diff = np.setdiff1d(files,spectra_names)
     print(f"Removing {len(diff)} files...")
