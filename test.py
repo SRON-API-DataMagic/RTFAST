@@ -277,11 +277,10 @@ def main():
     logged = [0,2,3,4,7,8,10,11,12,13,23] #Anorm is relogged when actually training
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = True,
+                               pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin",
-                               comps=40)
+                               spec_scal_loc="scalers/spec_20_spec.bin")
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
