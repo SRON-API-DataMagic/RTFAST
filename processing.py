@@ -130,8 +130,7 @@ def removeRedundantData():
     """
     locations = "./data/locations/"
     labels = ["locs_10_spectra_tra.csv","locs_10_spectra_val.csv",
-              "locs_20_spectra_tra.csv","locs_20_spectra_val.csv",
-              "loc_flux_test.csv"]
+              "locs_20_spectra_tra.csv","locs_20_spectra_val.csv"]
     
     spectra_names = []
     for fname in labels:
