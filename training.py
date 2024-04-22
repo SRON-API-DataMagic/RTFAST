@@ -353,12 +353,9 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     for batch, (D,P) in enumerate(dataloader):
         if torch.any(torch.isnan(D))==True:
             print("Data has nan")
-        elif torch.any(torch.isnan(P))==True:
+        if torch.any(torch.isnan(P))==True:
             print("P has nan")
-        elif torch.any(torch.isinf(D))==True:
-            print("Data has infinities")
-        elif torch.any(torch.isinf(P))==True:
-            print("P has infinities")
+            print(P)
         optimizer.zero_grad()
         pred = model(P.to(device))
         loss = loss_fn(pred,D.to(device))

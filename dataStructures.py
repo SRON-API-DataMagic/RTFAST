@@ -549,17 +549,20 @@ class PCADataset(Dataset):
             else:
                 data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[i*int(1e6):])
             data = np.concatenate(data,axis=0)
+            #make sure all your data is behaving correctly after loading
             if np.any(np.isnan(data))==True:
                 print("Data has nan")
             elif np.any(np.isinf(data))==True:
                 print("Data has infinities")
             data[data<self.threshold] = self.threshold
             data = np.log10(data)
+            #make sure all your data is behaving correctly after logging
             if np.any(np.isnan(data))==True:
                 print("Data after log has nan")
             elif np.any(np.isinf(data))==True:
                 print("Data after log has infinities")
             data = self.scale(data)
+            #make sure all your data is behaving correctly after scaling
             if np.any(np.isnan(data))==True:
                 print("Data after scale has nan")
             elif np.any(np.isinf(data))==True:
