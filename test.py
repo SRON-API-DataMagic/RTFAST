@@ -302,7 +302,7 @@ def main():
     
     grid_training_loop(model, optimizer, train, test, tra_loader, 
                        val_loader, loss_fn, device, "20_pars", "flux", 
-                       epochs = 2000)
+                       epochs = 100)
     
 
 if __name__ == "__main__":
