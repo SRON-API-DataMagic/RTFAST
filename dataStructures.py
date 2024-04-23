@@ -544,6 +544,7 @@ class PCADataset(Dataset):
         no_loads = int(np.ceil(len(self.locations)/1e6))
         print(f"Loading data in {no_loads} portion(s)")
         for i in range(no_loads):
+            print(f"Loading portion {i+1}")
             if i != (no_loads-1):
                 data = Parallel(n_jobs=20,verbose=1)(delayed(file_load)(file) for file in self.locations[int(i*1e6):(i+1)*int(1e6)])
             else:
