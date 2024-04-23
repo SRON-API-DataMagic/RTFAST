@@ -404,6 +404,7 @@ def train_lags(dataloader, model, optimizer, loss_fn, device):
     model.train()
     
     size = len(dataloader.dataset)
+    batches = size/1024
     loss_arr = 0
     for batch, (D, I, P) in enumerate(dataloader):
         optimizer.zero_grad()
@@ -415,7 +416,7 @@ def train_lags(dataloader, model, optimizer, loss_fn, device):
         nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         loss_b = loss.detach().item()
-        if batch % 5 == 0:
+        if batch % int(batches*0.1) == 0:
             current = ((batch+1)*P.shape[0])
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_arr += loss_b
