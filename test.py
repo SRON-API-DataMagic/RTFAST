@@ -25,7 +25,7 @@ import corner
 
 #import wandb
 
-def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
+def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     """
     Generates lags from previously chosen parameters
 
@@ -52,11 +52,11 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
     pars_val["ReIm"] = ReIm
     pars_tra["ReIm"] = ReIm
     
-    pars_val["fmin"] = 5e-5
-    pars_tra["fmin"] = 5e-5
+    pars_val["fmin"] = fmin
+    pars_tra["fmin"] = fmin
     
-    pars_val["fmax"] = 1e-4
-    pars_tra["fmax"] = 1e-4
+    pars_val["fmax"] = fmax
+    pars_tra["fmax"] = fmax
     
     theta_val = np.asarray(pars_val)
     theta_tra = np.asarray(pars_tra)
@@ -75,7 +75,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
         val = np.asarray(val)
         saveData(val, theta_val, 
                  "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
-        for i in range(no_loads):
+        for i in range(4): #generate 4e6 datapoints
             if i != no_loads-1:
                 pars_tra = theta_tra[i*1e6:(i+1)*1e6]
             else:
@@ -87,13 +87,13 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1):
             print("Saving data")
             if i == 0:
                 saveData(tra, theta_tra, 
-                         "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
+                         "data/locations/",f"locs_20_{cross_type}_{fmin}_{fmax}_tra.csv",lags=True)
             else:
                 saveData(tra, theta_tra, 
                          "data/locations/","locs_temp.csv",lags=True)
                 train = pd.read_csv("data/locations/locs_temp.csv")
                 mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", "locs_20_{cross_type}_tra.csv")
+                              "data/locations/", "locs_20_{cross_type}_{fmin}_{fmax}_tra.csv")
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
@@ -265,10 +265,11 @@ def main():
         merge()
         print("Successfully merged")
     """
-    """
-    generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-1)
-    generate_lags_from_parameters(egrid_lo,egrid_hi,ReIm=-2)
-    """
+    fmins = [5e-5,1e-4,5e-3]
+    fmaxs = [1e-4,5e-3,1e-2]
+    for fmin, fmax in zip(fmins,fmaxs):
+        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1)
+        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2)
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     

@@ -347,6 +347,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     model.train()
     
     size = len(dataloader.dataset)
+    batches = size/1024
     loss_tot = 0
     loss_arr = []
     iters = len(dataloader)
@@ -362,11 +363,11 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
         if scheduler != None:
             scheduler.step(epoch + batch / iters)
         loss_b = loss.detach().item()
-        if batch % 5 == 0:
-            current = ((batch+1)*P.shape[0])
-            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
         loss_tot += loss_b
         loss_arr.append(loss_b)
+        if batch % int(batches*0.1) == 0:
+            current = ((batch+1)*P.shape[0])
+            print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
     
     avg_loss = loss_tot/len(dataloader)
     med_loss = np.median(loss_arr)
@@ -608,9 +609,11 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     std_tr_loss_arr = []
     
     epoch = 0
-    
+    imp_flag = 0
     print("Beginning training")
-    while epoch < epochs:
+    
+    while epoch < epochs and imp_flag < 150:
+        imp_flag += 1
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
         model,optimizer,train_loss,med_loss,std_loss = train(train_dataloader, 
@@ -625,6 +628,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         if loss == np.min(te_loss_arr):
             print(f"New best testing loss: {loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
+            imp_flag = 0
         epoch += 1
     
     print("Completed training")
