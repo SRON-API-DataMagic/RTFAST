@@ -1409,6 +1409,8 @@ def PCA_plotting(wrk_dir,name):
     plt.ylabel("Probability density")
     plt.xlim(-20,20)
     plt.axvline(0,ls="--",c="black")
+    plt.axvline(-1,ls="--",c="red")
+    plt.axvline(1,ls="--",c="red")
     plt.savefig("loss/resids_dist.png")
     plt.close()
     
