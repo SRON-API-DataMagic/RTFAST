@@ -1408,7 +1408,7 @@ def PCA_plotting(wrk_dir,name):
     plt.xlabel("Percentage residual")
     plt.ylabel("Probability density")
     plt.xlim(-20,20)
-    plt.axvline(0,ls="--")
+    plt.axvline(0,ls="--",c="black")
     plt.savefig("loss/resids_dist.png")
     plt.close()
     
