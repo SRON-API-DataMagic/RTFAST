@@ -1517,11 +1517,11 @@ def test_set(wrk_dir):
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(generator.lhc_AGN())
     
-    theta_lhc = generator.lhc_generation(int(1300), range_AGN, limited=False, 
+    theta_lhc = generator.lhc_generation(int(1000), range_AGN, limited=False, 
                                          lhc_filter=generator.lhc_filter_20)
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,11,12,13]
     #generate physical models of test set
     theta_flux = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     theta_lags = generator.nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
@@ -1543,7 +1543,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    #test_set(wrk_dir)
+    test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
