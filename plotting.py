@@ -1401,6 +1401,15 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
+    residuals_signed = (test_pred-D)/D
+    residuals_signed[(D==1e-11)] = np.nan
+    
+    plt.hist(residuals_signed,bins=100,density=True)
+    plt.xlabel("Percentage residual")
+    plt.ylabel("Number of occurences")
+    plt.savefig("loss/resids_dist.png")
+    plt.close()
+    
     residuals = np.abs((test_pred-D)/D)
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
@@ -1413,6 +1422,7 @@ def PCA_plotting(wrk_dir,name):
     plt.xlabel("Energy channel")
     plt.ylabel("Mean percentage residual")
     plt.title("Mean fractional error of emulator reconstruction")
+    plt.yscale("log")
     plt.tight_layout()
     plt.savefig(f"samples/{name}_mean_errors.png")
     plt.close()
