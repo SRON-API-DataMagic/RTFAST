@@ -1404,10 +1404,10 @@ def PCA_plotting(wrk_dir,name):
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
     
-    plt.hist(residuals_signed*100,bins=100,density=True)
+    plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=10,density=True)
     plt.xlabel("Percentage residual")
     plt.ylabel("Number of occurences")
-    plt.xlim(-50,50)
+    plt.xlim(-20,20)
     plt.savefig("loss/resids_dist.png")
     plt.close()
     
