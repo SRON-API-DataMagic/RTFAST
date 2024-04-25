@@ -1230,8 +1230,7 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    model = network.PCANetwork(len(pars_list), test_data.pca.components_.shape[0])
-    model = network.DynamicNetwork(20, 40, 8, 256, "GELU")
+    model = network.RtdistSpec()
     
     print(f"models/{name}.pth")
     model.load_state_dict(torch.load(f"models/{name}.pth"))
@@ -1543,7 +1542,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
