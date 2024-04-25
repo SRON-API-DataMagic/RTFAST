@@ -1239,7 +1239,7 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = True
+    plot_pca = False
     
     if plot_pca == True:
         
