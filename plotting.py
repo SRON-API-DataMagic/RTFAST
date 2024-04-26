@@ -1414,11 +1414,20 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("loss/resids_dist.png")
     plt.close()
     
+    perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
+    chance = np.cumsum(range(len(perc_resids)))/len(perc_resids)
+    
+    plt.plot(perc_resids,chance)
+    plt.xlabel("Percentage residual")
+    plt.ylabel("Cumulative probability")
+    plt.savefig("loss/resids_cum_sum.png")
+    plt.close()
+    
     mean_res = np.mean(residuals_signed,axis=0)*100
-    res_25 = np.percentile(residuals_signed,0.25,axis=0)*100
-    res_75 = np.percentile(residuals_signed,0.75,axis=0)*100
-    res_95 = np.percentile(residuals_signed,0.95,axis=0)*100
-    res_05 = np.percentile(residuals_signed,0.05,axis=0)*100
+    res_25 = np.quantile(residuals_signed,0.25,axis=0)*100
+    res_75 = np.quantile(residuals_signed,0.75,axis=0)*100
+    res_95 = np.quantile(residuals_signed,0.95,axis=0)*100
+    res_05 = np.quantile(residuals_signed,0.05,axis=0)*100
     
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25)
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5)
