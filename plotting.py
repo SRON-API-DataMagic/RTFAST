@@ -1434,6 +1434,7 @@ def PCA_plotting(wrk_dir,name):
     plt.plot(emid,mean_res,c="b")
     plt.xlabel("Energy (keV)")
     plt.ylabel("Percentage residuals")
+    plt.xscale("log")
     plt.savefig("loss/energ_resid.png")
     plt.close()
     
