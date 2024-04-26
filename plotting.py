@@ -1420,8 +1420,8 @@ def PCA_plotting(wrk_dir,name):
     res_95 = np.percentile(residuals_signed,0.95,axis=0)*100
     res_05 = np.percentile(residuals_signed,0.05,axis=0)*100
     
-    plt.fill_between(emid, res_05, res_95,c="b",alpha=0.25)
-    plt.fill_between(emid, res_25, res_75,c="b",alpha=0.5)
+    plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25)
+    plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5)
     plt.plot(emid,mean_res,c="b")
     plt.xlabel("Energy (keV)")
     plt.ylabel("Percentage residuals")
