@@ -1402,7 +1402,6 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals_signed = (test_pred-D)/D
-    residuals_signed[(D==1e-11)] = np.nan
     calibration_factor = np.mean(residuals_signed,axis=0)+1
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
