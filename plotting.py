@@ -1403,6 +1403,10 @@ def PCA_plotting(wrk_dir,name):
     test_pred = reconstruct_emulator(test_data, model)
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
+    calibration_factor = np.mean(residuals_signed,axis=0)+1
+    
+    residuals_signed = ((test_pred/calibration_factor)-D)/D
+    residuals_signed[(D==1e-11)] = np.nan
     
     plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     plt.xlabel("Percentage residual")
@@ -1437,8 +1441,6 @@ def PCA_plotting(wrk_dir,name):
     plt.xscale("log")
     plt.savefig("loss/energ_resid.png")
     plt.close()
-    
-    calibration_factor = np.mean(residuals_signed,axis=0)+1
     
     residuals = np.abs(((test_pred/calibration_factor)-D)/D)
     residuals[(D==1e-11)] = np.nan
