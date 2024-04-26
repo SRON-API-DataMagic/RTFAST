@@ -1415,7 +1415,7 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
-    chance = np.cumsum(range(len(perc_resids)))/len(perc_resids)
+    chance = range(len(perc_resids))/len(perc_resids)
     
     plt.plot(perc_resids,chance)
     plt.xlabel("Percentage residual")
