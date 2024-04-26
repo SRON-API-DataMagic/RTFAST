@@ -1505,7 +1505,7 @@ def PCA_plotting(wrk_dir,name):
     data[data<test_data.threshold] = test_data.threshold
     
     i = 0
-    for pred, D in zip(test_pred, data):
+    for pred, D in zip(test_pred/calibration_factor, data):
         fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
         axs[0].plot(emid,pred/bin_width,label="Emulator")
         axs[0].plot(emid,D/bin_width,label="Rtdist", ls = "--")
