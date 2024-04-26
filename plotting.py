@@ -1438,8 +1438,9 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("loss/energ_resid.png")
     plt.close()
     
+    calibration_factor = np.mean(residuals_signed,axis=0)+1
     
-    residuals = np.abs((test_pred-D)/D)
+    residuals = np.abs(((test_pred/calibration_factor)-D)/D)
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
     print(f"Average residual is {residuals[~np.isnan(residuals)].mean()*100}%")
