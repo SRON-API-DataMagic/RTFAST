@@ -1222,7 +1222,7 @@ def PCA_plotting(wrk_dir,name):
     bin_width = egrid_hi-egrid_lo
     
     percents = np.array([0,0.25,0.5,0.75,0.99])
-    e_ticks = np.round(egrid_lo[(len(egrid_lo)*percents).astype(int)],1).astype(str)
+    e_ticks = np.round(emid[(len(emid)*percents).astype(int)],1).astype(str)
     
     data = []
     for file in tqdm(test_data.locations):
@@ -1413,6 +1413,21 @@ def PCA_plotting(wrk_dir,name):
     plt.axvline(1,ls="--",c="red")
     plt.savefig("loss/resids_dist.png")
     plt.close()
+    
+    mean_res = np.mean(residuals_signed,axis=0)*100
+    res_25 = np.percentile(residuals_signed,0.25,axis=0)*100
+    res_75 = np.percentile(residuals_signed,0.75,axis=0)*100
+    res_95 = np.percentile(residuals_signed,0.95,axis=0)*100
+    res_05 = np.percentile(residuals_signed,0.05,axis=0)*100
+    
+    plt.fill_between(emid, res_05, res_95,c="b",alpha=0.25)
+    plt.fill_between(emid, res_25, res_75,c="b",alpha=0.5)
+    plt.plot(emid,mean_res,c="b")
+    plt.xlabel("Energy (keV)")
+    plt.ylabel("Percentage residuals")
+    plt.savefig("loss/energ_resid.png")
+    plt.close()
+    
     
     residuals = np.abs((test_pred-D)/D)
     residuals[(D==1e-11)] = np.nan
