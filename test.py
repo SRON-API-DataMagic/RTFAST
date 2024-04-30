@@ -58,6 +58,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     pars_val["fmax"] = fmax
     pars_tra["fmax"] = fmax
     
+    print(pars_val)
+    
     theta_val = np.asarray(pars_val)
     theta_tra = np.asarray(pars_tra)
     
