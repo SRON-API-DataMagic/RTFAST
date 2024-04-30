@@ -177,7 +177,7 @@ def set_envir_vars(wrk_dir):
                     "ARF_SET":wrk_dir+"/ResponseFiles/PN.arf",
                     "BKG_SET":wrk_dir+"/ResponseFiles/PNbackground_spectrum.fits",
                     "BACKSCL":"1.0"}
-
+    
     for key in environ_vars:
         os.environ[key] = environ_vars[key]
     

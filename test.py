@@ -76,6 +76,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
         saveData(val, theta_val, 
                  "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
         for i in range(4): #generate 4e6 datapoints
+            if i == no_loads:
+                break
             if i != no_loads-1:
                 pars_tra = theta_tra[i*1e6:(i+1)*1e6]
             else:
