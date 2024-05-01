@@ -78,9 +78,6 @@ def rtdist_lags(pars, egrid_lo, egrid_hi):
     """
     y = _models.tdrtdist(pars, egrid_lo, egrid_hi)
     output = y/(egrid_hi-egrid_lo)
-    if np.any(np.isnan(output)) == True:
-        print("rtdist lags failure")
-        exit()
     return output
 
 def Anorm_wrapper(pars):
