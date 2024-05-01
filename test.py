@@ -67,21 +67,42 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(theta_val)
     cpu_num = os.cpu_count()
     
-    no_loads = int(np.ceil(len(theta_val)/1e6))
+    load_size = 1e5
+    
+    no_loads_val = int(np.ceil(len(theta_val)/load_size))
+    no_loads_tra = int(np.ceil(len(theta_val)/load_size))
     
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
-        val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                        for pars in theta_val)
-        val = np.asarray(val)
-        saveData(val, theta_val, 
-                 "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
-        for i in range(4): #generate 4e6 datapoints
-            if i == no_loads:
-                break
-            if i != no_loads-1:
-                pars_tra = theta_tra[i*1e6:(i+1)*1e6]
+        for i in range(no_loads_val): #generate 4e6 datapoints
+            if i != no_loads_val-1:
+                pars_val = theta_val[i*load_size:(i+1)*load_size]
             else:
-                pars_val = theta_tra[i*1e6:]
+                pars_val = theta_val[i*load_size:]
+            
+            val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
+                                            for pars in theta_val)
+            val = np.asarray(val)
+            
+            print("Saving data")
+            if i == 0:
+                saveData(val, theta_val, 
+                         "data/locations/",f"locs_20_{cross_type}_{fmin}_{fmax}_val.csv",lags=True)
+            else:
+                saveData(val, theta_val, 
+                         "data/locations/","locs_temp.csv",lags=True)
+                train = pd.read_csv("data/locations/locs_temp.csv")
+                mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                              "data/locations/", "locs_20_{cross_type}_{fmin}_{fmax}_val.csv")
+        
+        for i in range(40): #generate 4e6 datapoints
+            if i == no_loads_tra:
+                break
+            if i != no_loads_tra-1:
+                pars_tra = theta_tra[i*load_size:(i+1)*load_size]
+            else:
+                pars_tra = theta_tra[i*load_size:]
+            
+            
             tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
                                             for pars in theta_tra)
             tra = np.asarray(tra)
