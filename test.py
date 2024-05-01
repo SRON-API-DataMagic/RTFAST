@@ -23,8 +23,6 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW
 import corner
 
-#import wandb
-
 def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     """
     Generates lags from previously chosen parameters
@@ -159,76 +157,6 @@ def merge():
     mergeSaveData(val, pd.read_csv(f"data/locations/{val_name}"),
                   "data/locations/",val_name)
 
-def build_optimizer(model,optimizer_name,learning_rate):
-    if optimizer_name == "adam":
-        optimizer = Adam(model.parameters(),lr=learning_rate)
-    elif optimizer_name == "adamW":
-        optimizer = AdamW(model.parameters(),lr=learning_rate)
-    
-    return optimizer
-"""
-def wandb_sweep():
-    wandb.init(project="rtdist-emulator")
-    config = wandb.config
-    # Initialize a new wandb run
-    name = f"{config.num_layers}_{config.nodes}_{config.optimizer}_{config.learning_rate}"
-    
-    # If called by wandb.agent, as below,
-    # this config will be set by Sweep Controller
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
-    negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13]
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
-    val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
-    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                  shuffle=True)
-    
-    train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
-    tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                  shuffle=True)
-    loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
-    
-    model = DynamicNetwork(20, 40,
-                           config.num_layers,config.nodes,
-                           config.activation)
-    model.to(device)
-    optimizer = build_optimizer(model, config.optimizer, 
-                                config.learning_rate)
-    
-    early_stopping = 100
-    imp = 0
-    loss_arr = []
-    for epoch in range(config.epochs):
-        print(f"Epoch {epoch+1}")
-        print("-----------------")
-        imp += 1
-        (model,optimizer,
-         train_loss,med_loss,std_loss) = train_flux(tra_loader,model,
-                                             optimizer, loss_fn, device)
-        loss = test_flux(val_loader, model, loss_fn, device)
-        loss_arr.append(loss)
-        wandb.log({"loss": loss,"train_loss":train_loss,
-                   "med_loss": med_loss,"std_loss":std_loss,
-                   "epoch": epoch}) 
-        if loss == np.min(loss_arr):
-            torch.save(model.state_dict(), f"models/{name}.pth")
-            imp = 0
-        if imp >= early_stopping:
-            break
-
-def sweep_call():
-    wandb_sweep()
-    return
-"""
 def main():
     wrk_dir = os.getcwd()
     
