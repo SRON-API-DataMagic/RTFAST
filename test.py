@@ -83,7 +83,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
                 pars_val = theta_val[i*load_size:]
             
             val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in theta_val)
+                                            for pars in pars_val)
             val = np.asarray(val)
             
             print("Saving data")
@@ -107,7 +107,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             
             
             tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in theta_tra)
+                                            for pars in pars_tra)
             tra = np.asarray(tra)
         
             print("Saving data")
