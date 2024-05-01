@@ -17,8 +17,6 @@ from math import ceil
 from tqdm import tqdm
 from generator import active_learning_generation
 
-import wandb
-
 def model_NaN_checker(D,P,model):
     """
     This function checks for the cause of models parameters going to zero by
