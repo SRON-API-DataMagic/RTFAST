@@ -67,7 +67,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(theta_val)
     cpu_num = os.cpu_count()
     
-    load_size = 1e5
+    load_size = int(1e5)
     
     no_loads_val = int(np.ceil(len(theta_val)/load_size))
     no_loads_tra = int(np.ceil(len(theta_val)/load_size))
