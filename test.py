@@ -70,7 +70,10 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     load_size = int(1e5)
     
     no_loads_val = int(np.ceil(len(theta_val)/load_size))
-    no_loads_tra = int(np.ceil(len(theta_val)/load_size))
+    no_loads_tra = int(np.ceil(len(theta_tra)/load_size))
+    
+    print(f"Loading val in {no_loads_val} sets")
+    print(f"Loading tra in {no_loads_tra} sets")
     
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
         for i in range(no_loads_val): #generate 4e6 datapoints
