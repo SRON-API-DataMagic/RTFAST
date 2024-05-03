@@ -87,8 +87,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             else:
                 pars_val = theta_val[i*load_size:]
             
-            val =  executor.map(helper, pars_val)
-            print(val)
+            val = list(executor.map(helper, pars_val))
             val = np.asarray(val)
             
             print("Saving data")
@@ -110,7 +109,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             else:
                 pars_tra = theta_tra[i*load_size:]
             
-            tra =  executor.map(helper, pars_val)
+            tra = list(executor.map(helper, pars_tra))
             tra = np.asarray(val)
         
             print("Saving data")
