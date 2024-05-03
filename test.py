@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from sherpa.astro.io import read_arf
 from processing import saveData, spectraChecker, mergeSaveData
 from joblib import Parallel, delayed
+from concurrent.futures import ProcessPoolExecutor
+from itertools import repeat
 
 from dataStructures import PCADataset
 from network import DynamicNetwork
@@ -75,15 +77,17 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
+    def helper(pars):
+        return rtdist_lags(egrid_lo,egrid_hi)
+    
+    with ProcessPoolExecutor() as executor:
         for i in range(3,4): #generate 4e6 datapoints
             if i != no_loads_val-1:
                 pars_val = theta_val[i*load_size:(i+1)*load_size]
             else:
                 pars_val = theta_val[i*load_size:]
             
-            val =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in pars_val)
+            val =  executor.map(helper, pars_val)
             val = np.asarray(val)
             
             print("Saving data")
@@ -105,10 +109,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             else:
                 pars_tra = theta_tra[i*load_size:]
             
-            
-            tra =  parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in pars_tra)
-            tra = np.asarray(tra)
+            tra =  executor.map(helper, pars_val)
+            tra = np.asarray(val)
         
             print("Saving data")
             if i == 0:
