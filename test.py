@@ -77,8 +77,6 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    def helper(pars):
-        return rtdist_lags(pars,egrid_lo,egrid_hi)
     
     with ProcessPoolExecutor() as executor:
         for i in range(3,4): #generate 4e6 datapoints
@@ -87,7 +85,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             else:
                 pars_val = theta_val[i*load_size:]
             
-            val = list(executor.map(helper, pars_val))
+            val = list(executor.map(rtdist_lags, pars_val,
+                                    repeat(egrid_lo),repeat(egrid_hi)))
             val = np.asarray(val)
             
             print("Saving data")
@@ -109,7 +108,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             else:
                 pars_tra = theta_tra[i*load_size:]
             
-            tra = list(executor.map(helper, pars_tra))
+            tra = list(executor.map(rtdist_lags, pars_tra,
+                                    repeat(egrid_lo),repeat(egrid_hi)))
             tra = np.asarray(val)
         
             print("Saving data")
