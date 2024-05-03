@@ -88,6 +88,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
                 pars_val = theta_val[i*load_size:]
             
             val =  executor.map(helper, pars_val)
+            print(val)
             val = np.asarray(val)
             
             print("Saving data")
