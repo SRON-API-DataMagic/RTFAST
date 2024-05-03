@@ -78,7 +78,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(f"Loading tra in {no_loads_tra} sets")
     
     def helper(pars):
-        return rtdist_lags(egrid_lo,egrid_hi)
+        return rtdist_lags(pars,egrid_lo,egrid_hi)
     
     with ProcessPoolExecutor() as executor:
         for i in range(3,4): #generate 4e6 datapoints
