@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from sherpa.astro.io import read_arf
 from processing import saveData, spectraChecker, mergeSaveData
 from joblib import Parallel, delayed
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from itertools import repeat
 
 from dataStructures import PCADataset
@@ -78,7 +78,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(f"Loading tra in {no_loads_tra} sets")
     
     
-    with ProcessPoolExecutor() as executor:
+    with ThreadPoolExecutor() as executor:
         for i in range(3,4): #generate 4e6 datapoints
             if i != no_loads_val-1:
                 pars_val = theta_val[i*load_size:(i+1)*load_size]
