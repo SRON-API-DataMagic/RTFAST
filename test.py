@@ -80,6 +80,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     
     with ProcessPoolExecutor(max_workers=20) as executor:
         for i in range(3,4): #generate 4e6 datapoints
+            print(f"Generating load {i}")
             if i != no_loads_val-1:
                 pars_val = theta_val[i*load_size:(i+1)*load_size]
             else:
@@ -101,6 +102,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
                               "data/locations/", "locs_20_{cross_type}_{fmin}_{fmax}_val.csv")
         
         for i in range(40): #generate 4e6 datapoints
+            print(f"Generating load {i}")
             if i == no_loads_tra:
                 break
             if i != no_loads_tra-1:
