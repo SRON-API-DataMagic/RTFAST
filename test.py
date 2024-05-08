@@ -100,7 +100,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
                          "data/locations/","locs_temp.csv",lags=True)
                 train = pd.read_csv("data/locations/locs_temp.csv")
                 mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", "locs_20_{cross_type}_{fmin}_{fmax}_val.csv")
+                              "data/locations/", f"locs_20_{cross_type}_{fmin}_{fmax}_val.csv")
         """
         for i in range(40): #generate 4e6 datapoints
             print(f"Generating load {i}")
@@ -124,7 +124,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
                          "data/locations/","locs_temp.csv",lags=True)
                 train = pd.read_csv("data/locations/locs_temp.csv")
                 mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", "locs_20_{cross_type}_{fmin}_{fmax}_tra.csv")
+                              "data/locations/", f"locs_20_{cross_type}_{fmin}_{fmax}_tra.csv")
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
