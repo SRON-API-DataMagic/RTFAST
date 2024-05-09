@@ -90,7 +90,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
         if lags == None:
             loc = f"data/spectra/spectra_{i}.txt"
         else:
-            loc = f"data/lags/lags_{i}.txt"
+            loc = f"/data/time-lags/lags/lags_{i}.txt"
         np.savetxt(loc,item)
         return loc
     

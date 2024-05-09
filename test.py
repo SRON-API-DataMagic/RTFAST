@@ -25,7 +25,8 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW
 import corner
 
-def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
+def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
+                                  start = False):
     """
     Generates lags from previously chosen parameters
 
@@ -77,10 +78,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    
-    with ProcessPoolExecutor(max_workers=20) as executor:
-        """
-        for i in range(3,4): #generate 4e6 datapoints
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        for i in range(4): #generate 4e6 datapoints
             print(f"Generating load {i}")
             if i != no_loads_val-1:
                 pars_val = theta_val[i*load_size:(i+1)*load_size]
@@ -92,16 +91,16 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             val = np.asarray(val)
             
             print("Saving data")
-            if i == 0:
+            if i == 0 and start == True:
                 saveData(val, theta_val, 
-                         "data/locations/",f"locs_20_{cross_type}_{fmin}_{fmax}_val.csv",lags=True)
+                         "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
             else:
                 saveData(val, theta_val, 
                          "data/locations/","locs_temp.csv",lags=True)
                 train = pd.read_csv("data/locations/locs_temp.csv")
                 mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", f"locs_20_{cross_type}_{fmin}_{fmax}_val.csv")
-        """
+                              "data/locations/", f"locs_20_{cross_type}_val.csv")
+        
         for i in range(40): #generate 4e6 datapoints
             print(f"Generating load {i}")
             if i == no_loads_tra:
@@ -116,15 +115,15 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1):
             tra = np.asarray(tra)
         
             print("Saving data")
-            if i == 0:
+            if i == 0 and start == True:
                 saveData(tra, theta_tra, 
-                         "data/locations/",f"locs_20_{cross_type}_{fmin}_{fmax}_tra.csv",lags=True)
+                         "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
             else:
                 saveData(tra, theta_tra, 
                          "data/locations/","locs_temp.csv",lags=True)
                 train = pd.read_csv("data/locations/locs_temp.csv")
                 mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", f"locs_20_{cross_type}_{fmin}_{fmax}_tra.csv")
+                              "data/locations/", f"locs_20_{cross_type}_tra.csv")
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
@@ -228,9 +227,13 @@ def main():
     """
     fmins = [5e-5,1e-4,5e-3]
     fmaxs = [1e-4,5e-3,1e-2]
+    start = True
     for fmin, fmax in zip(fmins,fmaxs):
-        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1)
-        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2)
+        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
+                                      start=start)
+        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2,
+                                      start=start)
+        start = False
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
