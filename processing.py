@@ -94,7 +94,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
         np.savetxt(loc,item)
         return loc
     
-    cpu_num = os.cpu_count()
+    cpu_num = os.cpu_count()-2
     #save data to disk and save location to dataset
     locations = Parallel(n_jobs=cpu_num,verbose=1)(delayed(save_file)(i,item,lags) for i,item in enumerate(dataset,start=start))
     
