@@ -229,8 +229,9 @@ def main():
     fmaxs = [1e-4,5e-3,1e-2]
     start = True
     for fmin, fmax in zip(fmins,fmaxs):
-        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
-                                      start=start)
+        if fmin != 5e-5:
+            generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
+                                          start=start)
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2,
                                       start=start)
         start = False
