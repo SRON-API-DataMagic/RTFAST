@@ -78,16 +78,16 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    with ProcessPoolExecutor(max_workers=6) as executor:
-        for i in range(1,4): #generate 4e6 datapoints
+    with Parallel(n_jobs=cpu_num-2,verbose=1,backend="multiprocessing") as parallel:
+        for i in range(4): #generate 4e6 datapoints
             print(f"Generating load {i}")
             if i != no_loads_val-1:
                 pars_val = theta_val[i*load_size:(i+1)*load_size]
             else:
                 pars_val = theta_val[i*load_size:]
             
-            val = list(executor.map(rtdist_lags, pars_val,
-                                    repeat(egrid_lo),repeat(egrid_hi)))
+            val = parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
+                                            for pars in pars_val)
             val = np.asarray(val)
             
             print("Saving data")
@@ -110,8 +110,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
             else:
                 pars_tra = theta_tra[i*load_size:]
             
-            tra = list(executor.map(rtdist_lags, pars_tra,
-                                    repeat(egrid_lo),repeat(egrid_hi)))
+            tra = parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
+                                            for pars in pars_tra)
             tra = np.asarray(tra)
         
             print("Saving data")
@@ -225,13 +225,14 @@ def main():
         merge()
         print("Successfully merged")
     """
-    fmins = [5e-5,1e-4,5e-3]
-    fmaxs = [1e-4,5e-3,1e-2]
-    start = True
+    fmins = [1e-4,5e-3]
+    fmaxs = [5e-3,1e-2]
+    start = False
     for fmin, fmax in zip(fmins,fmaxs):
-        if fmin != 5e-5:
-            generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
+        print(f"Generating real parts for bands {fmin} to {fmax} Hz")
+        generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                                           start=start)
+        print(f"Generating imaginary parts for bands {fmin} to {fmax} Hz")
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2,
                                       start=start)
         start = False
