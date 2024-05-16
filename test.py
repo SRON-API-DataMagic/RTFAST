@@ -78,7 +78,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    with Parallel(n_jobs=cpu_num-2,verbose=1,backend="multiprocessing") as parallel:
+    with Parallel(n_jobs=cpu_num-4,verbose=1,backend="multiprocessing") as parallel:
         for i in range(4): #generate 4e6 datapoints
             print(f"Generating load {i}")
             if i != no_loads_val-1:
