@@ -24,6 +24,10 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW
 import corner
+import logging
+import traceback
+
+logging.basicConfig(level=logging.INFO, filename='debug_test.log', filemode='w')
 
 def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                                   start = False):
@@ -75,53 +79,56 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    with ProcessPoolExecutor(max_workers=6) as executor:
-        for i in range(4): #generate 4e6 datapoints
-            print(f"Generating load {i}")
-            if i != no_loads_val-1:
-                pars_val = theta_val[i*load_size:(i+1)*load_size]
-            else:
-                pars_val = theta_val[i*load_size:]
+    try:
+        with ProcessPoolExecutor(max_workers=10) as executor:
+            for i in range(4): #generate 4e6 datapoints
+                print(f"Generating load {i}")
+                if i != no_loads_val-1:
+                    pars_val = theta_val[i*load_size:(i+1)*load_size]
+                else:
+                    pars_val = theta_val[i*load_size:]
+                
+                val = list(executor.map(rtdist_lags, pars_val,
+                                        repeat(egrid_lo),repeat(egrid_hi)))
+                val = np.asarray(val)
+                
+                print("Saving data")
+                if i == 0 and start == True:
+                    saveData(val, theta_val, 
+                             "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
+                else:
+                    saveData(val, theta_val, 
+                             "data/locations/","locs_temp.csv",lags=True)
+                    train = pd.read_csv("data/locations/locs_temp.csv")
+                    mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                                  "data/locations/", f"locs_20_{cross_type}_val.csv")
             
-            val = list(executor.map(rtdist_lags, pars_val,
-                                    repeat(egrid_lo),repeat(egrid_hi)))
-            val = np.asarray(val)
+            for i in range(40): #generate 4e6 datapoints
+                print(f"Generating load {i}")
+                if i == no_loads_tra:
+                    break
+                if i != no_loads_tra-1:
+                    pars_tra = theta_tra[i*load_size:(i+1)*load_size]
+                else:
+                    pars_tra = theta_tra[i*load_size:]
+                
+                tra = list(executor.map(rtdist_lags, pars_tra,
+                                        repeat(egrid_lo),repeat(egrid_hi)))
+                tra = np.asarray(tra)
             
-            print("Saving data")
-            if i == 0 and start == True:
-                saveData(val, theta_val, 
-                         "data/locations/",f"locs_20_{cross_type}_val.csv",lags=True)
-            else:
-                saveData(val, theta_val, 
-                         "data/locations/","locs_temp.csv",lags=True)
-                train = pd.read_csv("data/locations/locs_temp.csv")
-                mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", f"locs_20_{cross_type}_val.csv")
+                print("Saving data")
+                if i == 0 and start == True:
+                    saveData(tra, theta_tra, 
+                             "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
+                else:
+                    saveData(tra, theta_tra, 
+                             "data/locations/","locs_temp.csv",lags=True)
+                    train = pd.read_csv("data/locations/locs_temp.csv")
+                    mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                                  "data/locations/", f"locs_20_{cross_type}_tra.csv")
+    except Exception as e:
+        logging.error(f"Exception in main process: {e}\n{traceback.format_exc()}")
         
-        for i in range(40): #generate 4e6 datapoints
-            print(f"Generating load {i}")
-            if i == no_loads_tra:
-                break
-            if i != no_loads_tra-1:
-                pars_tra = theta_tra[i*load_size:(i+1)*load_size]
-            else:
-                pars_tra = theta_tra[i*load_size:]
-            
-            tra = list(executor.map(rtdist_lags, pars_tra,
-                                    repeat(egrid_lo),repeat(egrid_hi)))
-            tra = np.asarray(tra)
-        
-            print("Saving data")
-            if i == 0 and start == True:
-                saveData(tra, theta_tra, 
-                         "data/locations/",f"locs_20_{cross_type}_tra.csv",lags=True)
-            else:
-                saveData(tra, theta_tra, 
-                         "data/locations/","locs_temp.csv",lags=True)
-                train = pd.read_csv("data/locations/locs_temp.csv")
-                mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
-                              "data/locations/", f"locs_20_{cross_type}_tra.csv")
-
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     cpu_num = os.cpu_count()

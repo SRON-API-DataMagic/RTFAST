@@ -13,6 +13,11 @@ import scipy
 from dataStructures import FluxData, LagsData
 import pandas as pd
 from sherpa.astro.ui import unpack_rmf
+import logging
+import traceback
+
+
+logging.basicConfig(level=logging.INFO, filename='debug_gen.log', filemode='w')
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -76,9 +81,14 @@ def rtdist_lags(pars, egrid_lo, egrid_hi):
         outputted simulated data.
 
     """
-    y = _models.tdrtdist(pars, egrid_lo, egrid_hi)
-    output = y/(egrid_hi-egrid_lo)
-    return output
+    try:
+        y = _models.tdrtdist(pars, egrid_lo, egrid_hi)
+        output = y/(egrid_hi-egrid_lo)
+        return output
+    except Exception as e:
+        logging.error(f"Exception in worker: {e}\n{traceback.format_exc()}")
+        raise
+
 
 def Anorm_wrapper(pars):
     """
