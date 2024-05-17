@@ -59,15 +59,12 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     pars_val["fmax"] = fmax
     pars_tra["fmax"] = fmax
     
-    print(pars_val)
-    
     theta_val = np.asarray(pars_val)
     theta_tra = np.asarray(pars_tra)
     
     theta_val = theta_val[:,:-1]
     theta_tra = theta_tra[:,:-1]
     
-    print(theta_val)
     cpu_num = os.cpu_count()
     
     load_size = int(1e5)
@@ -78,7 +75,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     print(f"Loading val in {no_loads_val} sets")
     print(f"Loading tra in {no_loads_tra} sets")
     
-    with Parallel(n_jobs=cpu_num-4,verbose=1,backend="multiprocessing") as parallel:
+    with ProcessPoolExecutor(maxworkers=8) as executor:
         for i in range(4): #generate 4e6 datapoints
             print(f"Generating load {i}")
             if i != no_loads_val-1:
@@ -86,8 +83,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
             else:
                 pars_val = theta_val[i*load_size:]
             
-            val = parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in pars_val)
+            val = list(executor.map(rtdist_lags, pars_val,
+                                    repeat(egrid_lo),repeat(egrid_hi)))
             val = np.asarray(val)
             
             print("Saving data")
@@ -110,8 +107,8 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
             else:
                 pars_tra = theta_tra[i*load_size:]
             
-            tra = parallel(delayed(rtdist_lags)(pars,egrid_lo,egrid_hi)
-                                            for pars in pars_tra)
+            tra = list(executor.map(rtdist_lags, pars_tra,
+                                    repeat(egrid_lo),repeat(egrid_hi)))
             tra = np.asarray(tra)
         
             print("Saving data")
