@@ -192,8 +192,6 @@ def merge():
 
 def main():
     #set process to high priority to avoid being killed
-    p = psutil.Process(os.getpid())
-    p.nice(-10)
     
     wrk_dir = os.getcwd()
     
