@@ -7,7 +7,7 @@ from generator import rtdist_flux, nn_pars_to_rtdist
 from generator import rtdist_lags, lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
 import numpy as np
-import os
+import psutil, os
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -190,6 +190,10 @@ def merge():
                   "data/locations/",val_name)
 
 def main():
+    #set process to high priority to avoid being killed
+    p = psutil.Process(os.getpid())
+    p.nice(-10)
+    
     wrk_dir = os.getcwd()
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
