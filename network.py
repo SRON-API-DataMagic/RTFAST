@@ -143,6 +143,7 @@ class SpectralEmulator(nn.Module):
     Input a set of parameters and retrieve the spectrum.
     """
     def __init__(self,device=torch.device('cpu')):
+        super().__init__()
         self.core = RtdistSpec()
         self.core.load_state_dict(torch.load("models/20_pars_flux.pth",
                                              map_location=device))
