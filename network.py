@@ -5,6 +5,8 @@ rtdist emulator.
 import torch
 from torch import nn
 from torch.nn.parameter import Parameter #needed for custom activation functions
+from joblib import load
+
 
 class SharpActivation(nn.Module):
     """
@@ -131,3 +133,49 @@ class DynamicCrossNetwork(nn.Module):
         #parts
         reshaped_pred = torch.reshape(pred,(pred.shape[0],pred.shape[1],1))
         return self.OutputStack(reshaped_pred)
+
+class SpectralEmulator(nn.Module):
+    """
+    This can be called to utilise the emulator automatically and output only
+    spectra. This will automatically load in scalers and PCA objects required
+    for computation. Instrumental effects are not included.
+    
+    Input a set of parameters and retrieve the spectrum.
+    """
+    def __init__(self,device=torch.device('cpu')):
+        self.core = RtdistSpec()
+        self.core.load_state_dict(torch.load("models/20_pars_flux.pth",
+                                             map_location=device))
+        self.core.eval() #turns off any training type layers
+        self.core.double() #sets all parameters to double type
+        
+        self.pca  = load("scalers/PCA_20_spec.bin")
+        self.comp = load("scalers/comp_20_spec.bin")
+        self.spec = load("scalers/spec_20_spec.bin")
+        
+        self.pca_mean       = torch.Tensor(self.pca.mean_).double()
+        self.pca_components = torch.Tensor(self.pca.components_).double()
+        self.comp_mean      = torch.Tensor(self.comp.mean_).double()
+        self.comp_scale     = torch.Tensor(self.comp.scale_).double()
+        self.spec_mean      = torch.Tensor(self.spec.mean_).double()
+        self.spec_scale     = torch.Tensor(self.spec.scale_).double()
+    
+    def PCA_inverse_transform(self,data_reduced):
+        pca_comps = torch.matmul(data_reduced, self.pca_components) + self.pca_mean
+        return pca_comps
+    
+    def comp_inverse_transform(self,data_reduced):
+        components = torch.mul(data_reduced,self.comp_scale) + self.comp_mean
+        return components
+    
+    def spec_inverse_transform(self,data_reduced):
+        spectra = torch.mul(data_reduced,self.spec_scale) + self.spec_mean
+        return spectra
+    
+    def forward(self,theta):
+        data = self.core(theta)
+        PCA_comps = self.comp_inverse_transform(data)
+        std_spec = self.PCA_inverse_transform(PCA_comps)
+        spectrum = 10**self.spec_inverse_transform(std_spec)
+        return spectrum
+        
