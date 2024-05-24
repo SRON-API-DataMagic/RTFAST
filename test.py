@@ -81,7 +81,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     
     try:
         with ProcessPoolExecutor(max_workers=10) as executor:
-            """
+            #validation set
             for i in range(4): #generate 4e6 datapoints
                 print(f"Generating load {i}")
                 if i != no_loads_val-1:
@@ -101,10 +101,10 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                     saveData(val, theta_val, 
                              "data/locations/","locs_temp.csv",lags=True)
                     train = pd.read_csv("data/locations/locs_temp.csv")
-                    mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                    mergeSaveData(train, pd.read_csv(f"data/locations/locs_20_{cross_type}_tra.csv"),
                                   "data/locations/", f"locs_20_{cross_type}_val.csv")
-            """
-            for i in range(1,40): #generate 4e6 datapoints
+            #training set
+            for i in range(40): #generate 4e6 datapoints
                 print(f"Generating load {i}")
                 if i == no_loads_tra:
                     break
@@ -125,7 +125,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                     saveData(tra, theta_tra, 
                              "data/locations/","locs_temp.csv",lags=True)
                     train = pd.read_csv("data/locations/locs_temp.csv")
-                    mergeSaveData(train, pd.read_csv("data/locations/locs_temp.csv"),
+                    mergeSaveData(train, pd.read_csv(f"data/locations/locs_20_{cross_type}_tra.csv"),
                                   "data/locations/", f"locs_20_{cross_type}_tra.csv")
     except Exception as e:
         logging.error(f"Exception in main process: {e}\n{traceback.format_exc()}")
@@ -223,30 +223,17 @@ def main():
     
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
-    print(num_pars)
-    """
-    for i in range(10):
-        print(f"loop {i}")
-        new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi)
-        print("Successfully saved")
-        merge()
-        print("Successfully merged")
-    """
-    fmins = [5e-3]
-    fmaxs = [1e-2]
-    start = False
+    
+    fmins = [5e-5,1e-4,5e-3]
+    fmaxs = [1e-4,5e-3,1e-2]
+    start = True
     for fmin, fmax in zip(fmins,fmaxs):
-        """
-        print(f"Generating real parts for bands {fmin} to {fmax} Hz")
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
-                                          start=start)
-        """
-        print(f"Generating imaginary parts for bands {fmin} to {fmax} Hz")
+                                      start=start)
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2,
                                       start=start)
         start = False
     
-    exit()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
