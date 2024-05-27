@@ -1287,7 +1287,7 @@ def PCA_plotting(wrk_dir,name):
             ticks = (len(sort_par)*percents).astype(int)
             tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
             resids = recon_perc[sort_ind]
-            zlabel = "Fractional difference between NN model and rtdist"
+            zlabel = "Fractional difference between RTFAST and RTDIST"
             Z_center = -2.5
             #colormap
             top = cm.get_cmap('autumn', 128)
@@ -1469,7 +1469,7 @@ def PCA_plotting(wrk_dir,name):
         ticks = (len(sort_par)*percents).astype(int)
         tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
         resids = residuals[sort_ind]
-        zlabel = "Fractional difference between NN model and rtdist"
+        zlabel = "Fractional difference between RTFAST and RTDIST"
         Z_center = -2.5
         #colormap
         top = cm.get_cmap('autumn', 128)
