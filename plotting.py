@@ -1510,8 +1510,8 @@ def PCA_plotting(wrk_dir,name):
     i = 0
     for pred, D in zip(test_pred/calibration_factor, data):
         fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
-        axs[0].plot(emid,pred/bin_width,label="Emulator")
-        axs[0].plot(emid,D/bin_width,label="Rtdist", ls = "--")
+        axs[0].plot(emid,pred/bin_width,label="RTFAST")
+        axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
         axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
         axs[0].legend()
         axs[0].set_yscale("log")
