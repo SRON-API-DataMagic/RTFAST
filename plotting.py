@@ -1171,20 +1171,23 @@ def PCA_plotting(wrk_dir,name):
         PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
         
         epochs = np.arange(1,len(PCA_train_loss)+1)
+        """
         plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
                          PCA_train_loss-PCA_train_loss_std,color="b",alpha=0.5)
+        """
         plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
                  ls = "-")
         plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
                  ls = "--")
+        """
         plt.plot(epochs,PCA_train_loss_med,label = "Median training loss", c = "green",
                  ls = "-.")
-        
+        """
         plt.yscale("log")
         plt.xscale("log")
         plt.xlabel("Training epochs")
         plt.ylabel("Loss")
-        plt.title(f"Loss by epoch for {name}")
+        #plt.title(f"Loss by epoch for {name}")
         plt.legend()
         plt.tight_layout()
         plt.ylim(top = 1e1)
@@ -1282,7 +1285,7 @@ def PCA_plotting(wrk_dir,name):
             sort_par = test_data.pars[sort_ind,i]
             percents = np.array([0,0.25,0.5,0.75,0.99])
             ticks = (len(sort_par)*percents).astype(int)
-            tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+            tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
             resids = recon_perc[sort_ind]
             zlabel = "Fractional difference between NN model and rtdist"
             Z_center = -2.5
@@ -1322,7 +1325,7 @@ def PCA_plotting(wrk_dir,name):
             sort_par = test_data.pars[sort_ind,0]
             percents = np.array([0,0.25,0.5,0.75,0.99])
             ticks = (len(sort_par)*percents).astype(int)
-            tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+            tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
             resids = resid[sort_ind]
             zlabel = "Difference between PCA reconstruction and rtdist"
             """
@@ -1464,7 +1467,7 @@ def PCA_plotting(wrk_dir,name):
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(sort_par[(len(sort_par)*percents).astype(int)]).astype(str)
+        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
         resids = residuals[sort_ind]
         zlabel = "Fractional difference between NN model and rtdist"
         Z_center = -2.5
@@ -1514,9 +1517,9 @@ def PCA_plotting(wrk_dir,name):
         axs[0].set_yscale("log")
         axs[0].set_xscale("log")
         axs[1].plot(emid,(pred-D)/D)
-        axs[1].set_ylabel("Percentage residuals")
+        axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
         fig.supxlabel("Energy (keV)")
-        fig.suptitle("Comparison of PCA emulator output vs expected")
+        #fig.suptitle("Comparison of PCA emulator output vs expected")
         plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
         plt.close()
         i += 1
