@@ -1512,7 +1512,7 @@ def PCA_plotting(wrk_dir,name):
         fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
         axs[0].plot(emid,pred/bin_width,label="RTFAST")
         axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
-        axs[0].set_ylabel("Flux (photons/cm^2/s/channel)")
+        axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
         axs[0].legend()
         axs[0].set_yscale("log")
         axs[0].set_xscale("log")
