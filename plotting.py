@@ -1412,7 +1412,14 @@ def PCA_plotting(wrk_dir,name):
     residuals_signed = (test_pred-D)/D
     calib_pred = reconstruct_emulator(calib_data, model)
     print(calib_pred)
-    residuals_calib = (calib_pred-D)/D
+    
+    data = []
+    for file in tqdm(calib_data.locations):
+        data.append(np.loadtxt(file).reshape(1, -1))
+    calib_D = np.concatenate(data,axis=0)
+    calib_D[calib_D<1e-11] = 1e-11
+    
+    residuals_calib = (calib_pred-calib_D)/calib_D
     calibration_factor = np.mean(residuals_calib,axis=0)+1
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
