@@ -1411,6 +1411,7 @@ def PCA_plotting(wrk_dir,name):
     test_pred = reconstruct_emulator(test_data, model)
     residuals_signed = (test_pred-D)/D
     calib_pred = reconstruct_emulator(calib_data, model)
+    print(calib_pred)
     residuals_calib = (calib_pred-D)/D
     calibration_factor = np.mean(residuals_calib,axis=0)+1
     
@@ -1593,7 +1594,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
