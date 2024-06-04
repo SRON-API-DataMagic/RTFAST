@@ -76,9 +76,9 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
                 tmp = int(tmp.replace(".txt",""))
                 files[i] = tmp
         else:
-            files = glob.glob("./data/lags/*.txt")
+            files = glob.glob("/data/time-lags/lags/*.txt")
             for i,file in enumerate(files):
-                tmp = file.replace("./data/time-lags/lags/lags_","")
+                tmp = file.replace("/data/time-lags/lags/lags_","")
                 tmp = int(tmp.replace(".txt",""))
                 files[i] = tmp
         files = np.asarray(files)
