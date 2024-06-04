@@ -1420,7 +1420,7 @@ def PCA_plotting(wrk_dir,name):
     
     residuals_calib = (calib_pred-calib_D)/calib_D
     calibration_factor = np.mean(residuals_calib,axis=0)+1
-    print(calibration_factor)
+    np.savetxt("scalers/calib_factor.txt",calibration_factor)
     
     residuals_signed = ((test_pred)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
