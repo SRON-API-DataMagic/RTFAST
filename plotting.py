@@ -1528,46 +1528,49 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
         plt.close()
     
-    print("Plotting samples")
-    data = []
-    for file in test_data.locations:
-        data.append(np.loadtxt(file).reshape(1, -1))
-    data = np.concatenate(data,axis=0)
-    data[data<test_data.threshold] = test_data.threshold
+    plot_samples = False
     
-    i = 0
-    for pred, D in zip(test_pred/calibration_factor, data):
-        fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
-        axs[0].plot(emid,pred/bin_width,label="RTFAST")
-        axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
-        axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
-        axs[0].legend()
-        axs[0].set_yscale("log")
-        axs[0].set_xscale("log")
-        axs[1].plot(emid,(pred-D)/D)
-        axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
-        fig.supxlabel("Energy (keV)")
-        #fig.suptitle("Comparison of PCA emulator output vs expected")
-        plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
-        plt.close()
-        i += 1
-        if i > 6:
-            break
-    diff_comps = np.abs((train_comps[:,i]-nn_comps[:,i])/((train_comps[:,i]+nn_comps[:,i])/2))
-    
-    for j in tqdm(range(pars.shape[1])):
-        for i in range(nn_comps.shape[1]):
+    if plot_samples == True:
+        print("Plotting samples")
+        data = []
+        for file in test_data.locations:
+            data.append(np.loadtxt(file).reshape(1, -1))
+        data = np.concatenate(data,axis=0)
+        data[data<test_data.threshold] = test_data.threshold
+        
+        i = 0
+        for pred, D in zip(test_pred/calibration_factor, data):
             fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
-            axs[0].scatter(pars[:,j],train_comps[:,i],label="Training set",marker="o")
-            axs[0].scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
+            axs[0].plot(emid,pred/bin_width,label="RTFAST")
+            axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
+            axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
             axs[0].legend()
-            axs[0].set_ylabel(f"PCA component {i+1}")
-            axs[1].scatter(pars[:,j],diff_comps,marker="x")
-            axs[1].set_ylabel("Percentage difference")
-            axs[1].set_yscale("log")
-            fig.supxlabel(labels[j])
-            plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
+            axs[0].set_yscale("log")
+            axs[0].set_xscale("log")
+            axs[1].plot(emid,(pred-D)/D)
+            axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
+            fig.supxlabel("Energy (keV)")
+            #fig.suptitle("Comparison of PCA emulator output vs expected")
+            plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
             plt.close()
+            i += 1
+            if i > 6:
+                break
+        diff_comps = np.abs((train_comps[:,i]-nn_comps[:,i])/((train_comps[:,i]+nn_comps[:,i])/2))
+        
+        for j in tqdm(range(pars.shape[1])):
+            for i in range(nn_comps.shape[1]):
+                fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
+                axs[0].scatter(pars[:,j],train_comps[:,i],label="Training set",marker="o")
+                axs[0].scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
+                axs[0].legend()
+                axs[0].set_ylabel(f"PCA component {i+1}")
+                axs[1].scatter(pars[:,j],diff_comps,marker="x")
+                axs[1].set_ylabel("Percentage difference")
+                axs[1].set_yscale("log")
+                fig.supxlabel(labels[j])
+                plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
+                plt.close()
 
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
@@ -1614,7 +1617,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    #test_set(wrk_dir)
+    test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
