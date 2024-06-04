@@ -1215,6 +1215,11 @@ def PCA_plotting(wrk_dir,name):
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
+    calib_data = PCADataset("data/locations/loc_flux_cal.csv",
+                               pars_list,negatives,logged,scale_bool = False,
+                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comp_loc="scalers/comp_20_spec.bin",
+                               spec_scal_loc="scalers/spec_20_spec.bin")
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
@@ -1405,7 +1410,9 @@ def PCA_plotting(wrk_dir,name):
     
     test_pred = reconstruct_emulator(test_data, model)
     residuals_signed = (test_pred-D)/D
-    calibration_factor = np.mean(residuals_signed,axis=0)+1
+    calib_pred = reconstruct_emulator(calib_data, model)
+    residuals_calib = (calib_pred-D)/D
+    calibration_factor = np.mean(residuals_calib,axis=0)+1
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
@@ -1580,13 +1587,13 @@ def test_set(wrk_dir):
     
     print("Saving flux data")
     saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_test.csv")
+             "data/locations/","loc_flux_cal.csv")
 
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    #test_set(wrk_dir)
+    test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"20_pars_flux")
     
