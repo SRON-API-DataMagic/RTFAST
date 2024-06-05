@@ -1448,7 +1448,7 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("loss/resids_dist_cal.png")
     plt.close()
     
-    fig, axs = plt.subplots(1,2,sharey=True,figsize=(5,10))
+    fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
     fig.supylabel("Probability density")
