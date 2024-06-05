@@ -1421,7 +1421,6 @@ def PCA_plotting(wrk_dir,name):
     residuals_calib = (calib_pred-calib_D)/calib_D
     calibration_factor = np.mean(residuals_calib,axis=0)+1
     np.savetxt("scalers/calib_factor.txt",calibration_factor)
-    np.savetxt("data/testing/calib_resids.txt",residuals_calib)
     
     residuals_signed = ((test_pred)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
@@ -1438,6 +1437,7 @@ def PCA_plotting(wrk_dir,name):
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
+    np.savetxt("data/testing/calib_resids.txt",residuals_signed)
     
     plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     plt.xlabel("Percentage residual")
