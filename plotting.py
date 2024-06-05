@@ -1422,10 +1422,10 @@ def PCA_plotting(wrk_dir,name):
     calibration_factor = np.mean(residuals_calib,axis=0)+1
     np.savetxt("scalers/calib_factor.txt",calibration_factor)
     
-    residuals_signed = ((test_pred)-D)/D
-    residuals_signed[(D==1e-11)] = np.nan
+    residuals_signed_uncal = ((test_pred)-D)/D
+    residuals_signed_uncal[(D==1e-11)] = np.nan
     
-    plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
+    plt.hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
     plt.xlabel("Percentage residual")
     plt.ylabel("Probability density")
     plt.xlim(-20,20)
@@ -1447,6 +1447,26 @@ def PCA_plotting(wrk_dir,name):
     plt.axvline(1,ls="--",c="red")
     plt.savefig("loss/resids_dist_cal.png")
     plt.close()
+    
+    fig, axs = plt.subplots(1,2,sharey=True,figsize=(5,10))
+    axs[0].hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
+    axs[0].set_xlabel("Percentage residual")
+    fig.super_ylabel("Probability density")
+    axs[0].set_xlim(-20,20)
+    axs[0].axvline(0,ls="--",c="black")
+    axs[0].axvline(-1,ls="--",c="red")
+    axs[0].axvline(1,ls="--",c="red")
+    axs[0].set_title("Uncalibrated")
+    axs[1].hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
+    axs[1].set_xlabel("Percentage residual")
+    axs[1].set_xlim(-20,20)
+    axs[1].axvline(0,ls="--",c="black")
+    axs[1].axvline(-1,ls="--",c="red")
+    axs[1].axvline(1,ls="--",c="red")
+    axs[1].set_title("Calibrated")
+    plt.savefig("loss/resids_cal_com.png")
+    plt.close()
+    
     np.savetxt("data/testing/calib_resids.txt",residuals_signed)
     
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
