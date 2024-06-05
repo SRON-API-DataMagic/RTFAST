@@ -1437,7 +1437,6 @@ def PCA_plotting(wrk_dir,name):
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
-    np.savetxt("data/testing/calib_resids.txt",residuals_signed)
     
     plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     plt.xlabel("Percentage residual")
@@ -1448,6 +1447,7 @@ def PCA_plotting(wrk_dir,name):
     plt.axvline(1,ls="--",c="red")
     plt.savefig("loss/resids_dist_cal.png")
     plt.close()
+    np.savetxt("data/testing/calib_resids.txt",residuals_signed)
     
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
     chance = np.arange(len(perc_resids))/len(perc_resids)
