@@ -1483,12 +1483,13 @@ def PCA_plotting(wrk_dir,name):
     res_95 = np.quantile(residuals_signed,0.99,axis=0)*100
     res_05 = np.quantile(residuals_signed,0.01,axis=0)*100
     
-    plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25)
-    plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5)
+    plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25,label="99%")
+    plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5,label="50%")
     plt.plot(emid,mean_res,c="b")
     plt.xlabel("Energy (keV)")
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
+    plt.legend()
     plt.savefig("loss/energ_resid.png")
     plt.close()
     
