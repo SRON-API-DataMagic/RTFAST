@@ -1480,8 +1480,8 @@ def PCA_plotting(wrk_dir,name):
     mean_res = np.mean(residuals_signed,axis=0)*100
     res_25 = np.quantile(residuals_signed,0.25,axis=0)*100
     res_75 = np.quantile(residuals_signed,0.75,axis=0)*100
-    res_95 = np.quantile(residuals_signed,0.95,axis=0)*100
-    res_05 = np.quantile(residuals_signed,0.05,axis=0)*100
+    res_95 = np.quantile(residuals_signed,0.99,axis=0)*100
+    res_05 = np.quantile(residuals_signed,0.01,axis=0)*100
     
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25)
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5)
