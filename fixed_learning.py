@@ -81,6 +81,7 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
     
     try:
         with ProcessPoolExecutor(max_workers=10) as executor:
+            """
             #validation set
             for i in range(4): #generate 4e6 datapoints
                 print(f"Generating load {i}")
@@ -103,8 +104,9 @@ def generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                     train = pd.read_csv("data/locations/locs_temp.csv")
                     mergeSaveData(train, pd.read_csv(f"data/locations/locs_20_{cross_type}_tra.csv"),
                                   "data/locations/", f"locs_20_{cross_type}_val.csv")
+            """
             #training set
-            for i in range(40): #generate 4e6 datapoints
+            for i in range(13,40): #generate 4e6 datapoints
                 print(f"Generating load {i}")
                 if i == no_loads_tra:
                     break
@@ -224,12 +226,14 @@ def main():
     range_AGN = np.asarray(lhc_AGN())
     num_pars = len(pars_list)
     
-    fmins = [5e-5,1e-4,5e-3]
-    fmaxs = [1e-4,5e-3,1e-2]
-    start = True
+    fmins = [5e-3]
+    fmaxs = [1e-2]
+    start = False
     for fmin, fmax in zip(fmins,fmaxs):
+        """
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-1,
                                       start=start)
+        """
         generate_lags_from_parameters(egrid_lo,egrid_hi,fmin,fmax,ReIm=-2,
                                       start=start)
         start = False
