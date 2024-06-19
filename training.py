@@ -312,7 +312,7 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13,23]
     
-    theta_lhc = np.asarray(pool_csv.iloc[:,pars_list])
+    theta_lhc = pool_csv.iloc[:,pars_list].to_numpy()
     
     for i, parameter in enumerate(pars_list):
         if parameter in logged:
