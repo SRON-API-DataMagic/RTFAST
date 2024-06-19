@@ -132,7 +132,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
         loss_b = loss.detach().item()
         loss_tot += loss_b
         loss_arr.append(loss_b)
-        if batch % int(batches*0.1) == 0:
+        if batch % np.ceil(batches*0.1) == 0:
             current = ((batch+1)*P.shape[0])
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
     
