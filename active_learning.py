@@ -9,16 +9,13 @@ from sherpa.astro.ui import unpack_rmf
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from torch import nn
 import pandas as pd
 
 from dataStructures import PCADataset
-
-import generator
 import network
 
 from training import train_flux, test_flux
-from training import active_training_loop, grid_training_loop
+from training import active_training_loop
 from training import PCALoss
 from training import QBDC
 

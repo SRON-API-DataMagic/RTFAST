@@ -6,18 +6,11 @@ import numpy as np
 import os
 from reltrans import _models
 from joblib import Parallel, delayed
-from processing import nanChecker, saveData, mergeSaveData, renameData
+from processing import saveData, mergeSaveData, renameData
 from processing import readAndRemoveNans, spectraChecker
-from sklearn.preprocessing import MinMaxScaler
 import scipy
-from dataStructures import FluxData, LagsData
 import pandas as pd
 from sherpa.astro.ui import unpack_rmf
-import logging
-import traceback
-
-
-logging.basicConfig(level=logging.INFO, filename='debug_gen.log', filemode='w')
 
 def rtdist_erg_flux(pars, egrid):
     """
