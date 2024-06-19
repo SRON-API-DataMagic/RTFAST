@@ -19,7 +19,7 @@ from training import active_training_loop
 from training import PCALoss
 from training import QBDC
 
-def active_learning(device, wrk_dir, name):
+def active_learning(device, wrk_dir):
     """
     Core method that collates together methods from other files to perform
     active learning based training by the query by dropout committee technique.
@@ -65,6 +65,11 @@ def active_learning(device, wrk_dir, name):
     val_csv = pool_csv.iloc[:1000]
     starting_csv.to_csv("data/locations/locs_active_tra.csv")
     val_csv.to_csv("data/locations/locs_active_val.csv")
+    
+    print(val_csv)
+    print(starting_csv)
+    
+    print("Loaded pool and established starting training and validation sets")
     
     #remove first 5000 spectra from pool
     pool_csv = pool_csv.iloc[5000:]
@@ -177,7 +182,7 @@ def main():
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    active_learning(device,wrk_dir,"PCA_active")
+    active_learning(device,wrk_dir)
     
 if __name__ == "__main__":
     main()
