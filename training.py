@@ -354,9 +354,9 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     
     print("Generating data for these samples")
     # get out the top `nsamples` values of theta_query and add old val data
-    new_data = pool_csv.iloc[query_idx[0.1*n_samples:n_samples]]
+    new_data = pool_csv.iloc[query_idx[int(0.1*n_samples):n_samples]]
     total_new_data = pd.concat([new_data,val_csv])
-    val_csv = pool_csv.iloc[query_idx[:0.1*n_samples]]
+    val_csv = pool_csv.iloc[query_idx[:int(0.1*n_samples)]]
     #add newly selected data to theta
     mergeSaveData(total_new_data, 
                   pd.read_csv("data/locations/locs_active_tra.csv"), 
