@@ -97,7 +97,7 @@ def active_learning(device, wrk_dir, name):
     best_model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     best_model.to(device)
     
-    optimizer = Adam(model.parameters(),lr = 1e-2)
+    optimizer = Adam(model.parameters(),lr = 1e-4)
     
     print("Beginning training")
     while active_loop_num <= active_loops:
