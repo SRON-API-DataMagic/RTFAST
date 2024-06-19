@@ -238,7 +238,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         best_model.load_state_dict(model.state_dict())
         
     saveLoop(best_model, "data/locations/locs_active_tra.csv", optimizer,
-             temp_te, temp_tr, active_loop_num, temp_epochs, typ=mode)
+             temp_te, temp_tr, active_loop_num, temp_epochs)
     
     return (model, best_model, optimizer, loop_epochs, 
             te_loss_arr, tr_loss_arr, last_sig_tr, last_sig_te)
