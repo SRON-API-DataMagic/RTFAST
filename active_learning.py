@@ -108,6 +108,7 @@ def active_learning(device, wrk_dir):
                                    PCA_loc="scalers/PCA_20_spec.bin",
                                    comp_loc="scalers/comp_20_spec.bin",
                                    spec_scal_loc="scalers/spec_20_spec.bin")
+        print(val_dataset.data)
         val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                       shuffle=True)
         

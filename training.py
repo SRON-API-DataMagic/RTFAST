@@ -137,11 +137,8 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
     
     avg_loss = loss_tot/len(dataloader)
-    med_loss = np.median(loss_arr)
-    std_loss = np.std(loss_arr)
     print(f"Average training loss: {avg_loss:>8f}")
-    print(f"Median training loss: {med_loss:>8f}")
-    return model, optimizer , avg_loss, med_loss, std_loss
+    return model, optimizer , avg_loss
 
 def test_flux(dataloader, model, loss_fn, device):
     """
