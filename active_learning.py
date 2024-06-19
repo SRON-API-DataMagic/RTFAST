@@ -65,10 +65,6 @@ def active_learning(device, wrk_dir):
     val_csv = pool_csv.iloc[:1000]
     starting_csv.to_csv("data/locations/locs_active_tra.csv")
     val_csv.to_csv("data/locations/locs_active_val.csv")
-    
-    print(val_csv)
-    print(starting_csv)
-    
     print("Loaded pool and established starting training and validation sets")
     
     #remove first 5000 spectra from pool
