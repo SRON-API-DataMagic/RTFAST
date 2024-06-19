@@ -110,7 +110,7 @@ def active_learning(device, wrk_dir):
                                    spec_scal_loc="scalers/spec_20_spec.bin")
         val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                       shuffle=True)
-        
+        print(val_dataset.pars)
         train_dataset = PCADataset("data/locations/locs_active_tra.csv",
                                    pars_list,negatives,logged,scale_bool = False,
                                    PCA_loc="scalers/PCA_20_spec.bin",
@@ -118,6 +118,7 @@ def active_learning(device, wrk_dir):
                                    spec_scal_loc="scalers/spec_20_spec.bin")
         tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                       shuffle=True)
+        print(train_dataset.pars)
         
         print("Flux dataloaders created")
         #Train the flux model first

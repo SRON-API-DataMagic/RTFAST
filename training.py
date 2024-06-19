@@ -359,7 +359,7 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     #add newly selected data to theta
     mergeSaveData(total_new_data, 
                   pd.read_csv("data/locations/locs_active_tra.csv"), 
-                  "data/locations/", "locs_active_tra")
+                  "data/locations/", "locs_active_tra.csv")
     
     # add rejected parameter sets back to original array for potential 
     # future use:
