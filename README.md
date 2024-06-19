@@ -1,9 +1,15 @@
-This program is built to train a neural network emulator for the rtdist AGN/black hole model. 
-It is built with pytorch. We aim to obtain a 1% error in flux and time lag outputs due to 
-comparable systemic uncertainties. This emulator should greatly reduce the computation time
-associated with calculating bayesian uncertainties for these high dimensional problems.
+This repository contains the code necessary to train a neural network emulator for the rtdist 
+AGN/black hole spectral model. It is built with pytorch. We achieved an order of 1% error across
+the entirety of the spectrum and parameter space for a 20 free parameter model.
 
-We utilise latin hyper cube sampling and active learning so as to more efficiently learn the
-very large parameter space that rtdist explores. In terms of active learning, we utilize the
-query-by-dropout-committee method outlined by Constraining the Parameters of High-Dimensional
-Models with Active Learning (Caron et al 2019).
+The emulator trained with this code (RTFAST) greatly reduce the computation time, allowing us to
+calculate bayesian posteriors for these relatively high dimensional problems. The finished 
+emulator can be found at this public repository for public use.
+
+We utilised latin hyper cube sampling as well as PCA decomposition to simplify the constraints of
+the original problem to a realistic, extremely lightweight, fast running drop in emulator.
+
+We note and encourage that this code can be used as a simple starting template for those with 
+an x-ray spectral model from xspec that they wish to build an emulator for. Please contact
+Benjamin Ricketts (the author of this repository) if you wish to know more or would like guidance
+with your particular project.
