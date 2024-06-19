@@ -8,7 +8,6 @@ from torch.nn.parameter import Parameter #needed for custom activation functions
 from joblib import load
 import numpy as np
 
-
 class SharpActivation(nn.Module):
     """
     Variant activation function that has trainable parameters to focus parts
@@ -97,18 +96,14 @@ class DynamicNetwork(nn.Module):
         
     def forward(self,pars):
         return self.LinearStack(pars)
-        
-class DynamicCrossNetwork(nn.Module):
+
+class DynamicDropoutNetwork(nn.Module):
     """
-    Neural network used in hyperparameter sweeps. THe number of layers and 
-    number of nodes in said layers can be specified at initialisation. It is 
-    recommended that any DynamicCrossNetworks that are fully trained have their
+    Neural network used in hyperparameter sweeps. The number of layers and
+    number of nodes in each layer can be specified at initialisation. It is
+    recommended that any DynamicNetworks that are fully trained have their
     own fixed class written after a best model is found for the ease of the
-    final layer.
-    
-    Distinct from DynamicNetwork, this class features a final layer that
-    produces a 2 dimensional array as the final output - corresponding to the
-    real and imaginary parts of the cross-spectrum.
+    final user.
     """
     
     def __init__(self,num_pars,output_len,num_layers,nodes,activation):
@@ -123,19 +118,15 @@ class DynamicCrossNetwork(nn.Module):
         for i in range(num_layers):
             modules.append(nn.Linear(nodes, nodes))
             modules.append(act_type)
+            modules.append(nn.Dropout(p=0.1))
         #add output stack
         modules.append(nn.Linear(nodes, output_len))
         self.LinearStack = nn.Sequential(*modules)
-        self.OutputStack = nn.Linear(1,2)
         
     def forward(self,pars):
-        pred = self.LinearStack(pars)
-        #next line reshapes so linear layer can split into real and imaginary
-        #parts
-        reshaped_pred = torch.reshape(pred,(pred.shape[0],pred.shape[1],1))
-        return self.OutputStack(reshaped_pred)
+        return self.LinearStack(pars)
 
-class SpectralEmulator(nn.Module):
+class RTFAST(nn.Module):
     """
     This can be called to utilise the emulator automatically and output only
     spectra. This will automatically load in scalers and PCA objects required
@@ -163,6 +154,8 @@ class SpectralEmulator(nn.Module):
         self.spec_mean      = torch.Tensor(self.spec.mean_).double()
         self.spec_scale     = torch.Tensor(self.spec.scale_).double()
         self.calib          = torch.Tensor(self.calib).double()
+        
+        self.powers         = [0,2,3,4,7,8,10,11,12,13,19]
     
     def PCA_inverse_transform(self,data_reduced):
         pca_comps = torch.matmul(data_reduced, self.pca_components) + self.pca_mean
@@ -176,7 +169,16 @@ class SpectralEmulator(nn.Module):
         spectra = torch.mul(data_reduced,self.spec_scale) + self.spec_mean
         return spectra
     
+    def pars_shift(self,theta):
+        #adapts parameters to correct shape of 
+        if theta.shape[0] == 20:
+            theta[self.powers] = torch.log10(theta[self.powers])
+        else:
+            theta[:,self.powers] = torch.log10(theta[:,self.powers])
+        return theta
+    
     def forward(self,theta):
+        theta = self.pars_shift(theta)
         data = self.core(theta)
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)

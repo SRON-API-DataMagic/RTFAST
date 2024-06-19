@@ -188,7 +188,7 @@ def loadData(location):
     """
     return pd.read_csv(location)
 
-def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
+def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
     """
     Saves information and model for an active learning loop to disk for future
     use.
@@ -220,15 +220,15 @@ def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs,typ="flux"):
     """
     print("Saving loop")
     renameData(pd.read_csv(data_locs),destination = "data/locations/",
-              fname = f"loc_{typ}_{num}.csv")
+              fname = f"loc_{num}.csv")
     print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_{typ}_model.pth")
+    torch.save(model.state_dict(), f"models/{num}_model.pth")
     print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_{typ}_optimizer.pth")
+    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
     print("Saved optimizer")
-    np.savetxt(f"loss/{num}_{typ}_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_{typ}_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_{typ}_epochs.txt",epochs)
+    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
+    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
+    np.savetxt(f"loss/{num}_epochs.txt",epochs)
     print("Saved losses")
     return
 
