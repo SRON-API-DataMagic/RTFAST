@@ -66,6 +66,9 @@ def active_learning(device, wrk_dir):
     starting_csv.to_csv("data/locations/locs_active_tra.csv")
     val_csv.to_csv("data/locations/locs_active_val.csv")
     print("Loaded pool and established starting training and validation sets")
+    print(pool_csv)
+    print(starting_csv)
+    print(val_csv)
     
     #remove first 5000 spectra from pool
     pool_csv = pool_csv.iloc[5000:]
@@ -110,7 +113,7 @@ def active_learning(device, wrk_dir):
                                    spec_scal_loc="scalers/spec_20_spec.bin")
         val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                       shuffle=True)
-        print(val_dataset.pars.shape)
+        
         train_dataset = PCADataset("data/locations/locs_active_tra.csv",
                                    pars_list,negatives,logged,scale_bool = False,
                                    PCA_loc="scalers/PCA_20_spec.bin",
@@ -118,7 +121,6 @@ def active_learning(device, wrk_dir):
                                    spec_scal_loc="scalers/spec_20_spec.bin")
         tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                       shuffle=True)
-        print(train_dataset.pars.shape)
         
         print("Flux dataloaders created")
         #Train the flux model first
