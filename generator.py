@@ -10,7 +10,7 @@ from processing import saveData, mergeSaveData, renameData
 from processing import readAndRemoveNans, spectraChecker
 import scipy
 import pandas as pd
-from sherpa.astro.ui import unpack_rmf
+from sherpa.astro.ui import read_arf
 
 def rtdist_erg_flux(pars, egrid):
     """
@@ -55,33 +55,6 @@ def rtdist_flux(pars, egrid_lo, egrid_hi):
     """
     model = _models.tdrtdist(pars, egrid_lo, egrid_hi)
     return model
-
-def rtdist_lags(pars, egrid_lo, egrid_hi):
-    """
-    
-
-    Parameters
-    ----------
-    pars : array
-        contains parameters used in simulation.
-    egrid : array
-        contains values of energy to calculate for. Final point in array will
-        always be zero when evaluated due to quirk in Sherpa/Xspec.
-
-    Returns
-    -------
-    output : array
-        outputted simulated data.
-
-    """
-    try:
-        y = _models.tdrtdist(pars, egrid_lo, egrid_hi)
-        output = y/(egrid_hi-egrid_lo)
-        return output
-    except Exception as e:
-        logging.error(f"Exception in worker: {e}\n{traceback.format_exc()}")
-        raise
-
 
 def Anorm_wrapper(pars):
     """
@@ -141,60 +114,6 @@ def Anorm_wrapper(pars):
     pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
-def Anorm_wrapper_10(pars):
-    """
-    This function recalculates the Anorm input parameter of rtdist from the 
-    generated values of flux. This allows considerably more efficient sampling
-    of Anorm - only physically plausible scenarios are considered and we 
-    have physical reasoning behind the Anorm values chosen.
-
-    Parameters
-    ----------
-    pars : np.ndarray
-        the curated hypercube of parameters that the emulator will eventually
-        be trained on.
-
-    Returns
-    -------
-    new_lhc : np.ndarray
-        latin hypercube with "coronal flux" parameter replaced with Anorm.
-
-    """
-    #calculate g_0
-    h = 6
-    a = pars[:,0]
-    Dh = h**2 -2*h +a**2
-    g_so = np.sqrt(Dh/(h**2 + a**2))
-    #calculate luminosity of corona
-    F = 10**pars[:,9]              #Flux of corona in erg/cm^2/s
-    gamma = pars[:,3]               #photon index
-    Afe = pars[:,5]
-    z =  np.ones(gamma.shape)*0.024917
-    refl_frac = np.zeros(gamma.shape)
-    inc = pars[:,1]
-    #calculate normalisation for each flux spectra
-    integrals = np.zeros(gamma.shape)
-    #cutoff in keV
-    E_cut = np.ones(gamma.shape)*300
-    logxi = np.ones(gamma.shape)
-    xnorm = np.ones(gamma.shape)
-    xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
-    #energies from 0.1keV to 1MeV
-    bins = 1000
-    egrid = np.logspace(-1,3,num = bins)
-    
-    def integrate(pars):
-        continuum = _models.lmodxillver(pars, egrid)
-        integral = np.trapz(continuum,egrid)*1.60218e-9
-        return integral
-    
-    with Parallel(n_jobs=20,verbose=0) as parallel:
-        integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
-    integrals = np.asarray(integrals)
-    Anorm = F/(g_so**(gamma-2)*integrals)
-    pars[:,9] = Anorm   #Replace flux generated with Anorm parameters
-    return pars
-
 def lhc_filter_20(lhc):
     """
     Removes unphysical parameter sets from the Latin Hypercube. This prevents
@@ -241,49 +160,6 @@ def lhc_filter_20(lhc):
     new_lhc = Anorm_wrapper(new_lhc)
     return new_lhc
 
-def lhc_filter_10(lhc):
-    """
-    Removes unphysical parameter sets from the Latin Hypercube. This prevents
-    overly bright sources from being generated as well as reducing time spent
-    on generating model data for objects that we won't see
-
-    Parameters
-    ----------
-    lhc : np.ndarray
-        latin hypercube containing parameter sets for rtdist.
-
-    Returns
-    -------
-    new_lhc : np.ndarray
-        latin hypercube with unphysical parameter sets removed..
-
-    """
-    #bad sets indexes all parameter sets that don't fit the filter criteria
-    #removes parameter sets that have a photon index higher than 3 AND a iron
-    #solar abundance above 6 AND a electron density in the disk of higher than
-    #10^19.
-    bad_disks = np.nonzero((lhc[:,3]>2.75)&(10**lhc[:,5]>4)&(lhc[:,6]>17))
-    #check if the calculated hubble constant for the set of parameters
-    #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
-    hubble = 0.024917*3e6/(10**lhc[:,4]*0.001)
-    bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
-    #Check luminosities aren't super eddington or too small to see
-    F = 10**lhc[:,9]       #Flux of corona in erg/cm^2/s
-    D = 10**lhc[:,4]        #distance of objects
-    D = 3.086e21 * D        #distance in cm
-    M_solar = 10**lhc[:,8] #mass of the object
-    L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
-    Ledd = 1.26e38*M_solar  #eddington luminosity
-    bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
-    #collates all bad sets together
-    bad_sets = np.unique(np.concatenate((bad_disks,bad_dists,
-                                         bad_Ls),axis=None))
-    #removes all unphysical sets from the parameter sets
-    new_lhc = np.delete(lhc,bad_sets,0)
-    #convert fluxes to Anorm
-    new_lhc = Anorm_wrapper_10(new_lhc)
-    return new_lhc
-
 def lhc_all():
     """
     Generates valid ranges of parameters of AGN to be trained on
@@ -321,72 +197,6 @@ def lhc_all():
                  r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
                  logNe_range,kte_range,nH_range,boost_range,mass_range,
                  honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
-    
-    return range_all
-
-def lhc_1():
-    """
-    Generates valid ranges of parameters for spin only.
-
-    Returns
-    -------
-    range_all : list
-        gives parameter ranges for each of the given parameters listed. Used 
-        in the latin hypercube sampling
-
-    """
-    r_inner_range = [np.log10(1),np.log10(400)]
-    range_all = [r_inner_range]
-    
-    return range_all
-
-def lhc_5():
-    """
-    Limited form of lhc_range_gen that returns ranges for only a limited amount
-    of parameters.
-
-    Returns
-    -------
-    range_all : list
-        a list of ranges of parameter spaces to generate from.
-
-    """
-    spin_range = [0.1,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
-    
-    range_all = [spin_range,inclination_range,r_inner_range,r_outer_range,
-                 mass_range]
-    
-    return range_all
-
-def lhc_10():
-    """
-    Limited form of lhc_range_gen that returns ranges for only a limited amount
-    of parameters.
-
-    Returns
-    -------
-    range_all : list
-        a list of ranges of parameter spaces to generate from.
-
-    """
-    spin_range = [0.1,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e5),np.log10(5e7)]
-    Afe_range = [np.log10(0.5),np.log10(10)]
-    logNe_range = [15,20]
-    nH_range = [np.log10(1e-3),np.log10(1)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
-    flux_range = [np.log10(1e-12),np.log10(1e-8)]
-    
-    range_all = [spin_range,inclination_range,r_inner_range,Gamma_range,
-                 distance_range,Afe_range,logNe_range,nH_range,
-                 mass_range,flux_range]
     
     return range_all
 
@@ -517,7 +327,7 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
             converted_pars[:,parameter] = -converted_pars[:,parameter]
     return converted_pars
 
-def grid_data_gen(size, fname, egrid, lags_egrid):
+def grid_data_gen(size, fname, egrid):
     """
     Creates a grid of parameter space and then generates spectra and time lags
     for each spot on the grid. Saves these to the disk
@@ -560,18 +370,13 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     logged = [2,3,4,13]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
     
     with Parallel(n_jobs=20,verbose=5) as parallel:
         #generate rtdist models for the correlated grid
         flux = parallel(delayed(rtdist_flux)(pars, egrid)
                                         for pars in theta_flux)
         flux = np.array(flux)
-        flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                      1e-11)
-        lags_data_init = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                        for pars in theta_lags)
-        lags = np.array(lags_data_init)
+        flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
     idxs = np.arange(0,flux.shape[0])
     np.random.shuffle(idxs)
@@ -580,38 +385,28 @@ def grid_data_gen(size, fname, egrid, lags_egrid):
     
     #Splitting data and parameters into training and testing datasets
     train_flux = flux[tra_idx]
-    train_lags = lags[tra_idx]
     train_flux_pars = theta_flux[tra_idx]
-    train_lags_pars = theta_lags[tra_idx]
     
     test_flux = flux[tes_idx]
-    test_lags = lags[tes_idx]
     test_flux_pars = theta_flux[tes_idx]
-    test_lags_pars = theta_lags[tes_idx]
     
     print("Saving to disk")
     #save data for the first time in text files
     saveData(train_flux, train_flux_pars, 
              "data/locations/",f"loc_{fname}_flux.csv")
-    saveData(train_lags, train_lags_pars, 
-             "data/locations/",f"loc_{fname}_lags.csv")
     saveData(test_flux, test_flux_pars, 
              "data/locations/",f"loc_{fname}_flux_test.csv")
-    saveData(test_lags, test_lags_pars, 
-             "data/locations/",f"loc_{fname}_lags_test.csv")
     
     print("Performing data cleanup")
-    readAndRemoveNans(f"data/locations/loc_{fname}_flux.csv", 
-                      f"data/locations/loc_{fname}_lags.csv")
-    readAndRemoveNans(f"data/locations/loc_{fname}_flux_test.csv", 
-                      f"data/locations/loc_{fname}_lags_test.csv")
+    readAndRemoveNans(f"data/locations/loc_{fname}_flux.csv")
+    readAndRemoveNans(f"data/locations/loc_{fname}_flux_test.csv")
     return
 
 def generate_flux_dists(AGN_name):
     wrk_dir = os.getcwd()
-    rmf_name = wrk_dir+"/ResponseFiles/PN.rmf"
-    rmf = unpack_rmf(rmf_name)
-    egrid = rmf.e_min #energy grid used to evaluate the xspec model
+    rmf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    rmf = read_arf(rmf_name)
+    egrid = rmf.energ_lo #energy grid used to evaluate the xspec model
     
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
               "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
@@ -643,50 +438,9 @@ def generate_flux_dists(AGN_name):
     
     AGN.to_csv(f"data/flux/{AGN_name}.csv")
     return
-    
-def generate_test_set(size, egrid, lags_egrid, lhc_gen, limited=False):
-    """
-    
 
-    Parameters
-    ----------
-    size : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    range_all = np.asarray(lhc_gen())
-    theta_lhc = lhc_generation(size, range_all,limited=limited)
-    
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    
-    pars_list = [1]
-    negatives = []
-    logged = []
-    #generate physical models of test set
-    theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_lhc, 6, pars_list, negatives, logged)
-    
-    with Parallel(n_jobs=20,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        flux = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in theta_flux)
-        flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                      1e-11)
-        lags = parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                        for pars in theta_lags)
-    flux = np.asarray(flux)
-    lags = np.asarray(lags)
-    return flux, lags, theta_flux, theta_lags
-
-def active_learning_generation(theta_query, egrid, lags_egrid, parallel, 
-                               flux_name, flux_test_name, lags_name,
-                               lags_test_name):
+def active_learning_generation(theta_query, egrid, parallel, 
+                               flux_name, flux_test_name):
     # compute the physical model for these thetas
     pars_list = [1,2,3,4,13]
     negatives = [3]
@@ -704,22 +458,12 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/","active_gen_flux.csv")
-    del flux
-    print("Generating lags models")
-    lags =  parallel(delayed(rtdist_lags)(pars, lags_egrid)
-                                    for pars in theta_lags)
-    lags = np.asarray(lags)
-    print("Saving lags data")
-    saveData(lags, theta_lags, 
-             "data/locations/","active_gen_lags.csv", lags=True)
-    del theta_flux, theta_lags, lags
+    del flux, theta_flux
     
     print("Performing data cleanup")
-    readAndRemoveNans("data/locations/active_gen_flux.csv", 
-                      "data/locations/active_gen_lags.csv")
+    readAndRemoveNans("data/locations/active_gen_flux.csv")
     
     flux = pd.read_csv("data/locations/active_gen_flux.csv")
-    lags = pd.read_csv("data/locations/active_gen_lags.csv")
     
     # shuffle indices for neural network training
     idx_shuffle = np.arange(0, len(flux), dtype=int)
@@ -730,21 +474,15 @@ def active_learning_generation(theta_query, egrid, lags_egrid, parallel,
     
     #Split data into test and training sets
     flux_test = flux.iloc[idx_test]
-    lags_test = lags.iloc[idx_test]
     
     flux_query = flux.iloc[idx_query]
-    lags_query = lags.iloc[idx_query]
     
     #save final curated datasets back to disk for use
     mergeSaveData(flux_query, pd.read_csv(f"data/locations/{flux_name}"),
                   "data/locations/", flux_name)
-    mergeSaveData(lags_query, pd.read_csv(f"data/locations/{lags_name}"),
-                  "data/locations/", lags_name)
     
     renameData(flux_test, "data/locations/", 
                flux_test_name)
-    renameData(lags_test, "data/locations/", 
-               lags_test_name)
     return
 
 def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
@@ -777,7 +515,7 @@ def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
-def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
+def intialize_dataset(theta_lhc,egrid,flux_name):
     print("Generating first time dataset")
     init_data_size = 5000
     lhc_idx = init_data_size
@@ -790,7 +528,6 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_init, 6, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
@@ -798,21 +535,41 @@ def intialize_dataset(theta_lhc,egrid,lags_egrid,flux_name,lags_name):
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
-    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                  1e-11)
+    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     print("Saving flux data")
     saveData(flux, theta_flux, 
              "data/locations/",flux_name)
-    del flux
-    print("Generating lags models")
-    lags_query =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_lags)(pars, lags_egrid)
-                                    for pars in theta_lags)
-    lags_query = np.asarray(lags_query)
-    print("Saving lags data")
-    saveData(lags_query, theta_lags,"data/locations/",lags_name, lags=True)
-    del theta_flux, theta_lags, lags_query
+    del flux, theta_flux
     
     print("Performing data cleanup")
-    readAndRemoveNans(f"data/locations/{flux_name}", 
-                      f"data/locations/{lags_name}")
+    readAndRemoveNans(f"data/locations/{flux_name}")
     return lhc_idx
+
+def test_set(wrk_dir):
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
+    range_AGN = np.asarray(lhc_AGN())
+    
+    theta_lhc = lhc_generation(int(1000), range_AGN, limited=False, 
+                                         lhc_filter=lhc_filter_20)
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13]
+    #generate physical models of test set
+    theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
+    print("Parallelized model generation")
+    
+    print("Generating flux models")
+    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+                                    for pars in theta_flux)
+    flux = np.asarray(flux)
+    print("Checking for spectra below threshold")
+    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
+                                                  1e-11)
+    
+    print("Saving flux data")
+    saveData(flux, theta_flux, 
+             "data/locations/","loc_flux_cal.csv")
+    return

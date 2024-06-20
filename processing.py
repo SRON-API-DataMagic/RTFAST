@@ -132,17 +132,19 @@ def removeRedundantData():
     labels = ["locs_10_spectra_tra.csv","locs_10_spectra_val.csv",
               "locs_20_spectra_tra.csv","locs_20_spectra_val.csv"]
     
-    spectra_names = []
+    file_names = []
     for fname in labels:
         data = pd.read_csv(locations+fname)
         print(f"{fname}:{len(data)}")
         names = data["Location"].values.tolist()
-        spectra_names.extend(names)
+        file_names.extend(names)
     
-    spectra_names = np.asarray(spectra_names)
-    files = glob.glob("data/lags/*.txt")
+    file_names = np.asarray(file_names)
+    files = glob.glob("data/spectra/*.txt")
     files = np.asarray(files)
-    diff = np.setdiff1d(files,spectra_names)
+    files = np.concatenate([files,
+                            np.asarray(glob.glob("/data/time-lags/lags/*.txt"))])
+    diff = np.setdiff1d(files,file_names)
     print(f"Removing {len(diff)} files...")
     for file in tqdm.tqdm(diff):
         os.remove(file)
@@ -260,7 +262,7 @@ def nanChecker(data,pars):
             print(f"{indice}: {pars[indice]}")
     return index
 
-def spectraChecker(flux,pars_flux,pars_lags,threshold):
+def spectraChecker(flux,pars_flux,threshold):
     """
     
 
@@ -293,18 +295,12 @@ def spectraChecker(flux,pars_flux,pars_lags,threshold):
     index = np.unique(indexes).tolist()
     flux = np.delete(flux,index,axis=0)
     pars_flux = np.delete(pars_flux,index,axis=0)
-    pars_lags = np.delete(pars_lags,index,axis=0)
-    return flux, pars_flux, pars_lags
+    return flux, pars_flux
 
-def readAndRemoveNans(flux_loc,lags_loc):
+def readAndRemoveNans(flux_loc):
     flux_df = pd.read_csv(flux_loc)
-    lags_df = pd.read_csv(lags_loc)
     index = []
     for i,row in flux_df.iterrows():
-        spec = np.loadtxt(row["Location"])
-        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
-            index.append(i)
-    for i,row in lags_df.iterrows():
         spec = np.loadtxt(row["Location"])
         if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
             index.append(i)
@@ -323,8 +319,6 @@ def readAndRemoveNans(flux_loc,lags_loc):
         print("No bad models")
     flux_df.drop(index,inplace=True)
     flux_df.to_csv(flux_loc, index=False)
-    lags_df.drop(index,inplace=True)
-    lags_df.to_csv(lags_loc, index=False)
     return
 
 def main():
