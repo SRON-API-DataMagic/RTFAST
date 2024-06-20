@@ -307,12 +307,10 @@ class PCADataset(Dataset):
         self.locations = data_table.iloc[:,-1]
         self.pars = data_table.iloc[:,pars_list].to_numpy()
         self.pars_list = pars_list
-        self.rtdist_to_nn(negatives,logged)
-        self.data_load()
-        self.data = torch.Tensor(self.data)
-        self.pars = torch.Tensor(self.pars)
-        self.data.float()
-        self.pars.float()
+        self.negatives = negatives
+        self.logged = logged
+        self.pars = self.rtdist_to_nn(self.pars)
+        self.data = self.data_load(self.locations)
         
     def __len__(self):
         return self.data.shape[0]
@@ -320,7 +318,7 @@ class PCADataset(Dataset):
     def __getitem__(self,idx):
         return self.data[idx], self.pars[idx]
     
-    def rtdist_to_nn(self,negatives,logged):
+    def rtdist_to_nn(self,pars):
         """
         Converts rtdist parameters into neural network friendly form.
 
@@ -335,32 +333,34 @@ class PCADataset(Dataset):
 
         """
         for i, parameter in enumerate(self.pars_list):
-            if parameter in negatives:
-                self.pars[:,i] = -self.pars[:,i]
-            if parameter in logged:
-                self.pars[:,i] = np.log10(self.pars[:,i])
+            if parameter in self.negatives:
+                pars[:,i] = -pars[:,i]
+            if parameter in self.logged:
+                pars[:,i] = np.log10(pars[:,i])
+        return torch.Tensor(pars).float()
     
-    def data_load(self):
+    def file_load(file):
+        return np.loadtxt(file).reshape(1, -1)
+    
+    def data_load(self,locations):
         """
         Loads data from disk and scales it to NN friendly outputs. Automatically
         splits large loads into 1e6 portions to prevent memory overflow.
         """
-        def file_load(file):
-            return np.loadtxt(file).reshape(1, -1)
         
-        no_loads = int(np.ceil(len(self.locations)/1e6))
+        no_loads = int(np.ceil(len(locations)/1e6))
         cpu_num = os.cpu_count()
         
         print(f"Loading data in {no_loads} portion(s)")
         for i in range(no_loads):
             if i != (no_loads-1):
                 data =(Parallel(n_jobs=cpu_num-1,verbose=1)
-                       (delayed(file_load)(file) for file in 
-                        self.locations[int(i*1e6):(i+1)*int(1e6)]))
+                       (delayed(self.file_load)(file) for file in 
+                        locations[int(i*1e6):(i+1)*int(1e6)]))
             else:
                 data = (Parallel(n_jobs=cpu_num-1,verbose=1)
-                        (delayed(file_load)(file) for file in 
-                         self.locations[i*int(1e6):]))
+                        (delayed(self.file_load)(file) for file in 
+                         locations[i*int(1e6):]))
             data = np.concatenate(data,axis=0)
             #make sure all your data is behaving correctly after loading
             if np.any(np.isnan(data))==True:
@@ -384,9 +384,35 @@ class PCADataset(Dataset):
                 overall_data = data
             else:
                 overall_data = np.concatenate([overall_data,data],axis=0)
-        self.data = overall_data
-        return
+        return torch.Tensor(overall_data).float()
     
+    def add_data(self,new_data):
+        """
+        Loads new data specified in csv new_data. Checks to see if there is 
+        overlap between the new data and old data and explicitly excludes
+        duplicated data.
+        """
+        data_table = new_data
+        locations = data_table.iloc[:,-1].to_numpy()
+        
+        #find unique instances of new spectra
+        locs,inds,cts = np.unique(np.concatenate([locations, self.locations]),
+                                  return_counts=True,return_index=True)
+        new_locs = locs[inds[cts==1]]
+        
+        #convert parameters and filter for new spectra
+        pars = data_table.iloc[:,self.pars_list].to_numpy()
+        pars = self.nn_pars_to_rtdist(pars)
+        new_pars = pars[inds[cts==1]]
+        
+        #add parameters to dataset
+        self.pars = torch.concat([self.pars,new_pars])
+        
+        #load and add new data to dataset
+        new_data = self.data_load(new_locs)
+        self.data = torch.concat([self.data,new_data])
+        return
+        
     def scale(self,data):
         data = self.spectra_scaler(data)
         data = self.PCA(data,self.comps)
