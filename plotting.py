@@ -1178,7 +1178,25 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    PCA_plotting(wrk_dir,"20_pars_flux")
+    train_loss = np.loadtxt("loss/active_tr_loss.txt")
+    val_loss = np.loadtxt("loss/active_te_loss.txt")
+    
+    epochs = np.arange(1,len(train_loss)+1)
+    plt.plot(epochs,train_loss,label = "Training loss", c = "blue",
+             ls = "-")
+    plt.plot(epochs,val_loss,label = "Validation loss", c = "orange",
+             ls = "--")
+    plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel("Training epochs")
+    plt.ylabel("Loss")
+    #plt.title(f"Loss by epoch for {name}")
+    plt.legend()
+    plt.tight_layout()
+    plt.ylim(top = 1e1)
+    plt.savefig("loss/loss_active.png")
+    plt.close()
+    #PCA_plotting(wrk_dir,"20_pars_flux")
     
 if __name__ == "__main__":
     main()
