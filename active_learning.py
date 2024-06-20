@@ -46,7 +46,7 @@ def active_learning(device, wrk_dir):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     egrid = egrid[egrid>0.1]
     
-    active_loops = 60
+    active_loops = 40
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
@@ -61,14 +61,14 @@ def active_learning(device, wrk_dir):
     pool_csv = pd.read_csv("data/locations/locs_20_spectra_tra.csv")
     
     #select first 5000 spectra
-    starting_csv = pool_csv.iloc[1000:5000]
+    starting_csv = pool_csv.iloc[1000:100000]
     val_csv = pool_csv.iloc[:1000]
     starting_csv.to_csv("data/locations/locs_active_tra.csv",index=False)
     val_csv.to_csv("data/locations/locs_active_val.csv",index=False)
     print("Loaded pool and established starting training and validation sets")
     
     #remove first 5000 spectra from pool
-    pool_csv = pool_csv.iloc[5000:]
+    pool_csv = pool_csv.iloc[100000:]
     
     last_sig_tr = 1e7 #last significant best training loss (set large initially)
     last_sig_te = 1e7 #last significant best testing loss (set large initially)
@@ -131,7 +131,8 @@ def active_learning(device, wrk_dir):
                                                           active_loop_num, loop_epochs, 
                                                           best_model, 
                                                           train_flux, test_flux,
-                                                          mode = "flux")
+                                                          mode = "flux",
+                                                          stopping=20)
         #iterate loop number by 1
         active_loop_num += 1
         
