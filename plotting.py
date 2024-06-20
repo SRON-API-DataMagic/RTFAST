@@ -12,21 +12,14 @@ from matplotlib.colors import ListedColormap
 from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
 import matplotlib
-import imageio
 
 import numpy as np
-from torch.utils.data import DataLoader
-from joblib import load
-from joblib import Parallel, delayed
 
 import pandas as pd
 from tqdm import tqdm
 
 import network
-from dataStructures import LoadFluxData, LoadLagsData, Losses, Residual, PCADataset
-from generator import rtdist_flux
-import generator
-from processing import saveData, spectraChecker
+from dataStructures import Residual, PCADataset
 from training import PCALoss
             
 def inverse(scaler,data):
