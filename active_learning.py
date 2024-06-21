@@ -99,7 +99,7 @@ def active_learning(device, wrk_dir):
     
     print("Beginning training")
     while active_loop_num <= active_loops:
-        pool_csv,val_csv = QBDC(name,val_name,active_loop_num,pool_csv,val_csv,
+        pool_csv = QBDC(name,val_name,active_loop_num,pool_csv,val_csv,
                                 model,device,labels)
         
         if active_loop_num == 0:
@@ -129,7 +129,7 @@ def active_learning(device, wrk_dir):
             val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                           shuffle=True)
             print("Adding new training data")
-            train_dataset.add_data("data/locations/locs_active_.csv")
+            train_dataset.add_data(pool_csv)
             tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                           shuffle=True)
         
