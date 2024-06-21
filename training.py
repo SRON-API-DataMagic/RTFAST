@@ -371,6 +371,6 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     pool_csv = pool_csv.iloc[n_samples_large:]
     #reset index
     pool_csv.reset_index(inplace=True,drop=True)
-    val_csv.to_csv("locs_active_val.csv",ignore_index=True)
+    val_csv.to_csv("locs_active_val.csv",index=False)
     
     return pool_csv
