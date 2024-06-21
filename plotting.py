@@ -1171,8 +1171,8 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    train_loss = np.loadtxt("loss/active_tr_loss.txt")
-    val_loss = np.loadtxt("loss/active_te_loss.txt")
+    train_loss = np.loadtxt("loss/active_flux_tr_loss.txt")
+    val_loss = np.loadtxt("loss/active_flux_te_loss.txt")
     
     epochs = np.arange(1,len(train_loss)+1)
     plt.plot(epochs,train_loss,label = "Training loss", c = "blue",

@@ -105,7 +105,7 @@ class FluxDataDisk(Dataset):
     def __getitem__(self, idx):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,-1]
-        #retrieve parameters used to generate the spectra that we want to train on
+        #retrieve parameters 
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
@@ -180,7 +180,7 @@ class LoadFluxData(FluxDataDisk):
     def __getitem__(self,idx):
         #retrieve location of the spectra to load
         location = self.labels.iloc[idx,-1]
-        #retrieve parameters used to generate the spectra that we want to train on
+        #retrieve parameters
         parameters = self.labels.iloc[idx,self.pars_list].astype(float)
         #convert parameters to log space
         parameters.iloc[self.negatives] = -parameters.iloc[self.negatives]
@@ -220,10 +220,10 @@ class Parameters():
         
     def nn_pars_to_rtdist(self,nn_pars,ReIm):
         """
-        Converts sampled paramters for neural network training into correct format
-        for use in generating data and adds non-sampled parameters needed by the
-        model. This is the generic form in which the list of sampled parameters 
-        and manipulations are passed to the function
+        Converts sampled paramters for neural network training into correct 
+        format for use in generating data and adds non-sampled parameters 
+        needed by the model. This is the generic form in which the list of 
+        sampled parameters and manipulations are passed to the function.
 
         Parameters
         ----------
@@ -237,8 +237,8 @@ class Parameters():
         negatives : list
             list of indexes of parameters that need to be turned positive.
         logged : list
-            list of indexes of parameters that need to be transformed to power of
-            10.
+            list of indexes of parameters that need to be transformed to power 
+            of 10.
 
         Returns
         -------
@@ -248,8 +248,8 @@ class Parameters():
         """
         #set up base parameters which can be used to fix parameter sets to
         #reasonable values
-        pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                     0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
+        pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,
+                     0,0,0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
         #set up base parameters to transform according to sampled parameters
         converted_pars = []
         for i in range(nn_pars.shape[0]):
@@ -344,8 +344,9 @@ class PCADataset(Dataset):
     
     def data_load(self,locations):
         """
-        Loads data from disk and scales it to NN friendly outputs. Automatically
-        splits large loads into 1e6 portions to prevent memory overflow.
+        Loads data from disk and scales it to NN friendly outputs. 
+        Automatically splits large loads into 1e6 portions to prevent memory 
+        overflow.
         """
         
         no_loads = int(np.ceil(len(locations)/1e6))
@@ -433,8 +434,11 @@ class PCADataset(Dataset):
             self.pca = PCA(n_components = comp)
             self.pca.fit(data)
             data = self.pca.transform(data)
-            print(f"Achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}% with {comp} components")
-            print(f"Distribution of explained variance is {self.pca.explained_variance_ratio_}")
+            print(("Achieved explained variance of"
+                   f" {sum(self.pca.explained_variance_ratio_)*100}% with"
+                   f" {comp} components"))
+            print(("Distribution of explained variance is"
+                   f" {self.pca.explained_variance_ratio_}"))
             dump(self.pca,self.PCA_loc)
             self.scale_bool = False
             return data
@@ -443,7 +447,8 @@ class PCADataset(Dataset):
             self.pca = PCA(n_components = comp)
             self.pca.fit(data)
             if sum(self.pca.explained_variance_ratio_) < 0.99999:
-                print(f"Currently achieved explained variance of {sum(self.pca.explained_variance_ratio_)*100}%")
+                print(("Currently achieved explained variance of"
+                       f" {sum(self.pca.explained_variance_ratio_)*100}%"))
                 self.PCA(comp+1)
             else:
                 print(f"Successfully describes {.99999*100}% of variance")
