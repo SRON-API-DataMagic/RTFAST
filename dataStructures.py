@@ -406,7 +406,7 @@ class PCADataset(Dataset):
         
         #convert parameters and filter for new spectra
         pars = data_table.iloc[:,self.pars_list].to_numpy()
-        pars = self.nn_pars_to_rtdist(pars)
+        pars = self.rtdist_to_nn(pars)
         new_pars = pars[inds[cts==1]]
         
         #add parameters to dataset
