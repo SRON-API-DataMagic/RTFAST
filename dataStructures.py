@@ -339,8 +339,7 @@ class PCADataset(Dataset):
                 pars[:,i] = np.log10(pars[:,i])
         return torch.Tensor(pars).float()
     
-    def file_load(self,file):
-        return np.loadtxt(file).reshape(1, -1)
+    
     
     def data_load(self,locations):
         """
@@ -352,15 +351,18 @@ class PCADataset(Dataset):
         no_loads = int(np.ceil(len(locations)/1e6))
         cpu_num = os.cpu_count()
         
+        def file_load(file):
+            return np.loadtxt(file).reshape(1, -1)
+        
         print(f"Loading data in {no_loads} portion(s)")
         for i in range(no_loads):
             if i != (no_loads-1):
                 data =(Parallel(n_jobs=cpu_num-1,verbose=1)
-                       (delayed(self.file_load)(file) for file in 
+                       (delayed(file_load)(file) for file in 
                         locations[int(i*1e6):(i+1)*int(1e6)]))
             else:
                 data = (Parallel(n_jobs=cpu_num-1,verbose=1)
-                        (delayed(self.file_load)(file) for file in 
+                        (delayed(file_load)(file) for file in 
                          locations[i*int(1e6):]))
             data = np.concatenate(data,axis=0)
             #make sure all your data is behaving correctly after loading
