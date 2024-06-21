@@ -402,6 +402,7 @@ class PCADataset(Dataset):
         locs,inds,cts = np.unique(np.concatenate([locations, self.locations]),
                                   return_counts=True,return_index=True)
         new_locs = locs[inds[cts==1]]
+        print(f"Loading {len(new_locs)} new spectra")
         
         #convert parameters and filter for new spectra
         pars = data_table.iloc[:,self.pars_list].to_numpy()

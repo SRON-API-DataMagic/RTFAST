@@ -102,22 +102,36 @@ def active_learning(device, wrk_dir):
         pool_csv,val_csv = QBDC(name,val_name,active_loop_num,pool_csv,val_csv,
                                 model,device,labels)
         
-        print("Creating dataloaders...")
-        val_dataset = PCADataset("data/locations/locs_active_val.csv",
-                                   pars_list,negatives,logged,scale_bool = False,
-                                   PCA_loc="scalers/PCA_20_spec.bin",
-                                   comp_loc="scalers/comp_20_spec.bin",
-                                   spec_scal_loc="scalers/spec_20_spec.bin")
-        val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                      shuffle=True)
-        
-        train_dataset = PCADataset("data/locations/locs_active_tra.csv",
-                                   pars_list,negatives,logged,scale_bool = False,
-                                   PCA_loc="scalers/PCA_20_spec.bin",
-                                   comp_loc="scalers/comp_20_spec.bin",
-                                   spec_scal_loc="scalers/spec_20_spec.bin")
-        tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                      shuffle=True)
+        if active_loop_num == 0:
+            print("Creating dataloaders...")
+            val_dataset = PCADataset("data/locations/locs_active_val.csv",
+                                       pars_list,negatives,logged,scale_bool = False,
+                                       PCA_loc="scalers/PCA_20_spec.bin",
+                                       comp_loc="scalers/comp_20_spec.bin",
+                                       spec_scal_loc="scalers/spec_20_spec.bin")
+            val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                          shuffle=True)
+            
+            train_dataset = PCADataset("data/locations/locs_active_tra.csv",
+                                       pars_list,negatives,logged,scale_bool = False,
+                                       PCA_loc="scalers/PCA_20_spec.bin",
+                                       comp_loc="scalers/comp_20_spec.bin",
+                                       spec_scal_loc="scalers/spec_20_spec.bin")
+            tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                          shuffle=True)
+        else:
+            print("Loading new validation dataset")
+            val_dataset = PCADataset("data/locations/locs_active_val.csv",
+                                       pars_list,negatives,logged,scale_bool = False,
+                                       PCA_loc="scalers/PCA_20_spec.bin",
+                                       comp_loc="scalers/comp_20_spec.bin",
+                                       spec_scal_loc="scalers/spec_20_spec.bin")
+            val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+                                          shuffle=True)
+            print("Adding new training data")
+            train_dataset.add_data("data/locations/locs_active_.csv")
+            tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+                                          shuffle=True)
         
         print("Flux dataloaders created")
         #Train the flux model first
