@@ -293,6 +293,7 @@ class PCADataset(Dataset):
                  comp_loc="scalers/comp_flux.bin",
                  spec_scal_loc="scalers/spec_flux.bin",force = False):
         data_table = pd.read_csv(data_loc)
+        self.csv = data_table
         self.threshold = threshold
         self.force = force
         self.PCA_loc = PCA_loc
@@ -396,24 +397,15 @@ class PCADataset(Dataset):
         duplicated data.
         """
         data_table = new_data
+        data_table = pd.concat([self.csv,new_data]).drop_duplicates(keep=False)
         locations = data_table.iloc[:,-1].to_numpy()
         
-        #find unique instances of new spectra
-        locs,inds,cts = np.unique(np.concatenate([locations, self.locations]),
-                                  return_counts=True,return_index=True)
-        new_locs = locs[inds[cts==1]]
-        print(f"Loading {len(new_locs)} new spectra")
-        
-        #convert parameters and filter for new spectra
-        pars = data_table.iloc[:,self.pars_list].to_numpy()
-        pars = self.rtdist_to_nn(pars)
-        new_pars = pars[inds[cts==1]]
-        
-        #add parameters to dataset
-        self.pars = torch.concat([self.pars,new_pars])
-        
+        self.csv = new_data
+        self.pars = self.rtdist_to_nn(new_data.iloc[:,self.pars_list].to_numpy())
+        self.locations = data_table.iloc[:,-1]
+        print(f"Loading {len(locations)} new spectra")
         #load and add new data to dataset
-        new_data = self.data_load(new_locs)
+        new_data = self.data_load(locations)
         self.data = torch.concat([self.data,new_data])
         return
         
