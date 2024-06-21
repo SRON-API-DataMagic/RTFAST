@@ -1171,7 +1171,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    PCA_plotting(wrk_dir,"active_best")
+    PCA_plotting(wrk_dir,"active_best_flux")
     
 if __name__ == "__main__":
     main()
