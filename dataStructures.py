@@ -339,7 +339,7 @@ class PCADataset(Dataset):
                 pars[:,i] = np.log10(pars[:,i])
         return torch.Tensor(pars).float()
     
-    def file_load(file):
+    def file_load(self,file):
         return np.loadtxt(file).reshape(1, -1)
     
     def data_load(self,locations):
