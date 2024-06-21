@@ -46,7 +46,7 @@ def active_learning(device, wrk_dir):
     egrid = rmf.e_min #energy grid used to evaluate the xspec model
     egrid = egrid[egrid>0.1]
     
-    active_loops = 40
+    active_loops = 75
     
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
               "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]

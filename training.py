@@ -302,6 +302,8 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     multiplier = ceil(data_size/100000)
     n_samples = 5000*multiplier
     n_samples_large = 500000*multiplier # number of parameter sets to draw 
+    if n_samples_large > 5*10**6:
+        n_samples_large = 5*10**6
     divider = 100*multiplier
     n_samples_small = int(n_samples_large/divider)
     print(f"I am in active learning loop {active_loop_num}")
