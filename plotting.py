@@ -719,7 +719,7 @@ def PCA_plotting(wrk_dir,name):
     None.
 
     """
-    plot_loss = True
+    plot_loss = False
     
     if plot_loss == True:
         #plotting of training and validation loss over time
@@ -956,7 +956,7 @@ def PCA_plotting(wrk_dir,name):
     print(f"Average test loss is {test_loss.mean()}")
     plt.hist(test_loss,bins=50)
     plt.xlabel("Loss")
-    plt.savefig("loss/test_dists.png")
+    plt.savefig(f"loss/test_dists_{name}.png")
     plt.close()
     
     for j in range(test_data.pars.shape[1]):
@@ -978,7 +978,7 @@ def PCA_plotting(wrk_dir,name):
     
     residuals_calib = (calib_pred-calib_D)/calib_D
     calibration_factor = np.mean(residuals_calib,axis=0)+1
-    np.savetxt("scalers/calib_factor.txt",calibration_factor)
+    np.savetxt(f"scalers/calib_factor_{name}.txt",calibration_factor)
     
     residuals_signed_uncal = ((test_pred)-D)/D
     residuals_signed_uncal[(D==1e-11)] = np.nan
@@ -990,7 +990,7 @@ def PCA_plotting(wrk_dir,name):
     plt.axvline(0,ls="--",c="black")
     plt.axvline(-1,ls="--",c="red")
     plt.axvline(1,ls="--",c="red")
-    plt.savefig("loss/resids_dist_uncal.png")
+    plt.savefig(f"loss/resids_dist_uncal_{name}.png")
     plt.close()
     
     residuals_signed = ((test_pred/calibration_factor)-D)/D
@@ -1003,7 +1003,7 @@ def PCA_plotting(wrk_dir,name):
     plt.axvline(0,ls="--",c="black")
     plt.axvline(-1,ls="--",c="red")
     plt.axvline(1,ls="--",c="red")
-    plt.savefig("loss/resids_dist_cal.png")
+    plt.savefig(f"loss/resids_dist_cal_{name}.png")
     plt.close()
     
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
@@ -1024,7 +1024,7 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("loss/resids_cal_com.png")
     plt.close()
     
-    np.savetxt("data/testing/calib_resids.txt",residuals_signed)
+    np.savetxt(f"data/testing/calib_resids_{name}.txt",residuals_signed)
     
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
     chance = np.arange(len(perc_resids))/len(perc_resids)
@@ -1032,7 +1032,7 @@ def PCA_plotting(wrk_dir,name):
     plt.plot(perc_resids,chance)
     plt.xlabel("Percentage residual")
     plt.ylabel("Cumulative probability")
-    plt.savefig("loss/resids_cum_sum.png")
+    plt.savefig(f"loss/resids_cum_sum_{name}.png")
     plt.close()
     
     mean_res = np.mean(residuals_signed,axis=0)*100
@@ -1051,7 +1051,7 @@ def PCA_plotting(wrk_dir,name):
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
     plt.legend()
-    plt.savefig("loss/energ_resid.png")
+    plt.savefig(f"loss/energ_resid_{name}.png")
     plt.close()
     
     residuals = np.abs(((test_pred/calibration_factor)-D)/D)
@@ -1171,25 +1171,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    train_loss = np.loadtxt("loss/active_flux_tr_loss.txt")
-    val_loss = np.loadtxt("loss/active_flux_te_loss.txt")
-    
-    epochs = np.arange(1,len(train_loss)+1)
-    plt.plot(epochs,train_loss,label = "Training loss", c = "blue",
-             ls = "-")
-    plt.plot(epochs,val_loss,label = "Validation loss", c = "orange",
-             ls = "--")
-    plt.yscale("log")
-    plt.xscale("log")
-    plt.xlabel("Training epochs")
-    plt.ylabel("Loss")
-    #plt.title(f"Loss by epoch for {name}")
-    plt.legend()
-    plt.tight_layout()
-    plt.ylim(top = 1e1)
-    plt.savefig("loss/loss_active.png")
-    plt.close()
-    #PCA_plotting(wrk_dir,"20_pars_flux")
+    PCA_plotting(wrk_dir,"active_best")
     
 if __name__ == "__main__":
     main()
