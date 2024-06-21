@@ -796,7 +796,10 @@ def PCA_plotting(wrk_dir,name):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
-    model = network.RtdistSpec()
+    if "active" in name:
+        model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
+    else:
+        model = network.RtdistSpec()
     
     print(f"models/{name}.pth")
     model.load_state_dict(torch.load(f"models/{name}.pth"))
