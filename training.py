@@ -304,6 +304,8 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     n_samples_large = 1000000*multiplier # number of parameter sets to draw 
     if n_samples_large > 5*10**6:
         n_samples_large = 5*10**6
+    divider = 10*multiplier
+    n_samples_small = int(n_samples_large/divider)
     print(f"I am in active learning loop {active_loop_num}")
     # randomly generate points in parameter space
     print("Selecting random parameter sets")
@@ -327,18 +329,20 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     print("Computing neural network predictions with dropout for each theta")
     # compute 100 neural network predictions with dropout
     sample_dropout = 100
-    pred_query_flux = np.zeros((sample_dropout,n_samples_large,flux_out))
+    pred_query_flux = np.zeros((sample_dropout,n_samples_small,flux_out))
     flux_model.train()
     query_samples = []
     
-    for i in range(sample_dropout):
-        pred_flux = flux_model(torch.FloatTensor(theta_query_large).to(device))
-        pred_query_flux[i] = pred_flux.detach().cpu().numpy()
-    # find uncertainty (as measured by relative variance)
-    dvar_flux = np.var(pred_query_flux,axis=0)
-    mean_var_flux = np.mean(dvar_flux, axis=1)
-    # add to uncertainties per theta to list
-    query_samples.append(mean_var_flux.tolist())
+    for j in tqdm(range(divider),desc="Sample dropout loops"):
+        theta_query_small = theta_query_large[j*n_samples_small:(j+1)*n_samples_small]
+        for i in range(sample_dropout):
+            pred_flux = flux_model(torch.FloatTensor(theta_query_small).to(device))
+            pred_query_flux[i] = pred_flux.detach().cpu().numpy()
+        # find uncertainty (as measured by relative variance)
+        dvar_flux = np.var(pred_query_flux,axis=0)
+        mean_var_flux = np.mean(dvar_flux, axis=1)
+        # add to uncertainties per theta to list
+        query_samples.append(mean_var_flux.tolist())
     
     #Performing manual memory cleanup
     print("Successfully finished generating thetas")
