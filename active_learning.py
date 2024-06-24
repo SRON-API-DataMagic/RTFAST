@@ -95,7 +95,7 @@ def active_learning(device, wrk_dir):
     best_model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     best_model.to(device)
     
-    optimizer = Adam(model.parameters(),lr = 1e-4)
+    optimizer = Adam(model.parameters(),lr = 1e-3)
     
     print("Beginning training")
     while active_loop_num <= active_loops:
@@ -134,7 +134,6 @@ def active_learning(device, wrk_dir):
                                     num_workers = 4, shuffle=True)
         
         print("Flux dataloaders created")
-        #Train the flux model first
         (model, best_model, optimizer, loop_epochs, 
                 te_loss_arr, tr_loss_arr, 
                 last_sig_tr, last_sig_te) = active_training_loop(model, tra_loader, 
