@@ -300,8 +300,8 @@ def QBDC(flux_name, flux_test_name, active_loop_num,
     
     data_size = len(pd.read_csv("data/locations/locs_active_tra.csv"))
     multiplier = ceil(data_size/100000)
-    n_samples = 5000*multiplier
-    n_samples_large = 500000*multiplier # number of parameter sets to draw 
+    n_samples = 10000*multiplier
+    n_samples_large = 1000000*multiplier # number of parameter sets to draw 
     if n_samples_large > 5*10**6:
         n_samples_large = 5*10**6
     divider = 100*multiplier

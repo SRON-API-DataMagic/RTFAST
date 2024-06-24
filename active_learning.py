@@ -109,16 +109,16 @@ def active_learning(device, wrk_dir):
                                        PCA_loc="scalers/PCA_20_spec.bin",
                                        comp_loc="scalers/comp_20_spec.bin",
                                        spec_scal_loc="scalers/spec_20_spec.bin")
-            val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                          shuffle=True)
+            val_loader = DataLoader(val_dataset, batch_size=1024, 
+                                    num_workers = 4, shuffle=True)
             
             train_dataset = PCADataset("data/locations/locs_active_tra.csv",
                                        pars_list,negatives,logged,scale_bool = False,
                                        PCA_loc="scalers/PCA_20_spec.bin",
                                        comp_loc="scalers/comp_20_spec.bin",
                                        spec_scal_loc="scalers/spec_20_spec.bin")
-            tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                          shuffle=True)
+            tra_loader = DataLoader(train_dataset, batch_size=1024, 
+                                    num_workers = 4, shuffle=True)
         else:
             print("Loading new validation dataset")
             val_dataset = PCADataset("data/locations/locs_active_val.csv",
@@ -126,12 +126,12 @@ def active_learning(device, wrk_dir):
                                        PCA_loc="scalers/PCA_20_spec.bin",
                                        comp_loc="scalers/comp_20_spec.bin",
                                        spec_scal_loc="scalers/spec_20_spec.bin")
-            val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                          shuffle=True)
+            val_loader = DataLoader(val_dataset, batch_size=1024, 
+                                    num_workers = 4, shuffle=True)
             print("Adding new training data")
             train_dataset.add_data(pd.read_csv("data/locations/locs_active_tra.csv"))
-            tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
-                                          shuffle=True)
+            tra_loader = DataLoader(train_dataset, batch_size=1024, 
+                                    num_workers = 4, shuffle=True)
         
         print("Flux dataloaders created")
         #Train the flux model first
