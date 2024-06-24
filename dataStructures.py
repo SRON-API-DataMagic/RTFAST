@@ -402,11 +402,12 @@ class PCADataset(Dataset):
         
         self.csv = new_data
         self.pars = self.rtdist_to_nn(new_data.iloc[:,self.pars_list].to_numpy())
-        self.locations = data_table.iloc[:,-1]
+        self.locations = new_data.iloc[:,-1]
         print(f"Loading {len(locations)} new spectra")
         #load and add new data to dataset
         new_data = self.data_load(locations)
         self.data = torch.concat([self.data,new_data])
+        print(f"New length of data is {len(self.date)}")
         return
         
     def scale(self,data):
