@@ -129,7 +129,7 @@ def active_learning(device, wrk_dir):
             val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                           shuffle=True)
             print("Adding new training data")
-            train_dataset.add_data(pool_csv)
+            train_dataset.add_data(pd.read_csv("data/locations/locs_active_tra.csv"))
             tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                           shuffle=True)
         
