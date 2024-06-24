@@ -407,7 +407,7 @@ class PCADataset(Dataset):
         #load and add new data to dataset
         new_data = self.data_load(locations)
         self.data = torch.concat([self.data,new_data])
-        print(f"New length of data is {len(self.date)}")
+        print(f"New length of data is {len(self.data)}")
         return
         
     def scale(self,data):
