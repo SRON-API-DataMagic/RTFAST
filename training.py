@@ -176,13 +176,14 @@ def test_flux(dataloader, model, loss_fn, device):
 
 def active_training_loop(model,dataloader,optimizer,loss_fn,device,
                         test_dataloader,te_loss_arr,tr_loss_arr,
-                        last_sig_te,last_sig_tr, active_loop_num,
-                        loop_epochs, best_model, train, test,
-                        mode = "flux", stopping = 15, scheduler = None):
+                        active_loop_num,loop_epochs,best_model,train,test,
+                        mode = "flux",stopping = 15,scheduler = None):
     epoch = 0
     #set improvements counters to 0
     imp_te = 0
     imp_tr = 0
+    sub_sig_tr = 10
+    sub_sig_te = 10
     
     print(f"Training {mode} model")
     while (imp_te < stopping or imp_tr < stopping):
@@ -197,11 +198,11 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         
-        tr_bet = (0.9*last_sig_tr) - train_loss
-        te_bet = (0.9*last_sig_te) - loss
+        tr_bet = (0.9*sub_sig_tr) - train_loss
+        te_bet = (0.9*sub_sig_te) - loss
         if tr_bet > 0 and te_bet > 0:
-            last_sig_tr = train_loss
-            last_sig_te = loss
+            sub_sig_tr = train_loss
+            sub_sig_te = loss
             imp_te = 0
             imp_tr = 0
             print(f"New sig best training loss: {train_loss}")
@@ -209,17 +210,18 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         elif tr_bet > 0:
             imp_tr = 0
             imp_te += 1
-            last_sig_tr = train_loss
+            sub_sig_tr = train_loss
             print(f"New sig best training loss: {train_loss}")
         elif te_bet > 0:
             imp_tr += 1
             imp_te = 0
-            last_sig_te = loss
+            sub_sig_te = loss
             print(f"New sig best testing loss: {loss}")
         else:
             imp_te += 1
             imp_tr += 1
         if loss == np.asarray(te_loss_arr).min():
+            print("Overall best model saved")
             torch.save(model.state_dict(), f"models/active_best_{mode}.pth")
         
         epoch += 1
