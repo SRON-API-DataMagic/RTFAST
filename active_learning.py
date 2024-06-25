@@ -133,6 +133,12 @@ def active_learning(device, wrk_dir):
             tra_loader = DataLoader(train_dataset, batch_size=1024, 
                                     num_workers = 4, shuffle=True)
         
+        #reset model and optimizer
+        model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
+        model.to(device)
+        
+        optimizer = Adam(model.parameters(),lr = 1e-3)
+        
         print("Flux dataloaders created")
         (model, best_model, optimizer, loop_epochs, 
                 te_loss_arr, tr_loss_arr, 
