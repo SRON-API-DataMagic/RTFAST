@@ -141,8 +141,7 @@ def active_learning(device, wrk_dir):
         
         print("Flux dataloaders created")
         (model, best_model, optimizer, loop_epochs, 
-                te_loss_arr, tr_loss_arr, 
-                last_sig_tr, last_sig_te) = active_training_loop(model, tra_loader, 
+                te_loss_arr, tr_loss_arr) = active_training_loop(model, tra_loader, 
                                                           optimizer, loss_fn, 
                                                           device, val_loader, 
                                                           te_loss_arr, tr_loss_arr, 

@@ -243,7 +243,7 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
              temp_te, temp_tr, active_loop_num, temp_epochs)
     
     return (model, best_model, optimizer, loop_epochs, 
-            te_loss_arr, tr_loss_arr, last_sig_tr, last_sig_te)
+            te_loss_arr, tr_loss_arr)
 
 def grid_training_loop(model, optimizer, train, test, train_dataloader, 
                        test_dataloader, loss_fn, device, name, mode, 
