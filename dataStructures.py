@@ -340,8 +340,6 @@ class PCADataset(Dataset):
                 pars[:,i] = np.log10(pars[:,i])
         return torch.Tensor(pars).float()
     
-    
-    
     def data_load(self,locations):
         """
         Loads data from disk and scales it to NN friendly outputs. 

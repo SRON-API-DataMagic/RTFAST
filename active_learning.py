@@ -137,7 +137,7 @@ def active_learning(device, wrk_dir):
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
         model.to(device)
         
-        optimizer = Adam(model.parameters(),lr = 1e-3)
+        optimizer = Adam(model.parameters(),lr = 1e-4)
         
         print("Flux dataloaders created")
         (model, best_model, optimizer, loop_epochs, 
