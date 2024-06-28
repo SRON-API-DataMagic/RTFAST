@@ -198,8 +198,8 @@ def active_training_loop(model,dataloader,optimizer,loss_fn,device,
         te_loss_arr.append(loss)
         tr_loss_arr.append(train_loss)
         
-        tr_bet = (0.9*sub_sig_tr) - train_loss
-        te_bet = (0.9*sub_sig_te) - loss
+        tr_bet = (0.99*sub_sig_tr) - train_loss
+        te_bet = (0.99*sub_sig_te) - loss
         if tr_bet > 0 and te_bet > 0:
             sub_sig_tr = train_loss
             sub_sig_te = loss
