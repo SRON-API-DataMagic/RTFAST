@@ -118,7 +118,7 @@ class DynamicDropoutNetwork(nn.Module):
         for i in range(num_layers):
             modules.append(nn.Linear(nodes, nodes))
             modules.append(act_type)
-            modules.append(nn.Dropout(p=0.1))
+            modules.append(nn.Dropout(p=0.05))
         #add output stack
         modules.append(nn.Linear(nodes, output_len))
         self.LinearStack = nn.Sequential(*modules)
