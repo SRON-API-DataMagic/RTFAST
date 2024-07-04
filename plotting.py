@@ -1081,7 +1081,7 @@ def PCA_plotting(wrk_dir,name):
     for i in range(len(pars_list)):
         for j in range(len(pars_list)):
             ax = axs[j,i].scatter(pars_test[:,j],pars_test[:,i],
-                                  c=mean_sign_res,s=10,cmap = "autumn",
+                                  c=mean_sign_res,s=10,cmap = newcmp,
                                   norm=norm)
             if i == 0:
                 axs[j,0].set_ylabel(labels[j])
