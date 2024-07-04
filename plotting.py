@@ -1066,13 +1066,14 @@ def PCA_plotting(wrk_dir,name):
     fig, axs = plt.subplots(len(pars_list),len(pars_list))
     for i in range(len(pars_list)):
         for j in range(len(pars_list)):
-            axs[j,i].scatter(test_data.pars[:,i],test_data.pars[:,j],
+            axs[j,i].scatter(test_data.pars[:,j],test_data.pars[:,i],
                              c=mean_sign_res)
             if i == 0:
                 axs[j,0].set_ylabel(labels[j])
         axs[-1,i].set_xlabel(labels[i])
     plt.gray()
     plt.savefig("heatmaps/posneg_pars_dist.png")
+    plt.close()
     
     residuals = np.abs(((test_pred/calibration_factor)-D)/D)
     residuals[(D==1e-11)] = np.nan
