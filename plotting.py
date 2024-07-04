@@ -1141,7 +1141,7 @@ def PCA_plotting(wrk_dir,name):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
+        plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.png")
         plt.close()
     
     plot_samples = False
