@@ -1063,8 +1063,7 @@ def PCA_plotting(wrk_dir,name):
     
     mean_sign_res = np.mean(sign_res,axis=1)
     
-    fig, axs = plt.subplots(len(pars_list),len(pars_list),figsize=(40,40),
-                            sharex=True,sharey=True)
+    fig, axs = plt.subplots(len(pars_list),len(pars_list),figsize=(40,40))
     for i in range(len(pars_list)):
         for j in range(len(pars_list)):
             axs[j,i].scatter(test_data.pars[:,j],test_data.pars[:,i],
