@@ -1117,7 +1117,7 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     
     for i in range(len(pars_list)):
-        print(f"Creating signed plot for {labels[i]}")
+        print(f"Creating unsigned plot for {labels[i]}")
         sort_ind = np.argsort(test_data.pars[:,i])
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
@@ -1125,15 +1125,25 @@ def PCA_plotting(wrk_dir,name):
         tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
         resids = sign_res[sort_ind]
         zlabel = "Fractional difference between RTFAST and RTDIST"
-        Z_center = -2.5
         #colormap
         cmap = cm.get_cmap('autumn', 128)
+        bottom = cm.get_cmap('winter', 128)
+        middle = cm.get_cmap('summer',128)
+
+        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                               middle(np.linspace(0, 1/2, 128)),
+                            top(np.linspace(2/3, 1, 128))))
+        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+        newcmp.set_over('black')
         
         fig = plt.figure(figsize=(10,10))
-        ax = plt.pcolormesh(resids, cmap=cmap)
-        cbar = plt.colorbar(format='%.0e')
+        norm = colors.SymLogNorm(vmin = 0.1, 
+                                 vmax = -0.1,base=10,
+                                 linthresh=0.01)
+        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+        cbar = plt.colorbar(format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,sign_res.shape[1],sign_res.shape[1]/5), 
+        plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
                    labels=e_ticks)
         plt.xlabel("Energy in keV")
         plt.ylabel(labels[i])
@@ -1205,7 +1215,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    PCA_plotting(wrk_dir,"20_pars_flux")
+    PCA_plotting(wrk_dir,"active_best_flux")
     
 if __name__ == "__main__":
     main()
