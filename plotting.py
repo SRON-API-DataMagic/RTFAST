@@ -14,6 +14,7 @@ import matplotlib.colors as colors
 import matplotlib
 
 import numpy as np
+import corner
 
 import pandas as pd
 from tqdm import tqdm
@@ -1060,6 +1061,19 @@ def PCA_plotting(wrk_dir,name):
     sign_res = ((test_pred/calibration_factor)-D)/D
     sign_res[(D==1e-11)] = np.nan
     
+    mean_sign_res = np.mean(sign_res,axis=1)
+    
+    fig, axs = plt.subplots((len(pars_list),len(pars_list)))
+    for i in range(len(pars_list)):
+        for j in range(len(pars_list)):
+            axs[j,i].scatter(test_data.pars[:,i],test_data.pars[:,j],
+                             c=mean_sign_res)
+            if i == 0:
+                axs[j,0].set_ylabel(labels[j])
+        axs[-1,i].set_xlabel(labels[i])
+    plt.gray()
+    plt.savefig("heatmaps/posneg_pars_dist.png")
+    
     residuals = np.abs(((test_pred/calibration_factor)-D)/D)
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
@@ -1122,7 +1136,7 @@ def PCA_plotting(wrk_dir,name):
         sort_par = test_data.pars[sort_ind,i]
         percents = np.array([0,0.25,0.5,0.75,0.99])
         ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
+        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],2)).astype(str)
         resids = sign_res[sort_ind]
         zlabel = "Fractional difference between RTFAST and RTDIST"
         #colormap
