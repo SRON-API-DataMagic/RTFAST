@@ -809,7 +809,7 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
         
@@ -886,16 +886,16 @@ def PCA_plotting(wrk_dir,name):
             plt.close()
         
         
-        resid_list = ["Absolute","Percentage"]
-        for resid,label in zip([recon_resid,recon_perc],resid_list):
-            sort_ind = np.argsort(test_data.pars[:,0])
-            sort_par = test_data.pars[sort_ind,0]
+        resid_list = ["Percentage"]
+        for resid,label in zip(recon_perc,resid_list):
+            sort_ind = np.argsort(test_data.pars[:,1])
+            sort_par = test_data.pars[sort_ind,1]
             percents = np.array([0,0.25,0.5,0.75,0.99])
             ticks = (len(sort_par)*percents).astype(int)
             tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
             resids = resid[sort_ind]
             zlabel = "Difference between PCA reconstruction and rtdist"
-            """
+            
             Z_center = -2.5
             #colormap
             top = cm.get_cmap('autumn', 128)
@@ -907,19 +907,18 @@ def PCA_plotting(wrk_dir,name):
                                 top(np.linspace(2/3, 1, 128))))
             newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
             newcmp.set_over('white')
-            """
             fig = plt.figure(figsize=(10,10))
             ax = plt.pcolormesh(resids)
             cbar = plt.colorbar(format='%.0e')
             plt.yticks(ticks,labels=tick_labels)
             plt.xticks(np.arange(0,recon_resid.shape[1],recon_resid.shape[1]/5),labels = e_ticks)
             plt.xlabel("Energy in keV")
-            plt.ylabel(f"{label}")
+            plt.ylabel("spin")
             
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
             matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/{name}_{label}.png")
+            plt.savefig(f"heatmaps/PCA_recon_spin.png")
             plt.close()
         
         for i in range(pars.shape[1]):
