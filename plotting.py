@@ -1066,15 +1066,28 @@ def PCA_plotting(wrk_dir,name):
     
     pars_test = np.asarray(test_data.pars)
     fig, axs = plt.subplots(len(pars_list),len(pars_list),figsize=(40,40))
+    top = cm.get_cmap('autumn', 128)
+    bottom = cm.get_cmap('winter', 128)
+    middle = cm.get_cmap('summer',128)
+
+    newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                           middle(np.linspace(0, 1/2, 128)),
+                        top(np.linspace(2/3, 1, 128))))
+    newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+    newcmp.set_over('black')
+    norm = colors.SymLogNorm(vmin = 0.1, 
+                             vmax = -0.1,base=10,
+                             linthresh=0.01)
     for i in range(len(pars_list)):
         for j in range(len(pars_list)):
             ax = axs[j,i].scatter(pars_test[:,j],pars_test[:,i],
-                                  c=mean_sign_res,s=10,cmap = "autumn")
+                                  c=mean_sign_res,s=10,cmap = "autumn",
+                                  norm=norm)
             if i == 0:
                 axs[j,0].set_ylabel(labels[j])
         axs[-1,i].set_xlabel(labels[i])
     
-    fig.colorbar(ax, ax=axs)
+    fig.colorbar(ax, ax=axs,format='%.0e', norm=norm, extend='max')
     plt.savefig("heatmaps/posneg_pars_dist.png")
     plt.close()
     
