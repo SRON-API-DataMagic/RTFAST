@@ -1066,11 +1066,14 @@ def PCA_plotting(wrk_dir,name):
     fig, axs = plt.subplots(len(pars_list),len(pars_list),figsize=(40,40))
     for i in range(len(pars_list)):
         for j in range(len(pars_list)):
-            axs[j,i].scatter(test_data.pars[:,j],test_data.pars[:,i],
-                             c=mean_sign_res,s=10)
+            print(test_data.pars[:,j])
+            ax = axs[j,i].scatter(test_data.pars[:,j],test_data.pars[:,i],
+                             c=mean_sign_res,s=10,cmap = "autumn")
             if i == 0:
                 axs[j,0].set_ylabel(labels[j])
         axs[-1,i].set_xlabel(labels[i])
+    
+    fig.colorbar(ax, ax=axs)
     plt.gray()
     plt.savefig("heatmaps/posneg_pars_dist.png")
     plt.close()
