@@ -1057,6 +1057,9 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig(f"loss/energ_resid_{name}.png")
     plt.close()
     
+    sign_res = ((test_pred/calibration_factor)-D)/D
+    sign_res[(D==1e-11)] = np.nan
+    
     residuals = np.abs(((test_pred/calibration_factor)-D)/D)
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
@@ -1103,6 +1106,34 @@ def PCA_plotting(wrk_dir,name):
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
         plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
+                   labels=e_ticks)
+        plt.xlabel("Energy in keV")
+        plt.ylabel(labels[i])
+        
+        cbar.set_label(zlabel, rotation=270, labelpad=15)
+        fig.tight_layout()
+        matplotlib.rcParams.update({'font.size': 16})
+        plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
+        plt.close()
+    
+    for i in range(len(pars_list)):
+        print(f"Creating signed plot for {labels[i]}")
+        sort_ind = np.argsort(test_data.pars[:,i])
+        sort_par = test_data.pars[sort_ind,i]
+        percents = np.array([0,0.25,0.5,0.75,0.99])
+        ticks = (len(sort_par)*percents).astype(int)
+        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
+        resids = sign_res[sort_ind]
+        zlabel = "Fractional difference between RTFAST and RTDIST"
+        Z_center = -2.5
+        #colormap
+        cmap = cm.get_cmap('autumn', 128)
+        
+        fig = plt.figure(figsize=(10,10))
+        ax = plt.pcolormesh(resids, cmap=cmap)
+        cbar = plt.colorbar(format='%.0e')
+        plt.yticks(ticks,labels=tick_labels)
+        plt.xticks(np.arange(0,sign_res.shape[1],sign_res.shape[1]/5), 
                    labels=e_ticks)
         plt.xlabel("Energy in keV")
         plt.ylabel(labels[i])

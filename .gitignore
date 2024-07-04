@@ -27,3 +27,4 @@ ResponseFiles/
 *.h5
 likelihoods.py
 ndspec/
+images/

@@ -156,8 +156,8 @@ def active_learning(device, wrk_dir):
     print("Completed training")
     print("Final best flux training loss:", last_sig_tr)
     print("Final best flux testing loss:", last_sig_te)
-    torch.save(model.state_dict(), f"models/{name}_flux_final.pth")
-    print(f"Saved PyTorch Model State to models/{name}_flux_final.pth")
+    torch.save(model.state_dict(), "models/active_flux_final.pth")
+    print("Saved PyTorch Model State to models/active_flux_final.pth")
     
     tr_loss_arr = np.asarray(tr_loss_arr)
     te_loss_arr = np.asarray(te_loss_arr)
