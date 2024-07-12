@@ -205,6 +205,7 @@ def main():
     test =  test_flux
     
     for i in range(10):
+        print(f"Training model {i+1}")
         model = DynamicNetwork(20,40,8,256,"GELU")
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
