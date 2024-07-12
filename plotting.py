@@ -885,42 +885,6 @@ def PCA_plotting(wrk_dir,name):
             plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
             plt.close()
         
-        
-        resid_list = ["Percentage"]
-        for resid,label in zip(recon_perc,resid_list):
-            sort_ind = np.argsort(test_data.pars[:,1])
-            sort_par = test_data.pars[sort_ind,1]
-            percents = np.array([0,0.25,0.5,0.75,0.99])
-            ticks = (len(sort_par)*percents).astype(int)
-            tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
-            resids = resid[sort_ind]
-            zlabel = "Difference between PCA reconstruction and rtdist"
-            
-            Z_center = -2.5
-            #colormap
-            top = cm.get_cmap('autumn', 128)
-            bottom = cm.get_cmap('winter', 128)
-            middle = cm.get_cmap('summer',128)
-        
-            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                                   middle(np.linspace(0, 1/2, 128)),
-                                top(np.linspace(2/3, 1, 128))))
-            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-            newcmp.set_over('white')
-            fig = plt.figure(figsize=(10,10))
-            ax = plt.pcolormesh(resids)
-            cbar = plt.colorbar(format='%.0e')
-            plt.yticks(ticks,labels=tick_labels)
-            plt.xticks(np.arange(0,recon_resid.shape[1],recon_resid.shape[1]/5),labels = e_ticks)
-            plt.xlabel("Energy in keV")
-            plt.ylabel("spin")
-            
-            cbar.set_label(zlabel, rotation=270, labelpad=15)
-            fig.tight_layout()
-            matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/PCA_recon_spin.png")
-            plt.close()
-        
         for i in range(pars.shape[1]):
             fig, axs = plt.subplots(5,5,
                                     sharex=True,

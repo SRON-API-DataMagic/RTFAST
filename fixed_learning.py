@@ -201,16 +201,17 @@ def main():
                                   shuffle=True)
     loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
     
-    model = DynamicNetwork(20,40,8,256,"GELU")
-    model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-4)
-    
     train = train_flux
     test =  test_flux
     
-    grid_training_loop(model, optimizer, train, test, tra_loader, 
-                       val_loader, loss_fn, device, "20_pars", "flux", 
-                       epochs = 1000)
+    for i in range(10):
+        model = DynamicNetwork(20,40,8,256,"GELU")
+        model.to(device)
+        optimizer = Adam(model.parameters(), lr=1e-4)
+        
+        grid_training_loop(model, optimizer, train, test, tra_loader, 
+                           val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
+                           epochs = 2000)
     
 
 if __name__ == "__main__":
