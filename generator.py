@@ -10,7 +10,7 @@ from processing import saveData, mergeSaveData, renameData
 from processing import readAndRemoveNans, spectraChecker
 import scipy
 import pandas as pd
-from sherpa.astro.ui import read_arf
+from sherpa.astro.io import read_arf
 
 def rtdist_erg_flux(pars, egrid):
     """
