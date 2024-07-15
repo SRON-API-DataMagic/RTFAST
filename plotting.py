@@ -809,7 +809,7 @@ def PCA_plotting(wrk_dir,name):
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
     pars = np.asarray(test_data.pars)
-    plot_pca = True
+    plot_pca = False
     
     if plot_pca == True:
         
@@ -1022,6 +1022,9 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     sign_res = ((test_pred/calibration_factor)-D)/D
+    mean_signed_res = np.mean(sign_res,axis=1)
+    ind_low = np.argmin(np.abs(mean_signed_res))
+    print(test_data.pars[ind_low])
     sign_res[(D==1e-11)] = np.nan
     
     mean_sign_res = np.mean(sign_res,axis=1)
