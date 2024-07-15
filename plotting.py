@@ -1022,7 +1022,8 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     sign_res = ((test_pred/calibration_factor)-D)/D
-    mean_signed_res = np.mean(sign_res,axis=1)
+    mean_signed_res = np.mean(sign_res,axis=0)
+    print(np.min(np.abs(mean_signed_res)))
     ind_low = np.argmin(np.abs(mean_signed_res))
     print(test_data.pars[ind_low])
     sign_res[(D==1e-11)] = np.nan
