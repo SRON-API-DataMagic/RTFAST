@@ -73,7 +73,7 @@ class DynamicNetwork(nn.Module):
     def forward(self,pars):
         return self.LinearStack(pars)
 
-class RTFAST(nn.Module):
+class RTFAST_single(nn.Module):
     """
     This can be called to utilise the emulator automatically and output only
     spectra. This will automatically load in scalers and PCA objects required
@@ -159,7 +159,7 @@ class RtdistSpec_ensemble(nn.Module):
         data = torch.mean(pred,axis=0)
         return data
     
-class RTFAST_ensemble(nn.Module):
+class RTFAST(nn.Module):
     """
     This can be called to utilise the ensemble emulator automatically and 
     output only spectra. This will automatically load in scalers and PCA 
@@ -172,7 +172,7 @@ class RTFAST_ensemble(nn.Module):
         num_models = 10
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
-            model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
+            model.load_state_dict(torch.load(f"models/ensemble_{i}.pth",
                                                  map_location=device))
             model.double()
         
