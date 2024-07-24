@@ -182,7 +182,6 @@ class RTFAST_ensemble(nn.Module):
         self.pca  = load("scalers/PCA_20_spec.bin")
         self.comp = load("scalers/comp_20_spec.bin")
         self.spec = load("scalers/spec_20_spec.bin")
-        self.calib = np.loadtxt("scalers/calib_factor.txt")
         
         self.pca_mean       = torch.Tensor(self.pca.mean_).double()
         self.pca_components = torch.Tensor(self.pca.components_).double()
@@ -190,7 +189,6 @@ class RTFAST_ensemble(nn.Module):
         self.comp_scale     = torch.Tensor(self.comp.scale_).double()
         self.spec_mean      = torch.Tensor(self.spec.mean_).double()
         self.spec_scale     = torch.Tensor(self.spec.scale_).double()
-        self.calib          = torch.Tensor(self.calib).double()
         
         self.powers         = [0,2,3,4,7,8,10,11,12,13,19]
     
@@ -229,5 +227,4 @@ class RTFAST_ensemble(nn.Module):
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)
         spectrum = 10**self.spec_inverse_transform(std_spec)
-        spectrum = spectrum/self.calib
         return spectrum
