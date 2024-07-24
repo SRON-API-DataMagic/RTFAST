@@ -1026,6 +1026,13 @@ def PCA_plotting(wrk_dir,name):
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
     
+    single_residuals = np.abs(single_residuals_signed)
+    print(f"Maximum residual is {single_residuals[~np.isnan(single_residuals)].max()*100}%")
+    print(f"Average residual is {single_residuals[~np.isnan(single_residuals)].mean()*100}%")
+    print(f"Median residual is {np.median(single_residuals[~np.isnan(single_residuals)])*100}%")
+    percent = (single_residuals[(single_residuals<0.01)&~np.isnan(single_residuals)].size/single_residuals[~np.isnan(single_residuals)].size)*100
+    print(f"{percent}% of residuals are below 1%")
+    
     plt.plot(emid,np.mean(residuals,axis=0))
     plt.xlabel("Energy (keV)")
     plt.ylabel("Mean percentage residual")
