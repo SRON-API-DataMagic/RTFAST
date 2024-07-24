@@ -800,11 +800,14 @@ def PCA_plotting(wrk_dir,name):
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     else:
+        model = network.RtdistSpec_ensemble()
         model = network.RtdistSpec()
-    
+        
+    """
     print(f"models/{name}.pth")
     model.load_state_dict(torch.load(f"models/{name}.pth"))
     model.eval()
+    """
     
     nn_comps = model(test_data.pars).detach().numpy()
     train_comps = np.asarray(test_data.data)
@@ -1213,7 +1216,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    PCA_plotting(wrk_dir,"20_pars_flux")
+    PCA_plotting(wrk_dir,"ensemble")
     
 if __name__ == "__main__":
     main()
