@@ -146,10 +146,6 @@ class RtdistSpec_ensemble(nn.Module):
         self.base_model = copy.deepcopy(models[0])
         self.base_model = self.base_model.to('meta')
         
-        
-        self.core.eval() #turns off any training type layers
-        self.core.double() #sets all parameters to double type
-        
     def forward(self,theta):
         theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
@@ -178,10 +174,6 @@ class RTFAST_ensemble(nn.Module):
         self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
         self.base_model = copy.deepcopy(models[0])
         self.base_model = self.base_model.to('meta')
-        
-        
-        self.core.eval() #turns off any training type layers
-        self.core.double() #sets all parameters to double type
         
         self.pca  = load("scalers/PCA_20_spec.bin")
         self.comp = load("scalers/comp_20_spec.bin")
