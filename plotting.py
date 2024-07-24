@@ -947,34 +947,15 @@ def PCA_plotting(wrk_dir,name):
     calib_D[calib_D<1e-11] = 1e-11
     
     residuals_calib = (calib_pred-calib_D)/calib_D
+    np.savetxt(f"data/testing/calib_resids_{name}.txt",residuals_calib)
     calibration_factor = np.mean(residuals_calib,axis=0)+1
     np.savetxt(f"scalers/calib_factor_{name}.txt",calibration_factor)
     
     residuals_signed_uncal = ((test_pred)-D)/D
     residuals_signed_uncal[(D==1e-11)] = np.nan
     
-    plt.hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
-    plt.xlabel("Percentage residual")
-    plt.ylabel("Probability density")
-    plt.xlim(-20,20)
-    plt.axvline(0,ls="--",c="black")
-    plt.axvline(-1,ls="--",c="red")
-    plt.axvline(1,ls="--",c="red")
-    plt.savefig(f"loss/resids_dist_uncal_{name}.png")
-    plt.close()
-    
     residuals_signed = ((test_pred/calibration_factor)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
-    
-    plt.hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
-    plt.xlabel("Percentage residual")
-    plt.ylabel("Probability density")
-    plt.xlim(-20,20)
-    plt.axvline(0,ls="--",c="black")
-    plt.axvline(-1,ls="--",c="red")
-    plt.axvline(1,ls="--",c="red")
-    plt.savefig(f"loss/resids_dist_cal_{name}.png")
-    plt.close()
     
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
@@ -994,8 +975,6 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("loss/resids_cal_com.png")
     plt.close()
     
-    np.savetxt(f"data/testing/calib_resids_{name}.txt",residuals_signed)
-    
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
     chance = np.arange(len(perc_resids))/len(perc_resids)
     
@@ -1005,7 +984,7 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig(f"loss/resids_cum_sum_{name}.png")
     plt.close()
     
-    mean_res = np.mean(residuals_signed,axis=0)*100
+    median_res = np.median(residuals_signed,axis=0)*100
     res_25 = np.quantile(residuals_signed,0.25,axis=0)*100
     res_75 = np.quantile(residuals_signed,0.75,axis=0)*100
     res_95 = np.quantile(residuals_signed,0.95,axis=0)*100
@@ -1016,7 +995,7 @@ def PCA_plotting(wrk_dir,name):
     plt.fill_between(emid, res_01, res_99,color="b",alpha=0.2,label="99%")
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25,label="95%")
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5,label="50%")
-    plt.plot(emid,mean_res,c="b")
+    plt.plot(emid,median_res,c="b")
     plt.xlabel("Energy (keV)")
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
@@ -1025,10 +1004,6 @@ def PCA_plotting(wrk_dir,name):
     plt.close()
     
     sign_res = ((test_pred/calibration_factor)-D)/D
-    mean_signed_res = np.median(sign_res,axis=1)
-    print(np.min(np.abs(mean_signed_res)))
-    ind_low = np.argmin(np.abs(mean_signed_res))
-    print(test_data.pars[ind_low])
     sign_res[(D==1e-11)] = np.nan
     
     mean_sign_res = np.mean(sign_res,axis=1)
