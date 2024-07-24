@@ -174,6 +174,7 @@ class RTFAST_ensemble(nn.Module):
         for i,model in enumerate(models):
             model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
                                                  map_location=device))
+            model.double()
         
         self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
         self.base_model = copy.deepcopy(models[0])
