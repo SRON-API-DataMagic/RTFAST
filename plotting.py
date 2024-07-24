@@ -801,7 +801,7 @@ def PCA_plotting(wrk_dir,name):
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     else:
         model = network.RtdistSpec_ensemble()
-        #model = network.RtdistSpec()
+        single_model = network.RtdistSpec()
         
     """
     print(f"models/{name}.pth")
@@ -914,6 +914,7 @@ def PCA_plotting(wrk_dir,name):
             plt.close()
     
     test_pred = model(test_data.pars).detach().numpy()
+    single_pred = single_model(test_data.pars).detach().numpy()
     
     test_loss = loss_calc(test_data.data, test_pred,
                           test_data.pca.explained_variance_ratio_)
@@ -937,42 +938,27 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
+    single_residuals_signed = (single_pred-D)/D
     residuals_signed = (test_pred-D)/D
-    calib_pred = reconstruct_emulator(calib_data, model)
-    
-    data = []
-    for file in tqdm(calib_data.locations):
-        data.append(np.loadtxt(file).reshape(1, -1))
-    calib_D = np.concatenate(data,axis=0)
-    calib_D[calib_D<1e-11] = 1e-11
-    
-    residuals_calib = (calib_pred-calib_D)/calib_D
-    np.savetxt(f"data/testing/calib_resids_{name}.txt",residuals_calib)
-    calibration_factor = np.mean(residuals_calib,axis=0)+1
-    np.savetxt(f"scalers/calib_factor_{name}.txt",calibration_factor)
-    
-    residuals_signed_uncal = ((test_pred)-D)/D
-    residuals_signed_uncal[(D==1e-11)] = np.nan
-    
-    residuals_signed = ((test_pred/calibration_factor)-D)/D
     residuals_signed[(D==1e-11)] = np.nan
+    single_residuals_signed[(D==1e-11)] = np.nan
     
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
-    axs[0].hist(residuals_signed_uncal[np.abs(residuals_signed_uncal)<0.2]*100,bins=80,density=True)
+    axs[0].hist(single_residuals_signed[np.abs(single_residuals_signed)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
     fig.supylabel("Probability density")
     axs[0].set_xlim(-20,20)
     axs[0].axvline(0,ls="--",c="black")
     axs[0].axvline(-1,ls="--",c="red")
     axs[0].axvline(1,ls="--",c="red")
-    axs[0].set_title("Uncalibrated")
+    axs[0].set_title("Single NN")
     axs[1].hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     axs[1].set_xlim(-20,20)
     axs[1].axvline(0,ls="--",c="black")
     axs[1].axvline(-1,ls="--",c="red")
     axs[1].axvline(1,ls="--",c="red")
-    axs[1].set_title("Calibrated")
-    plt.savefig("loss/resids_cal_com.png")
+    axs[1].set_title("Ensemble")
+    plt.savefig("loss/resids_compare.png")
     plt.close()
     
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
