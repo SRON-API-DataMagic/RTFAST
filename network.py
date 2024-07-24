@@ -145,10 +145,18 @@ class RtdistSpec_ensemble(nn.Module):
         self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
         self.base_model = copy.deepcopy(models[0])
         self.base_model = self.base_model.to('meta')
+    
+    def fmodel(self, ensemble_params, ensemble_buffers, x):
+        return functional_call(self.base_model, 
+                               (ensemble_params, ensemble_buffers), 
+                               (x,))
         
     def forward(self,theta):
         theta = self.pars_shift(theta)
-        pred = vmap(self.fmodel,in_dims=(None))(theta)
+        pred = vmap(self.fmodel,
+                    in_dims=(0,0, None))(self.ensemble_params,
+                                      self.ensemble_buffers, 
+                                      theta)
         data = torch.mean(pred,axis=0)
         return data
     
@@ -187,9 +195,9 @@ class RTFAST_ensemble(nn.Module):
         
         self.powers         = [0,2,3,4,7,8,10,11,12,13,19]
     
-    def fmodel(self, x):
+    def fmodel(self, ensemble_params, ensemble_buffers, x):
         return functional_call(self.base_model, 
-                               (self.ensemble_params, self.ensemble_buffers), 
+                               (ensemble_params, ensemble_buffers), 
                                (x,))
     
     def PCA_inverse_transform(self,data_reduced):
@@ -214,7 +222,10 @@ class RTFAST_ensemble(nn.Module):
     
     def forward(self,theta):
         theta = self.pars_shift(theta)
-        pred = vmap(self.fmodel,in_dims=(None))(theta)
+        pred = vmap(self.fmodel,
+                    in_dims=(0,0, None))(self.ensemble_params,
+                                      self.ensemble_buffers, 
+                                      theta)
         data = torch.mean(pred,axis=0)
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)

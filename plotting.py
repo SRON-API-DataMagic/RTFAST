@@ -800,7 +800,7 @@ def PCA_plotting(wrk_dir,name):
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     else:
-        model = network.RTFAST_ensemble()
+        model = network.RtdistSpec_ensemble()
         #model = network.RtdistSpec()
         
     """
