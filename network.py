@@ -149,7 +149,7 @@ class RtdistSpec_ensemble(nn.Module):
     def forward(self,theta):
         theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
-                    n_dims=(0, None))(self.ensemble_params,
+                    in_dims=(0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
                                       theta)
         data = torch.mean(pred,axis=0)
@@ -218,7 +218,7 @@ class RTFAST_ensemble(nn.Module):
     def forward(self,theta):
         theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
-                    n_dims=(0, None))(self.ensemble_params,
+                    in_dims=(0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
                                       theta)
         data = torch.mean(pred,axis=0)
