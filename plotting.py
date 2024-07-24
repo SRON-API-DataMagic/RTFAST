@@ -1120,7 +1120,7 @@ def PCA_plotting(wrk_dir,name):
         plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.png")
         plt.close()
     
-    plot_samples = False
+    plot_samples = True
     
     if plot_samples == True:
         print("Plotting samples")
@@ -1131,7 +1131,7 @@ def PCA_plotting(wrk_dir,name):
         data[data<test_data.threshold] = test_data.threshold
         
         i = 0
-        for pred, D in zip(test_pred/calibration_factor, data):
+        for pred, D in zip(test_pred, data):
             fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
             axs[0].plot(emid,pred/bin_width,label="RTFAST")
             axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
