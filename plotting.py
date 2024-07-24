@@ -989,7 +989,7 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig(f"loss/energ_resid_{name}.png")
     plt.close()
     
-    sign_res = ((test_pred/calibration_factor)-D)/D
+    sign_res = ((test_pred)-D)/D
     sign_res[(D==1e-11)] = np.nan
     
     mean_sign_res = np.mean(sign_res,axis=1)
@@ -1022,20 +1022,12 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig("heatmaps/posneg_pars_dist.png")
     plt.close()
     
-    residuals = np.abs(((test_pred/calibration_factor)-D)/D)
+    residuals = np.abs(((test_pred)-D)/D)
     residuals[(D==1e-11)] = np.nan
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
     print(f"Average residual is {residuals[~np.isnan(residuals)].mean()*100}%")
     print(f"Median residual is {np.median(residuals[~np.isnan(residuals)])*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
-    print(f"{percent}% of residuals are below 1%")
-    
-    residuals_uncal = np.abs((test_pred-D)/D)
-    residuals_uncal[(D==1e-11)] = np.nan
-    print(f"Maximum residual is {residuals_uncal[~np.isnan(residuals_uncal)].max()*100}%")
-    print(f"Average residual is {residuals_uncal[~np.isnan(residuals_uncal)].mean()*100}%")
-    print(f"Median residual is {np.median(residuals_uncal[~np.isnan(residuals_uncal)])*100}%")
-    percent = (residuals_uncal[(residuals_uncal<0.01)&~np.isnan(residuals_uncal)].size/residuals_uncal[~np.isnan(residuals_uncal)].size)*100
     print(f"{percent}% of residuals are below 1%")
     
     plt.plot(emid,np.mean(residuals,axis=0))
