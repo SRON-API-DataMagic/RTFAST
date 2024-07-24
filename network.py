@@ -152,7 +152,6 @@ class RtdistSpec_ensemble(nn.Module):
                                (x,))
         
     def forward(self,theta):
-        theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
                     in_dims=(0,0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
