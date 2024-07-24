@@ -803,12 +803,8 @@ def PCA_plotting(wrk_dir,name):
         model = network.RtdistSpec_ensemble()
         single_model = network.RtdistSpec()
         
-    """
-    print(f"models/{name}.pth")
-    model.load_state_dict(torch.load(f"models/{name}.pth"))
-    model.eval()
-    """
-    
+    single_model.load_state_dict(torch.load("models/20_pars_flux.pth"))
+    single_model.eval()
     
     plot_pca = False
     
