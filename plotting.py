@@ -914,7 +914,6 @@ def PCA_plotting(wrk_dir,name):
             plt.close()
     
     test_pred = model(test_data.pars).detach().numpy()
-    single_pred = single_model(test_data.pars).detach().numpy()
     
     test_loss = loss_calc(test_data.data, test_pred,
                           test_data.pca.explained_variance_ratio_)
@@ -938,6 +937,7 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
+    single_pred = reconstruct_emulator(test_data,single_model)
     single_residuals_signed = (single_pred-D)/D
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
