@@ -1044,11 +1044,20 @@ def PCA_plotting(wrk_dir,name):
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
     
-    plt.plot(np.mean(residuals,axis=0))
-    plt.xlabel("Energy channel")
+    residuals_uncal = np.abs((test_pred-D)/D)
+    residuals_uncal[(D==1e-11)] = np.nan
+    print(f"Maximum residual is {residuals_uncal[~np.isnan(residuals_uncal)].max()*100}%")
+    print(f"Average residual is {residuals_uncal[~np.isnan(residuals_uncal)].mean()*100}%")
+    print(f"Median residual is {np.median(residuals_uncal[~np.isnan(residuals_uncal)])*100}%")
+    percent = (residuals_uncal[(residuals_uncal<0.01)&~np.isnan(residuals_uncal)].size/residuals_uncal[~np.isnan(residuals_uncal)].size)*100
+    print(f"{percent}% of residuals are below 1%")
+    
+    plt.plot(emid,np.mean(residuals,axis=0))
+    plt.xlabel("Energy (keV)")
     plt.ylabel("Mean percentage residual")
     plt.title("Mean fractional error of emulator reconstruction")
     plt.yscale("log")
+    plt.xscale("log")
     plt.tight_layout()
     plt.savefig(f"samples/{name}_mean_errors.png")
     plt.close()
