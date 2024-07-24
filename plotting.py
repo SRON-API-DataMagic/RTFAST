@@ -800,8 +800,8 @@ def PCA_plotting(wrk_dir,name):
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     else:
-        model = network.RtdistSpec_ensemble()
-        model = network.RtdistSpec()
+        model = network.RTFAST_ensemble()
+        #model = network.RtdistSpec()
         
     """
     print(f"models/{name}.pth")
@@ -809,13 +809,13 @@ def PCA_plotting(wrk_dir,name):
     model.eval()
     """
     
-    nn_comps = model(test_data.pars).detach().numpy()
-    train_comps = np.asarray(test_data.data)
-    pars = np.asarray(test_data.pars)
+    
     plot_pca = False
     
     if plot_pca == True:
-        
+        nn_comps = model(test_data.pars).detach().numpy()
+        train_comps = np.asarray(test_data.data)
+        pars = np.asarray(test_data.pars)
         pca = test_data.pca
         spectra_scaler = test_data.spec_scaler
         comp_scaler = test_data.PCA_scaler

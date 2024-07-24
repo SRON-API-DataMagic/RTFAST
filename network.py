@@ -44,7 +44,7 @@ class RtdistSpec(nn.Module):
         
     def forward(self,pars):
         return self.LinearStack(pars)
-    
+
 class DynamicNetwork(nn.Module):
     """
     Neural network used in hyperparameter sweeps. The number of layers and
@@ -133,6 +133,32 @@ class RTFAST(nn.Module):
         spectrum = spectrum/self.calib
         return spectrum
         
+class RtdistSpec_ensemble(nn.Module):
+    def __init__(self,device=torch.device('cpu')):
+        super().__init__()
+        num_models = 10
+        models = [RtdistSpec().to(device) for _ in range(num_models)]
+        for i,model in enumerate(models):
+            model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
+                                                 map_location=device))
+        
+        self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
+        self.base_model = copy.deepcopy(models[0])
+        self.base_model = self.base_model.to('meta')
+        
+        
+        self.core.eval() #turns off any training type layers
+        self.core.double() #sets all parameters to double type
+        
+    def forward(self,theta):
+        theta = self.pars_shift(theta)
+        pred = vmap(self.fmodel,
+                    n_dims=(0, None))(self.ensemble_params,
+                                      self.ensemble_buffers, 
+                                      theta)
+        data = torch.mean(pred,axis=0)
+        return data
+    
 class RTFAST_ensemble(nn.Module):
     """
     This can be called to utilise the ensemble emulator automatically and 
