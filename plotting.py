@@ -720,37 +720,28 @@ def PCA_plotting(wrk_dir,name):
     None.
 
     """
-    plot_loss = False
+    plot_loss = True
     
     if plot_loss == True:
+        loss_name = "20_pars_flux"
         #plotting of training and validation loss over time
-        PCA_train_loss = np.loadtxt(f"loss/{name}_tr_loss.txt")
-        PCA_train_loss_med = np.loadtxt(f"loss/{name}_med_tr_loss.txt")
-        PCA_train_loss_std = np.loadtxt(f"loss/{name}_std_tr_loss.txt")
-        PCA_val_loss = np.loadtxt(f"loss/{name}_te_loss.txt")
+        PCA_train_loss = np.loadtxt(f"loss/{loss_name}_tr_loss.txt")
+        PCA_val_loss = np.loadtxt(f"loss/{loss_name}_te_loss.txt")
         
         epochs = np.arange(1,len(PCA_train_loss)+1)
-        """
-        plt.fill_between(epochs, PCA_train_loss+PCA_train_loss_std,
-                         PCA_train_loss-PCA_train_loss_std,color="b",alpha=0.5)
-        """
         plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
                  ls = "-")
         plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
                  ls = "--")
-        """
-        plt.plot(epochs,PCA_train_loss_med,label = "Median training loss", c = "green",
-                 ls = "-.")
-        """
         plt.yscale("log")
-        plt.xscale("log")
+        #plt.xscale("log")
         plt.xlabel("Training epochs")
         plt.ylabel("Loss")
-        #plt.title(f"Loss by epoch for {name}")
+        #plt.title(f"Loss by epoch for {loss_name}")
         plt.legend()
         plt.tight_layout()
         plt.ylim(top = 1e1)
-        plt.savefig(f"loss/loss_{name}.png")
+        plt.savefig(f"loss/loss_{loss_name}.png")
         plt.close()
         
         plt.plot(PCA_train_loss/PCA_val_loss,c="b",ls="-")
@@ -1043,82 +1034,85 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig(f"samples/{name}_mean_errors.png")
     plt.close()
     
-    for i in range(len(pars_list)):
-        print(f"Creating plot for {labels[i]}")
-        sort_ind = np.argsort(test_data.pars[:,i])
-        sort_par = test_data.pars[sort_ind,i]
-        percents = np.array([0,0.25,0.5,0.75,0.99])
-        ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
-        resids = residuals[sort_ind]
-        zlabel = "Fractional difference between RTFAST and RTDIST"
-        Z_center = -2.5
-        #colormap
-        top = cm.get_cmap('autumn', 128)
-        bottom = cm.get_cmap('winter', 128)
-        middle = cm.get_cmap('summer',128)
-
-        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                               middle(np.linspace(0, 1/2, 128)),
-                            top(np.linspace(2/3, 1, 128))))
-        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('black')
-        
-        fig = plt.figure(figsize=(10,10))
-        norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
-        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-        c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
-                    10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
-        cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
-        plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
-                   labels=e_ticks)
-        plt.xlabel("Energy in keV")
-        plt.ylabel(labels[i])
-        
-        cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
-        plt.close()
+    plot_heatmaps = False
     
-    for i in range(len(pars_list)):
-        print(f"Creating unsigned plot for {labels[i]}")
-        sort_ind = np.argsort(test_data.pars[:,i])
-        sort_par = test_data.pars[sort_ind,i]
-        percents = np.array([0,0.25,0.5,0.75,0.99])
-        ticks = (len(sort_par)*percents).astype(int)
-        tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],2)).astype(str)
-        resids = sign_res[sort_ind]
-        zlabel = "Fractional difference between RTFAST and RTDIST"
-        #colormap
-        cmap = cm.get_cmap('autumn', 128)
-        bottom = cm.get_cmap('winter', 128)
-        middle = cm.get_cmap('summer',128)
-
-        newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                               middle(np.linspace(0, 1/2, 128)),
-                            top(np.linspace(2/3, 1, 128))))
-        newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
-        newcmp.set_over('black')
+    if plot_heatmaps == True:
+        for i in range(len(pars_list)):
+            print(f"Creating plot for {labels[i]}")
+            sort_ind = np.argsort(test_data.pars[:,i])
+            sort_par = test_data.pars[sort_ind,i]
+            percents = np.array([0,0.25,0.5,0.75,0.99])
+            ticks = (len(sort_par)*percents).astype(int)
+            tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
+            resids = residuals[sort_ind]
+            zlabel = "Fractional difference between RTFAST and RTDIST"
+            Z_center = -2.5
+            #colormap
+            top = cm.get_cmap('autumn', 128)
+            bottom = cm.get_cmap('winter', 128)
+            middle = cm.get_cmap('summer',128)
+    
+            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                                   middle(np.linspace(0, 1/2, 128)),
+                                top(np.linspace(2/3, 1, 128))))
+            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+            newcmp.set_over('black')
+            
+            fig = plt.figure(figsize=(10,10))
+            norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+            c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
+                        10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+            cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
+            plt.yticks(ticks,labels=tick_labels)
+            plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
+                       labels=e_ticks)
+            plt.xlabel("Energy in keV")
+            plt.ylabel(labels[i])
+            
+            cbar.set_label(zlabel, rotation=270, labelpad=15)
+            fig.tight_layout()
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
+            plt.close()
         
-        fig = plt.figure(figsize=(10,10))
-        norm = colors.SymLogNorm(vmin = 0.1, 
-                                 vmax = -0.1,base=10,
-                                 linthresh=0.01)
-        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-        cbar = plt.colorbar(format='%.0e', norm=norm, extend='max')
-        plt.yticks(ticks,labels=tick_labels)
-        plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
-                   labels=e_ticks)
-        plt.xlabel("Energy in keV")
-        plt.ylabel(labels[i])
-        
-        cbar.set_label(zlabel, rotation=270, labelpad=15)
-        fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.png")
-        plt.close()
+        for i in range(len(pars_list)):
+            print(f"Creating unsigned plot for {labels[i]}")
+            sort_ind = np.argsort(test_data.pars[:,i])
+            sort_par = test_data.pars[sort_ind,i]
+            percents = np.array([0,0.25,0.5,0.75,0.99])
+            ticks = (len(sort_par)*percents).astype(int)
+            tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],2)).astype(str)
+            resids = sign_res[sort_ind]
+            zlabel = "Fractional difference between RTFAST and RTDIST"
+            #colormap
+            cmap = cm.get_cmap('autumn', 128)
+            bottom = cm.get_cmap('winter', 128)
+            middle = cm.get_cmap('summer',128)
+    
+            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
+                                   middle(np.linspace(0, 1/2, 128)),
+                                top(np.linspace(2/3, 1, 128))))
+            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+            newcmp.set_over('black')
+            
+            fig = plt.figure(figsize=(10,10))
+            norm = colors.SymLogNorm(vmin = 0.1, 
+                                     vmax = -0.1,base=10,
+                                     linthresh=0.01)
+            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+            cbar = plt.colorbar(format='%.0e', norm=norm, extend='max')
+            plt.yticks(ticks,labels=tick_labels)
+            plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
+                       labels=e_ticks)
+            plt.xlabel("Energy in keV")
+            plt.ylabel(labels[i])
+            
+            cbar.set_label(zlabel, rotation=270, labelpad=15)
+            fig.tight_layout()
+            matplotlib.rcParams.update({'font.size': 16})
+            plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.png")
+            plt.close()
     
     plot_samples = True
     
@@ -1148,21 +1142,6 @@ def PCA_plotting(wrk_dir,name):
             i += 1
             if i > 6:
                 break
-        diff_comps = np.abs((train_comps[:,i]-nn_comps[:,i])/((train_comps[:,i]+nn_comps[:,i])/2))
-        
-        for j in tqdm(range(pars.shape[1])):
-            for i in range(nn_comps.shape[1]):
-                fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
-                axs[0].scatter(pars[:,j],train_comps[:,i],label="Training set",marker="o")
-                axs[0].scatter(pars[:,j],nn_comps[:,i],label="Emulator",marker="x")
-                axs[0].legend()
-                axs[0].set_ylabel(f"PCA component {i+1}")
-                axs[1].scatter(pars[:,j],diff_comps,marker="x")
-                axs[1].set_ylabel("Percentage difference")
-                axs[1].set_yscale("log")
-                fig.supxlabel(labels[j])
-                plt.savefig(f"samples/{i+1}/{name}_PCA{i+1}_{labels[j]}.png")
-                plt.close()
 
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
