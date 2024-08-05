@@ -11,12 +11,13 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 import corner
+from sherpa.astro.io import read_arf
 
 from dataStructures import PCADataset
 from network import DynamicNetwork
 from processing import saveData, spectraChecker, mergeSaveData
 from generator import rtdist_flux, nn_pars_to_rtdist
-from generator import lhc_filter_20, lhc_generation
+from generator import lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
 
 def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
@@ -36,7 +37,6 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_lhc, 6, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
@@ -46,8 +46,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
                                         for pars in theta_flux)
         flux = np.asarray(flux)
     print("Checking for spectra below threshold")
-    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                  1e-11)
+    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
     idxs = np.arange(0,flux.shape[0])
     np.random.shuffle(idxs)
@@ -81,6 +80,19 @@ def merge():
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    wrk_dir = os.getcwd()
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
+    range_AGN = np.asarray(lhc_AGN())
+    
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,11,12,13]
+    
+    new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
+    merge()
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]

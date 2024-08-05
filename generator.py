@@ -138,8 +138,8 @@ def lhc_filter_20(lhc):
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
-    hubble = lhc[:,5]*3e6/(10**lhc[:,7]*0.001)
-    bad_dists = np.nonzero((hubble < 60) | (hubble > 80))
+    hubble = lhc[:,5]*3e6/((10**lhc[:,7])*0.001)
+    bad_dists = np.nonzero((hubble < 30) | (hubble > 150))
     #checks that heights are greater than horizon radius
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero(10**lhc[:,0]<1.5*heights)
@@ -258,7 +258,7 @@ def lhc_AGN():
     r_outer_range = [np.log10(400),np.log10(1e5)]
     z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(3.5e5),np.log10(5e7)]
+    distance_range = [np.log10(1e2),np.log10(1e6)]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
