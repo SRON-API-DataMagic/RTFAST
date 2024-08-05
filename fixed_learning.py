@@ -99,7 +99,7 @@ def main():
     logged = [0,2,3,4,7,8,10,11,12,13,23]
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = False,
+                               pars_list,negatives,logged,scale_bool = True,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
