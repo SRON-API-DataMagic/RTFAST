@@ -138,7 +138,7 @@ def lhc_filter_20(lhc):
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
-    hubble = lhc[:,5]*3e6/((10**lhc[:,7])*0.001)
+    hubble = lhc[:,5]*3e5/((10**lhc[:,7])*0.001)
     bad_dists = np.nonzero((hubble < 30) | (hubble > 150))
     #checks that heights are greater than horizon radius
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
@@ -150,7 +150,7 @@ def lhc_filter_20(lhc):
     M_solar = 10**lhc[:,13] #mass of the object
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
-    bad_Ls = np.nonzero((L > 1.05*Ledd)|(L < 1e-4*Ledd))
+    bad_Ls = np.nonzero((L > 2.5*Ledd)|(L < 1e-4*Ledd))
     #collates all bad sets together
     bad_sets = np.unique(np.concatenate((bad_disks,bad_heights,bad_dists,
                                          bad_Ls),axis=None))

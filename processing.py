@@ -76,9 +76,9 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
                 tmp = int(tmp.replace(".txt",""))
                 files[i] = tmp
         else:
-            files = glob.glob("/data/time-lags/lags/*.txt")
+            files = glob.glob("/data/time-lags/spectra/*.txt")
             for i,file in enumerate(files):
-                tmp = file.replace("/data/time-lags/lags/lags_","")
+                tmp = file.replace("/data/time-lags/spectra/spectra_","")
                 tmp = int(tmp.replace(".txt",""))
                 files[i] = tmp
         files = np.asarray(files)
@@ -90,11 +90,11 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
         if lags == None:
             loc = f"data/spectra/spectra_{i}.txt"
         else:
-            loc = f"/data/time-lags/lags/lags_{i}.txt"
+            loc = f"/data/time-lags/spectra_/spectra_{i}.txt"
         np.savetxt(loc,item)
         return loc
     
-    cpu_num = os.cpu_count()-2
+    cpu_num = os.cpu_count()
     #save data to disk and save location to dataset
     locations = Parallel(n_jobs=cpu_num,verbose=1)(delayed(save_file)(i,item,lags) for i,item in enumerate(dataset,start=start))
     
@@ -151,7 +151,7 @@ def removeRedundantData():
     
     return
 
-def renameData(df,destination,fname):
+def renameData(df,fname):
     """
     Changes the name of a locations file as well as moving it to a new folder
     if wished.
@@ -170,7 +170,7 @@ def renameData(df,destination,fname):
     None.
 
     """
-    df.to_csv(destination+fname,index=False)
+    df.to_csv(fname,index=False)
     return
 
 def loadData(location):

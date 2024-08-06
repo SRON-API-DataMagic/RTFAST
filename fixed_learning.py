@@ -15,7 +15,7 @@ from sherpa.astro.io import read_arf
 
 from dataStructures import PCADataset
 from network import DynamicNetwork
-from processing import saveData, spectraChecker, mergeSaveData
+from processing import saveData, spectraChecker, mergeSaveData, renameData
 from generator import rtdist_flux, nn_pars_to_rtdist
 from generator import lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
@@ -32,7 +32,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
         theta_lhc,
         labels=labels,
         )
-    plt.savefig("loss/parameter_dists.png")
+    plt.savefig("loss/parameter_dists.pdf")
     plt.close()
     
     #generate physical models of test set
@@ -62,9 +62,9 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     print("Saving flux data")
     saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","PCA_locs_flux_temp.csv")
+             "data/locations/","PCA_locs_flux_temp.csv",lags=True)
     saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","PCA_locs_flux_val.csv")
+             "data/locations/","PCA_locs_flux_val.csv",lags=True)
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
@@ -91,8 +91,15 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,7,8,10,11,12,13]
     
-    new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
-    merge()
+    for i in range(10):
+        new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
+        if i == 0:
+            renameData(pd.read_csv("data/locations/PCA_locs_flux_temp.csv"),
+                       "data/locations/locs_20_spectra_tra.csv")
+            renameData(pd.read_csv("data/locations/PCA_locs_flux_val.csv"),
+                       "data/locations/locs_20_spectra_val.csv")
+        else:
+            merge()
     
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
     negatives = [3]
