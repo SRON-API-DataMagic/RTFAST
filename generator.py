@@ -81,7 +81,7 @@ def Anorm_wrapper(pars):
     Dh = h**2 -2*h +a**2
     g_so = np.sqrt(Dh/(h**2 + a**2))
     #calculate luminosity of corona
-    F = 10**pars[:,19]              #Flux of corona in erg/cm^2/s
+    F = 10**pars[:,-1]              #Flux of corona in erg/cm^2/s
     gamma = pars[:,6]               #photon index
     Afe = pars[:,8]
     z = pars[:,5]
@@ -139,15 +139,15 @@ def lhc_filter_20(lhc):
     #check if the calculated hubble constant for the set of parameters
     #if outside of 60km/s/Mpc <= H0 <= 80km/s/Mpc
     hubble = lhc[:,5]*3e5/((10**lhc[:,7])*0.001)
-    bad_dists = np.nonzero((hubble < 30) | (hubble > 150))
+    bad_dists = np.nonzero((hubble < 30) | (hubble > 300))
     #checks that heights are greater than horizon radius
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero(10**lhc[:,0]<1.5*heights)
     #Check luminosities aren't super eddington or too small to see
-    F = 10**lhc[:,19]       #Flux of corona in erg/cm^2/s
+    F = 10**lhc[:,-1]       #Flux of corona in erg/cm^2/s
     D = 10**lhc[:,7]        #distance of objects
     D = 3.086e21 * D        #distance in cm
-    M_solar = 10**lhc[:,13] #mass of the object
+    M_solar = 10**lhc[:,12] #mass of the object
     L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
     Ledd = 1.26e38*M_solar  #eddington luminosity
     bad_Ls = np.nonzero((L > 2.5*Ledd)|(L < 1e-4*Ledd))
@@ -275,8 +275,8 @@ def lhc_AGN():
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
                  r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,nH_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,phiAB_range,g_range,flux_range]
+                 logNe_range,kte_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,flux_range]
     
     return range_all
 
@@ -310,8 +310,8 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
     """
     #set up base parameters which can be used to fix parameter sets to
     #reasonable values
-    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5,1,3e6,0.02,0,0,0,
-                 0,ReIm,0,-0.8,0.3,2.2e-4,1,1.]
+    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,0,1,3e6,0.02,0,0,0,
+                 0,ReIm,0,0,0,2.2e-4,1,1.]
     #set up base parameters to transform according to sampled parameters
     converted_pars = []
     for i in range(nn_pars.shape[0]):

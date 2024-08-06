@@ -26,8 +26,8 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     theta_lhc = lhc_generation(int(1e6), range_AGN, limited=False, 
                                          lhc_filter=lhc_filter_20)
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
+              "kte","boost","mass","honr","b1","b2","Anorm"]
     figure = corner.corner(
         theta_lhc,
         labels=labels,
@@ -87,9 +87,9 @@ def main():
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(lhc_AGN())
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13]
+    logged = [0,2,3,4,7,8,10,12,13]
     
     for i in range(10):
         new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
@@ -101,9 +101,9 @@ def main():
         else:
             merge()
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,21,22,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,12,13,23]
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                                pars_list,negatives,logged,scale_bool = True,
