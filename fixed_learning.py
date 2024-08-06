@@ -87,7 +87,7 @@ def main():
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(lhc_AGN())
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13]
     
@@ -101,7 +101,7 @@ def main():
         else:
             merge()
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
     
