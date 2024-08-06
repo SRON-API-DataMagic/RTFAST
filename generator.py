@@ -111,7 +111,7 @@ def Anorm_wrapper(pars):
         integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
     integrals = np.asarray(integrals)
     Anorm = F/(g_so**(gamma-2)*integrals)
-    pars[:,19] = Anorm   #Replace flux generated with Anorm parameters
+    pars[:,-1] = Anorm   #Replace flux generated with Anorm parameters
     return pars
 
 def lhc_filter_20(lhc):
