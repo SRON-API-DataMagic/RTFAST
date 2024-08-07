@@ -70,7 +70,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     #overwriting
     try:
         if lags == None:
-            files = glob.glob("./data/spectra/*.txt")
+            files = glob.glob("/data/time-lags/spectra/*.txt")
             for i,file in enumerate(files):
                 tmp = file.replace("./data/spectra/spectra_","")
                 tmp = int(tmp.replace(".txt",""))
@@ -90,7 +90,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
         if lags == None:
             loc = f"data/spectra/spectra_{i}.txt"
         else:
-            loc = f"/data/time-lags/spectra_/spectra_{i}.txt"
+            loc = f"/data/time-lags/spectra/spectra_{i}.txt"
         np.savetxt(loc,item)
         return loc
     
