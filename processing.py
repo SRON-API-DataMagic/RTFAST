@@ -143,7 +143,7 @@ def removeRedundantData():
     files = glob.glob("data/spectra/*.txt")
     files = np.asarray(files)
     files = np.concatenate([files,
-                            np.asarray(glob.glob("/data/time-lags/lags/*.txt"))])
+                            np.asarray(glob.glob("/data/time-lags/spectra/*.txt"))])
     diff = np.setdiff1d(files,file_names)
     print(f"Removing {len(diff)} files...")
     for file in tqdm.tqdm(diff):
