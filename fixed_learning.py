@@ -24,7 +24,7 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     cpu_num = os.cpu_count()
     
-    theta_lhc = lhc_generation(int(1e6), range_AGN, limited=False, 
+    theta_lhc = lhc_generation(int(1e5), range_AGN, limited=False, 
                                          lhc_filter=lhc_filter_20)
     labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
               "kte","boost","mass","honr","b1","b2","Anorm"]
@@ -91,7 +91,7 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13]
     
-    for i in range(10):
+    for i in range(100):
         new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
         if i == 0:
             renameData(pd.read_csv("data/locations/PCA_locs_flux_temp.csv"),
