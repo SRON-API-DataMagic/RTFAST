@@ -107,7 +107,8 @@ def main():
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                                pars_list,negatives,logged,scale_bool = True,
-                               comps = 40, PCA_loc="scalers/PCA_20_spec.bin",
+                               force = True, comps = 40, 
+                               PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
