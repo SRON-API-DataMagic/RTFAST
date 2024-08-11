@@ -434,7 +434,6 @@ class PCADataset(Dataset):
             print(("Distribution of explained variance is"
                    f" {self.pca.explained_variance_ratio_}"))
             dump(self.pca,self.PCA_loc)
-            self.scale_bool = False
             return data
         if self.scale_bool == True:
             print(f"Attempting n_comp = {comp}")
