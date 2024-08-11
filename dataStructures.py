@@ -443,7 +443,7 @@ class PCADataset(Dataset):
             if sum(self.pca.explained_variance_ratio_) < 0.99999:
                 print(("Currently achieved explained variance of"
                        f" {sum(self.pca.explained_variance_ratio_)*100}%"))
-                self.PCA(comp+1)
+                self.PCA(data,comp+1)
             else:
                 print(f"Successfully describes {.99999*100}% of variance")
                 data = self.pca.transform(data)

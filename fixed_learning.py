@@ -80,7 +80,7 @@ def merge():
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
+    """
     wrk_dir = os.getcwd()
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
@@ -100,14 +100,14 @@ def main():
                        "data/locations/locs_20_spectra_val.csv")
         else:
             merge()
-    
+    """
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                                pars_list,negatives,logged,scale_bool = True,
-                               PCA_loc="scalers/PCA_20_spec.bin",
+                               comps = 40, PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
