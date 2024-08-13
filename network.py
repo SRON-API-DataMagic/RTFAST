@@ -20,9 +20,9 @@ class RtdistSpec(nn.Module):
     values directly.
     """
     
-    def __init__(self):
+    def __init__(self,pars=17):
         super().__init__()
-        self.LinearStack = nn.Sequential(nn.Linear(20, 256),
+        self.LinearStack = nn.Sequential(nn.Linear(pars, 256),
                                          nn.GELU(),
                                          nn.Linear(256, 256),
                                          nn.GELU(),

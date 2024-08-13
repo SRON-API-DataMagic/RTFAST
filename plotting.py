@@ -1163,9 +1163,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
-    
-    PCA_plotting(wrk_dir,"ensemble")
+    PCA_plotting(wrk_dir,"single")
     
 if __name__ == "__main__":
     main()
