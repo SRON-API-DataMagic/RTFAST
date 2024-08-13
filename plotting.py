@@ -22,6 +22,7 @@ from tqdm import tqdm
 import network
 from dataStructures import Residual, PCADataset
 from training import PCALoss
+from generator import test_set
             
 def inverse(scaler,data):
     """
@@ -723,7 +724,7 @@ def PCA_plotting(wrk_dir,name):
     plot_loss = True
     
     if plot_loss == True:
-        loss_name = "20_pars_flux"
+        loss_name = "0_20_pars_flux"
         #plotting of training and validation loss over time
         PCA_train_loss = np.loadtxt(f"loss/{loss_name}_tr_loss.txt")
         PCA_val_loss = np.loadtxt(f"loss/{loss_name}_te_loss.txt")
@@ -753,12 +754,12 @@ def PCA_plotting(wrk_dir,name):
     
     #plotting of emulator vs test data performance
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13,23]
+    logged = [0,2,3,4,7,8,10,12,13,23]
     
-    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe","logNe","kte",
-              "nH","boost","mass","honr","b1","b2","phiAB","g","Anorm"]
+    labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
+              "logNe","kte","boost","mass","honr","b1","b2","Anorm"]
     
     test_data = PCADataset("data/locations/loc_flux_test.csv",
                                pars_list,negatives,logged,scale_bool = False,
@@ -1018,14 +1019,14 @@ def PCA_plotting(wrk_dir,name):
     print(f"Median residual is {np.median(residuals[~np.isnan(residuals)])*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
-    
+    """
     single_residuals = np.abs(single_residuals_signed)
     print(f"Maximum residual is {single_residuals[~np.isnan(single_residuals)].max()*100}%")
     print(f"Average residual is {single_residuals[~np.isnan(single_residuals)].mean()*100}%")
     print(f"Median residual is {np.median(single_residuals[~np.isnan(single_residuals)])*100}%")
     percent = (single_residuals[(single_residuals<0.01)&~np.isnan(single_residuals)].size/single_residuals[~np.isnan(single_residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
-    
+    """
     plt.plot(emid,np.mean(residuals,axis=0))
     plt.xlabel("Energy (keV)")
     plt.ylabel("Mean percentage residual")
@@ -1161,6 +1162,8 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
+    
+    test_set(wrk_dir)
     
     PCA_plotting(wrk_dir,"ensemble")
     

@@ -553,12 +553,11 @@ def test_set(wrk_dir):
     
     theta_lhc = lhc_generation(int(1000), range_AGN, limited=False, 
                                          lhc_filter=lhc_filter_20)
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
-    logged = [0,2,3,4,7,8,10,11,12,13]
+    logged = [0,2,3,4,7,8,10,12,13]
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
@@ -566,10 +565,8 @@ def test_set(wrk_dir):
                                     for pars in theta_flux)
     flux = np.asarray(flux)
     print("Checking for spectra below threshold")
-    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                  1e-11)
+    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
     print("Saving flux data")
-    saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_cal.csv")
+    saveData(flux, theta_flux, "data/locations/","loc_flux_cal.csv")
     return
