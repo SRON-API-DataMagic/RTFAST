@@ -791,11 +791,11 @@ def PCA_plotting(wrk_dir,name):
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
     else:
-        model = network.RtdistSpec_ensemble()
-        single_model = network.RtdistSpec()
+        #model = network.RtdistSpec_ensemble()
+        model = network.RtdistSpec()
         
-    single_model.load_state_dict(torch.load("models/20_pars_flux.pth"))
-    single_model.eval()
+    model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
+    model.eval()
     
     plot_pca = False
     
@@ -924,12 +924,14 @@ def PCA_plotting(wrk_dir,name):
         plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
+    """
     single_pred = reconstruct_emulator(test_data,single_model)
     single_residuals_signed = (single_pred-D)/D
+    """
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
-    single_residuals_signed[(D==1e-11)] = np.nan
-    
+    #single_residuals_signed[(D==1e-11)] = np.nan
+    """
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(single_residuals_signed[np.abs(single_residuals_signed)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
@@ -947,7 +949,7 @@ def PCA_plotting(wrk_dir,name):
     axs[1].set_title("Ensemble")
     plt.savefig("loss/resids_compare.png")
     plt.close()
-    
+    """
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
     chance = np.arange(len(perc_resids))/len(perc_resids)
     
