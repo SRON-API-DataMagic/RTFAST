@@ -793,7 +793,7 @@ def PCA_plotting(wrk_dir,name):
     model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
     model.eval()
     
-    plot_pca = False
+    plot_pca = True
     
     if plot_pca == True:
         nn_comps = model(test_data.pars).detach().numpy()
@@ -1032,7 +1032,7 @@ def PCA_plotting(wrk_dir,name):
     plt.savefig(f"samples/{name}_mean_errors.png")
     plt.close()
     
-    plot_heatmaps = False
+    plot_heatmaps = True
     
     if plot_heatmaps == True:
         for i in range(len(pars_list)):
