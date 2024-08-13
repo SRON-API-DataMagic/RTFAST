@@ -761,12 +761,7 @@ def PCA_plotting(wrk_dir,name):
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
               "logNe","kte","boost","mass","honr","b1","b2","Anorm"]
     
-    test_data = PCADataset("data/locations/loc_flux_test.csv",
-                               pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
-    calib_data = PCADataset("data/locations/loc_flux_cal.csv",
+    test_data = PCADataset("data/locations/loc_flux_cal.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
