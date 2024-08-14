@@ -14,7 +14,6 @@ import matplotlib.colors as colors
 import matplotlib
 
 import numpy as np
-import corner
 
 import pandas as pd
 from tqdm import tqdm
@@ -22,7 +21,6 @@ from tqdm import tqdm
 import network
 from dataStructures import PCADataset
 from training import PCALoss
-from generator import test_set
             
 def inverse(scaler,data):
     """
