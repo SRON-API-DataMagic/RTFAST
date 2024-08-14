@@ -315,7 +315,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     if plot_pca == True:
         PCA_plot(test_data,D,labels,name,pars_list,e_ticks)
     
-    test_pred = model(test_data.pars).detach().numpy()
+    test_pred = model(test_data.pars[:1000]).detach().numpy()
     
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
     
@@ -331,7 +331,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     plt.close()
     
     for j in range(test_data.pars.shape[1]):
-        plt.scatter(test_data.pars[:,j],test_loss)
+        plt.scatter(test_data.pars[:1000,j],test_loss)
         plt.xlabel(labels[j])
         plt.ylabel("Loss")
         plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
@@ -569,7 +569,7 @@ def reconstruct_emulator(dataset,model):
 
 def loss_calc(data,model,variances):
     log_vars_ratios = np.log10(variances/np.min(variances))+1
-    loss = np.mean(((model-np.asarray(data))**2)*log_vars_ratios,axis=1)
+    loss = np.mean(((model-data)**2)*log_vars_ratios,axis=1)
     return loss
 
 def main():
