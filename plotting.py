@@ -20,7 +20,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import network
-from dataStructures import Residual, PCADataset
+from dataStructures import PCADataset
 from training import PCALoss
 from generator import test_set
             
@@ -574,7 +574,7 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    set_envir_vars(wrk_dir)
+    #set_envir_vars(wrk_dir)
     
     test_set()
     
