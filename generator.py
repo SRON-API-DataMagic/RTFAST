@@ -508,16 +508,7 @@ def intialize_dataset(theta_lhc,egrid,flux_name):
     readAndRemoveNans(f"data/locations/{flux_name}")
     return lhc_idx
 
-def test_set():
-    wrk_dir = os.getcwd()
-    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
-    arf = read_arf(arf_name)
-    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
-    range_AGN = np.asarray(lhc_AGN())
-    
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
-    negatives = [3]
-    logged = [0,2,3,4,7,8,10,12,13]
+def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     cpu_num = os.cpu_count()
     
@@ -539,4 +530,4 @@ def test_set():
     
     print("Saving flux data")
     saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_text.csv")
+             "data/locations/","loc_flux_text.csv",lags=True)

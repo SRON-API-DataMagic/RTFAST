@@ -10,73 +10,10 @@ from joblib import Parallel, delayed
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-import corner
-from sherpa.astro.io import read_arf
 
 from dataStructures import PCADataset
 from network import DynamicNetwork
-from processing import saveData, spectraChecker, mergeSaveData, renameData
-from generator import rtdist_flux, nn_pars_to_rtdist
-from generator import lhc_filter_20, lhc_generation, lhc_AGN
 from training import grid_training_loop, train_flux, test_flux, PCALoss
-
-def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
-    
-    cpu_num = os.cpu_count()
-    
-    theta_lhc = lhc_generation(int(1e5), range_AGN, limited=False, 
-                                         lhc_filter=lhc_filter_20)
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
-              "kte","boost","mass","honr","b1","b2","Anorm"]
-    figure = corner.corner(
-        theta_lhc,
-        labels=labels,
-        )
-    plt.savefig("loss/parameter_dists.pdf")
-    plt.close()
-    
-    #generate physical models of test set
-    theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
-    print("Parallelized model generation")
-    
-    print("Generating flux models")
-    
-    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
-        flux =  parallel(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
-                                        for pars in theta_flux)
-        flux = np.asarray(flux)
-    print("Checking for spectra below threshold")
-    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
-    
-    idxs = np.arange(0,flux.shape[0])
-    np.random.shuffle(idxs)
-    tra_idx = idxs[:int(0.9*len(idxs))]
-    val_idx = idxs[int(0.9*len(idxs)):]
-    
-    #Splitting data and parameters into training and valting datasets
-    train_flux_data = flux[tra_idx]
-    train_flux_pars = theta_flux[tra_idx]
-    
-    val_flux_data = flux[val_idx]
-    val_flux_pars = theta_flux[val_idx]
-    
-    print("Saving flux data")
-    saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","PCA_locs_flux_temp.csv",lags=True)
-    saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","PCA_locs_flux_val.csv",lags=True)
-
-def merge():
-    train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
-    val = pd.read_csv("data/locations/PCA_locs_flux_val.csv")
-    
-    train_name = "locs_20_spectra_tra.csv"
-    val_name = "locs_20_spectra_val.csv"
-    #save final curated datasets back to disk for use
-    mergeSaveData(train, pd.read_csv(f"data/locations/{train_name}"),
-                  "data/locations/", train_name)
-    mergeSaveData(val, pd.read_csv(f"data/locations/{val_name}"),
-                  "data/locations/",val_name)
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -106,14 +43,13 @@ def main():
     logged = [0,2,3,4,7,8,10,12,13,23]
     
     val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
-                               pars_list,negatives,logged,scale_bool = True,
-                               force = True, comps = 40, 
+                               pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin")
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
-    
+    comps = val_dataset.pca.n_components
     train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
@@ -121,6 +57,7 @@ def main():
                                spec_scal_loc="scalers/spec_20_spec.bin")
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
+    
     loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
     
     train = train_flux
@@ -128,7 +65,7 @@ def main():
     
     for i in range(10):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,40,8,256,"GELU")
+        model = DynamicNetwork(17,comps,8,256,"GELU")
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         
