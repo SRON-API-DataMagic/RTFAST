@@ -253,6 +253,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     
     epoch = 0
     imp_flag = 0
+    loss_best = 20
     print("Beginning training")
     
     while epoch < epochs and imp_flag < 50:
@@ -267,7 +268,9 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
         if loss == np.min(te_loss_arr):
             print(f"New best testing loss: {loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
+        if loss < 0.99*loss_best:
             imp_flag = 0
+            loss_best = loss
         epoch += 1
     
     print("Completed training")
