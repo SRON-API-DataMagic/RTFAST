@@ -292,11 +292,12 @@ class PCADataset(Dataset):
                  scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
                  comp_loc="scalers/comp_flux.bin",
                  spec_scal_loc="scalers/spec_flux.bin",force = False,
-                 loads = 0):
+                 loads = 0,load_size = 1e6):
         data_table = pd.read_csv(data_loc)
         self.csv = data_table
         self.threshold = threshold
         self.force = force
+        self.data_load_size = load_size
         self.PCA_loc = PCA_loc
         self.comp_loc = comp_loc
         self.spec_scal_loc = spec_scal_loc
@@ -347,11 +348,10 @@ class PCADataset(Dataset):
         Automatically splits large loads into 1e6 portions to prevent memory 
         overflow.
         """
-        
         if loads != 0:
             no_loads = loads
         else:
-            no_loads = int(np.ceil(len(locations)/1e6))
+            no_loads = int(np.ceil(len(locations)/self.data_load_size))
         cpu_num = os.cpu_count()
         
         def file_load(file):
@@ -362,11 +362,11 @@ class PCADataset(Dataset):
             if i != (no_loads-1):
                 data =(Parallel(n_jobs=cpu_num-1,verbose=1)
                        (delayed(file_load)(file) for file in 
-                        locations[int(i*1e6):(i+1)*int(1e6)]))
+                        locations[int(i*self.data_load_size):(i+1)*int(self.data_load_size)]))
             else:
                 data = (Parallel(n_jobs=cpu_num-1,verbose=1)
                         (delayed(file_load)(file) for file in 
-                         locations[i*int(1e6):]))
+                         locations[i*int(self.data_load_size):]))
             data = np.concatenate(data,axis=0)
             #make sure all your data is behaving correctly after loading
             if np.any(np.isnan(data))==True:

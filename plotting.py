@@ -284,7 +284,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
                                spec_scal_loc="scalers/spec_20_spec.bin",
-                               loads=1)
+                               loads=1,load_size=1000)
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
@@ -315,11 +315,11 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     if plot_pca == True:
         PCA_plot(test_data,D,labels,name,pars_list,e_ticks)
     
-    test_pred = model(test_data.pars[:1000]).detach().numpy()
+    test_pred = model(test_data.pars).detach().numpy()
     
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
     
-    test_loss = loss_calc(test_data.data[:1000], test_pred, test_data.pca.explained_variance_ratio_)
+    test_loss = loss_calc(test_data.data, test_pred, test_data.pca.explained_variance_ratio_)
     print(f"PCA loss reports: {loss_fn(model(test_data.pars),test_data.data)}")
     
     print(test_loss.shape)
@@ -331,7 +331,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     plt.close()
     
     for j in range(test_data.pars.shape[1]):
-        plt.scatter(test_data.pars[:1000,j],test_loss)
+        plt.scatter(test_data.pars[:,j],test_loss)
         plt.xlabel(labels[j])
         plt.ylabel("Loss")
         plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
