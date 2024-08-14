@@ -279,9 +279,9 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     
     test_data = PCADataset("data/locations/loc_flux_text.csv",
                                pars_list,negatives,logged,scale_bool = False,
-                               PCA_loc="scalers/PCA_20_spec.bin",
-                               comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
+                               PCA_loc="scalers/PCA_spec.bin",
+                               comp_loc="scalers/comp_spec.bin",
+                               spec_scal_loc="scalers/spec_spec.bin")
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
