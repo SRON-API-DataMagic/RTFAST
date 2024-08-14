@@ -291,7 +291,8 @@ class PCADataset(Dataset):
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,
                  scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
                  comp_loc="scalers/comp_flux.bin",
-                 spec_scal_loc="scalers/spec_flux.bin",force = False):
+                 spec_scal_loc="scalers/spec_flux.bin",force = False,
+                 loads = 0):
         data_table = pd.read_csv(data_loc)
         self.csv = data_table
         self.threshold = threshold
@@ -311,7 +312,7 @@ class PCADataset(Dataset):
         self.negatives = negatives
         self.logged = logged
         self.pars = self.rtdist_to_nn(self.pars)
-        self.data = self.data_load(self.locations)
+        self.data = self.data_load(self.locations,loads)
         
     def __len__(self):
         return self.data.shape[0]
@@ -340,14 +341,17 @@ class PCADataset(Dataset):
                 pars[:,i] = np.log10(pars[:,i])
         return torch.Tensor(pars).float()
     
-    def data_load(self,locations):
+    def data_load(self,locations,loads=0):
         """
         Loads data from disk and scales it to NN friendly outputs. 
         Automatically splits large loads into 1e6 portions to prevent memory 
         overflow.
         """
         
-        no_loads = int(np.ceil(len(locations)/1e6))
+        if loads != 0:
+            no_loads = loads
+        else:
+            no_loads = int(np.ceil(len(locations)/1e6))
         cpu_num = os.cpu_count()
         
         def file_load(file):

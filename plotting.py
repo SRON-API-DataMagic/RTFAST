@@ -283,7 +283,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
-                               spec_scal_loc="scalers/spec_20_spec.bin")
+                               spec_scal_loc="scalers/spec_20_spec.bin",
+                               loads=1)
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
