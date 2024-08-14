@@ -279,7 +279,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     labels = ["height","a","inc","rin","rout","z","Gamma","distance","Afe",
               "logNe","kte","boost","mass","honr","b1","b2","Anorm"]
     
-    test_data = PCADataset("data/locations/locs_20_spectra_val.csv",
+    test_data = PCADataset("data/locations/loc_flux_text.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_20_spec.bin",
                                comp_loc="scalers/comp_20_spec.bin",
@@ -575,7 +575,7 @@ def main():
     wrk_dir = os.getcwd()
     set_envir_vars(wrk_dir)
     
-    test_set(wrk_dir)
+    #test_set(wrk_dir)
     
     run_plot(wrk_dir,"single")
     
