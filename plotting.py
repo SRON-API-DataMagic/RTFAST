@@ -298,7 +298,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     e_ticks = np.round(emid[(len(emid)*percents).astype(int)],1).astype(str)
     
     data = []
-    for file in tqdm(test_data.locations):
+    for file in tqdm(test_data.locations[:1000]):
         data.append(np.loadtxt(file).reshape(1, -1))
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
