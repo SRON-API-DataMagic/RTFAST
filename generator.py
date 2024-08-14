@@ -508,28 +508,35 @@ def intialize_dataset(theta_lhc,egrid,flux_name):
     readAndRemoveNans(f"data/locations/{flux_name}")
     return lhc_idx
 
-def test_set(wrk_dir):
+def test_set():
+    wrk_dir = os.getcwd()
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
     range_AGN = np.asarray(lhc_AGN())
     
-    theta_lhc = lhc_generation(int(1000), range_AGN, limited=False, 
-                                         lhc_filter=lhc_filter_20)
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13]
+    
+    cpu_num = os.cpu_count()
+    
+    theta_lhc = lhc_generation(int(1000), range_AGN, limited=False, 
+                                         lhc_filter=lhc_filter_20)
+    
     #generate physical models of test set
     theta_flux = nn_pars_to_rtdist(theta_lhc, 0, pars_list, negatives, logged)
     print("Parallelized model generation")
     
     print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5,backend="multiprocessing")(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
-                                    for pars in theta_flux)
-    flux = np.asarray(flux)
+    
+    with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
+        flux =  parallel(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+                                        for pars in theta_flux)
+        flux = np.asarray(flux)
     print("Checking for spectra below threshold")
     flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
     print("Saving flux data")
-    saveData(flux, theta_flux, "data/locations/","loc_flux_text.csv")
-    return
+    saveData(flux, theta_flux, 
+             "data/locations/","loc_flux_text.csv")
