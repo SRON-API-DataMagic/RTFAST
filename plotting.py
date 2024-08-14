@@ -319,7 +319,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     
     loss_fn = PCALoss(test_data.pca.explained_variance_ratio_, "cpu")
     
-    test_loss = loss_calc(test_data.data, test_pred, test_data.pca.explained_variance_ratio_)
+    test_loss = loss_calc(np.asarray(test_data.data), test_pred, 
+                          test_data.pca.explained_variance_ratio_)
     print(f"PCA loss reports: {loss_fn(model(test_data.pars),test_data.data)}")
     
     print(test_loss.shape)
