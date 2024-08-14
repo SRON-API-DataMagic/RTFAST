@@ -402,43 +402,6 @@ def grid_data_gen(size, fname, egrid):
     readAndRemoveNans(f"data/locations/loc_{fname}_flux_test.csv")
     return
 
-def generate_flux_dists(AGN_name):
-    wrk_dir = os.getcwd()
-    rmf_name = wrk_dir+"/ResponseFiles/PN.arf"
-    rmf = read_arf(rmf_name)
-    egrid = rmf.energ_lo #energy grid used to evaluate the xspec model
-    
-    labels = ["height","a","inc","rin","rout","z","Gamma","Dkpc","Afe",
-              "logNe","kte","nH","boost","mass","honr","b1","b2","phiAB","g",
-              "Anorm"]
-    range_AGN = np.asarray(lhc_AGN())
-    
-    #pre generate Latin Hypercube samples.
-    theta_agn = lhc_generation(int(1e3), range_AGN)
-    
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    #generate physical models of test set
-    iter_agn = nn_pars_to_rtdist(theta_agn, 0, pars_list, negatives, logged)
-    
-    with Parallel(n_jobs=20,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        AGN_flux = parallel(delayed(rtdist_erg_flux)(pars, egrid)
-                                        for pars in iter_agn)
-        AGN_spec = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in iter_agn)
-    AGN_flux = np.asarray(AGN_flux)
-    AGN_spec = np.asarray(AGN_spec)
-    
-    saveData(AGN_spec,iter_agn, "data/flux/", f"{AGN_name}_range.csv")
-    
-    AGN = pd.DataFrame(data=theta_agn,columns=labels)
-    AGN["flux"] = AGN_flux
-    
-    AGN.to_csv(f"data/flux/{AGN_name}.csv")
-    return
-
 def active_learning_generation(theta_query, egrid, parallel, 
                                flux_name, flux_test_name):
     # compute the physical model for these thetas
@@ -568,5 +531,5 @@ def test_set(wrk_dir):
     flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
     print("Saving flux data")
-    saveData(flux, theta_flux, "data/locations/","loc_flux_cal.csv")
+    saveData(flux, theta_flux, "data/locations/","loc_flux_text.csv")
     return
