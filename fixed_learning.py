@@ -65,7 +65,7 @@ def main():
     
     for i in range(10):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,8,256,"GELU")
+        model = DynamicNetwork(17,comps,8,512,"GELU")
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         
