@@ -40,7 +40,7 @@ class RtdistSpec(nn.Module):
                                          nn.GELU(),
                                          nn.Linear(256, 256),
                                          nn.GELU(),
-                                         nn.Linear(256, 40))
+                                         nn.Linear(256, comps))
         
     def forward(self,pars):
         return self.LinearStack(pars)
