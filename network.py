@@ -92,9 +92,6 @@ class DynamicResNetwork(nn.Module):
         self.residual_blocks = nn.ModuleList([
             nn.Sequential(
                 nn.Linear(nodes, nodes),
-                nn.BatchNorm1d(nodes),
-                nn.GELU(),
-                nn.Linear(nodes, nodes),
                 nn.BatchNorm1d(nodes)
             ) for _ in range(num_residual_blocks)
         ])
