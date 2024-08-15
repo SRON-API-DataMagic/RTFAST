@@ -73,6 +73,45 @@ class DynamicNetwork(nn.Module):
     def forward(self,pars):
         return self.LinearStack(pars)
 
+class DynamicResNetwork(nn.Module):
+    """
+    Neural network used in hyperparameter sweeps. The number of layers and
+    number of nodes in each layer can be specified at initialisation. It is
+    recommended that any DynamicNetworks that are fully trained have their
+    own fixed class written after a best model is found for the ease of the
+    final user.
+    """
+    def __init__(self, num_pars,output_len,num_residual_blocks=12, nodes = 256):
+        super().__init__()
+        self.input = nn.Sequential(
+            nn.Linear(num_pars, nodes),
+            nn.GELU()
+        )
+        
+        # Create a list of residual blocks
+        self.residual_blocks = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(nodes, nodes),
+                nn.BatchNorm1d(nodes),
+                nn.GELU(),
+                nn.Linear(nodes, nodes),
+                nn.BatchNorm1d(nodes)
+            ) for _ in range(num_residual_blocks)
+        ])
+        self.activation = nn.GELU()
+        
+        self.output = nn.Sequential(
+            nn.Linear(nodes, output_len)
+        )
+
+    def forward(self, x):
+        x = self.input(x)
+        for block in self.residual_blocks:
+            x = x + block(x)
+            x = self.activation(x)
+        pred = self.output(x)
+        return pred
+
 class RTFAST_single(nn.Module):
     """
     This can be called to utilise the emulator automatically and output only

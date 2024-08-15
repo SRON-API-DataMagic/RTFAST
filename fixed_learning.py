@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 
 from dataStructures import PCADataset
-from network import DynamicNetwork
+from network import DynamicNetwork, DynamicResNetwork
 from training import grid_training_loop, train_flux, test_flux, PCALoss
 
 def main():
@@ -65,7 +65,7 @@ def main():
     
     for i in range(10):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,8,512,"GELU")
+        model = DynamicResNetwork(17,comps,8,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         
