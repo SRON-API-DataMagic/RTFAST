@@ -301,10 +301,11 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     D[D<1e-11] = 1e-11
     
     if "active" in name:
-        model = network.DynamicDropoutNetwork(20,40,8,256,"GELU")
+        model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
+                                              8,256,"GELU")
     else:
         #model = network.RtdistSpec_ensemble()
-        model = network.RtdistSpec()
+        model = network.RtdistSpec(comps = test_data.pca.n_components)
         
     model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
     model.eval()
