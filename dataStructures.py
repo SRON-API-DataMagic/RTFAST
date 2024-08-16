@@ -103,7 +103,7 @@ class PCADataset(Dataset):
                        (delayed(file_load)(file) for file in 
                         locations[int(i*self.data_load_size):(i+1)*int(self.data_load_size)]))
             else:
-                if no_loads*self.data_load_size > len(locations):
+                if no_loads*self.data_load_size >= len(locations):
                     data = (Parallel(n_jobs=cpu_num-1,verbose=1)
                             (delayed(file_load)(file) for file in 
                              locations[i*int(self.data_load_size):]))
