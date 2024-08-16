@@ -85,7 +85,7 @@ class DynamicResNetwork(nn.Module):
         super().__init__()
         self.input = nn.Sequential(
             nn.Linear(num_pars, nodes),
-            nn.GELU()
+            nn.ReLU()
         )
         
         # Create a list of residual blocks
@@ -95,7 +95,7 @@ class DynamicResNetwork(nn.Module):
                 nn.BatchNorm1d(nodes)
             ) for _ in range(num_residual_blocks)
         ])
-        self.activation = nn.GELU()
+        self.activation = nn.ReLU()
         
         self.output = nn.Sequential(
             nn.Linear(nodes, output_len)
