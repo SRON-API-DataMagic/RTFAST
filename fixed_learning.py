@@ -46,8 +46,7 @@ def main():
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
-                               spec_scal_loc="scalers/spec_spec.bin",
-                               loads=1,load_size=1e5)
+                               spec_scal_loc="scalers/spec_spec.bin")
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     comps = val_dataset.pca.n_components
@@ -55,8 +54,7 @@ def main():
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
-                               spec_scal_loc="scalers/spec_spec.bin",
-                               loads=9,load_size=1e5)
+                               spec_scal_loc="scalers/spec_spec.bin")
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
