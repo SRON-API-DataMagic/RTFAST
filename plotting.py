@@ -305,7 +305,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
                                               8,256,"GELU")
     else:
         #model = network.RtdistSpec_ensemble()
-        model = network.RtdistSpec(comps = test_data.pca.n_components)
+        #model = network.RtdistSpec(comps = test_data.pca.n_components)
+        model = network.DynamicResNetwork(17,test_data.pca.n_components,8,256)
         
     model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
     model.eval()
