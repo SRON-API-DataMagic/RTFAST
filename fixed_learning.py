@@ -69,7 +69,7 @@ def main():
         print(f"Training model {i+1}")
         model = DynamicResNetwork(17,comps,16,256)
         model.to(device)
-        optimizer = Adam(model.parameters(), lr=1e-4)
+        optimizer = Adam(model.parameters(), lr=5e-4)
         
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
