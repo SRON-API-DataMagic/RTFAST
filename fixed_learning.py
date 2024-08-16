@@ -46,7 +46,8 @@ def main():
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
-                               spec_scal_loc="scalers/spec_spec.bin")
+                               spec_scal_loc="scalers/spec_spec.bin",
+                               loads=1,load_size=1e5)
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     comps = val_dataset.pca.n_components
@@ -54,7 +55,8 @@ def main():
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
-                               spec_scal_loc="scalers/spec_spec.bin")
+                               spec_scal_loc="scalers/spec_spec.bin",
+                               loads=9,load_size=1e5)
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
@@ -65,7 +67,7 @@ def main():
     
     for i in range(10):
         print(f"Training model {i+1}")
-        model = DynamicResNetwork(17,comps,8,256)
+        model = DynamicResNetwork(17,comps,16,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         
