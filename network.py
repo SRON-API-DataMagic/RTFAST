@@ -56,8 +56,7 @@ class DynamicNetwork(nn.Module):
     
     def __init__(self,num_pars,output_len,num_layers,nodes,activation):
         super().__init__()
-        if activation == "GELU":
-            act_type = nn.GELU()
+        act_type = nn.GELU()
         modules = []
         #specify input stack
         modules.append(nn.Linear(num_pars, nodes))
