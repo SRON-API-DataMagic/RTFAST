@@ -41,6 +41,7 @@ class PCADataset(Dataset):
         self.comp_loc = comp_loc
         self.spec_scal_loc = spec_scal_loc
         self.scale_bool = scale_bool
+        self.load_pca = load_pca
         if scale_bool == False:
             self.spec_scaler = load(self.spec_scal_loc)
             self.pca = load(self.PCA_loc)
@@ -118,7 +119,7 @@ class PCADataset(Dataset):
             elif np.any(np.isinf(data))==True:
                 print("Data has infinities")
             
-            if self.pca_load == False:
+            if self.load_pca == False:
                 data[data<self.threshold] = self.threshold
                 data = np.log10(data)
                 #make sure all your data is behaving correctly after logging
