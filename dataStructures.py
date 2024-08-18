@@ -31,7 +31,7 @@ class PCADataset(Dataset):
                  scale_bool = True, comps = 1,PCA_loc="scalers/PCA_flux.bin",
                  comp_loc="scalers/comp_flux.bin",
                  spec_scal_loc="scalers/spec_flux.bin",force = False,
-                 loads = 0,load_size = 1e6):
+                 loads = 0,load_size = 1e6, load_pca=False):
         data_table = pd.read_csv(data_loc)
         self.csv = data_table
         self.threshold = threshold
@@ -117,19 +117,22 @@ class PCADataset(Dataset):
                 print("Data has nan")
             elif np.any(np.isinf(data))==True:
                 print("Data has infinities")
-            data[data<self.threshold] = self.threshold
-            data = np.log10(data)
-            #make sure all your data is behaving correctly after logging
-            if np.any(np.isnan(data))==True:
-                print("Data after log has nan")
-            elif np.any(np.isinf(data))==True:
-                print("Data after log has infinities")
-            data = self.scale(data)
-            #make sure all your data is behaving correctly after scaling
-            if np.any(np.isnan(data))==True:
-                print("Data after scale has nan")
-            elif np.any(np.isinf(data))==True:
-                print("Data after scale has infinities")
+            
+            if self.pca_load == False:
+                data[data<self.threshold] = self.threshold
+                data = np.log10(data)
+                #make sure all your data is behaving correctly after logging
+                if np.any(np.isnan(data))==True:
+                    print("Data after log has nan")
+                elif np.any(np.isinf(data))==True:
+                    print("Data after log has infinities")
+                data = self.scale(data)
+                #make sure all your data is behaving correctly after scaling
+                if np.any(np.isnan(data))==True:
+                    print("Data after scale has nan")
+                elif np.any(np.isinf(data))==True:
+                    print("Data after scale has infinities")
+            
             if i == 0:
                 overall_data = data
             else:

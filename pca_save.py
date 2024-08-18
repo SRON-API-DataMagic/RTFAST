@@ -56,4 +56,4 @@ train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
                            spec_scal_loc="scalers/spec_spec.bin")
 
 saveData(np.asarray(train_dataset.data), train_dataset.csv, 
-         "data/locations/locs_PCA_comps_val.csv")
+         "data/locations/locs_PCA_comps_tra.csv")
