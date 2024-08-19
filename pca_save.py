@@ -39,7 +39,7 @@ def saveData(dataset, df, destination):
 pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
 negatives = [3]
 logged = [0,2,3,4,7,8,10,12,13,23]
-"""
+
 val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
                            pars_list,negatives,logged,scale_bool = False,
                            PCA_loc="scalers/PCA_spec.bin",
@@ -57,3 +57,4 @@ train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
 
 saveData(np.asarray(train_dataset.data), train_dataset.csv, 
          "data/locations/locs_PCA_comps_tra.csv")
+"""
