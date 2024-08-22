@@ -172,7 +172,7 @@ class RTFAST_single(nn.Module):
 class RtdistSpec_ensemble(nn.Module):
     def __init__(self,device=torch.device('cpu'),num_models=10):
         super().__init__()
-        models = [DynamicNetwork(17,400,12,256).to(device) for _ in range(num_models)]
+        models = [DynamicNetwork(17,200,12,256).to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
             model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
                                                  map_location=device))

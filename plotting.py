@@ -283,7 +283,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin")
-    print(test_data.pca.n_components)
+    
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
@@ -577,7 +577,7 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     
-    run_plot(wrk_dir,"ensemble_2",plot_pca=False,plot_loss=True)
+    run_plot(wrk_dir,"ensemble_2",plot_pca=True,plot_loss=True)
     
 if __name__ == "__main__":
     main()
