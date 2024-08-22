@@ -170,9 +170,8 @@ class RTFAST_single(nn.Module):
         return spectrum
         
 class RtdistSpec_ensemble(nn.Module):
-    def __init__(self,device=torch.device('cpu')):
+    def __init__(self,device=torch.device('cpu'),num_models=10):
         super().__init__()
-        num_models = 10
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
             model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
@@ -203,9 +202,8 @@ class RTFAST(nn.Module):
     
     Input a set of parameters and retrieve the spectrum.
     """
-    def __init__(self,device=torch.device('cpu')):
+    def __init__(self,device=torch.device('cpu'),num_models=10):
         super().__init__()
-        num_models = 10
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
             model.load_state_dict(torch.load(f"models/ensemble_{i}.pth",

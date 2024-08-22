@@ -267,6 +267,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     
     if plot_loss == True:
         loss_plots("0_20_pars_flux")
+        loss_plots("1_20_pars_flux")
     
     #plotting of emulator vs test data performance
     
@@ -304,11 +305,11 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
         model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
                                               8,256,"GELU")
     else:
-        #model = network.RtdistSpec_ensemble()
-        #model = network.RtdistSpec(comps = test_data.pca.n_components)
-        model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
-        
-    model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
+        model = network.RtdistSpec_ensemble(num_models=2)
+        single_model = network.RtdistSpec(comps = test_data.pca.n_components)
+        #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
+        single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
+    
     model.eval()
     
     if plot_pca == True:
@@ -338,14 +339,14 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
         plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
-    """
+    
     single_pred = reconstruct_emulator(test_data,single_model)
-    single_residuals_signed = (single_pred-D)/D
-    """
+    single_residuals_signed = (single_pred-D)/D\
+        
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
-    #single_residuals_signed[(D==1e-11)] = np.nan
-    """
+    single_residuals_signed[(D==1e-11)] = np.nan
+    
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(single_residuals_signed[np.abs(single_residuals_signed)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
@@ -363,7 +364,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     axs[1].set_title("Ensemble")
     plt.savefig("loss/resids_compare.png")
     plt.close()
-    """
+    
     perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
     chance = np.arange(len(perc_resids))/len(perc_resids)
     
@@ -432,14 +433,14 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
     print(f"Median residual is {np.median(residuals[~np.isnan(residuals)])*100}%")
     percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
-    """
+    
     single_residuals = np.abs(single_residuals_signed)
     print(f"Maximum residual is {single_residuals[~np.isnan(single_residuals)].max()*100}%")
     print(f"Average residual is {single_residuals[~np.isnan(single_residuals)].mean()*100}%")
     print(f"Median residual is {np.median(single_residuals[~np.isnan(single_residuals)])*100}%")
     percent = (single_residuals[(single_residuals<0.01)&~np.isnan(single_residuals)].size/single_residuals[~np.isnan(single_residuals)].size)*100
     print(f"{percent}% of residuals are below 1%")
-    """
+    
     plt.plot(emid,np.mean(residuals,axis=0))
     plt.xlabel("Energy (keV)")
     plt.ylabel("Mean percentage residual")
@@ -576,7 +577,7 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     
-    run_plot(wrk_dir,"single",plot_pca=False,plot_loss=True)
+    run_plot(wrk_dir,"ensemble_2",plot_pca=False,plot_loss=True)
     
 if __name__ == "__main__":
     main()
