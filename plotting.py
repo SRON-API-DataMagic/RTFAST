@@ -305,7 +305,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
         model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
                                               8,256,"GELU")
     else:
-        model = network.RtdistSpec_ensemble(num_models=2)
+        model = network.RtdistSpec_ensemble(num_models=3)
         single_model = network.DynamicNetwork(17,200,12,256)
         #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
         single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
