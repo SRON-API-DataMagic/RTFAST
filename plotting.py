@@ -249,7 +249,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
 
-def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
+def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     """
     Function dedicated to plotting PCA neural network model outputs. Only plots
     things necessary for PCA model diagnosis
@@ -305,7 +305,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False):
         model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
                                               8,256,"GELU")
     else:
-        model = network.RtdistSpec_ensemble(num_models=3)
+        model = network.RtdistSpec_ensemble(num_models=num_models)
         single_model = network.DynamicNetwork(17,200,12,256)
         #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
         single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
@@ -576,8 +576,9 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    
-    run_plot(wrk_dir,"ensemble_3",plot_pca=False,plot_loss=True)
+    num_models = 3
+    run_plot(wrk_dir,"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+             num_models=num_models)
     
 if __name__ == "__main__":
     main()
