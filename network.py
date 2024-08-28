@@ -205,7 +205,7 @@ class RtdistSpec_ensemble_smart(RtdistSpec_ensemble):
                                       self.ensemble_buffers, 
                                       theta)
         pred,indices = torch.sort(pred,0)
-        data = torch.mean(pred[1:-1],axis=0)
+        data = torch.mean(pred[2:-2],axis=0)
         return data
     
     
