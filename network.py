@@ -196,6 +196,9 @@ class RtdistSpec_ensemble(nn.Module):
     
 class RtdistSpec_ensemble_smart(RtdistSpec_ensemble):
     
+    def __init__(self,device=torch.device('cpu'),num_models=10):
+        super().__init__(device,num_models)
+    
     def forward(self,theta):
         theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
@@ -278,6 +281,9 @@ class RTFAST(nn.Module):
         return spectrum
 
 class RTFAST_smart(RTFAST):
+    
+    def __init__(self,device=torch.device('cpu'),num_models=10):
+        super().__init__(device,num_models)
     
     def forward(self,theta):
         theta = self.pars_shift(theta)
