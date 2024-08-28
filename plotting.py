@@ -306,6 +306,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
                                               8,256,"GELU")
     else:
         model = network.RtdistSpec_ensemble(num_models=num_models)
+        trimmed_model = network.RtdistSpec_ensemble_smart()
         single_model = network.DynamicNetwork(17,200,12,256)
         #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
         single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
@@ -333,7 +334,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     
     test_pred = reconstruct_emulator(test_data, model)
     
-    single_pred = reconstruct_emulator(test_data,single_model)
+    single_pred = reconstruct_emulator(test_data,trimmed_model)
     single_residuals_signed = (single_pred-D)/D\
         
     residuals_signed = (test_pred-D)/D
@@ -348,7 +349,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     axs[0].axvline(0,ls="--",c="black")
     axs[0].axvline(-1,ls="--",c="red")
     axs[0].axvline(1,ls="--",c="red")
-    axs[0].set_title("Single NN")
+    axs[0].set_title("Trimmed ensemble")
     axs[1].hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     axs[1].set_xlim(-20,20)
     axs[1].axvline(0,ls="--",c="black")
