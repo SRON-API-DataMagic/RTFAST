@@ -194,6 +194,19 @@ class RtdistSpec_ensemble(nn.Module):
         data = torch.mean(pred,axis=0)
         return data
     
+class RtdistSpec_ensemble_smart(RtdistSpec_ensemble):
+    
+    def forward(self,theta):
+        theta = self.pars_shift(theta)
+        pred = vmap(self.fmodel,
+                    in_dims=(0,0, None))(self.ensemble_params,
+                                      self.ensemble_buffers, 
+                                      theta)
+        pred,indices = torch.sort(pred,0)
+        data = torch.mean(pred[1:-1],axis=0)
+        return data
+    
+    
 class RTFAST(nn.Module):
     """
     This can be called to utilise the ensemble emulator automatically and 
@@ -259,6 +272,21 @@ class RTFAST(nn.Module):
                                       self.ensemble_buffers, 
                                       theta)
         data = torch.mean(pred,axis=0)
+        PCA_comps = self.comp_inverse_transform(data)
+        std_spec = self.PCA_inverse_transform(PCA_comps)
+        spectrum = 10**self.spec_inverse_transform(std_spec)
+        return spectrum
+
+class RTFAST_smart(RTFAST):
+    
+    def forward(self,theta):
+        theta = self.pars_shift(theta)
+        pred = vmap(self.fmodel,
+                    in_dims=(0,0, None))(self.ensemble_params,
+                                      self.ensemble_buffers, 
+                                      theta)
+        pred,indices = torch.sort(pred,0)
+        data = torch.mean(pred[1:-1],axis=0)
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)
         spectrum = 10**self.spec_inverse_transform(std_spec)
