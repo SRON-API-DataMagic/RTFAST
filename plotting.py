@@ -331,13 +331,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     plt.savefig(f"loss/test_dists_{name}.png")
     plt.close()
     
-    for j in range(test_data.pars.shape[1]):
-        plt.scatter(test_data.pars[:1000,j],test_loss)
-        plt.xlabel(labels[j])
-        plt.ylabel("Loss")
-        plt.savefig(f"loss/loss_by_{labels[j]}_{name}.png")
-        plt.close()
-    
     test_pred = reconstruct_emulator(test_data, model)
     
     single_pred = reconstruct_emulator(test_data,single_model)
@@ -363,15 +356,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     axs[1].axvline(1,ls="--",c="red")
     axs[1].set_title("Ensemble")
     plt.savefig("loss/resids_compare.png")
-    plt.close()
-    
-    perc_resids = np.sort(residuals_signed[np.abs(residuals_signed)<0.2]*100,axis=None)
-    chance = np.arange(len(perc_resids))/len(perc_resids)
-    
-    plt.plot(perc_resids,chance)
-    plt.xlabel("Percentage residual")
-    plt.ylabel("Cumulative probability")
-    plt.savefig(f"loss/resids_cum_sum_{name}.png")
     plt.close()
     
     median_res = np.median(residuals_signed,axis=0)*100
@@ -576,7 +560,7 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    num_models = 5
+    num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
              num_models=num_models)
     
