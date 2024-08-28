@@ -200,7 +200,6 @@ class RtdistSpec_ensemble_smart(RtdistSpec_ensemble):
         super().__init__(device,num_models)
     
     def forward(self,theta):
-        theta = self.pars_shift(theta)
         pred = vmap(self.fmodel,
                     in_dims=(0,0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
