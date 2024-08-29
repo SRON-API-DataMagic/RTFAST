@@ -334,7 +334,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     test_pred = reconstruct_emulator(test_data, model)
     
     single_pred = reconstruct_emulator(test_data,single_model)
-    single_residuals_signed = (single_pred-D)/D\
+    single_residuals_signed = (single_pred-D)/D
         
     residuals_signed = (test_pred-D)/D
     residuals_signed[(D==1e-11)] = np.nan
@@ -348,14 +348,14 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     axs[0].axvline(0,ls="--",c="black")
     axs[0].axvline(-1,ls="--",c="red")
     axs[0].axvline(1,ls="--",c="red")
-    axs[0].set_title("Trimmed ensemble")
+    axs[0].set_title("Single NN")
     axs[1].hist(residuals_signed[np.abs(residuals_signed)<0.2]*100,bins=80,density=True)
     axs[1].set_xlim(-20,20)
     axs[1].axvline(0,ls="--",c="black")
     axs[1].axvline(-1,ls="--",c="red")
     axs[1].axvline(1,ls="--",c="red")
     axs[1].set_title("Ensemble")
-    plt.savefig("loss/resids_compare.png")
+    plt.savefig("loss/resids_compare_{name}.png")
     plt.close()
     
     median_res = np.median(residuals_signed,axis=0)*100
@@ -560,7 +560,7 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    for i in range(2,9):
+    for i in range(8,9):
         num_models = i
         run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
                  num_models=num_models)
