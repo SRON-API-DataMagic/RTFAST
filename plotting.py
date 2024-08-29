@@ -306,7 +306,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
                                               8,256,"GELU")
     else:
         model = network.RtdistSpec_ensemble(num_models=num_models)
-        trimmed_model = network.RtdistSpec_ensemble_smart(num_models=num_models)
         single_model = network.DynamicNetwork(17,200,12,256)
         #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
         single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
@@ -334,7 +333,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     
     test_pred = reconstruct_emulator(test_data, model)
     
-    single_pred = reconstruct_emulator(test_data,trimmed_model)
+    single_pred = reconstruct_emulator(test_data,single_model)
     single_residuals_signed = (single_pred-D)/D\
         
     residuals_signed = (test_pred-D)/D
@@ -561,9 +560,10 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             num_models=num_models)
+    for i in range(2,9):
+        num_models = i
+        run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+                 num_models=num_models)
     
 if __name__ == "__main__":
     main()
