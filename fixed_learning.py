@@ -53,9 +53,9 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     print("Saving flux data")
     saveData(train_flux_data, train_flux_pars, 
-             "data/locations/","PCA_locs_flux_temp.csv",lags=True)
+             "data/locations/","PCA_locs_flux_temp.csv")
     saveData(val_flux_data, val_flux_pars, 
-             "data/locations/","PCA_locs_flux_val.csv",lags=True)
+             "data/locations/","PCA_locs_flux_val.csv")
 
 def merge():
     train = pd.read_csv("data/locations/PCA_locs_flux_temp.csv")
