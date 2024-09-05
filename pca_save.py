@@ -48,7 +48,7 @@ val_dataset = PCADataset("data/locations/locs_20_spectra_val.csv",
 
 saveData(np.asarray(val_dataset.data), val_dataset.csv, 
          "data/locations/locs_PCA_comps_val.csv")
-"""
+
 train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
                            pars_list,negatives,logged,scale_bool = False,
                            PCA_loc="scalers/PCA_spec.bin",
@@ -57,4 +57,3 @@ train_dataset = PCADataset("data/locations/locs_20_spectra_tra.csv",
 
 saveData(np.asarray(train_dataset.data), train_dataset.csv, 
          "data/locations/locs_PCA_comps_tra.csv")
-"""
