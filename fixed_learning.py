@@ -100,7 +100,7 @@ def main():
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin",
                                load_pca=True)
-    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
+    val_loader = DataLoader(val_dataset, batch_size=2048, num_workers = 4, 
                                   shuffle=True)
     comps = val_dataset.pca.n_components
     train_dataset = PCADataset("data/locations/locs_PCA_comps_tra.csv",
@@ -109,7 +109,7 @@ def main():
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin",
                                load_pca=True)
-    tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
+    tra_loader = DataLoader(train_dataset, batch_size=2048, num_workers = 4, 
                                   shuffle=True)
     
     loss_fn = PCALoss(val_dataset.pca.explained_variance_ratio_, device)
@@ -121,7 +121,7 @@ def main():
         print(f"Training model {i+1}")
         model = DynamicNetwork(17,comps,12,256)
         model.to(device)
-        optimizer = Adam(model.parameters(), lr=1e-4)
+        optimizer = Adam(model.parameters(), lr=1e-3)
         
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
