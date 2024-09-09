@@ -119,15 +119,10 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     loss_arr = []
     iters = len(dataloader)
     for batch, (D,P) in enumerate(dataloader):
-        assert torch.any(torch.isnan(D)) == False,"NaNs present in data"
-        assert torch.any(torch.isnan(P)) == False,"NaNs present in pars"
         optimizer.zero_grad()
         pred = model(P.to(device))
         loss = loss_fn(pred,D.to(device))
         loss.backward()
-        #prevents exploding gradients
-        nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        
         optimizer.step()
         if scheduler != None:
             scheduler.step(epoch + batch / iters)
