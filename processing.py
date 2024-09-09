@@ -70,7 +70,7 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     #overwriting
     try:
         if lags == None:
-            files = glob.glob("/data/spectra/*.txt")
+            files = glob.glob("./data/spectra/*.txt")
             for i,file in enumerate(files):
                 tmp = file.replace("./data/spectra/spectra_","")
                 tmp = int(tmp.replace(".txt",""))
