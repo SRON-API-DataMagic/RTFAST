@@ -73,7 +73,7 @@ def merge():
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
+    """
     wrk_dir = os.getcwd()
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
@@ -89,7 +89,7 @@ def main():
         merge()
     
     exit()
-    
+    """
     pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
@@ -119,7 +119,7 @@ def main():
     
     for i in range(10):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,8,256)
+        model = DynamicNetwork(17,comps,12,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         

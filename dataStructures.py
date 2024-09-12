@@ -48,12 +48,7 @@ class PCADataset(Dataset):
             self.PCA_scaler = load(self.comp_loc)
         #current number of components loaded
         self.comps = comps
-        if load_pca == True:
-            #PCA component location is last column
-            self.locations = data_table.iloc[:,-1]
-        else:
-            #assumes that actual spectra location is 2nd to last column
-            self.locations = data_table.iloc[:,-2]
+        self.locations = data_table.iloc[:,-1]
         #filter out parameters relevant for emulation
         self.pars = data_table.iloc[:,pars_list].to_numpy()
         self.pars_list = pars_list
