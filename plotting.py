@@ -118,7 +118,7 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
     matplotlib.rcParams.update({'font.size': 16})
-    plt.savefig(f"heatmaps/{fname}_{index}.png")
+    plt.savefig(f"heatmaps/{fname}_{index}.pdf")
     plt.close()
     return
 
@@ -140,14 +140,14 @@ def loss_plots(loss_name):
     plt.legend()
     plt.tight_layout()
     plt.ylim(top = 1e1)
-    plt.savefig(f"loss/loss_{loss_name}.png")
+    plt.savefig(f"loss/loss_{loss_name}.pdf")
     plt.close()
     
     plt.plot(PCA_train_loss/PCA_val_loss,c="b",ls="-")
     plt.axhline(1,c="orange",ls="--")
     plt.xlabel("Epoch")
     plt.ylabel("Ratio between training loss and validation loss")
-    plt.savefig("loss/loss_ratio.png")
+    plt.savefig("loss/loss_ratio.pdf")
     plt.close()
 
 def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
@@ -175,14 +175,14 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
     plt.ylabel("Mean absolute error")
     plt.title("Absolute error of PCA reconstruction error")
     plt.yscale("log")
-    plt.savefig(f"samples/{name}_PCA_mean_error.png")
+    plt.savefig(f"samples/{name}_PCA_mean_error.pdf")
     plt.close()
     plt.plot(np.mean(recon_perc,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean fractional error")
     plt.title("Fractional error of PCA reconstruction error")
     plt.yscale("log")
-    plt.savefig(f"samples/{name}_PCA_mean_perc.png")
+    plt.savefig(f"samples/{name}_PCA_mean_perc.pdf")
     plt.close()
     
     for i in range(len(pars_list)):
@@ -221,7 +221,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
+        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.pdf")
         plt.close()
     
     for i in range(pars.shape[1]):
@@ -246,7 +246,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
         fig.suptitle(labels[i])
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
+        plt.savefig(f"samples/corner/{labels[i]}_corner.pdf")
         plt.close()
 
 def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
@@ -328,7 +328,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     print(f"Average test loss is {test_loss.mean()}")
     plt.hist(test_loss,bins=50)
     plt.xlabel("Loss")
-    plt.savefig(f"loss/test_dists_{name}.png")
+    plt.savefig(f"loss/test_dists_{name}.pdf")
     plt.close()
     
     test_pred = reconstruct_emulator(test_data, model)
@@ -355,7 +355,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     axs[1].axvline(-1,ls="--",c="red")
     axs[1].axvline(1,ls="--",c="red")
     axs[1].set_title("Ensemble")
-    plt.savefig("loss/resids_compare_{name}.png")
+    plt.savefig("loss/resids_compare_{name}.pdf")
     plt.close()
     
     median_res = np.median(residuals_signed,axis=0)*100
@@ -374,7 +374,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
     plt.legend()
-    plt.savefig(f"loss/energ_resid_{name}.png")
+    plt.savefig(f"loss/energ_resid_{name}.pdf")
     plt.close()
     
     sign_res = ((test_pred)-D)/D
@@ -407,7 +407,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
         axs[-1,i].set_xlabel(labels[i])
     
     fig.colorbar(ax, ax=axs,format='%.0e', norm=norm, extend='max')
-    plt.savefig("heatmaps/posneg_pars_dist.png")
+    plt.savefig("heatmaps/posneg_pars_dist.pdf")
     plt.close()
     
     residuals = np.abs(((test_pred)-D)/D)
@@ -432,7 +432,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     plt.yscale("log")
     plt.xscale("log")
     plt.tight_layout()
-    plt.savefig(f"samples/{name}_mean_errors.png")
+    plt.savefig(f"samples/{name}_mean_errors.pdf")
     plt.close()
     
     plot_heatmaps = True
@@ -474,7 +474,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
             matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
+            plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
             plt.close()
         
         for i in range(len(pars_list)):
@@ -512,7 +512,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
             matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.png")
+            plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.pdf")
             plt.close()
     
     plot_samples = True
@@ -539,7 +539,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
             axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")
-            plt.savefig(f"samples/{name}_PCA_compare_{i}.png")
+            plt.savefig(f"samples/{name}_PCA_compare_{i}.pdf")
             plt.close()
             i += 1
             if i > 6:
