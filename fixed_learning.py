@@ -117,11 +117,11 @@ def main():
     train = train_flux
     test =  test_flux
     
-    for i in range(10):
+    for i in range(1,10):
         print(f"Training model {i+1}")
         model = DynamicNetwork(17,comps,12,256)
         model.to(device)
-        optimizer = Adam(model.parameters(), lr=1e-4)
+        optimizer = Adam(model.parameters(), lr=5e-4)
         
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
