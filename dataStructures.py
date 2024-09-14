@@ -101,6 +101,7 @@ class PCADataset(Dataset):
         
         print(f"Loading data in {no_loads} portion(s)")
         for i in range(no_loads):
+            print(f"Loading portion {i+1}")
             if (i != (no_loads-1))|(i==0):
                 data =(Parallel(n_jobs=cpu_num-1,verbose=1)
                        (delayed(file_load)(file) for file in 
