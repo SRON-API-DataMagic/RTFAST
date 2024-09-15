@@ -117,8 +117,8 @@ def main():
     train = train_flux
     test =  test_flux
     
-    blocks = [3,6,9,12]
-    nodes = [1024,512,256,128]
+    blocks = [6]
+    nodes = [1024]
     
     for i in range(0,4):
         print(f"Training model {i+1}")
