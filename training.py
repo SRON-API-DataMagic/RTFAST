@@ -251,7 +251,7 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     loss_best = 20
     print("Beginning training")
     
-    while epoch < epochs and imp_flag < 50:
+    while epoch < epochs and imp_flag < 100:
         imp_flag += 1
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")

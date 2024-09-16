@@ -119,12 +119,13 @@ def main():
     
     blocks = [6]
     nodes = [2048]
+    learning_rate = [1e-6,5e-6,1e-5,5e-5]
     
     for i in range(0,4):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,blocks[i],nodes[i])
+        model = DynamicNetwork(17,comps,6,2048)
         model.to(device)
-        optimizer = Adam(model.parameters(), lr=1e-5)
+        optimizer = Adam(model.parameters(), lr=learning_rate[i])
         
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
