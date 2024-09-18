@@ -117,13 +117,13 @@ def main():
     train = train_flux
     test =  test_flux
     
-    blocks = [6]
-    nodes = [2048]
-    learning_rate = [1e-6,5e-6,1e-5,5e-5]
+    blocks = [8]
+    nodes = [256]
+    learning_rate = [1e-6,5e-6,1e-5,5e-5,1e-4,5e-4,1e-3]
     
-    for i in range(0,4):
+    for i in range(len(learning_rate)):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,6,2048)
+        model = DynamicNetwork(17,comps,8,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=learning_rate[i])
         
