@@ -251,21 +251,23 @@ def grid_training_loop(model, optimizer, train, test, train_dataloader,
     loss_best = 20
     print("Beginning training")
     
-    while epoch < epochs and imp_flag < 100:
+    while epoch < epochs and imp_flag < 1000:
         imp_flag += 1
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
         model,optimizer,train_loss = train(train_dataloader,model,optimizer, 
                                            loss_fn,device,scheduler,epoch)
-        loss = test(test_dataloader, model, loss_fn, device)
-        te_loss_arr.append(loss)
+        val_loss = test(test_dataloader, model, loss_fn, device)
+        if scheduler != None:
+            scheduler.step(val_loss)
+        te_loss_arr.append(val_loss)
         tr_loss_arr.append(train_loss)
-        if loss == np.min(te_loss_arr):
-            print(f"New best testing loss: {loss}")
+        if val_loss == np.min(te_loss_arr):
+            print(f"New best testing loss: {val_loss}")
             torch.save(model.state_dict(), f"models/{name}_{mode}.pth")
-        if loss < 0.99*loss_best:
+        if val_loss < 0.99*loss_best:
             imp_flag = 0
-            loss_best = loss
+            loss_best = val_loss
         epoch += 1
     
     print("Completed training")
