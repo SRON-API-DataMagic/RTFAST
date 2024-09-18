@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import torch
 from torch.utils.data import DataLoader
-from torch.optim import Adam, ReduceLROnPlateau
+from torch.optim import Adam
 
 from dataStructures import PCADataset
 from network import DynamicNetwork, DynamicResNetwork
@@ -126,10 +126,9 @@ def main():
         model = DynamicNetwork(17,comps,8,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
-        scheduler = ReduceLROnPlateau(optimizer, 'min')
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
-                           epochs = 2000, scheduler=scheduler)
+                           epochs = 2000)
     
 
 if __name__ == "__main__":
