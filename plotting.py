@@ -308,7 +308,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
                                    comp_loc="scalers/comp_spec.bin",
                                    spec_scal_loc="scalers/spec_spec.bin")
         data = []
-        for file in tqdm(test_data.locations[:1000]):
+        for file in tqdm(test_data.locations):
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[D<1e-11] = 1e-11
@@ -321,7 +321,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
                                    comp_loc="scalers/comp_spec.bin",
                                    spec_scal_loc="scalers/spec_spec.bin")
         data = []
-        for file in tqdm(test_data.locations[:1000]):
+        for file in tqdm(test_data.locations):
             data.append(np.loadtxt(file).reshape(1, -1))
         D = np.concatenate(data,axis=0)
         D[D<1e-11] = 1e-11
