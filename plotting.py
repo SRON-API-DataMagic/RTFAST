@@ -266,8 +266,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     """
     
     if plot_loss == True:
-        loss_plots("0_20_pars_flux")
-        loss_plots("1_20_pars_flux")
+        for i in range(10):
+            loss_plots(f"{i}_20_pars_flux")
     
     #plotting of emulator vs test data performance
     
@@ -561,7 +561,7 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     num_models = 9
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
              num_models=num_models)
     
 if __name__ == "__main__":
