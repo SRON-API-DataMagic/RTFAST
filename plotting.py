@@ -301,6 +301,35 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     D = np.concatenate(data,axis=0)
     D[D<1e-11] = 1e-11
     
+    if plot_pca == True:
+        test_data = PCADataset("data/locations/locs_new_set_test.csv",
+                                   pars_list,negatives,logged,scale_bool = False,
+                                   PCA_loc="scalers/PCA_spec.bin",
+                                   comp_loc="scalers/comp_spec.bin",
+                                   spec_scal_loc="scalers/spec_spec.bin")
+        data = []
+        for file in tqdm(test_data.locations[:1000]):
+            data.append(np.loadtxt(file).reshape(1, -1))
+        D = np.concatenate(data,axis=0)
+        D[D<1e-11] = 1e-11
+        pc_name = "new"
+        PCA_plot(test_data,D,labels,pc_name,pars_list,e_ticks)
+        
+        test_data = PCADataset("data/locations/locs_old_set_test.csv",
+                                   pars_list,negatives,logged,scale_bool = False,
+                                   PCA_loc="scalers/PCA_spec.bin",
+                                   comp_loc="scalers/comp_spec.bin",
+                                   spec_scal_loc="scalers/spec_spec.bin")
+        data = []
+        for file in tqdm(test_data.locations[:1000]):
+            data.append(np.loadtxt(file).reshape(1, -1))
+        D = np.concatenate(data,axis=0)
+        D[D<1e-11] = 1e-11
+        pc_name = "old"
+        PCA_plot(test_data,D,labels,pc_name,pars_list,e_ticks)
+        
+        exit()
+        
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
                                               8,256,"GELU")
@@ -311,9 +340,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
         single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth"))
     
     model.eval()
-    
-    if plot_pca == True:
-        PCA_plot(test_data,D,labels,name,pars_list,e_ticks)
     
     test_pred = model(test_data.pars[:1000]).detach().numpy()
     
@@ -561,7 +587,7 @@ def loss_calc(data,model,variances):
 def main():
     wrk_dir = os.getcwd()
     num_models = 9
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
              num_models=num_models)
     
 if __name__ == "__main__":
