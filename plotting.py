@@ -169,7 +169,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
     print(f"Average PCA residual is {recon_perc[~np.isnan(recon_perc)].mean()*100}%")
     percent = (recon_perc[(recon_perc<0.01)&~np.isnan(recon_perc)].size/recon_perc[~np.isnan(recon_perc)].size)*100
     print(f"{percent}% of PCA residuals are below 1%")
-    
+    """
     plt.plot(np.mean(recon_resid,axis=0))
     plt.xlabel("Energy channel")
     plt.ylabel("Mean absolute error")
@@ -184,7 +184,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
     plt.yscale("log")
     plt.savefig(f"samples/{name}_PCA_mean_perc.pdf")
     plt.close()
-    
+    """
     for i in range(len(pars_list)):
         print(f"Creating plot for {labels[i]}")
         sort_ind = np.argsort(test_data.pars[:,i])
@@ -302,19 +302,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     D[D<1e-11] = 1e-11
     
     if plot_pca == True:
-        test_data = PCADataset("data/locations/locs_new_set_test.csv",
-                                   pars_list,negatives,logged,scale_bool = False,
-                                   PCA_loc="scalers/PCA_spec.bin",
-                                   comp_loc="scalers/comp_spec.bin",
-                                   spec_scal_loc="scalers/spec_spec.bin")
-        data = []
-        for file in tqdm(test_data.locations):
-            data.append(np.loadtxt(file).reshape(1, -1))
-        D = np.concatenate(data,axis=0)
-        D[D<1e-11] = 1e-11
-        pc_name = "new"
-        PCA_plot(test_data,D,labels,pc_name,pars_list,e_ticks)
-        
         test_data = PCADataset("data/locations/locs_old_set_test.csv",
                                    pars_list,negatives,logged,scale_bool = False,
                                    PCA_loc="scalers/PCA_spec.bin",
