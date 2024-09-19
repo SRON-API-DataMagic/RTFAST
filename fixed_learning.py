@@ -123,7 +123,7 @@ def main():
     
     for i in range(len(learning_rate)):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,8,512)
+        model = DynamicNetwork(17,comps,12,256)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
         #optimizer = SGD(model.parameters(), lr=1e-4,momentum=0.9)

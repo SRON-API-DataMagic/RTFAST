@@ -302,20 +302,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     D[D<1e-11] = 1e-11
     
     if plot_pca == True:
-        test_data = PCADataset("data/locations/locs_old_set_test.csv",
-                                   pars_list,negatives,logged,scale_bool = False,
-                                   PCA_loc="scalers/PCA_spec.bin",
-                                   comp_loc="scalers/comp_spec.bin",
-                                   spec_scal_loc="scalers/spec_spec.bin")
-        data = []
-        for file in tqdm(test_data.locations):
-            data.append(np.loadtxt(file).reshape(1, -1))
-        D = np.concatenate(data,axis=0)
-        D[D<1e-11] = 1e-11
-        pc_name = "old"
-        PCA_plot(test_data,D,labels,pc_name,pars_list,e_ticks)
-        
-        exit()
+        PCA_plot(test_data,D,labels,name,pars_list,e_ticks)
         
     if "active" in name:
         model = network.DynamicDropoutNetwork(20,test_data.pca.n_components,
