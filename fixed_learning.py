@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import torch
 from torch.utils.data import DataLoader
-from torch.optim import Adam
+from torch.optim import Adam, SGD
 
 from dataStructures import PCADataset
 from network import DynamicNetwork, DynamicResNetwork
@@ -123,9 +123,10 @@ def main():
     
     for i in range(len(learning_rate)):
         print(f"Training model {i+1}")
-        model = DynamicNetwork(17,comps,8,256)
+        model = DynamicNetwork(17,comps,8,512)
         model.to(device)
         optimizer = Adam(model.parameters(), lr=1e-4)
+        #optimizer = SGD(model.parameters(), lr=1e-4,momentum=0.9)
         grid_training_loop(model, optimizer, train, test, tra_loader, 
                            val_loader, loss_fn, device, f"{i}_20_pars", "flux", 
                            epochs = 2000)
