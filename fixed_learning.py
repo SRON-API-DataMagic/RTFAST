@@ -94,7 +94,7 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
     
-    val_dataset = PCADataset("data/locations/locs_PCA_comps_val.csv",
+    val_dataset = PCADataset("data/locations/locs_PCA_old_val.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
@@ -103,7 +103,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     comps = val_dataset.pca.n_components
-    train_dataset = PCADataset("data/locations/locs_PCA_comps_tra.csv",
+    train_dataset = PCADataset("data/locations/locs_PCA_old_tra.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
