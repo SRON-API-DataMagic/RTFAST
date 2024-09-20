@@ -94,7 +94,7 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
     
-    val_dataset = PCADataset("data/locations/locs_PCA_old_val.csv",
+    val_dataset = PCADataset("data/locations/locs_PCA_val.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
@@ -103,7 +103,7 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     comps = val_dataset.pca.n_components
-    train_dataset = PCADataset("data/locations/locs_PCA_old_tra.csv",
+    train_dataset = PCADataset("data/locations/locs_PCA_tra.csv",
                                pars_list,negatives,logged,scale_bool = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
@@ -117,11 +117,7 @@ def main():
     train = train_flux
     test =  test_flux
     
-    blocks = [8]
-    nodes = [256]
-    learning_rate = [1e-6,5e-6,1e-5,5e-5,1e-4,5e-4,1e-3]
-    
-    for i in range(len(learning_rate)):
+    for i in range(10):
         print(f"Training model {i+1}")
         model = DynamicNetwork(17,comps,12,256)
         model.to(device)
