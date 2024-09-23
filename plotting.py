@@ -21,6 +21,7 @@ from tqdm import tqdm
 import network
 from dataStructures import PCADataset
 from training import PCALoss
+from generator import new_set, lhc_AGN
             
 def inverse(scaler,data):
     """
@@ -560,6 +561,17 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
+    arf_name = wrk_dir+"/ResponseFiles/PN.arf"
+    arf = read_arf(arf_name)
+    egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
+    range_AGN = np.asarray(lhc_AGN())
+
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,12,13]
+    
+    new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
+    
     num_models = 2
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
              num_models=num_models)
