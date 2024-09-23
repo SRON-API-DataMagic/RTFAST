@@ -560,8 +560,8 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
-    num_models = 9
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
+    num_models = 2
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
              num_models=num_models)
     
 if __name__ == "__main__":
