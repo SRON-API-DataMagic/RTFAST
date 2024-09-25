@@ -525,6 +525,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
         data[data<test_data.threshold] = test_data.threshold
         
         i = 0
+        rtdists = []
+        rtfasts = []
         for pred, D in zip(test_pred, data):
             fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
             axs[0].plot(emid,pred/bin_width,label="RTFAST")
@@ -554,9 +556,16 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             #fig.suptitle("Comparison of PCA emulator output vs expected")
             plt.savefig(f"samples/{name}_energy_compare_{i}.pdf")
             plt.close()
+            rtdists.append(D/bin_width)
+            rtfasts.append(pred/bin_width)
             i += 1
             if i > 6:
                 break
+        rtdists = np.asarray(rtdists)
+        rtfasts = np.asarray(rtfasts)
+        np.savetxt("samples/rtdist_spectra.txt", rtdists)
+        np.savetxt("samples/rtfast_spectra.txt", rtfasts)
+        np.savetxt("samples/egrid.txt",emid)
 
 def reconstruct_emulator(dataset,model):
     pred = model(dataset.pars).detach().numpy()
