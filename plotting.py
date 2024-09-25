@@ -540,6 +540,20 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             #fig.suptitle("Comparison of PCA emulator output vs expected")
             plt.savefig(f"samples/{name}_PCA_compare_{i}.pdf")
             plt.close()
+            fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
+            axs[0].plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
+            axs[0].plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
+            axs[0].set_ylabel("Flux (keV/cm^2/s)")
+            axs[0].legend()
+            axs[0].set_yscale("log")
+            axs[0].set_xscale("log")
+            axs[1].plot(emid,(pred-D)/D)
+            axs[1].fill_between(emid,-0.02,0.02,color="grey",alpha=0.1)
+            axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
+            fig.supxlabel("Energy (keV)")
+            #fig.suptitle("Comparison of PCA emulator output vs expected")
+            plt.savefig(f"samples/{name}_energy_compare_{i}.pdf")
+            plt.close()
             i += 1
             if i > 6:
                 break
@@ -559,6 +573,7 @@ def loss_calc(data,model,variances):
 
 def main():
     wrk_dir = os.getcwd()
+    """
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
     egrid_lo,egrid_hi = arf.energ_lo[arf.energ_lo>0.1],arf.energ_hi[arf.energ_lo>0.1]
@@ -569,7 +584,7 @@ def main():
     logged = [0,2,3,4,7,8,10,12,13]
     
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
-    
+    """
     num_models = 3
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
              plot_heatmaps=False,plot_samples=True,

@@ -20,9 +20,17 @@ class RtdistSpec(nn.Module):
     values directly.
     """
     
-    def __init__(self,pars=17,comps=40):
+    def __init__(self,pars=17,comps=200):
         super().__init__()
         self.LinearStack = nn.Sequential(nn.Linear(pars, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
+                                         nn.GELU(),
+                                         nn.Linear(256, 256),
                                          nn.GELU(),
                                          nn.Linear(256, 256),
                                          nn.GELU(),
@@ -108,66 +116,6 @@ class DynamicResNetwork(nn.Module):
             x = self.activation(x)
         pred = self.output(x)
         return pred
-
-class RTFAST_single(nn.Module):
-    """
-    This can be called to utilise the emulator automatically and output only
-    spectra. This will automatically load in scalers and PCA objects required
-    for computation. Instrumental effects are not included.
-    
-    Input a set of parameters and retrieve the spectrum.
-    """
-    def __init__(self,device=torch.device('cpu')):
-        super().__init__()
-        self.core = RtdistSpec()
-        self.core.load_state_dict(torch.load("models/20_pars_flux.pth",
-                                             map_location=device))
-        self.core.eval() #turns off any training type layers
-        self.core.double() #sets all parameters to double type
-        
-        self.pca  = load("scalers/PCA_20_spec.bin")
-        self.comp = load("scalers/comp_20_spec.bin")
-        self.spec = load("scalers/spec_20_spec.bin")
-        self.calib = np.loadtxt("scalers/calib_factor.txt")
-        
-        self.pca_mean       = torch.Tensor(self.pca.mean_).double()
-        self.pca_components = torch.Tensor(self.pca.components_).double()
-        self.comp_mean      = torch.Tensor(self.comp.mean_).double()
-        self.comp_scale     = torch.Tensor(self.comp.scale_).double()
-        self.spec_mean      = torch.Tensor(self.spec.mean_).double()
-        self.spec_scale     = torch.Tensor(self.spec.scale_).double()
-        self.calib          = torch.Tensor(self.calib).double()
-        
-        self.powers         = [0,2,3,4,7,8,10,11,12,13,19]
-    
-    def PCA_inverse_transform(self,data_reduced):
-        pca_comps = torch.matmul(data_reduced, self.pca_components) + self.pca_mean
-        return pca_comps
-    
-    def comp_inverse_transform(self,data_reduced):
-        components = torch.mul(data_reduced,self.comp_scale) + self.comp_mean
-        return components
-    
-    def spec_inverse_transform(self,data_reduced):
-        spectra = torch.mul(data_reduced,self.spec_scale) + self.spec_mean
-        return spectra
-    
-    def pars_shift(self,theta):
-        #adapts parameters to correct shape of 
-        if theta.shape[0] == 20:
-            theta[self.powers] = torch.log10(theta[self.powers])
-        else:
-            theta[:,self.powers] = torch.log10(theta[:,self.powers])
-        return theta
-    
-    def forward(self,theta):
-        theta = self.pars_shift(theta)
-        data = self.core(theta)
-        PCA_comps = self.comp_inverse_transform(data)
-        std_spec = self.PCA_inverse_transform(PCA_comps)
-        spectrum = 10**self.spec_inverse_transform(std_spec)
-        spectrum = spectrum/self.calib
-        return spectrum
         
 class RtdistSpec_ensemble(nn.Module):
     def __init__(self,device=torch.device('cpu'),num_models=10):
@@ -206,7 +154,7 @@ class RTFAST(nn.Module):
         super().__init__()
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
-            model.load_state_dict(torch.load(f"models/ensemble_{i}.pth",
+            model.load_state_dict(torch.load(f"models/{i}_ensemble.pth",
                                                  map_location=device))
             model.double()
         
@@ -214,9 +162,9 @@ class RTFAST(nn.Module):
         self.base_model = copy.deepcopy(models[0])
         self.base_model = self.base_model.to('meta')
         
-        self.pca  = load("scalers/PCA_20_spec.bin")
-        self.comp = load("scalers/comp_20_spec.bin")
-        self.spec = load("scalers/spec_20_spec.bin")
+        self.pca  = load("scalers/PCA_spec.bin")
+        self.comp = load("scalers/comp_spec.bin")
+        self.spec = load("scalers/spec_spec.bin")
         
         self.pca_mean       = torch.Tensor(self.pca.mean_).double()
         self.pca_components = torch.Tensor(self.pca.components_).double()
@@ -225,7 +173,7 @@ class RTFAST(nn.Module):
         self.spec_mean      = torch.Tensor(self.spec.mean_).double()
         self.spec_scale     = torch.Tensor(self.spec.scale_).double()
         
-        self.powers         = [0,2,3,4,7,8,10,11,12,13,19]
+        self.powers         = [0,2,3,4,7,8,10,11,12,13,16]
     
     def fmodel(self, ensemble_params, ensemble_buffers, x):
         return functional_call(self.base_model, 
@@ -246,7 +194,7 @@ class RTFAST(nn.Module):
     
     def pars_shift(self,theta):
         #adapts parameters to correct shape of 
-        if theta.shape[0] == 20:
+        if theta.ndim==1:
             theta[self.powers] = torch.log10(theta[self.powers])
         else:
             theta[:,self.powers] = torch.log10(theta[:,self.powers])
@@ -254,12 +202,16 @@ class RTFAST(nn.Module):
     
     def forward(self,theta):
         theta = self.pars_shift(theta)
+        print(theta)
         pred = vmap(self.fmodel,
                     in_dims=(0,0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
                                       theta)
         data = torch.mean(pred,axis=0)
+        print(data)
         PCA_comps = self.comp_inverse_transform(data)
+        print(PCA_comps)
         std_spec = self.PCA_inverse_transform(PCA_comps)
+        print(std_spec)
         spectrum = 10**self.spec_inverse_transform(std_spec)
         return spectrum
