@@ -250,7 +250,9 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         plt.savefig(f"samples/corner/{labels[i]}_corner.pdf")
         plt.close()
 
-def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
+def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
+             plot_heatmaps=False,plot_samples=False,
+             num_models=3):
     """
     Function dedicated to plotting PCA neural network model outputs. Only plots
     things necessary for PCA model diagnosis
@@ -356,7 +358,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     axs[1].axvline(-1,ls="--",c="red")
     axs[1].axvline(1,ls="--",c="red")
     axs[1].set_title("Ensemble")
-    plt.savefig("loss/resids_compare_{name}.pdf")
+    plt.savefig(f"loss/resids_compare_{name}.pdf")
     plt.close()
     
     median_res = np.median(residuals_signed,axis=0)*100
@@ -436,8 +438,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
     plt.savefig(f"samples/{name}_mean_errors.pdf")
     plt.close()
     
-    plot_heatmaps = True
-    
     if plot_heatmaps == True:
         for i in range(len(pars_list)):
             print(f"Creating plot for {labels[i]}")
@@ -516,8 +516,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,num_models=3):
             plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.pdf")
             plt.close()
     
-    plot_samples = True
-    
     if plot_samples == True:
         print("Plotting samples")
         data = []
@@ -572,8 +570,9 @@ def main():
     
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     
-    num_models = 2
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+    num_models = 3
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+             plot_heatmaps=False,plot_samples=True,
              num_models=num_models)
     
 if __name__ == "__main__":
