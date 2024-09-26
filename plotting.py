@@ -450,9 +450,9 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             zlabel = "Fractional difference between RTFAST and RTDIST"
             Z_center = np.log10(0.03)
             #colormap
-            top = cm.get_cmap('autumn', 128)
-            bottom = cm.get_cmap('winter', 128)
-            middle = cm.get_cmap('summer',128)
+            top = cm.get_cmap('autumn', 256)
+            middle = cm.get_cmap('summer',256)
+            bottom = cm.get_cmap('winter', 256)
     
             newcolors = np.vstack((middle(np.linspace(0, 3/4, 192)),
                                    top(np.linspace(3/4, 1, 64))))
