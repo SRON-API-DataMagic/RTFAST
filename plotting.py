@@ -418,15 +418,15 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     print(f"Maximum residual is {residuals[~np.isnan(residuals)].max()*100}%")
     print(f"Average residual is {residuals[~np.isnan(residuals)].mean()*100}%")
     print(f"Median residual is {np.median(residuals[~np.isnan(residuals)])*100}%")
-    percent = (residuals[(residuals<0.01)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
-    print(f"{percent}% of residuals are below 1%")
+    percent = (residuals[(residuals<0.03)&~np.isnan(residuals)].size/residuals[~np.isnan(residuals)].size)*100
+    print(f"{percent}% of residuals are below 3%")
     
     single_residuals = np.abs(single_residuals_signed)
     print(f"Maximum residual is {single_residuals[~np.isnan(single_residuals)].max()*100}%")
     print(f"Average residual is {single_residuals[~np.isnan(single_residuals)].mean()*100}%")
     print(f"Median residual is {np.median(single_residuals[~np.isnan(single_residuals)])*100}%")
-    percent = (single_residuals[(single_residuals<0.01)&~np.isnan(single_residuals)].size/single_residuals[~np.isnan(single_residuals)].size)*100
-    print(f"{percent}% of residuals are below 1%")
+    percent = (single_residuals[(single_residuals<0.03)&~np.isnan(single_residuals)].size/single_residuals[~np.isnan(single_residuals)].size)*100
+    print(f"{percent}% of residuals are below 3%")
     
     plt.plot(emid,np.mean(residuals,axis=0))
     plt.xlabel("Energy (keV)")
