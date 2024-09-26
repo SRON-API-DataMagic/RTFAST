@@ -269,7 +269,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     """
     
     if plot_loss == True:
-        for i in range(10):
+        for i in range(num_models):
             loss_plots(f"{i}_20_pars_flux")
     
     #plotting of emulator vs test data performance
@@ -595,8 +595,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 3
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+             plot_heatmaps=True,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
