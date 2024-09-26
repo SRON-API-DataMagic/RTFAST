@@ -454,7 +454,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             middle = cm.get_cmap('summer',256)
             bottom = cm.get_cmap('winter', 256)
     
-            newcolors = np.vstack((middle(np.linspace(0, 3/4, 192)),
+            newcolors = np.vstack((middle(np.linspace(0, 1/2, 192)),
                                    top(np.linspace(3/4, 1, 64))))
             newcmp = ListedColormap(newcolors, name='summer_autumn')
             newcmp.set_over('black')
