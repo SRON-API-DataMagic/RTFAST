@@ -448,23 +448,22 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             tick_labels = np.asarray(np.round(sort_par[(len(sort_par)*percents).astype(int)],1)).astype(str)
             resids = residuals[sort_ind]
             zlabel = "Fractional difference between RTFAST and RTDIST"
-            Z_center = -2.5
+            Z_center = np.log10(0.03)
             #colormap
             top = cm.get_cmap('autumn', 128)
             bottom = cm.get_cmap('winter', 128)
             middle = cm.get_cmap('summer',128)
     
-            newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                                   middle(np.linspace(0, 1/2, 128)),
-                                top(np.linspace(2/3, 1, 128))))
-            newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
+            newcolors = np.vstack((middle(np.linspace(0, 3/4, 192)),
+                                   top(np.linspace(3/4, 1, 64))))
+            newcmp = ListedColormap(newcolors, name='summer_autumn')
             newcmp.set_over('black')
             
             fig = plt.figure(figsize=(10,10))
-            norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
+            norm = colors.LogNorm(vmin = 10**(-3), vmax = 10**(-1))
             ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
-            c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
-                        10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
+            c_ticks = [10**(-3), 10**(-2.5), 10**(-2), 10**(-1.5),
+                        10**(-1)]
             cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
             plt.yticks(ticks,labels=tick_labels)
             plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
@@ -493,8 +492,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             middle = cm.get_cmap('summer',128)
     
             newcolors = np.vstack((bottom(np.linspace(0, 1/2, 128)),
-                                   middle(np.linspace(0, 1/2, 128)),
-                                top(np.linspace(2/3, 1, 128))))
+                                   middle(np.linspace(0, 1/2, 128))))
             newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
             newcmp.set_over('black')
             
