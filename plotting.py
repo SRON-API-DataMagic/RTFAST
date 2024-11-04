@@ -443,7 +443,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     sort_par = test_data.pars[sort_ind,0]
     
     resids = residuals[sort_ind]
-    resids = np.mean(resids,axis=0)
+    resids = np.mean(resids,axis=1)
     
     plt.plot(10**sort_par,resids)
     plt.xlabel("Cornal height")
