@@ -455,6 +455,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.plot(10**sort_par,np.cumsum(resids)/np.sum(resids))
     plt.xlabel("Cornal height")
     plt.ylabel("Cumulative error")
+    plt.xscale("log")
     plt.savefig("loss/cum_frac_error.png")
     plt.close()
     
