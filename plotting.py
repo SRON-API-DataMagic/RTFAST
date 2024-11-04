@@ -452,7 +452,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.savefig("loss/hist_frac_mean.png")
     plt.close()
     
-    plt.plot(np.logspace(np.min(sort_par),2,1000),np.linspace(0,1,1000),label = "exactly average error")
+    plt.plot(np.logspace(np.min(np.asarray(sort_par)),2,1000),
+             np.linspace(0,1,1000),label = "exactly average error")
     plt.plot(10**sort_par,np.cumsum(resids)/np.sum(resids),label="Test set")
     plt.xlabel("Cornal height")
     plt.ylabel("Cumulative error")
