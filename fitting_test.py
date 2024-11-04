@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import torch
 from scipy.special import gammaln
+from scipy.stats import norm
 from astropy.io import fits
 
 #plotting libraries
