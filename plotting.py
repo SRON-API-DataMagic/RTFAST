@@ -314,7 +314,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
         model = network.RtdistSpec_ensemble(num_models=num_models)
         single_model = network.DynamicNetwork(17,200,12,256)
         #model = network.DynamicNetwork(17,test_data.pca.n_components,12,256)
-        single_model.load_state_dict(torch.load("models/0_20_pars_flux.pth",
+        single_model.load_state_dict(torch.load("models/0_ensemble.pth",
                                                 map_location=torch.device("cpu")))
     
     model.eval()

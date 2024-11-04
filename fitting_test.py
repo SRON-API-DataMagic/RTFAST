@@ -526,12 +526,12 @@ n_top_samples = 20000  # For example, select the top 100 samples
 top_samples = sorted_samples[:n_top_samples]
 top_log_likelihoods = sorted_log_likelihoods[:n_top_samples]
 
+spin_range = [0,1]
 Gamma_range = [2,3]
-nH_range = [np.log10(1e-2),np.log10(1)]
 anorm_range = [np.log10(1e-4),np.log10(1e-2)]
-ranges = np.array([Gamma_range,nH_range,anorm_range])
+ranges = np.array([spin_range,Gamma_range,anorm_range])
 new_samples = samples_equal
-new_samples[:,[1,2]] = np.log10(new_samples[:,[1,2]])
+new_samples[:,[2]] = np.log10(new_samples[:,[2]])
 
 nn_pars_true_logged = nn_pars_true
 nn_pars_true_logged[[1,2]] = np.log10(nn_pars_true_logged[[1,2]])
