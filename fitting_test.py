@@ -244,7 +244,7 @@ for item in hdu.data:
     sim_obs.append(item[1])
 sim_obs = np.array(sim_obs)*expo_time/e_bin_width
 #xspec input parameters
-xspec_pars = [6,0.9,57,-2,2e4,0.024917,2.45,1e5,1,17,50.,5e-2,1e-2,3e6,0.02,0,0,0,0,0,0,-0.8,0.3,2.2e-4,1]
+xspec_pars = [6,0.9,57,-2,2e4,0.024917,2.5,1e5,1,17,50.,5e-2,1e-2,3e6,0.02,0,0,0,0,0,0,-0.8,0.3,2.2e-4,1]
 #neural network input parameters
 nn_pars = [6,0.9,57,2,2e4,0.024917,2.5,1e5,1,17,50,1e-2,3e6,0.02,0,0,2.2e-4]
 labels = ["Height","Spin","i",r"$r_{in}$",r"$r_{out}$","z",r"$\Gamma$","Distance",r"$A_{fe}$",

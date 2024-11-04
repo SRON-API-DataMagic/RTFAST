@@ -439,6 +439,19 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.savefig(f"samples/{name}_mean_errors.pdf")
     plt.close()
     
+    sort_ind = np.argsort(test_data.pars[:,0])
+    sort_par = test_data.pars[sort_ind,0]
+    
+    resids = residuals[sort_ind]
+    resids = np.mean(resids,axis=0)
+    
+    plt.plot(10**sort_par,resids)
+    plt.xlabel("Cornal height")
+    plt.ylabel("Fractional error")
+    plt.savefig("loss/error_h.png")
+    plt.close()
+    
+    
     if plot_heatmaps == True:
         for i in range(len(pars_list)):
             print(f"Creating plot for {labels[i]}")
