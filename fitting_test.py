@@ -11,7 +11,6 @@ import numpy as np
 import torch
 from torch import nn
 import pandas as pd
-import emcee
 from scipy.special import gammaln
 import scipy
 from scipy.stats import norm, poisson
