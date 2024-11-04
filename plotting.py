@@ -445,7 +445,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
     
-    plt.hist(resids,bins=20)
+    plt.hist(resids,bins=100)
     plt.xlabel("Fractional error")
     plt.ylabel("Occurences")
     plt.savefig("loss/hist_frac_mean.png")
