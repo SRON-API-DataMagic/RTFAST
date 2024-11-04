@@ -150,7 +150,7 @@ class RTFAST(nn.Module):
     
     Input a set of parameters and retrieve the spectrum.
     """
-    def __init__(self,device=torch.device('cpu'),num_models=10):
+    def __init__(self,device=torch.device('cpu'),num_models=7):
         super().__init__()
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
@@ -173,7 +173,7 @@ class RTFAST(nn.Module):
         self.spec_mean      = torch.Tensor(self.spec.mean_).double()
         self.spec_scale     = torch.Tensor(self.spec.scale_).double()
         
-        self.powers         = [0,2,3,4,7,8,10,11,12,13,16]
+        self.powers         = [0,2,3,4,7,8,10,11,12,16]
     
     def fmodel(self, ensemble_params, ensemble_buffers, x):
         return functional_call(self.base_model, 
@@ -202,16 +202,12 @@ class RTFAST(nn.Module):
     
     def forward(self,theta):
         theta = self.pars_shift(theta)
-        print(theta)
         pred = vmap(self.fmodel,
                     in_dims=(0,0, None))(self.ensemble_params,
                                       self.ensemble_buffers, 
                                       theta)
         data = torch.mean(pred,axis=0)
-        print(data)
         PCA_comps = self.comp_inverse_transform(data)
-        print(PCA_comps)
         std_spec = self.PCA_inverse_transform(PCA_comps)
-        print(std_spec)
         spectrum = 10**self.spec_inverse_transform(std_spec)
         return spectrum
