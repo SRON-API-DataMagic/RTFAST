@@ -122,7 +122,7 @@ class RtdistSpec_ensemble(nn.Module):
         super().__init__()
         models = [DynamicNetwork(17,200,12,256).to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
-            model.load_state_dict(torch.load(f"models/{i}_20_pars_flux.pth",
+            model.load_state_dict(torch.load(f"models/{i}_ensemble.pth",
                                                  map_location=device))
         
         self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
