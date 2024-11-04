@@ -445,6 +445,12 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
     
+    plt.hist(resids,bins=20)
+    plt.xlabel("Fractional error")
+    plt.ylabel("Occurences")
+    plt.savefig("loss/hist_frac_mean.png")
+    plt.close()
+    
     plt.plot(10**sort_par,resids)
     plt.xlabel("Cornal height")
     plt.ylabel("Fractional error")
