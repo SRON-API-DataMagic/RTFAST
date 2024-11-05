@@ -509,10 +509,11 @@ samples_equal = sresults.samples_equal()
 results_sim = dyfunc.resample_run(sresults)
 
 new_results = copy.deepcopy(sresults)
+new_results = copy.deepcopy(sresults)
 nn_pars_indices = [0,1,3,7,9,19]
-nn_pars_indices_full = [1,6,16]
-nn_pars_true = np.asarray(nn_pars)
-labels_plots = np.delete(labels,[])
+nn_pars_indices_full = [0,1,2,3,6,7,8,9,11,13,14,15,16,17]
+nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
+labels_plots = np.delete(labels,[4,5,10,12])
 
 fig, axes = dyplot.runplot(sresults)
 plt.savefig("fitting/run_plot.pdf")
@@ -537,33 +538,11 @@ n_top_samples = 20000  # For example, select the top 100 samples
 top_samples = sorted_samples[:n_top_samples]
 top_log_likelihoods = sorted_log_likelihoods[:n_top_samples]
 
-height_range = [1.5,10]
-spin_range = [0.1,0.998]
-inclination_range = [1,40]
-r_inner_range = [1,400]
-r_outer_range = [400,1e5]
-z_range = [0.01,0.03]
-Gamma_range = [2,3]
-distance_range = [np.log10(1e2),np.log10(1e6)]
-Afe_range = [1,3]
-logNe_range = [15,17]
-kte_range = [5,200]
-boost_range = [1e-2,5]
-mass_range = [1e5,1e7]
-honr_range = [0,0.1]
-b1_range = [0,0.2]
-b2_range = [-1,1]
-anorm_range = [np.log10(1e-4),np.log10(1e-2)]
-nH_range = [np.log10(1e-2),np.log10(1)]
-ranges = np.array([height_range,spin_range,inclination_range,r_inner_range,
-                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,anorm_range,nH_range])
 new_samples = samples_equal
-new_samples[:,[7,-1,-2]] = np.log10(new_samples[:,[7,-1,-2]])
+new_samples[:,[6,-1,-2]] = np.log10(new_samples[:,[6,-1,-2]])
 
 nn_pars_true_logged = nn_pars_true
-nn_pars_true_logged[[7,-1,-2]] = np.log10(nn_pars_true_logged[[7,-1,-2]])
+nn_pars_true_logged[[6,-1,-2]] = np.log10(nn_pars_true_logged[[6,-1,-2]])
 
 fig = corner.corner(
     new_samples,
