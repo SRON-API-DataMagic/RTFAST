@@ -265,6 +265,7 @@ distance_range    = [1e2,1e6]
 Afe_range         = [0.5,10]
 logNe_range       = [15,20]
 kte_range         = [5,500]
+nH_range          = [0,1e6]
 boost_range       = [1e-2,10]
 mass_range        = [1e4,1e11]
 honr_range        = [0,0.176]
@@ -275,7 +276,7 @@ anorm_range       = [1e-4,4]
 range_all = [height_range,spin_range,inclination_range,r_inner_range,
              r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
              logNe_range,kte_range,boost_range,mass_range,
-             honr_range,b1_range,b2_range,anorm_range]
+             honr_range,b1_range,b2_range,anorm_range,nH_range]
 
 limits = np.asarray(range_all)
 
