@@ -405,7 +405,7 @@ def ptform(u):
     honr_range = [0,0.1]
     b1_range = [0,0.2]
     b2_range = [-1,1]
-    anorm_range = [np.log10(1e-5),np.log10(1e-3)]
+    anorm_range = [np.log10(1e-4),np.log10(1e-2)]
     nH_range = [np.log10(1e-2),np.log10(1)]
 
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
@@ -486,7 +486,7 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
-ndim=18
+ndim=14
 sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=500,bound="multi")
 sampler.run_nested()
 sresults = sampler.results
