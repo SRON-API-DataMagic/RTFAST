@@ -487,7 +487,7 @@ def convolve_sim_fixed(theta):
     return pred
 
 ndim=14
-sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=500,bound="multi")
+sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=2000,bound="multi")
 sampler.run_nested()
 sresults = sampler.results
 
@@ -539,10 +539,10 @@ top_samples = sorted_samples[:n_top_samples]
 top_log_likelihoods = sorted_log_likelihoods[:n_top_samples]
 
 new_samples = samples_equal
-new_samples[:,[6,-1,-2]] = np.log10(new_samples[:,[6,-1,-2]])
+new_samples[:,[5,-1,-2]] = np.log10(new_samples[:,[5,-1,-2]])
 
 nn_pars_true_logged = nn_pars_true
-nn_pars_true_logged[[6,-1,-2]] = np.log10(nn_pars_true_logged[[6,-1,-2]])
+nn_pars_true_logged[[5,-1,-2]] = np.log10(nn_pars_true_logged[[5,-1,-2]])
 
 fig = corner.corner(
     new_samples,
