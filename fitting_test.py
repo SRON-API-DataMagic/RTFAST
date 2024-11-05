@@ -448,8 +448,8 @@ def insert_fixed_pars(theta):
     #theta = np.insert(theta,11,nn_pars[11]) #fixed boost
     theta = np.insert(theta,12,nn_pars[12]) #fixed mass
     #theta = np.insert(theta,13,nn_pars[13]) #fixed h/r
-    #theta = np.insert(theta,14,nn_pars[14]) #fixed b1
-    #theta = np.insert(theta,15,nn_pars[15]) #fixed b2
+    theta = np.insert(theta,14,nn_pars[14]) #fixed b1
+    theta = np.insert(theta,15,nn_pars[15]) #fixed b2
     #theta = np.insert(theta,19,nn_pars[16]) #fixed anorm
     #theta = np.insert(theta,20,nn_pars[17]) #fixed nH
     return theta
@@ -486,9 +486,9 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
-ndim=14
+ndim=12
 sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=2000,bound="multi")
-sampler.run_nested()
+sampler.run_nested(dlogz=0.01)
 sresults = sampler.results
 
 # Extract sampling results.
@@ -511,9 +511,9 @@ results_sim = dyfunc.resample_run(sresults)
 new_results = copy.deepcopy(sresults)
 new_results = copy.deepcopy(sresults)
 nn_pars_indices = [0,1,3,7,9,19]
-nn_pars_indices_full = [0,1,2,3,6,7,8,9,11,13,14,15,16,17]
+nn_pars_indices_full = [0,1,2,3,6,7,8,9,11,13,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
-labels_plots = np.delete(labels,[4,5,10,12])
+labels_plots = np.delete(labels,[4,5,10,12,14,15])
 
 fig, axes = dyplot.runplot(sresults)
 plt.savefig("fitting/run_plot.pdf")
