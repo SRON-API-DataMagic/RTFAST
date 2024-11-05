@@ -79,7 +79,7 @@ def gaussian_func(theta):
     l = torch.Tensor(convolve_sim(torch.Tensor(theta))) #evaluates model
     gaussians = -1*((l - x)**2)/((2*x)**2) #model emulator error as 3% scatter
     gaussians[x==0] = 0
-    summation = torch.sum(gaussians)
+    summation = torch.sum(gaussians[56:1999])
     if torch.isnan(summation): #if something goes wrong, e.g. there's an infinify somewhere, return invalid
         return -1e100
     return summation.detach().numpy()
