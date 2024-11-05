@@ -57,7 +57,7 @@ def poisson_func(x,l):
         return -1e100
     return summation.detach().numpy()
 
-def gaussian_func(x,l):
+def gaussian_func(theta):
     """
     Calculates the gaussian likelihood.
 
@@ -75,7 +75,9 @@ def gaussian_func(x,l):
         likelihood probability that the proposed model is correct based on the
         data inputted (x).
     """
-    gaussians = -1*((l - x)**2)/(2*(1.03*x)**2) #model emulator error as 3% scatter
+    x = torch.Tensor(data) #converts data to pytorch Tensor for gradient purposes
+    l = torch.Tensor(convolve_sim(torch.Tensor(theta))) #evaluates model
+    gaussians = -1*((l - x)**2)/((2*x)**2) #model emulator error as 3% scatter
     gaussians[x==0] = 0
     summation = torch.sum(gaussians)
     if torch.isnan(summation): #if something goes wrong, e.g. there's an infinify somewhere, return invalid
@@ -181,7 +183,7 @@ def log_likelihood(theta):
     if priors(theta) == False:
         log_likeli = -1e300
     else:
-        log_likeli = gaussian_scatter(theta) #evaluate the likelihood of model based on data
+        log_likeli = gaussian_func(theta) #evaluate the likelihood of model based on data
     return log_likeli
 
 def convolve_sim(theta):
@@ -217,9 +219,11 @@ def simulator(theta):
     pred: torch.Tensor
         rtdist model result
     """
-    theta = torch.Tensor(theta).double()
+    trim_theta = torch.Tensor(theta[:-1]).double()
+    tbabs = xspec.XSTBabs()
+    tbabs.nH = theta[-1]
     abso = tbabs(egrid_lo,egrid_hi)
-    pred = model(theta).detach().numpy()[:-1]*abso
+    pred = model(trim_theta).detach().numpy()[:-1]*abso
     return pred
 
 wrk_dir = os.getcwd()
@@ -391,28 +395,27 @@ def ptform(u):
     r_outer_range = [400,1e5]
     z_range = [0.01,0.03]
     Gamma_range = [2,3]
-    distance_range = [np.log10(3.5e5),np.log10(5e7)]
+    distance_range = [np.log10(1e2),np.log10(1e6)]
     Afe_range = [1,3]
     logNe_range = [15,17]
     kte_range = [5,200]
-    nH_range = [np.log10(1e-2),np.log10(1)]
     boost_range = [1e-2,5]
     mass_range = [1e5,1e7]
     honr_range = [0,0.1]
     b1_range = [0,0.2]
     b2_range = [-1,1]
     anorm_range = [np.log10(1e-4),np.log10(1e-2)]
+    nH_range = [np.log10(1e-2),np.log10(1)]
 
-    """
-    range_all = [height_range,spin_range,inclination_range,
-                 r_inner_range,Gamma_range,distance_range,
-                 Afe_range,logNe_range,nH_range,
-                 anorm_range]
-    """
-    range_all = [spin_range,Gamma_range,anorm_range]
-
-    #powers = [5,8,9]
-    powers = [2]
+    range_all = [height_range,spin_range,inclination_range,r_inner_range,
+                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
+                 logNe_range,kte_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,anorm_range,nH_range]
+    
+    powers = [7,16,17]
+    
+    #range_all = [spin_range,Gamma_range,anorm_range]
+    #powers = [2]
     
     for i,lims in enumerate(range_all):
         u[i] = u[i]*(lims[1]-lims[0]) + lims[0]
@@ -424,23 +427,24 @@ def insert_fixed_pars(theta):
     """
     If you are fixing certain parameters, insert them here.
     """
-    theta = np.insert(theta,0,nn_pars[0]) #fixed height
+    #theta = np.insert(theta,0,nn_pars[0]) #fixed height
     #theta = np.insert(theta,1,nn_pars[1]) #fixed spin
-    theta = np.insert(theta,2,nn_pars[2]) #fixed inclination
-    theta = np.insert(theta,3,nn_pars[3]) #fixed inner radius
-    theta = np.insert(theta,4,nn_pars[4]) #fixed outer radius
-    theta = np.insert(theta,5,nn_pars[5]) #fixed z
+    #theta = np.insert(theta,2,nn_pars[2]) #fixed inclination
+    #theta = np.insert(theta,3,nn_pars[3]) #fixed inner radius
+    #theta = np.insert(theta,4,nn_pars[4]) #fixed outer radius
+    #theta = np.insert(theta,5,nn_pars[5]) #fixed z
     #theta = np.insert(theta,6,nn_pars[6]) #fixed gamma
-    theta = np.insert(theta,7,nn_pars[7]) #fixed distance
-    theta = np.insert(theta,8,nn_pars[8]) #fixed afe
-    theta = np.insert(theta,9,nn_pars[9]) #fixed logNe
-    theta = np.insert(theta,10,nn_pars[10]) #fixed kte
-    theta = np.insert(theta,11,nn_pars[11]) #fixed boost
-    theta = np.insert(theta,12,nn_pars[12]) #fixed mass
-    theta = np.insert(theta,13,nn_pars[13]) #fixed h/r
-    theta = np.insert(theta,14,nn_pars[14]) #fixed b1
-    theta = np.insert(theta,15,nn_pars[15]) #fixed b2
-    #theta = np.insert(theta,19,nn_pars[19]) #fixed anorm
+    #theta = np.insert(theta,7,nn_pars[7]) #fixed distance
+    #theta = np.insert(theta,8,nn_pars[8]) #fixed afe
+    #theta = np.insert(theta,9,nn_pars[9]) #fixed logNe
+    #theta = np.insert(theta,10,nn_pars[10]) #fixed kte
+    #theta = np.insert(theta,11,nn_pars[11]) #fixed boost
+    #theta = np.insert(theta,12,nn_pars[12]) #fixed mass
+    #theta = np.insert(theta,13,nn_pars[13]) #fixed h/r
+    #theta = np.insert(theta,14,nn_pars[14]) #fixed b1
+    #theta = np.insert(theta,15,nn_pars[15]) #fixed b2
+    #theta = np.insert(theta,19,nn_pars[16]) #fixed anorm
+    #theta = np.insert(theta,20,nn_pars[17]) #fixed nH
     return theta
 
 def log_likelihood_fixed(theta):
@@ -463,7 +467,7 @@ def log_likelihood_fixed(theta):
     if priors(theta) == False:
         log_likeli = -1e300
     else:
-        log_likeli = gaussian_scatter(theta,scatter=0.05) #evaluate the poisson likelihood of model based on data
+        log_likeli = gaussian_func(theta) #evaluate the poisson likelihood of model based on data
     return log_likeli
 
 def convolve_sim_fixed(theta):
@@ -475,7 +479,7 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
-ndim=3
+ndim=18
 sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=500,bound="multi")
 sampler.run_nested()
 sresults = sampler.results
@@ -500,8 +504,8 @@ results_sim = dyfunc.resample_run(sresults)
 new_results = copy.deepcopy(sresults)
 nn_pars_indices = [0,1,3,7,9,19]
 nn_pars_indices_full = [1,6,16]
-nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
-labels_plots = np.delete(labels,[0,2,3,4,5,7,8,9,10,11,12,13,14,15,])
+nn_pars_true = np.asarray(nn_pars)
+labels_plots = np.delete(labels,[])
 
 fig, axes = dyplot.runplot(sresults)
 plt.savefig("fitting/run_plot.pdf")
@@ -526,15 +530,34 @@ n_top_samples = 20000  # For example, select the top 100 samples
 top_samples = sorted_samples[:n_top_samples]
 top_log_likelihoods = sorted_log_likelihoods[:n_top_samples]
 
-spin_range = [0,1]
+height_range = [1.5,10]
+spin_range = [0.1,0.998]
+inclination_range = [1,40]
+r_inner_range = [1,400]
+r_outer_range = [400,1e5]
+z_range = [0.01,0.03]
 Gamma_range = [2,3]
+distance_range = [np.log10(1e2),np.log10(1e6)]
+Afe_range = [1,3]
+logNe_range = [15,17]
+kte_range = [5,200]
+boost_range = [1e-2,5]
+mass_range = [1e5,1e7]
+honr_range = [0,0.1]
+b1_range = [0,0.2]
+b2_range = [-1,1]
 anorm_range = [np.log10(1e-4),np.log10(1e-2)]
-ranges = np.array([spin_range,Gamma_range,anorm_range])
+nH_range = [np.log10(1e-2),np.log10(1)]
+ranges = np.array([height_range,spin_range,inclination_range,r_inner_range,
+                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
+                 logNe_range,kte_range,boost_range,mass_range,
+                 honr_range,b1_range,b2_range,anorm_range,nH_range])
 new_samples = samples_equal
-new_samples[:,[2]] = np.log10(new_samples[:,[2]])
+new_samples[:,[7,-1,-2]] = np.log10(new_samples[:,[7,-1,-2]])
 
 nn_pars_true_logged = nn_pars_true
-nn_pars_true_logged[[1,2]] = np.log10(nn_pars_true_logged[[1,2]])
+nn_pars_true_logged[[7,-1,-2]] = np.log10(nn_pars_true_logged[[7,-1,-2]])
+
 fig = corner.corner(
     new_samples,
     labels=labels_plots,  # Parameter names
