@@ -398,14 +398,14 @@ def ptform(u):
     Gamma_range = [2,3]
     distance_range = [np.log10(1e4),np.log10(1e6)]
     Afe_range = [0.5,3]
-    logNe_range = [15,17]
+    logNe_range = [15,18]
     kte_range = [5,100]
     boost_range = [1e-2,5]
     mass_range = [1e5,1e7]
     honr_range = [0,0.1]
     b1_range = [0,0.2]
     b2_range = [-1,1]
-    anorm_range = [np.log10(1e-4),np.log10(1e-2)]
+    anorm_range = [np.log10(1e-5),np.log10(1e-3)]
     nH_range = [np.log10(1e-2),np.log10(1)]
 
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
