@@ -27,6 +27,7 @@ from ndspec import Response
 #from reltrans._models import lmodxiller as xillver
 from sherpa.astro import xspec
 
+import emcee
 import dynesty
 from dynesty import plotting as dyplot
 from dynesty import utils as dyfunc
@@ -248,9 +249,9 @@ for item in hdu.data:
     sim_obs.append(item[1])
 sim_obs = np.array(sim_obs)*expo_time/e_bin_width
 #xspec input parameters
-xspec_pars = [6,0.9,57,-2,2e4,0.024917,2.5,1e5,1,17,50.,5e-2,1e-2,3e6,0.02,0,0,0,0,0,0,-0.8,0.3,2.2e-4,1]
+xspec_pars = [6,0.9,57,-2,2e4,0.024917,2.45,1e5,1,17,50.,5e-2,1,3e6,0.02,0,0,0,0,0,0,-0.8,0.3,2.2e-4,1]
 #neural network input parameters
-nn_pars = [6,0.9,57,2,2e4,0.024917,2.5,1e5,1,17,50,1e-2,3e6,0.02,0,0,2.2e-4,5e-2]
+nn_pars = [6,0.9,57,2,2e4,0.024917,2.45,1e5,1,17,50,1,3e6,0.02,0,0,2.2e-4,5e-2]
 labels = ["Height","Spin","i",r"$r_{in}$",r"$r_{out}$","z",r"$\Gamma$","Distance",r"$A_{fe}$",
           "logNe","kTe","boost","Mass","h/r","b1","b2","Anorm","nH"]
 
@@ -486,7 +487,86 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
+nn_pars_indices_full = [0,1,2,3,6,7,8,9,11,13,16,17]
+nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
+labels_plots = np.delete(labels,[4,5,10,12,14,15])
+
 ndim=12
+
+ndim, nwalkers = 12, 100
+start_pos = (np.asarray(nn_pars)[[0,1,2,3,6,7,8,9,11,13,16,17]][:,np.newaxis] + np.random.randn(ndim,nwalkers)*1e-5).T
+
+from multiprocessing import Pool
+
+filename = "fitting/mc_fit.h5"
+backend = emcee.backends.HDFBackend(filename)
+backend.reset(nwalkers, ndim)
+
+with Pool() as pool:
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, log_likelihood_fixed, 
+                                    pool=pool,backend=backend)
+    sampler.run_mcmc(start_pos, 1e5, progress=True)
+
+print(
+    "Mean acceptance fraction: {0:.3f}".format(
+        np.mean(sampler.acceptance_fraction)
+    )
+)
+print(
+    "Mean autocorrelation time: {0:.3f} steps".format(
+        np.mean(sampler.get_autocorr_time(tol =0))
+    )
+)
+
+fig, axes = plt.subplots(len(labels_plots), figsize=(10, len(labels_plots)*3), sharex=True)
+samples = sampler.get_chain()
+true_pars = np.asarray(nn_pars)
+for i in range(ndim):
+    ax = axes[i]
+    ax.plot(samples[:, :, i], "k", alpha=0.3)
+    ax.set_xlim(0, len(samples))
+    ax.set_ylabel(labels_plots[i])
+    ax.yaxis.set_label_coords(-0.1, 0.5)
+    ax.axhline(nn_pars_true[i],ls="--",c="b")
+
+axes[-1].set_xlabel("step number")
+plt.savefig("fitting/mc_chain.png")
+plt.close()
+
+flat_samples = sampler.get_chain(discard=5000,thin=700,flat=True)
+figure = corner.corner(
+    flat_samples,
+    labels=labels_plots,show_titles=True,
+    truths = np.asarray(nn_pars_true),
+    title_kwargs={"fontsize": 12},
+    title_quantiles=(0.16,0.5, 0.84), levels=(0.68,),
+    quantiles=(0.16, 0.84)
+)
+plt.savefig("fitting/mc_corner.png")
+plt.close()
+
+inds = np.random.randint(len(flat_samples), size=100)
+model_draws = []
+for ind in inds:
+    sample = flat_samples[ind]
+    model_eval = convolve_sim_fixed(sample)
+    model_draws.append(model_eval)
+    plt.plot(emid, model_eval, "C1", alpha=0.1)
+plt.errorbar(emid, pois_obs, yerr=np.sqrt(pois_obs), fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
+plt.legend(fontsize=14)
+plt.xlim(0.3, 10)
+plt.ylim(1e3,1e7)
+plt.xlabel("Energy (keV)")
+plt.ylabel(r"Photons/cm$^2$/s/keV")
+plt.xscale("log")
+plt.yscale("log")
+plt.savefig("fitting/mc_draws.png")
+plt.close()
+
+
+
+exit()
+
 sampler = dynesty.NestedSampler(log_likelihood_fixed, ptform, ndim, nlive=2000,bound="multi")
 sampler.run_nested(dlogz=0.01)
 sresults = sampler.results
