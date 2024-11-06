@@ -505,7 +505,7 @@ backend.reset(nwalkers, ndim)
 with Pool() as pool:
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_likelihood_fixed, 
                                     pool=pool,backend=backend)
-    sampler.run_mcmc(start_pos, 1e5, progress=True)
+    sampler.run_mcmc(start_pos, int(1e5), progress=True)
 
 print(
     "Mean acceptance fraction: {0:.3f}".format(
