@@ -411,7 +411,7 @@ def ptform(u):
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
                  Gamma_range,distance_range,Afe_range,
                  logNe_range,boost_range,
-                 honr_range,b1_range,b2_range,anorm_range,nH_range]
+                 honr_range,anorm_range,nH_range]
     powers = [5,12,13]
     """
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
