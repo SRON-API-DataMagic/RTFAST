@@ -417,7 +417,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
-    resids_2 = np.max(resids,axis=1)
+    resids_2 = np.max(residuals[sort_ind],axis=1)
     print(sorted_par[np.argmin(resids_2)])
     
     plt.hist(resids,bins=100)
