@@ -413,10 +413,11 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     
     sort_ind = np.argsort(test_data.pars[:,0])
     sort_par = test_data.pars[sort_ind,0]
+    sorted_par = test_data.pars[sort_ind]
     
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
-    print(sort_par[:,np.argmin(resids)])
+    print(sorted_par[:,np.argmin(resids)])
     
     plt.hist(resids,bins=100)
     plt.xlim(0,0.1)
