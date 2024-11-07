@@ -444,6 +444,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
+    print(sort_par[np.argmin(resids)])
     
     plt.hist(resids,bins=100)
     plt.xlim(0,0.1)
