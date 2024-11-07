@@ -416,7 +416,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
-    print(sort_par[np.argmin(resids)])
+    print(sort_par[:,np.argmin(resids)])
     
     plt.hist(resids,bins=100)
     plt.xlim(0,0.1)
@@ -598,7 +598,7 @@ def main():
     """
     num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+             plot_heatmaps=False,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
