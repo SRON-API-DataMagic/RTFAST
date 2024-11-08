@@ -236,11 +236,6 @@ expo_time = 260000
 resp.set_exposure_time(expo_time)
 
 saved_grid = resp.energ_lo
-#resp = resp.ignore_channels(high_energy=0.1,low_energy=0)
-resp.resp_matrix = resp.resp_matrix[resp.energ_lo>0.1]
-resp.energ_hi = resp.energ_hi[resp.energ_lo>0.1]
-resp.energ_lo = resp.energ_lo[resp.energ_lo>0.1]
-resp.n_energs = len(resp.energ_lo)
 e_bin_width = resp.emax-resp.emin
 
 hdul = fits.open("data/testing/rtdist.pha")
