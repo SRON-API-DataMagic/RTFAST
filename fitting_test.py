@@ -489,7 +489,7 @@ labels_plots = np.delete(labels,[4,10,12,13,14,15])
 ndim=12
 
 ndim, nwalkers = 12, 100
-start_pos = (np.asarray(nn_pars)[[0,1,2,3,6,7,8,9,11,13,16,17]][:,np.newaxis] + np.random.randn(ndim,nwalkers)*1e-5).T
+start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis] + np.random.randn(ndim,nwalkers)*1e-5).T
 
 from multiprocessing import Pool
 
