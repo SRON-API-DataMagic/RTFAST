@@ -210,4 +210,5 @@ class RTFAST(nn.Module):
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)
         spectrum = 10**self.spec_inverse_transform(std_spec)
+        spectrum = torch.cat([torch.zeros(50),spectrum])
         return spectrum
