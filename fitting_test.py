@@ -141,7 +141,7 @@ def priors(theta):
     #make sure all sampled parameters are within prior ranges
     for i,par in enumerate(theta):
         if par < limits[i,0] or par > limits[i,1]:
-            print(f"Outside bounds. {labels[i]}: {par}")
+            #print(f"Outside bounds. {labels[i]}: {par}")
             return False
     #following priors are training boundaries
     #check for highly comptonized thick disks with high iron abundances
