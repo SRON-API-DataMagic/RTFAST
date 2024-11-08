@@ -224,8 +224,9 @@ def simulator(theta):
     tbabs = xspec.XSTBabs()
     tbabs.nH = theta[-1]
     abso = tbabs(egrid_lo,egrid_hi)
-    pred = model(trim_theta).detach().numpy()[:-1]*abso
-    return pred
+    pred = model(trim_theta).detach().numpy()
+    result = pred*abso
+    return result
 
 wrk_dir = os.getcwd()
 resp = Response.ResponseMatrix(wrk_dir+"/ResponseFiles/PN.rmf")
