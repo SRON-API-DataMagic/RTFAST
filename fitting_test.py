@@ -433,7 +433,7 @@ def insert_fixed_pars(theta):
     #theta = np.insert(theta,0,nn_pars[0]) #fixed height
     #theta = np.insert(theta,1,nn_pars[1]) #fixed spin
     theta = np.insert(theta,2,nn_pars[2]) #fixed inclination
-    #theta = np.insert(theta,3,nn_pars[3]) #fixed inner radius
+    theta = np.insert(theta,3,nn_pars[3]) #fixed inner radius
     theta = np.insert(theta,4,nn_pars[4]) #fixed outer radius
     #theta = np.insert(theta,5,nn_pars[5]) #fixed z
     #theta = np.insert(theta,6,nn_pars[6]) #fixed gamma
@@ -441,7 +441,7 @@ def insert_fixed_pars(theta):
     #theta = np.insert(theta,8,nn_pars[8]) #fixed afe
     theta = np.insert(theta,9,nn_pars[9]) #fixed logNe
     theta = np.insert(theta,10,nn_pars[10]) #fixed kte
-    #theta = np.insert(theta,11,nn_pars[11]) #fixed boost
+    theta = np.insert(theta,11,nn_pars[11]) #fixed boost
     theta = np.insert(theta,12,nn_pars[12]) #fixed mass
     theta = np.insert(theta,13,nn_pars[13]) #fixed h/r
     theta = np.insert(theta,14,nn_pars[14]) #fixed b1
@@ -482,9 +482,9 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
-nn_pars_indices_full = [0,1,3,5,6,7,8,11,16,17]
+nn_pars_indices_full = [0,1,5,6,7,8,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
-labels_plots = np.delete(labels,[2,4,9,10,12,13,14,15])
+labels_plots = np.delete(labels,[2,3,4,9,10,11,12,13,14,15])
 
 ndim, nwalkers = len(nn_pars_indices_full), 100
 start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis] + np.random.randn(ndim,nwalkers)*1e-5).T
