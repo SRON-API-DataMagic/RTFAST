@@ -79,7 +79,7 @@ def gaussian_func(theta):
     x = torch.Tensor(data) #converts data to pytorch Tensor for gradient purposes
     l = torch.Tensor(convolve_sim(torch.Tensor(theta))) #evaluates model
     #const = -(len(x)/2)*(np.log(2*np.pi)+np.log(x)) #for full bayesian evidence
-    gaussians = -1*((x - l)**2)/(2*(np.sqrt(x)**2)) 
+    gaussians = -1*((x - l)**2)/(2*x) 
     gaussians[x==0] = 0 #catch for division by zero
     summation = torch.sum(gaussians[56:1999]) #only fit 0.3-10keV
     if torch.isnan(summation): #if something goes wrong, e.g. there's an infinify somewhere, return invalid
