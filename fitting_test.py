@@ -78,11 +78,12 @@ def gaussian_func(theta):
     """
     x = torch.Tensor(data) #converts data to pytorch Tensor for gradient purposes
     l = torch.Tensor(convolve_sim(torch.Tensor(theta))) #evaluates model
-    gaussians = -1*((l - x)**2)/((2*x)**2) #model emulator error as 3% scatter
-    gaussians[x==0] = 0
-    summation = torch.sum(gaussians[56:1999])
+    #const = -(len(x)/2)*(np.log(2*np.pi)+np.log(x)) #for full bayesian evidence
+    gaussians = -1*((x - l)**2)/(2*(np.sqrt(x)**2)) 
+    gaussians[x==0] = 0 #catch for division by zero
+    summation = torch.sum(gaussians[56:1999]) #only fit 0.3-10keV
     if torch.isnan(summation): #if something goes wrong, e.g. there's an infinify somewhere, return invalid
-        return -1e100
+        return -1e300
     return summation.detach().numpy()
 
 def poisson_gaussian_mixture(theta):
