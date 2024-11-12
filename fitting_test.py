@@ -511,7 +511,7 @@ plt.close()
 
 ndim, nwalkers = len(nn_pars_indices_full), 100
 start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis].T
-             + np.random.randn(ndim,nwalkers)*scale_perturbs)
+             + (np.random.randn(ndim,nwalkers)*scale_perturbs).T)
 
 from multiprocessing import Pool
 
