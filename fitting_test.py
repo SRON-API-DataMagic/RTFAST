@@ -487,8 +487,30 @@ nn_pars_indices_full = [0,1,5,6,7,8,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
 labels_plots = np.delete(labels,[2,3,4,9,10,11,12,13,14,15])
 
+scale_perturbs = np.repeat(np.array([0.1,0.01,0.001,0.01,1e4,0.1,5e-5,1e-2]),100,axis=0)
+
+inds = np.random.randint(len(scale_perturbs), size=100)
+model_draws = []
+for ind in inds:
+    sample = scale_perturbs[ind]
+    model_eval = convolve_sim_fixed(sample)
+    model_draws.append(model_eval)
+    plt.plot(emid, model_eval, "C1", alpha=0.1)
+plt.errorbar(emid, pois_obs, yerr=np.sqrt(pois_obs), fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
+plt.legend(fontsize=14)
+plt.xlim(0.3, 10)
+plt.ylim(1e3,1e7)
+plt.xlabel("Energy (keV)")
+plt.ylabel(r"Photons/cm$^2$/s/keV")
+plt.xscale("log")
+plt.yscale("log")
+plt.savefig("fitting/first_draws.png")
+plt.close()
+
+
 ndim, nwalkers = len(nn_pars_indices_full), 100
-start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis] + np.random.randn(ndim,nwalkers)*1e-5).T
+start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis] 
+             + np.random.randn(ndim,nwalkers)*scale_perturbs).T
 
 from multiprocessing import Pool
 
