@@ -487,7 +487,7 @@ nn_pars_indices_full = [0,1,5,6,7,8,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
 labels_plots = np.delete(labels,[2,3,4,9,10,11,12,13,14,15])
 
-scale_perturbs = np.repeat(np.array([0.1,0.01,0.001,0.01,1e4,0.1,5e-5,1e-2]),100,axis=0).T
+scale_perturbs = np.repeat(np.array([[0.1,0.01,0.001,0.01,1e4,0.1,5e-5,1e-2]]),100,axis=0)
 print(scale_perturbs.shape)
 
 inds = np.random.randint(len(scale_perturbs), size=100)
