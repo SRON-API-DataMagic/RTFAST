@@ -233,7 +233,7 @@ wrk_dir = os.getcwd()
 resp = Response.ResponseMatrix(wrk_dir+"/ResponseFiles/PN.rmf")
 resp.load_arf(wrk_dir+"/ResponseFiles/PN.arf")
 
-expo_time = 260000
+expo_time = 26000
 resp.set_exposure_time(expo_time)
 
 saved_grid = resp.energ_lo
@@ -488,7 +488,6 @@ nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
 labels_plots = np.delete(labels,[2,3,4,9,10,11,12,13,14,15])
 
 scale_perturbs = np.repeat(np.array([[0.1,0.01,0.001,0.01,1e4,0.1,5e-5,1e-2]]),100,axis=0)
-print(scale_perturbs.shape)
 
 inds = np.random.randint(len(scale_perturbs), size=100)
 model_draws = []
