@@ -79,7 +79,7 @@ def gaussian_func(theta):
     x = torch.Tensor(data) #converts data to pytorch Tensor for gradient purposes
     l = torch.Tensor(convolve_sim(torch.Tensor(theta))) #evaluates model
     #const = -(len(x)/2)*(np.log(2*np.pi)+np.log(x)) #for full bayesian evidence
-    gaussians = -1*((x - l)**2)/(2*x) 
+    gaussians = -1*((x - l)**2)/(2*sim_obs_err**2) 
     gaussians[x==0] = 0 #catch for division by zero
     summation = torch.sum(gaussians[56:1999]) #only fit 0.3-10keV
     if torch.isnan(summation): #if something goes wrong, e.g. there's an infinify somewhere, return invalid
@@ -238,13 +238,18 @@ resp.set_exposure_time(expo_time)
 
 saved_grid = resp.energ_lo
 e_bin_width = resp.emax-resp.emin
-
+"""
 hdul = fits.open("data/testing/rtdist.pha")
 hdu = hdul[1]
 sim_obs = []
 for item in hdu.data:
     sim_obs.append(item[1])
 sim_obs = np.array(sim_obs)*expo_time/e_bin_width
+"""
+total_obs = np.loadtxt("data/testing/rtdist_fake.pha", skiprows=3)
+sim_obs = total_obs[:,2]*expo_time
+sim_obs_err = total_obs[:,3]*expo_time
+
 #xspec input parameters
 xspec_pars = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,5e-2,1,3e6,0.02,0,0,0,0,0,0,-0.8,0.3,2.2e-4,1]
 #neural network input parameters
@@ -285,8 +290,8 @@ egrid_lo  = resp.energ_lo
 egrid_hi  = resp.energ_hi
 egrid = (egrid_lo+egrid_hi)/2
 
-pois_obs  = np.random.poisson(sim_obs)
-data      = pois_obs
+#pois_obs  = np.random.poisson(sim_obs)
+data      = sim_obs
 
 model = RTFAST(num_models=7)
 tbabs = xspec.XSTBabs()
@@ -318,7 +323,7 @@ plt.tight_layout()
 plt.savefig("samples/rtfast_compare.pdf")
 plt.close()
 
-plt.plot(emid,pois_obs,label="Truth")
+plt.plot(emid,sim_obs,label="Truth")
 plt.plot(emid,emulator,label = "Emulator")
 plt.xlabel("Energy (keV)")
 plt.ylabel("Photons")
@@ -496,7 +501,7 @@ for ind in inds:
     model_eval = convolve_sim_fixed(sample)
     model_draws.append(model_eval)
     plt.plot(emid, model_eval, "C1", alpha=0.1)
-plt.errorbar(emid, pois_obs, yerr=np.sqrt(pois_obs), fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
+plt.errorbar(emid, sim_obs, yerr=sim_obs_err, fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
 plt.legend(fontsize=14)
 plt.xlim(0.3, 10)
 plt.ylim(1e3,1e7)
@@ -567,7 +572,7 @@ for ind in inds:
     model_eval = convolve_sim_fixed(sample)
     model_draws.append(model_eval)
     plt.plot(emid, model_eval, "C1", alpha=0.1)
-plt.errorbar(emid, pois_obs, yerr=np.sqrt(pois_obs), fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
+plt.errorbar(emid, sim_obs, yerr=sim_obs_err, fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
 plt.legend(fontsize=14)
 plt.xlim(0.3, 10)
 plt.ylim(1e3,1e7)
@@ -659,9 +664,9 @@ for ind in inds:
     axs[1].plot(emid, model_eval, "C1", alpha=0.1,zorder=2)
 model_draws = np.asarray(model_draws)
 axs[0].plot(emid,emid*np.mean(model_draws,axis=0),"r",label="Mean model",zorder=3)
-axs[0].errorbar(emid, emid*pois_obs,yerr=emid*np.sqrt(pois_obs), label="observation",color="black",lw=1,zorder=1)
+axs[0].errorbar(emid, emid*sim_obs,yerr=emid*sim_obs_err, label="observation",color="black",lw=1,zorder=1)
 axs[1].plot(emid,np.mean(model_draws,axis=0),"r",label="Mean model",zorder=3)
-axs[1].errorbar(emid,pois_obs,yerr=np.sqrt(pois_obs), label="observation",color="black",lw=1,zorder=1)
+axs[1].errorbar(emid,sim_obs,yerr=sim_obs_err, label="observation",color="black",lw=1,zorder=1)
 
 axs[0].legend(fontsize=14)
 fig.supxlabel("Energy/KeV")
@@ -673,7 +678,7 @@ axs[1].legend(fontsize=14)
 axs[1].set_xscale("log")
 axs[1].set_yscale("log")
 axs[1].set_ylim(1)
-axs[2].scatter(emid,(pois_obs-np.mean(model_draws,axis=0))/np.sqrt(pois_obs),s=1,marker="+")
+axs[2].scatter(emid,(sim_obs-np.mean(model_draws,axis=0))/sim_obs_err,s=1,marker="+")
 axs[2].set_ylabel("(data-mean(model))/(error)")
 #axs[2].set_yscale("symlog")
 plt.tight_layout()
