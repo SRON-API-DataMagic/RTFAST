@@ -466,7 +466,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             newcmp = ListedColormap(newcolors, name='summer_autumn')
             newcmp.set_over('black')
             
-            fig = plt.figure(figsize=(10,10))
+            fig = plt.figure(figsize=(6,6))
             norm = colors.LogNorm(vmin = 10**(-3), vmax = 10**(-1))
             ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
             c_ticks = [10**(-3), 10**(-2.5), 10**(-2), 10**(-1.5),
@@ -483,7 +483,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             matplotlib.rcParams.update({'font.size': 16})
             plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
             plt.close()
-        
+        """
         for i in range(len(pars_list)):
             print(f"Creating unsigned plot for {labels[i]}")
             sort_ind = np.argsort(test_data.pars[:,i])
@@ -503,7 +503,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
             newcmp.set_over('black')
             
-            fig = plt.figure(figsize=(10,10))
+            fig = plt.figure(figsize=(8,8))
             norm = colors.SymLogNorm(vmin = 0.1, 
                                      vmax = -0.1,base=10,
                                      linthresh=0.01)
@@ -520,7 +520,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             matplotlib.rcParams.update({'font.size': 16})
             plt.savefig(f"heatmaps/{name}_{labels[i]}_posneg.pdf")
             plt.close()
-    
+        """
     if plot_samples == True:
         print("Plotting samples")
         data = []
@@ -601,7 +601,7 @@ def main():
     """
     num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=False,
+             plot_heatmaps=True,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
