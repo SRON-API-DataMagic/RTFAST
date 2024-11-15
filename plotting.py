@@ -22,6 +22,7 @@ import network
 from dataStructures import PCADataset
 from training import PCALoss
 #from generator import new_set, lhc_AGN
+from sherpa.astro import xspec
             
 def inverse(scaler,data):
     """
@@ -540,7 +541,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
             axs[1].plot(emid,(pred-D)/D)
-            axs[1].fill_between(emid,-0.02,0.02,color="grey",alpha=0.1)
+            axs[1].fill_between(emid,-0.03,0.03,color="grey",alpha=0.1)
             axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")
@@ -554,7 +555,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
             axs[1].plot(emid,(pred-D)/D)
-            axs[1].fill_between(emid,-0.02,0.02,color="grey",alpha=0.1)
+            axs[1].fill_between(emid,-0.03,0.03,color="grey",alpha=0.1)
             axs[1].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")

@@ -438,14 +438,14 @@ def insert_fixed_pars(theta):
     """
     #theta = np.insert(theta,0,nn_pars[0]) #fixed height
     #theta = np.insert(theta,1,nn_pars[1]) #fixed spin
-    theta = np.insert(theta,2,nn_pars[2]) #fixed inclination
+    #theta = np.insert(theta,2,nn_pars[2]) #fixed inclination
     theta = np.insert(theta,3,nn_pars[3]) #fixed inner radius
     theta = np.insert(theta,4,nn_pars[4]) #fixed outer radius
-    #theta = np.insert(theta,5,nn_pars[5]) #fixed z
+    theta = np.insert(theta,5,nn_pars[5]) #fixed z
     #theta = np.insert(theta,6,nn_pars[6]) #fixed gamma
     #theta = np.insert(theta,7,nn_pars[7]) #fixed distance
     #theta = np.insert(theta,8,nn_pars[8]) #fixed afe
-    theta = np.insert(theta,9,nn_pars[9]) #fixed logNe
+    #theta = np.insert(theta,9,nn_pars[9]) #fixed logNe
     theta = np.insert(theta,10,nn_pars[10]) #fixed kte
     theta = np.insert(theta,11,nn_pars[11]) #fixed boost
     theta = np.insert(theta,12,nn_pars[12]) #fixed mass
@@ -488,30 +488,11 @@ def convolve_sim_fixed(theta):
     pred = resp.convolve_response(pred,"xspec")
     return pred
 
-nn_pars_indices_full = [0,1,5,6,7,8,16,17]
+nn_pars_indices_full = [0,1,2,6,7,8,9,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
-labels_plots = np.delete(labels,[2,3,4,9,10,11,12,13,14,15])
+labels_plots = np.delete(labels,[3,4,5,10,11,12,13,14,15])
 
-scale_perturbs = np.repeat(np.array([[0.1,0.01,0.001,0.01,1e4,0.1,5e-5,1e-2]]),100,axis=0)
-
-inds = np.random.randint(len(scale_perturbs), size=100)
-model_draws = []
-for ind in inds:
-    sample = scale_perturbs[ind]
-    model_eval = convolve_sim_fixed(sample)
-    model_draws.append(model_eval)
-    plt.plot(emid, model_eval, "C1", alpha=0.1)
-plt.errorbar(emid, sim_obs, yerr=sim_obs_err, fmt=".k", capsize=0,label="Truth",lw=0.1,elinewidth=0.1)
-plt.legend(fontsize=14)
-plt.xlim(0.3, 10)
-plt.ylim(1e3,1e7)
-plt.xlabel("Energy (keV)")
-plt.ylabel(r"Photons/cm$^2$/s/keV")
-plt.xscale("log")
-plt.yscale("log")
-plt.savefig("fitting/first_draws.png")
-plt.close()
-
+scale_perturbs = np.repeat(np.array([[0.1,0.01,10,0.01,1e4,0.1,1,5e-5,1e-2]]),100,axis=0)
 
 ndim, nwalkers = len(nn_pars_indices_full), 100
 start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis]
@@ -525,7 +506,7 @@ backend.reset(nwalkers, ndim)
 
 with Pool() as pool:
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_likelihood_fixed,backend=backend)
-    sampler.run_mcmc(start_pos, int(1e4), progress=True)
+    sampler.run_mcmc(start_pos, int(2e4), progress=True)
 
 print(
     "Mean acceptance fraction: {0:.3f}".format(
