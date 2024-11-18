@@ -504,7 +504,7 @@ filename = "fitting/mc_fit.h5"
 backend = emcee.backends.HDFBackend(filename)
 backend.reset(nwalkers, ndim)
 
-with Pool() as pool:
+with Pool(4) as pool:
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_likelihood_fixed,
                                     backend=backend,pool=pool)
     sampler.run_mcmc(start_pos, int(2e4), progress=True)
