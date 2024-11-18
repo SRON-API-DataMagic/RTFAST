@@ -466,7 +466,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             newcmp = ListedColormap(newcolors, name='summer_autumn')
             newcmp.set_over('black')
             
-            fig = plt.figure(figsize=(6,6))
+            fig = plt.figure(figsize=(10,10))
             norm = colors.LogNorm(vmin = 10**(-3), vmax = 10**(-1))
             ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
             c_ticks = [10**(-3), 10**(-2.5), 10**(-2), 10**(-1.5),
@@ -503,7 +503,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             newcmp = ListedColormap(newcolors, name='summer_winter_autumn')
             newcmp.set_over('black')
             
-            fig = plt.figure(figsize=(8,8))
+            fig = plt.figure(figsize=(10,10))
             norm = colors.SymLogNorm(vmin = 0.1, 
                                      vmax = -0.1,base=10,
                                      linthresh=0.01)
