@@ -492,7 +492,7 @@ nn_pars_indices_full = [0,1,2,6,7,8,9,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
 labels_plots = np.delete(labels,[3,4,5,10,11,12,13,14,15])
 
-scale_perturbs = np.repeat(np.array([[0.1,0.01,10,0.01,1e4,0.1,1,5e-5,1e-2]]),100,axis=0)
+scale_perturbs = np.repeat(np.array([[0.1,0.01,1,0.01,1e4,0.1,1,5e-5,1e-2]]),100,axis=0)
 
 ndim, nwalkers = len(nn_pars_indices_full), 100
 start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis]
