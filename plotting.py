@@ -550,7 +550,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             fig, axs = plt.subplots(2,sharex=True,figsize=(10,10))
             axs[0].plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
             axs[0].plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
-            axs[0].set_ylabel("Flux (keV/cm^2/s)")
+            axs[0].set_ylabel("Flux (keV^2/cm^2/s/KeV)")
             axs[0].legend()
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
@@ -564,7 +564,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             rtdists.append(D/bin_width)
             rtfasts.append(pred/bin_width)
             i += 1
-            if i > 6:
+            if i > 10:
                 break
         rtdists = np.asarray(rtdists)
         rtfasts = np.asarray(rtfasts)
@@ -600,8 +600,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
-             plot_heatmaps=False,plot_samples=False,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+             plot_heatmaps=False,plot_samples=True,
              num_models=num_models)
     
 if __name__ == "__main__":
