@@ -600,8 +600,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=True,plot_samples=False,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
+             plot_heatmaps=False,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
