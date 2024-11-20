@@ -223,7 +223,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.pdf")
+        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
         plt.close()
     
     for i in range(pars.shape[1]):
@@ -248,7 +248,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
         fig.suptitle(labels[i])
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"samples/corner/{labels[i]}_corner.pdf")
+        plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
 
 def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
