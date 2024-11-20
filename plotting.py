@@ -481,7 +481,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
             matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
+            plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
             plt.close()
         """
         for i in range(len(pars_list)):
@@ -601,7 +601,7 @@ def main():
     """
     num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+             plot_heatmaps=True,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
