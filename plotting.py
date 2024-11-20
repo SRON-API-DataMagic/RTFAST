@@ -141,7 +141,7 @@ def loss_plots(loss_name):
     #plt.title(f"Loss by epoch for {loss_name}")
     plt.legend()
     plt.tight_layout()
-    plt.ylim(top = 1e1)
+    #plt.ylim(top = 1e1)
     plt.savefig(f"loss/loss_{loss_name}.pdf")
     plt.close()
     
@@ -593,8 +593,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+             plot_heatmaps=False,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
