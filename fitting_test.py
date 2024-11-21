@@ -26,6 +26,7 @@ from ndspec import Response
 #import the xillver table to approximate flux of the corona
 #from reltrans._models import lmodxiller as xillver
 from sherpa.astro import xspec
+from multiprocessing import Pool
 
 import emcee
 import dynesty
@@ -491,6 +492,18 @@ def convolve_sim_fixed(theta):
 nn_pars_indices_full = [0,1,2,6,7,8,9,16,17]
 nn_pars_true = np.asarray(nn_pars)[nn_pars_indices_full]
 labels_plots = np.delete(labels,[3,4,5,10,11,12,13,14,15])
+filename = "fitting/mc_fit.h5"
+
+ndim, nwalkers = len(nn_pars_indices_full), 100
+
+new_backend = emcee.backends.HDFBackend(filename)
+print("Initial size: {0}".format(new_backend.iteration))
+with Pool(8) as pool:
+    new_sampler = emcee.EnsembleSampler(nwalkers, ndim, log_likelihood_fixed,
+                                    backend=new_backend,pool=pool)
+    new_sampler.run_mcmc(None, int(5e4), progress=True)
+
+exit()
 
 scale_perturbs = np.repeat(np.array([[0.1,0.01,1,0.01,1e4,0.1,0.1,5e-5,1e-2]]),100,axis=0)
 
@@ -498,9 +511,7 @@ ndim, nwalkers = len(nn_pars_indices_full), 100
 start_pos = (np.asarray(nn_pars)[nn_pars_indices_full][:,np.newaxis]
              + (np.random.randn(ndim,nwalkers)*scale_perturbs.T)).T
 
-from multiprocessing import Pool
 
-filename = "fitting/mc_fit.h5"
 backend = emcee.backends.HDFBackend(filename)
 backend.reset(nwalkers, ndim)
 
