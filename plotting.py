@@ -103,7 +103,7 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     
     fig = plt.figure(figsize=(10,10))
     norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
-    ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+    ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm,rasterized=True,shading="auto")
     c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                 10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
     cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm)
@@ -210,7 +210,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
 
         fig = plt.figure(figsize=(10,10))
         norm = colors.LogNorm(vmin = 10**(Z_center-1.5), vmax = 10**(Z_center+1.5))
-        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+        ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm,rasterized=True,shading="auto")
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
@@ -223,7 +223,7 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
         matplotlib.rcParams.update({'font.size': 16})
-        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.png")
+        plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.pdf")
         plt.close()
     
     for i in range(pars.shape[1]):
@@ -468,7 +468,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             
             fig = plt.figure(figsize=(10,10))
             norm = colors.LogNorm(vmin = 10**(-3), vmax = 10**(-1))
-            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm,rasterized=True,shading="auto")
             c_ticks = [10**(-3), 10**(-2.5), 10**(-2), 10**(-1.5),
                         10**(-1)]
             cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
@@ -481,7 +481,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
             matplotlib.rcParams.update({'font.size': 16})
-            plt.savefig(f"heatmaps/{name}_{labels[i]}.png")
+            plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
             plt.close()
         """
         for i in range(len(pars_list)):
@@ -507,7 +507,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             norm = colors.SymLogNorm(vmin = 0.1, 
                                      vmax = -0.1,base=10,
                                      linthresh=0.01)
-            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm)
+            ax = plt.pcolormesh(resids, cmap=newcmp, norm=norm,rasterized=True,shading="auto")
             cbar = plt.colorbar(format='%.0e', norm=norm, extend='max')
             plt.yticks(ticks,labels=tick_labels)
             plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
@@ -593,8 +593,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
-             plot_heatmaps=False,plot_samples=False,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
+             plot_heatmaps=True,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
