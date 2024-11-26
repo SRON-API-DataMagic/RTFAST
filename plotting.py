@@ -360,6 +360,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     axs[1].axvline(-3,ls="--",c="red")
     axs[1].axvline(3,ls="--",c="red")
     axs[1].set_title("Ensemble")
+    matplotlib.rcParams.update({'font.size': 16})
+    plt.tight_layout()
     plt.savefig(f"loss/resids_compare_{name}.pdf")
     plt.close()
     
@@ -592,7 +594,7 @@ def main():
     """
     num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+             plot_heatmaps=False,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
