@@ -530,7 +530,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
         rtdists = []
         rtfasts = []
         for pred, D in zip(test_pred, data):
-            fig, axs = plt.subplots(3,sharex=True,figsize=(10,10))
+            fig, axs = plt.subplots(3,sharex=True,figsize=(10,12))
             axs[0].plot(emid,pred/bin_width,label="RTFAST")
             axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
             axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
