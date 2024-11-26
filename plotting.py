@@ -414,12 +414,9 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     
     sort_ind = np.argsort(test_data.pars[:,0])
     sort_par = test_data.pars[sort_ind,0]
-    sorted_par = test_data.pars[sort_ind]
     
     resids = residuals[sort_ind]
     resids = np.mean(resids,axis=1)
-    resids_2 = np.max(residuals[sort_ind],axis=1)
-    print(sorted_par[np.argmin(resids_2)])
     
     plt.hist(resids,bins=100)
     plt.xlim(0,0.1)
@@ -547,10 +544,11 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             axs[1].set_yscale("log")
             axs[1].set_xscale("log")
             axs[2].plot(emid,(pred-D)/D)
-            axs[2].fill_between(emid,-0.03,0.03,color="grey",alpha=0.1)
+            axs[2].fill_between(emid,-0.03,0.03,color="grey",alpha=0.2)
             axs[2].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")
+            matplotlib.rcParams.update({'font.size': 16})
             plt.tight_layout()
             plt.savefig(f"samples/{name}_energy_compare_{i}.pdf")
             plt.close()
@@ -593,8 +591,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=False,
-             plot_heatmaps=True,plot_samples=False,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+             plot_heatmaps=False,plot_samples=True,
              num_models=num_models)
     
 if __name__ == "__main__":
