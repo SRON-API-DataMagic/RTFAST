@@ -6,35 +6,37 @@ import numpy as np
 import os
 from reltrans import _models
 from joblib import Parallel, delayed
-from processing import saveData, mergeSaveData, renameData
-from processing import readAndRemoveNans, spectraChecker
+from processing import saveData, spectraChecker
 import scipy
-import pandas as pd
-from sherpa.astro.io import read_arf
+from sherpa.astro import xspec
 
-def rtdist_erg_flux(pars, egrid):
+def nthcomp(pars,egrid_lo,egrid_hi):
     """
+    Generates nthcomp spectrum for subtraction from reltrans
     
 
     Parameters
     ----------
-    model : sherpa model
-        model that you wish to integrate energy flux over 2-10keV.
+    pars : array
+        contains parameters used in simulation.
+    egrid : array
+        contains values of energy to calculate for.
 
     Returns
     -------
-    flux : float
-        return energy flux between 2-10keV.
+    model : array
+        outputted model.
 
     """
-    model = _models.tdrtdist(pars, egrid)
-    #take middle energy and multiply all photon counts by said energy
-    gmid = 1.60217653e-09  * (egrid[:-1] + egrid[1:]) / 2
-    model = model[:-1]*gmid
-    start = np.argmin(np.abs(egrid-2))
-    end = np.argmin(np.abs(egrid-10))
-    flux = model[start:end].sum()
-    return flux
+    nthcomp = xspec.XSnthComp()
+    nthcomp.Gamma       = pars[0]
+    nthcomp.kT_e        = pars[1]
+    nthcomp.kT_bb       = pars[2]
+    nthcomp.inp_type    = pars[3]
+    nthcomp.redshift    = pars[4]
+    nthcomp.norm        = pars[5]
+    model = nthcomp(egrid_lo,egrid_hi)
+    return model
 
 def rtdist_flux(pars, egrid_lo, egrid_hi):
     """
@@ -55,64 +57,6 @@ def rtdist_flux(pars, egrid_lo, egrid_hi):
     """
     model = _models.tdrtdist(pars, egrid_lo, egrid_hi)
     return model
-
-def Anorm_wrapper(pars):
-    """
-    This function recalculates the Anorm input parameter of rtdist from the 
-    generated values of flux. This allows considerably more efficient sampling
-    of Anorm - only physically plausible scenarios are considered and we 
-    have physical reasoning behind the Anorm values chosen.
-
-    Parameters
-    ----------
-    pars : np.ndarray
-        the curated hypercube of parameters that the emulator will eventually
-        be trained on.
-
-    Returns
-    -------
-    new_lhc : np.ndarray
-        latin hypercube with "coronal flux" parameter replaced with Anorm.
-
-    """
-    #calculate g_0
-    h = 10**pars[:,0]
-    a = pars[:,1]
-    Dh = h**2 -2*h +a**2
-    g_so = np.sqrt(Dh/(h**2 + a**2))
-    #calculate luminosity of corona
-    F = 10**pars[:,-1]              #Flux of corona in erg/cm^2/s
-    gamma = pars[:,6]               #photon index
-    Afe = pars[:,8]
-    z = pars[:,5]
-    refl_frac = np.zeros(gamma.shape)
-    inc = pars[:,2]
-    #calculate normalisation for each flux spectra
-    integrals = np.zeros(gamma.shape)
-    #cutoff in keV
-    E_cut = np.ones(gamma.shape)*300
-    logxi = np.ones(gamma.shape)
-    xnorm = np.ones(gamma.shape)
-    xill_pars = np.vstack((gamma,Afe,E_cut,logxi,z,inc,refl_frac,xnorm)).T
-    #energies from 0.1keV to 1MeV
-    bins = 1000
-    egrid = np.logspace(-1,3,num = bins)
-    e_mid = (egrid[1:] - egrid[:-1])/(np.log10(egrid[1:])-np.log10(egrid[:-1]))
-    e_mid = e_mid * 1.60218e-9 #convert to erg
-    
-    def integrate(pars):
-        continuum = _models.lmodxillver(pars, egrid)
-        integral = np.trapz(continuum,egrid)*1.60218e-9
-        return integral
-    
-    cpu_num = os.cpu_count()
-    
-    with Parallel(n_jobs=cpu_num,verbose=0) as parallel:
-        integrals = parallel(delayed(integrate)(pars) for pars in xill_pars)
-    integrals = np.asarray(integrals)
-    Anorm = F/(g_so**(gamma-2)*integrals)
-    pars[:,-1] = Anorm   #Replace flux generated with Anorm parameters
-    return pars
 
 def lhc_filter_20(lhc):
     """
@@ -156,11 +100,9 @@ def lhc_filter_20(lhc):
                                          bad_Ls),axis=None))
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
-    #convert fluxes to Anorm
-    new_lhc = Anorm_wrapper(new_lhc)
     return new_lhc
 
-def lhc_all():
+def lhc_ranges():
     """
     Generates valid ranges of parameters of AGN to be trained on
     
@@ -197,86 +139,6 @@ def lhc_all():
                  r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
                  logNe_range,kte_range,nH_range,boost_range,mass_range,
                  honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
-    
-    return range_all
-
-def lhc_BH():
-    """
-    Generates valid ranges of parameters of stellar mass BHs to be trained on
-
-    Returns
-    -------
-    range_all : list
-        gives parameter ranges for each of the given parameters listed. Used 
-        in the latin hypercube sampling
-
-    """
-    height_range = [np.log10(1.5),np.log10(100)]
-    spin_range = [0,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,4]
-    Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(0.2),np.log10(3e4)]
-    Afe_range = [np.log10(0.5),np.log10(10)]
-    logNe_range = [15,20]
-    kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1e3)]
-    boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(3),np.log10(40)]
-    honr_range = [0,0.176]
-    b1_range = [0,2]
-    b2_range = [-4,4]
-    phiAB_range = [-3.14,3.14]
-    g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
-    
-    
-    range_all = [height_range,spin_range,inclination_range,r_inner_range,
-                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,nH_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
-    
-    return range_all
-
-def lhc_AGN():
-    """
-    Generates valid ranges of parameters of AGN to be trained on.
-    
-    Returns
-    -------
-    range_all : list
-        gives parameter ranges for each of the given parameters listed. Used 
-        in the latin hypercube sampling
-    
-    """
-    height_range = [np.log10(1.5),np.log10(100)]
-    spin_range = [0,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
-    r_inner_range = [np.log10(1),np.log10(400)]
-    r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,0.1]
-    Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(1e2),np.log10(1e6)]
-    Afe_range = [np.log10(0.5),np.log10(10)]
-    logNe_range = [15,20]
-    kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1)]
-    boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(1e4),np.log10(1e11)]
-    honr_range = [0,0.176]
-    b1_range = [0,2]
-    b2_range = [-4,4]
-    phiAB_range = [-3.14,3.14]
-    g_range = [0,0.5]
-    flux_range = [np.log10(1e-12),np.log10(1e-8)]
-    
-    
-    range_all = [height_range,spin_range,inclination_range,r_inner_range,
-                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,flux_range]
     
     return range_all
 
@@ -327,126 +189,6 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
             converted_pars[:,parameter] = -converted_pars[:,parameter]
     return converted_pars
 
-def grid_data_gen(size, fname, egrid):
-    """
-    Creates a grid of parameter space and then generates spectra and time lags
-    for each spot on the grid. Saves these to the disk
-
-    Parameters
-    ----------
-    size : int
-        how many grid points in the parameter space to generate.
-    fname : string
-        signifies the file name to save as.
-    egrid : ndarray or list
-        energy grid to pass into rtdist for the spectra to be generated on.
-    lags_egrid : ndarray or list
-        energy grid to pass into rtdist for the time lags to be generated on.
-
-    Returns
-    -------
-    None.
-
-    """
-   
-    spin = np.linspace(0.1,0.998,size)
-    inc = np.linspace(np.log10(1),np.log10(80),size)
-    r_in = np.linspace(np.log10(1),np.log10(400),size)
-    r_outer_range = np.linspace(np.log10(400),np.log10(1e5),size)
-    mass = np.linspace(np.log10(1e4),np.log10(1e11),size)
-    
-    #create parameter grid
-    theta_init = []
-    for a in spin:
-        for i in inc:
-                for r_i in r_in:
-                    for r in r_outer_range:
-                        for m in mass:
-                            theta_init.append([a,i,r_i,r,m])
-    theta_init = np.asarray(theta_init)
-    #convert to rtdist model compatible parameters
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    #generate physical models of test set
-    theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
-    
-    with Parallel(n_jobs=20,verbose=5) as parallel:
-        #generate rtdist models for the correlated grid
-        flux = parallel(delayed(rtdist_flux)(pars, egrid)
-                                        for pars in theta_flux)
-        flux = np.array(flux)
-        flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
-    
-    idxs = np.arange(0,flux.shape[0])
-    np.random.shuffle(idxs)
-    tra_idx = idxs[:int(0.9*len(idxs))]
-    tes_idx = idxs[int(0.9*len(idxs)):]
-    
-    #Splitting data and parameters into training and testing datasets
-    train_flux = flux[tra_idx]
-    train_flux_pars = theta_flux[tra_idx]
-    
-    test_flux = flux[tes_idx]
-    test_flux_pars = theta_flux[tes_idx]
-    
-    print("Saving to disk")
-    #save data for the first time in text files
-    saveData(train_flux, train_flux_pars, 
-             "data/locations/",f"loc_{fname}_flux.csv")
-    saveData(test_flux, test_flux_pars, 
-             "data/locations/",f"loc_{fname}_flux_test.csv")
-    
-    print("Performing data cleanup")
-    readAndRemoveNans(f"data/locations/loc_{fname}_flux.csv")
-    readAndRemoveNans(f"data/locations/loc_{fname}_flux_test.csv")
-    return
-
-def active_learning_generation(theta_query, egrid, parallel, 
-                               flux_name, flux_test_name):
-    # compute the physical model for these thetas
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    #generate physical models of test set
-    theta_flux = nn_pars_to_rtdist(theta_query, 0, pars_list, negatives, logged)
-    theta_lags = nn_pars_to_rtdist(theta_query, 6, pars_list, negatives, logged)
-    print("Generating flux models")
-    flux =  parallel(delayed(rtdist_flux)(pars, egrid)
-                                    for pars in theta_flux)
-    flux = np.asarray(flux)
-    print("Checking flux models are valid")
-    flux, theta_flux, theta_lags = spectraChecker(flux,theta_flux,theta_lags,
-                                                  1e-11)
-    print("Saving flux data")
-    saveData(flux, theta_flux, 
-             "data/locations/","active_gen_flux.csv")
-    del flux, theta_flux
-    
-    print("Performing data cleanup")
-    readAndRemoveNans("data/locations/active_gen_flux.csv")
-    
-    flux = pd.read_csv("data/locations/active_gen_flux.csv")
-    
-    # shuffle indices for neural network training
-    idx_shuffle = np.arange(0, len(flux), dtype=int)
-    np.random.shuffle(idx_shuffle)
-
-    idx_query = idx_shuffle[:len(idx_shuffle)-250]
-    idx_test = idx_shuffle[-250:]
-    
-    #Split data into test and training sets
-    flux_test = flux.iloc[idx_test]
-    
-    flux_query = flux.iloc[idx_query]
-    
-    #save final curated datasets back to disk for use
-    mergeSaveData(flux_query, pd.read_csv(f"data/locations/{flux_name}"),
-                  "data/locations/", flux_name)
-    
-    renameData(flux_test, "data/locations/", 
-               flux_test_name)
-    return
 
 def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
     if limited == False:
@@ -478,37 +220,7 @@ def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
-def intialize_dataset(theta_lhc,egrid,flux_name):
-    print("Generating first time dataset")
-    init_data_size = 5000
-    lhc_idx = init_data_size
-    #generating a random set of parameters and corresponding data
-    theta_init = theta_lhc[:init_data_size]
-    
-    pars_list = [1,2,3,4,13]
-    negatives = [3]
-    logged = [2,3,4,13]
-    
-    #generate physical models of test set
-    theta_flux = nn_pars_to_rtdist(theta_init, 0, pars_list, negatives, logged)
-    print("Parallelized model generation")
-    
-    print("Generating flux models")
-    flux =  Parallel(n_jobs=20,verbose=5)(delayed(rtdist_flux)(pars, egrid)
-                                    for pars in theta_flux)
-    flux = np.asarray(flux)
-    print("Checking for spectra below threshold")
-    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
-    print("Saving flux data")
-    saveData(flux, theta_flux, 
-             "data/locations/",flux_name)
-    del flux, theta_flux
-    
-    print("Performing data cleanup")
-    readAndRemoveNans(f"data/locations/{flux_name}")
-    return lhc_idx
-
-def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
+def generate_dataset(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     cpu_num = os.cpu_count()
     
@@ -530,4 +242,4 @@ def new_set(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     
     print("Saving flux data")
     saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_text.csv",lags=True)
+             "data/locations/","loc_flux_text.csv")

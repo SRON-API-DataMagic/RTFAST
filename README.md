@@ -1,15 +1,32 @@
-This repository contains the code necessary to train a neural network emulator for the rtdist 
-AGN/black hole spectral model. It is built with pytorch. We achieved an order of 1% error across
-the entirety of the spectrum and parameter space for a 20 free parameter model.
+# RTFAST Spectra
 
-The emulator trained with this code (RTFAST) greatly reduce the computation time, allowing us to
-calculate bayesian posteriors for these relatively high dimensional problems. The finished 
-emulator can be found at this public repository for public use.
+This project is the revised version of the RTFAST-spectra (Ricketts et al 2025). This version of the emulator takes a 
+distinctly different strategy from the previous work: emulation of purely the reflection spectrum. This allows us to reduce
+the complexity of the emulated spectrum as well as keeping as much of the original model analytical as possible. We also
+expand to emulate the entire spectrum from 0.1-100keV. This allows for the use of instruments such as NuSTAR, which are key
+in the fitting of the high energy rollover.
 
-We utilised latin hyper cube sampling as well as PCA decomposition to simplify the constraints of
-the original problem to a realistic, extremely lightweight, fast running drop in emulator.
+As such, this incorporates much of the machine learning structure developed in the previous work for a slightly different 
+emulated spectrum.
 
-We note and encourage that this code can be used as a simple starting template for those with 
-an x-ray spectral model from xspec that they wish to build an emulator for. Please contact
-Benjamin Ricketts (the author of this repository) if you wish to know more or would like guidance
-with your particular project.
+## Installation
+Currently, installation is restricted to active use of this repository. This repository is not built for generic training
+and is restricted to its particular use case. Feel free to fork this repository for your own project, citing credit for
+the framework to this repository.
+
+## Usage
+Used to train neural network emulators for the RTFAST-spectra project.
+
+## Support
+Please feel free to open an issue on this git repository or reach out to b.j.ricketts(at)uva.nl.
+
+## Contributing
+If you would like to contribute to this project, please reach out to b.j.ricketts(at)uva.nl.
+
+## Authors and acknowledgment
+
+## License
+This project operates under the MIT open license (?).
+
+## Project status
+Active development

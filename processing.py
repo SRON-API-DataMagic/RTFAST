@@ -4,40 +4,18 @@ saving data.
 """
 
 import numpy as np
-import tqdm
 import glob
 import pandas as pd
-import torch
 import os
 from joblib import Parallel, delayed
+from pathlib import Path
 
-def mergeSaveData(new_data,old_data,destination,fname):
-    """
-    Method that takes two existing groups of data and collates them together.
-    Usually used for combining training and validation data after an active
-    learning loop.
+def save_file(i,item,destination):
+    loc = f"{destination}/spectra_{i}.txt"
+    np.savetxt(loc,item)
+    return loc
 
-    Parameters
-    ----------
-    new_data : string
-        location of new data.
-    old_data : string
-        location of old data.
-    destination : string
-        folder to save new file in.
-    fname : string
-        new filename of the collated data.
-
-    Returns
-    -------
-    None.
-
-    """
-    df = pd.concat([old_data,new_data],axis=0,ignore_index=True)
-    df.to_csv(destination+fname,index=False)
-    return
-
-def saveData(dataset, pars, destination, fname, current_locs = None, lags = None):
+def saveData(dataset, pars, locs_destination, data_destination):
     """
     Checks for existing data on disk and saves data in individual units to disk 
     that doesn't intefere with existing data. Saves the parameters associated 
@@ -69,34 +47,19 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     #find the last spectra's name and use that to save new spectra without
     #overwriting
     try:
-        if lags == None:
-            files = glob.glob("./data/spectra/*.txt")
-            for i,file in enumerate(files):
-                tmp = file.replace("./data/spectra/spectra_","")
-                tmp = int(tmp.replace(".txt",""))
-                files[i] = tmp
-        else:
-            files = glob.glob("/data/time-lags/spectra/*.txt")
-            for i,file in enumerate(files):
-                tmp = file.replace("/data/time-lags/spectra/spectra_","")
-                tmp = int(tmp.replace(".txt",""))
-                files[i] = tmp
+        files = glob.glob(f"{data_destination}/*.txt")
+        for i,file in enumerate(files):
+            tmp = file.replace(f"{data_destination}/spectra_","")
+            tmp = int(tmp.replace(".txt",""))
+            files[i] = tmp
         files = np.asarray(files)
         start = files.max() + 1
     except:
         start = 0
     
-    def save_file(i,item,lags):
-        if lags == None:
-            loc = f"data/spectra/spectra_{i}.txt"
-        else:
-            loc = f"/data/time-lags/spectra/spectra_{i}.txt"
-        np.savetxt(loc,item)
-        return loc
-    
     cpu_num = os.cpu_count()
     #save data to disk and save location to dataset
-    locations = Parallel(n_jobs=cpu_num,verbose=1)(delayed(save_file)(i,item,lags) for i,item in enumerate(dataset,start=start))
+    locations = Parallel(n_jobs=cpu_num,verbose=1)(delayed(save_file)(i,item,data_destination) for i,item in enumerate(dataset,start=start))
     
     locations = np.asarray(locations)
     column_names = ["h","a","inc","rin","rout","z","Gamma","Dkpc","Afe","logNe",
@@ -106,161 +69,13 @@ def saveData(dataset, pars, destination, fname, current_locs = None, lags = None
     locations_df = pd.DataFrame(locations,columns=["Location"])
     df = pd.concat([pars_df,locations_df],axis = 1, join = "inner")
     
-    if current_locs is not None:
+    my_file = Path(locs_destination)
+    if my_file.is_file():
+        current_locs = pd.read_csv(locs_destination)
         df = pd.concat([df,current_locs],axis=0,ignore_index=True)
     
-    df.to_csv(destination+fname,index=False)
+    df.to_csv(locs_destination,index=False)
     return
-
-def removeParameters(df_loc,indexes):
-    df = pd.read_csv(df_loc)
-    df.drop(indexes,inplace=True)
-    df.to_csv(df_loc,index=False)
-    return
-
-def removeRedundantData():
-    """
-    Method that checks if all data currently saved on disk exists as referenced
-    by the list of locations and if it doesn't exist, deletes it.
-
-    Returns
-    -------
-    None.
-
-    """
-    locations = "./data/locations/"
-    labels = ["locs_10_spectra_tra.csv","locs_10_spectra_val.csv",
-              "locs_20_spectra_tra.csv","locs_20_spectra_val.csv"]
-    
-    file_names = []
-    for fname in labels:
-        data = pd.read_csv(locations+fname)
-        print(f"{fname}:{len(data)}")
-        names = data["Location"].values.tolist()
-        file_names.extend(names)
-    
-    file_names = np.asarray(file_names)
-    files = glob.glob("data/spectra/*.txt")
-    files = np.asarray(files)
-    files = np.concatenate([files,
-                            np.asarray(glob.glob("/data/time-lags/spectra/*.txt"))])
-    diff = np.setdiff1d(files,file_names)
-    print(f"Removing {len(diff)} files...")
-    for file in tqdm.tqdm(diff):
-        os.remove(file)
-    
-    return
-
-def renameData(df,fname):
-    """
-    Changes the name of a locations file as well as moving it to a new folder
-    if wished.
-
-    Parameters
-    ----------
-    data_locs : string
-        location of file.
-    destination : string
-        new folder to be saved to.
-    fname : string
-        new name of file.
-
-    Returns
-    -------
-    None.
-
-    """
-    df.to_csv(fname,index=False)
-    return
-
-def loadData(location):
-    """
-    Reads in panda csv file
-
-    Parameters
-    ----------
-    location : string
-        location of file.
-
-    Returns
-    -------
-    pandas dataframe
-        returns pandas dataframe that is read.
-
-    """
-    return pd.read_csv(location)
-
-def saveLoop(model,data_locs,optimizer,te_loss,tr_loss,num,epochs):
-    """
-    Saves information and model for an active learning loop to disk for future
-    use.
-
-    Parameters
-    ----------
-    model : pytorch model
-        the current version of the model to be saved to disk.
-    data_locs : string
-        location of the currect data being used to train the network.
-    optimizer : pytorch optimizer
-        the current version of the optimizer used to train the network.
-    te_loss : ndarray
-        average testing loss for each epoch of the network trained so far.
-    tr_loss : ndarray
-        average training loss for each epoch of the network trained so far.
-    num : int
-        the current active learning loop number.
-    epochs : ndarray
-        the epoch that each active learning loop stopped at so far.
-    typ : string, optional
-        signifies which type of network is being trained and is then saved into
-        filenames for identification later on. The default is "flux".
-
-    Returns
-    -------
-    None.
-
-    """
-    print("Saving loop")
-    renameData(pd.read_csv(data_locs),destination = "data/locations/",
-              fname = f"loc_{num}.csv")
-    print("Saved data")
-    torch.save(model.state_dict(), f"models/{num}_model.pth")
-    print("Saved model")
-    torch.save(optimizer.state_dict(),f"models/{num}_optimizer.pth")
-    print("Saved optimizer")
-    np.savetxt(f"loss/{num}_te_loss.txt",te_loss)
-    np.savetxt(f"loss/{num}_tr_loss.txt",tr_loss)
-    np.savetxt(f"loss/{num}_epochs.txt",epochs)
-    print("Saved losses")
-    return
-
-def nanChecker(data,pars):
-    """
-    Returns the row indices of any data that contains NaNs for removal
-
-    Parameters
-    ----------
-    data : ndarray
-        array of data to be checked.
-    pars : ndarray
-        array of associated parameters. Is printed if the associated model has
-        NaN values.
-
-    Returns
-    -------
-    index : list
-        list of indices of data to be removed.
-
-    """
-    index = []
-    for i,spec in enumerate(data):
-        if np.any(np.isnan(spec)) == True or np.any(np.isinf(spec)):
-            index.append(i)
-    if index != []:
-        print("Found bad models, printing parameters...")
-        for indice in index:
-            print(f"{indice}: {pars[indice]}")
-    return index
 
 def spectraChecker(flux,pars_flux,threshold):
     """
@@ -320,9 +135,3 @@ def readAndRemoveNans(flux_loc):
     flux_df.drop(index,inplace=True)
     flux_df.to_csv(flux_loc, index=False)
     return
-
-def main():
-    removeRedundantData()
-    
-if __name__ == "__main__":
-    main()
