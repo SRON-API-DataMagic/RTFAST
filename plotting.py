@@ -132,9 +132,9 @@ def loss_plots(loss_name):
     PCA_val_loss = np.loadtxt(f"loss/{loss_name}_te_loss.txt")
     
     epochs = np.arange(1,len(PCA_train_loss)+1)
-    plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
-             ls = "-")
     plt.plot(epochs,PCA_val_loss,label = "Validation loss", c = "orange",
+             ls = "-")
+    plt.plot(epochs,PCA_train_loss,label = "Training loss", c = "blue",
              ls = "--")
     plt.yscale("log")
     #plt.xscale("log")
@@ -599,8 +599,8 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
-    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=False,plot_samples=True,
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=True,
+             plot_heatmaps=False,plot_samples=False,
              num_models=num_models)
     
 if __name__ == "__main__":
