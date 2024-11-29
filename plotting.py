@@ -12,6 +12,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
 import matplotlib as mpl
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 mpl.rcParams.update(mpl.rcParamsDefault)
 mpl.rcParams.update({'font.size': 16})
 
@@ -536,12 +537,21 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             axs[0].legend()
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
-            axs[1].plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
-            axs[1].plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
-            axs[1].set_ylabel("Flux (keV^2/cm^2/s/KeV)")
+            
+            inset_ax = axs[1].inset_axes(
+                           [0.05, 0.65, 0.3, 0.3],  # [x, y, width, height] w.r.t. axes
+                            xlim=[6, 7], # sets viewport & tells relation to main axes
+                            xticklabels=[], yticklabels=[]
+                        )
+            for ax in axs[1],inset_ax:
+                ax.plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
+                ax.plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
+                ax.set_ylabel("Flux (keV^2/cm^2/s/KeV)")
+                
             axs[1].legend()
             axs[1].set_yscale("log")
             axs[1].set_xscale("log")
+            axs[1].indicate_inset_zoom(inset_ax, edgecolor="blue")
             axs[2].plot(emid,(pred-D)/D)
             axs[2].fill_between(emid,-0.03,0.03,color="grey",alpha=0.2)
             axs[2].set_ylabel("(RTFAST-RTDIST)/RTDIST")
