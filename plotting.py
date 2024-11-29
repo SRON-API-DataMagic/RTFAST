@@ -216,7 +216,8 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
-        cbar.ax.set_yticklabels([r"$10^{-3}$",r"$3 \times 10^{-3}$",
+        cbar.ax.set_yticklabels([r"$10^{-4}$",r"$3 \times 10^{-4}$",
+                                 r"$10^{-3}$",r"$3 \times 10^{-3}$",
                                  r"$10^{-2}$",r"$3 \times 10^{-2}$",
                                  r"$10^{-1}$"])
         plt.yticks(ticks,labels=tick_labels)
