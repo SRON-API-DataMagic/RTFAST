@@ -11,7 +11,9 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap
 from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
-import matplotlib
+import matplotlib as mpl
+mpl.rcParams.update(mpl.rcParamsDefault)
+mpl.rcParams.update({'font.size': 16})
 
 import numpy as np
 
@@ -119,7 +121,6 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
-    matplotlib.rcParams.update({'font.size': 16})
     plt.savefig(f"heatmaps/{fname}_{index}.pdf")
     plt.close()
     return
@@ -222,7 +223,6 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.pdf")
         plt.close()
     
@@ -247,7 +247,6 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         sm.set_array([])
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
         fig.suptitle(labels[i])
-        matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
 
@@ -360,7 +359,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     axs[1].axvline(-3,ls="--",c="red")
     axs[1].axvline(3,ls="--",c="red")
     axs[1].set_title("Ensemble")
-    matplotlib.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(f"loss/resids_compare_{name}.pdf")
     plt.close()
@@ -479,7 +477,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
-            matplotlib.rcParams.update({'font.size': 16})
             plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
             plt.close()
         """
@@ -550,7 +547,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             axs[2].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")
-            matplotlib.rcParams.update({'font.size': 16})
             plt.tight_layout()
             plt.savefig(f"samples/{name}_energy_compare_{i}.pdf")
             plt.close()
