@@ -540,8 +540,9 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             
             inset_ax = axs[1].inset_axes(
                            [0.05, 0.65, 0.3, 0.3],  # [x, y, width, height] w.r.t. axes
-                            xlim=[5.5, 7], ylim=[15,25], # sets viewport & tells relation to main axes
-                            xticklabels=[], yticklabels=[]
+                            xlim=[5.5, 7], ylim=[19,28], # sets viewport & tells relation to main axes
+                            xticklabels=[], yticklabels=[],
+                            xlabel=None,ylabel=None
                         )
             for ax in axs[1],inset_ax:
                 ax.plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
