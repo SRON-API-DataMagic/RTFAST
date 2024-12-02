@@ -378,6 +378,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     res_99 = np.quantile(residuals_signed,0.99,axis=0)*100
     res_01 = np.quantile(residuals_signed,0.01,axis=0)*100
     
+    mpl.rcParams.update({'font.size': 18})
+    
     plt.fill_between(emid, res_01, res_99,color="b",alpha=0.2,label="99%")
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25,label="95%")
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5,label="50%")
@@ -388,6 +390,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.legend()
     plt.savefig(f"loss/energ_resid_{name}.pdf")
     plt.close()
+    mpl.rcParams.update({'font.size': 16})
     
     sign_res = ((test_pred)-D)/D
     sign_res[(D==1e-11)] = np.nan
