@@ -379,7 +379,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     res_01 = np.quantile(residuals_signed,0.01,axis=0)*100
     
     mpl.rcParams.update({'font.size': 18})
-    
+    fig, axs = plt.subplots(figsize=(10,5))
     plt.fill_between(emid, res_01, res_99,color="b",alpha=0.2,label="99%")
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25,label="95%")
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5,label="50%")
