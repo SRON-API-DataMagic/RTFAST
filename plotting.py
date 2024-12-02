@@ -388,6 +388,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
     plt.legend()
+    plt.tight_layout()
     plt.savefig(f"loss/energ_resid_{name}.pdf")
     plt.close()
     mpl.rcParams.update({'font.size': 16})
