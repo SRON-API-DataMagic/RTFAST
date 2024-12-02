@@ -349,7 +349,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     residuals_signed[(D==1e-11)] = np.nan
     single_residuals_signed[(D==1e-11)] = np.nan
     
-    fig, axs = plt.subplots(1,2,sharey=True,figsize=(8,4))
+    mpl.rcParams.update({'font.size': 18})
+    fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(single_residuals_signed[np.abs(single_residuals_signed)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
     fig.supylabel("Probability density")
@@ -367,6 +368,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.tight_layout()
     plt.savefig(f"loss/resids_compare_{name}.pdf")
     plt.close()
+    mpl.rcParams.update({'font.size': 16})
     
     median_res = np.median(residuals_signed,axis=0)*100
     res_25 = np.quantile(residuals_signed,0.25,axis=0)*100
