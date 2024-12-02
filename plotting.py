@@ -12,7 +12,6 @@ from matplotlib.colors import ListedColormap
 from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
 import matplotlib as mpl
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 mpl.rcParams.update(mpl.rcParamsDefault)
 mpl.rcParams.update({'font.size': 16})
 
@@ -24,8 +23,7 @@ from tqdm import tqdm
 import network
 from dataStructures import PCADataset
 from training import PCALoss
-#from generator import new_set, lhc_AGN
-from sherpa.astro import xspec
+import corner
             
 def inverse(scaler,data):
     """
@@ -291,6 +289,15 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin")
+    
+    
+    figure = corner.corner(
+        test_data.data[:,pars_list],
+        labels=labels,
+        )
+    plt.savefig("loss/parameter_dists.png")
+    plt.close()
+
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
