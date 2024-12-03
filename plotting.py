@@ -289,14 +289,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin")
-    
-    
-    figure = corner.corner(
-        test_data.data[:,pars_list],
-        labels=labels,
-        )
-    plt.savefig("loss/parameter_dists.png")
-    plt.close()
 
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
