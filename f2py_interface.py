@@ -29,7 +29,7 @@ type_int_p    = ct.POINTER(ct.c_int)
 # sys.path.append(path_to_location_of_this_file)
 #######################################################################
 
-lib = ct.cdll.LoadLibrary("/data/storage_hpc/reltrans" + "/libreltrans.so")
+lib = ct.cdll.LoadLibrary("/Users/benr/projects/reltrans_all/reltrans" + "/libreltrans.dylib")
 
 #######################################################################
 # now the function(s)

@@ -4,41 +4,13 @@ for generating sampels for training the emulator for rtdist.
 """
 import numpy as np
 import os
-from reltrans import _models
 from joblib import Parallel, delayed
-from processing import saveData, spectraChecker
+#from processing import saveData, spectraChecker
 import scipy
-from sherpa.astro import xspec
+import f2py_interface as ib
+import matplotlib.pyplot as plt
 
-def nthcomp(pars,egrid_lo,egrid_hi):
-    """
-    Generates nthcomp spectrum for subtraction from reltrans
-    
-
-    Parameters
-    ----------
-    pars : array
-        contains parameters used in simulation.
-    egrid : array
-        contains values of energy to calculate for.
-
-    Returns
-    -------
-    model : array
-        outputted model.
-
-    """
-    nthcomp = xspec.XSnthComp()
-    nthcomp.Gamma       = pars[0]
-    nthcomp.kT_e        = pars[1]
-    nthcomp.kT_bb       = pars[2]
-    nthcomp.inp_type    = pars[3]
-    nthcomp.redshift    = pars[4]
-    nthcomp.norm        = pars[5]
-    model = nthcomp(egrid_lo,egrid_hi)
-    return model
-
-def rtdist_flux(pars, egrid_lo, egrid_hi):
+def rtdist_flux(pars,egrid):
     """
     
 
@@ -55,7 +27,7 @@ def rtdist_flux(pars, egrid_lo, egrid_hi):
         outputted simulated data.
 
     """
-    model = _models.tdrtdist(pars, egrid_lo, egrid_hi)
+    model = ib.reltransDCp(egrid, pars)
     return model
 
 def lhc_filter_20(lhc):
@@ -80,24 +52,11 @@ def lhc_filter_20(lhc):
     #solar abundance above 6 AND a electron density in the disk of higher than
     #10^19.
     bad_disks = np.nonzero((lhc[:,6]>2.75)&(10**lhc[:,8]>4)&(lhc[:,9]>17))
-    #check if the calculated hubble constant for the set of parameters
-    #if outside of 30km/s/Mpc <= H0 <= 300km/s/Mpc
-    hubble = lhc[:,5]*3e5/((10**lhc[:,7])*0.001)
-    bad_dists = np.nonzero((hubble < 30) | (hubble > 300))
-    #checks that heights are greater than horizon radius
+    #coronas within the blackhole horizon
     heights = 1+ np.sqrt(1-lhc[:,1]**2)
     bad_heights = np.nonzero(10**lhc[:,0]<1.5*heights)
-    #Check luminosities aren't super eddington or too small to see
-    F = 10**lhc[:,-1]       #Flux of corona in erg/cm^2/s
-    D = 10**lhc[:,7]        #distance of objects
-    D = 3.086e21 * D        #distance in cm
-    M_solar = 10**lhc[:,12] #mass of the object
-    L = 4*np.pi*(D**2)*F    #luminosity of corona in erg/cm^2/s
-    Ledd = 1.26e38*M_solar  #eddington luminosity
-    bad_Ls = np.nonzero((L > 2.5*Ledd)|(L < 1e-4*Ledd))
     #collates all bad sets together
-    bad_sets = np.unique(np.concatenate((bad_disks,bad_heights,bad_dists,
-                                         bad_Ls),axis=None))
+    bad_sets = np.unique(np.concatenate((bad_disks,bad_heights),axis=None))
     #removes all unphysical sets from the parameter sets
     new_lhc = np.delete(lhc,bad_sets,0)
     return new_lhc
@@ -114,31 +73,20 @@ def lhc_ranges():
     
     """
     height_range = [np.log10(1.5),np.log10(1e4)]
-    spin_range = [0,0.998]
-    inclination_range = [np.log10(1),np.log10(80)]
+    spin_range = [-0.998,0.998]
+    inclination_range = [np.log10(1),np.log10(89)]
     r_inner_range = [np.log10(1),np.log10(400)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
-    z_range = [0,0.1]
     Gamma_range = [1.4,3.4]
-    distance_range = [np.log10(0.2),np.log10(1e10)]
+    logxi_range = [0,4.7]
     Afe_range = [np.log10(0.5),np.log10(10)]
     logNe_range = [15,20]
     kte_range = [np.log10(5),np.log10(500)]
-    nH_range = [np.log10(1e-3),np.log10(1e3)]
-    boost_range = [np.log10(1e-2),np.log10(10)]
-    mass_range = [np.log10(3),np.log10(1e11)]
-    honr_range = [0,0.176]
-    b1_range = [0,2]
-    b2_range = [-4,4]
-    phiAB_range = [-3.14,3.14]
-    g_range = [0,0.5]
-    Anorm_range = [np.log10(1e-12),np.log10(1e10)]
     
     
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
-                 r_outer_range,z_range,Gamma_range,distance_range,Afe_range,
-                 logNe_range,kte_range,nH_range,boost_range,mass_range,
-                 honr_range,b1_range,b2_range,phiAB_range,g_range,Anorm_range]
+                 r_outer_range,Gamma_range,logxi_range,Afe_range,
+                 logNe_range,kte_range]
     
     return range_all
 
@@ -172,8 +120,8 @@ def nn_pars_to_rtdist(nn_pars, ReIm, pars_list, negatives, logged):
     """
     #set up base parameters which can be used to fix parameter sets to
     #reasonable values
-    pars_base = [6,0.9,57,-1,2e4,0.024917,2.45,1e5,1,17,50.,0,1,3e6,0.02,0,0,0,
-                 0,ReIm,0,0,0,2.2e-4,1,1.]
+    pars_base = [6,0.9,57,-1,2e4,0,2.45,3,1,17,50.,0,0,3e6,0,0,0,
+                 0,0,0,1,1.]
     #set up base parameters to transform according to sampled parameters
     converted_pars = []
     for i in range(nn_pars.shape[0]):
@@ -220,7 +168,7 @@ def lhc_generation(size,range_all,limited = False, lhc_filter = lhc_filter_20):
         theta_lhc = scipy.stats.qmc.scale(sample, range_all[:,0], range_all[:,1])
         return theta_lhc
 
-def generate_dataset(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
+def generate_dataset(range_AGN,pars_list,negatives,logged,egrid):
     
     cpu_num = os.cpu_count()
     
@@ -234,12 +182,39 @@ def generate_dataset(range_AGN,pars_list,negatives,logged,egrid_lo,egrid_hi):
     print("Generating flux models")
     
     with Parallel(n_jobs=cpu_num,verbose=1,backend="multiprocessing") as parallel:
-        flux =  parallel(delayed(rtdist_flux)(pars,egrid_lo,egrid_hi)
+        flux =  parallel(delayed(rtdist_flux)(pars,egrid)
                                         for pars in theta_flux)
         flux = np.asarray(flux)
     print("Checking for spectra below threshold")
-    flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
+    #flux, theta_flux = spectraChecker(flux,theta_flux,1e-11)
     
-    print("Saving flux data")
-    saveData(flux, theta_flux, 
-             "data/locations/","loc_flux_text.csv")
+    plt.plot(egrid,flux,alpha=0.1,c="blue")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("Energy (keV)")
+    plt.ylabel("Photons/cm^2/s/keV")
+    plt.show()
+    plt.close()
+    
+    plt.plot(egrid,(egrid**2)*flux,alpha=0.1,c="blue")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("Energy (keV)")
+    plt.ylabel("keV^2/cm^2/s/keV")
+    plt.show()
+    plt.close()
+
+def main():
+    range_AGN = np.asarray(lhc_ranges())
+    
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
+    negatives = [3]
+    logged = [0,2,3,4,7,8,10,12,13,23]
+    
+    egrid = np.logspace(-1,np.log10(3000),num=10000)
+    
+    generate_dataset(range_AGN, pars_list, negatives, logged, egrid)
+    
+    
+if __name__ == "__main__":
+    main()
