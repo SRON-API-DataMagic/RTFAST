@@ -545,7 +545,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             fig, axs = plt.subplots(3,sharex=True,figsize=(10,12))
             axs[0].plot(emid,pred/bin_width,label="RTFAST")
             axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
-            axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
+            axs[0].set_ylabel(r"Flux (photons/cm$^2$/s/keV)")
             axs[0].legend()
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
@@ -558,7 +558,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             for ax in axs[1],inset_ax:
                 ax.plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
                 ax.plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
-                ax.set_ylabel("Flux (keV^2/cm^2/s/KeV)")
+                ax.set_ylabel(r"Flux (keV$^2$/cm$^2$/s/keV)")
             inset_ax.set(xlabel=None,ylabel=None)
             axs[1].legend()
             axs[1].set_yscale("log")
@@ -612,7 +612,7 @@ def main():
     """
     num_models = 7
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
-             plot_heatmaps=True,plot_samples=False,
+             plot_heatmaps=False,plot_samples=True,
              num_models=num_models)
     
 if __name__ == "__main__":
