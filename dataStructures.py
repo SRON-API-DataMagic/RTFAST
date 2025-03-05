@@ -10,6 +10,17 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import os
 
+class DataStructure(Dataset):
+    def __init__(self,pars,data):
+        self.pars = pars
+        self.data = data
+        
+    def __len__(self):
+        return self.data.shape[0]
+    
+    def __getitem__(self,idx):
+        return self.data[idx], self.pars[idx]
+
 class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,

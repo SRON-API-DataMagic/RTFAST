@@ -8,6 +8,104 @@ from torch.func import stack_module_state, functional_call
 import copy
 from joblib import load
 import numpy as np
+from torch.distributions import Normal
+
+class Sampling(nn.Module):
+    def forward(self, z_mean, z_log_var):
+        # get the shape of the tensor for the mean and log variance
+        batch, dim = z_mean.shape
+        # generate a normal random tensor (epsilon) with the same shape as z_mean
+        # this tensor will be used for reparameterization trick
+        epsilon = Normal(0, 1).sample((batch, dim)).to(z_mean.device)
+        # apply the reparameterization trick to generate the samples in the
+        # latent space
+        return z_mean + torch.exp(0.5 * z_log_var) * epsilon
+
+class DynamicDecoder(nn.Module):
+    """
+    The decoder portion of the auto-encoder and the front end of the latent
+    space to spectrum portion of the emulator.
+    """
+    
+    def __init__(self,spectrum_len,latent_space,nodes,num_layers):
+        super().__init__()
+        act_type = nn.ReLU()
+        modules = []
+        modules.append(nn.Linear(latent_space, nodes))
+        modules.append(act_type)
+        #dynamically add layers
+        for i in range(num_layers):
+            modules.append(nn.Linear(nodes, nodes))
+            modules.append(act_type)
+        #add output stack
+        modules.append(nn.Linear(nodes, spectrum_len))
+        self.LinearStack = nn.Sequential(*modules)
+        
+    def forward(self,latent_vars):
+        return self.LinearStack(latent_vars)
+
+class DynamicEncoder(nn.Module):
+    """
+    The encoder portion of the auto-encoder.
+    """
+    
+    def __init__(self,spectrum_len,latent_space,nodes,num_layers):
+        super().__init__()
+        act_type = nn.ReLU()
+        modules = []
+        modules.append(nn.Linear(spectrum_len, nodes))
+        modules.append(act_type)
+        #dynamically add layers
+        for i in range(num_layers):
+            modules.append(nn.Linear(nodes, nodes))
+            modules.append(act_type)
+        #add output stack
+        self.LinearStack = nn.Sequential(*modules)
+        self.fc_mean = nn.Linear(nodes, latent_space)
+        self.fc_log_var = nn.Linear(nodes, latent_space)
+        self.sampling = Sampling()
+        
+    def forward(self,spectrum):
+        out = self.LinearStack(spectrum)
+        z_mean = self.fc_mean(out)
+        z_log_var = self.fc_log_var(out)
+        z = self.sampling(z_mean, z_log_var)
+        return z_mean, z_log_var, z
+
+class DynamicAutoEncoder(nn.Module):
+    """
+    Full auto-encoder
+    """
+    def __init__(self,decoder,encoder):
+        super().__init__()
+        self.decoder = decoder
+        self.encoder = encoder
+        
+    def forward(self,spectrum):
+        z_mean, z_log_var, z = self.encoder(spectrum)
+        reconstruction = self.decoder(z)
+        return z_mean, z_log_var, z, reconstruction
+    
+    def latent_space(self,spectrum):
+        return self.encoder(spectrum)
+
+class DynamicEmulator(nn.Module):
+    """
+    Full emulator
+    """
+    def __init__(self,decoder,encoder):
+        super().__init__()
+        self.decoder = decoder
+        self.par_encoder = encoder
+        self.emulator = nn.Sequential(*[self.par_encoder,self.decoder])
+    
+    def forward(self,pars):
+        z = self.par_encoder(pars)
+        recon = self.decoder(z)
+        return z,recon
+    
+    def latent_space(self,pars):
+        return self.par_encoder(pars)
 
 class RtdistSpec(nn.Module):
     """
