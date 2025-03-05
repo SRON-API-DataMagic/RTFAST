@@ -30,3 +30,4 @@ likelihoods.py
 ndspec/
 images/
 *.pha
+*.dat
