@@ -24,21 +24,11 @@ class DataStructure(Dataset):
 
 class PCAtrimmedDataset(Dataset):
     
-    def __init__(self,data_locs,pars_locs,pars_list,negatives,logged):
+    def __init__(self,data,pars,pars_list,negatives,logged):
         self.pars_list = pars_list
         self.negatives = negatives
         self.logged = logged
         self.scaler = StandardScaler()
-        #load all data into arrays
-        data = []
-        for file in tqdm(data_locs):
-            data.append(np.loadtxt(file))
-        data = np.concatenate(data,axis=0)
-        pars = []
-        for file in pars_locs:
-            pars.append(np.loadtxt(file))
-        pars = np.concatenate(pars,axis=0)
-        pars = pars[:,pars_list]
         self.data = torch.Tensor(self.scaler.fit_transform(data)).float()
         self.pars = torch.Tensor(self.rtdist_to_nn(pars)).float()
         

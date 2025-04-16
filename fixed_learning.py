@@ -10,6 +10,8 @@ from joblib import load
 from dataStructures import PCAtrimmedDataset
 from network import DynamicNetwork
 from training import training_loop, train, validate, PCALoss
+from tqdm import tqdm
+import numpy as np
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -17,14 +19,35 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,10]
     
-    data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(250)]
-    pars_locs = [f"data/pars/pars_{i}.txt" for i in range(250)]
+    size = 250
+    data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(size)]
+    pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
+    
+    data = []
+    for file in tqdm(data_locs):
+        data.append(np.loadtxt(file))
+    data = np.concatenate(data,axis=0)
+    pars = []
+    for file in pars_locs:
+        pars.append(np.loadtxt(file))
+    pars = np.concatenate(pars,axis=0)
+    pars = pars[:,pars_list]
+    
+    indices = np.arange(len(data))
+    shuffled = np.random.shuffle(indices)
+    
+    train_data = data[shuffled[:int(0.9*len(shuffled))]]
+    val_data = data[shuffled[int(0.9*len(shuffled)):]]
+    train_pars = pars[shuffled[:int(0.9*len(shuffled))]]
+    val_pars = pars[shuffled[int(0.9*len(shuffled)):]]
     
     pca = load("scalers/pca.bin")
     
-    dataset = PCAtrimmedDataset(data_locs,pars_locs,pars_list,negatives,logged)
-    train_dataset,val_dataset = torch.utils.data.random_split(dataset,
-                                                              lengths=[0.9,0.1])
+    val_dataset = PCAtrimmedDataset(train_data,train_pars,
+                                    pars_list,negatives,logged)
+    train_dataset = PCAtrimmedDataset(val_data,val_pars,
+                                      pars_list,negatives,logged)
+    
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
