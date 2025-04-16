@@ -21,6 +21,50 @@ class DataStructure(Dataset):
     def __getitem__(self,idx):
         return self.data[idx], self.pars[idx]
 
+class PCAtrimmedDataset(Dataset):
+    
+    def __init__(self,data_locs,pars_locs,pars_list,negatives,logged):
+        self.pars_list = pars_list
+        self.negatives = negatives
+        self.logged = logged
+        self.scaler = StandardScaler()
+        #load all data into arrays
+        data = np.empty()
+        for file in data_locs:
+            data = np.concatenate((data,np.loadtxt(file)))
+        pars = np.empty()
+        for file in pars_locs:
+            pars = np.concatenate((pars,np.loadtxt(file)))
+        self.data = torch.Tensor(self.scaler.transform(data)).float()
+        self.pars = torch.Tensor(self.rtdist_to_nn(pars)).float()
+        
+    def __len__(self):
+        return self.data.shape[0]
+    
+    def __getitem__(self,idx):
+        return self.data[idx], self.pars[idx]
+    
+    def rtdist_to_nn(self,pars):
+        """
+        Converts rtdist parameters into neural network friendly form.
+
+        Parameters
+        ----------
+        negatives: list
+            list of indexes of parameters to be turned positive due to being
+            a negative value in rtdist
+        logged: list
+            list of indexes of parameters for their logarithm to be inputted
+            into the network
+
+        """
+        for i, parameter in enumerate(self.pars_list):
+            if parameter in self.negatives:
+                pars[:,i] = -pars[:,i]
+            if parameter in self.logged:
+                pars[:,i] = np.log10(pars[:,i])
+        return torch.Tensor(pars).float()
+
 class PCADataset(Dataset):
     
     def __init__(self,data_loc,pars_list,negatives,logged,threshold = 1e-11,

@@ -213,7 +213,7 @@ def training_loop_AE(AE,emulator, optimizer, train, test, train_dataloader,
     
     return
 
-def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
+def train(dataloader, model, optimizer, loss_fn, device, scheduler = None,
                epoch = 0):
     """
     
@@ -261,7 +261,7 @@ def train_flux(dataloader, model, optimizer, loss_fn, device, scheduler = None,
     print(f"Average training loss: {avg_loss:>8f}")
     return model, optimizer , avg_loss
 
-def test_flux(dataloader, model, loss_fn, device):
+def validate(dataloader, model, loss_fn, device):
     """
     
 
