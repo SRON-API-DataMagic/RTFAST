@@ -29,10 +29,10 @@ class PCAtrimmedDataset(Dataset):
         self.logged = logged
         self.scaler = StandardScaler()
         #load all data into arrays
-        data = np.empty()
+        data = np.empty(0)
         for file in data_locs:
             data = np.concatenate((data,np.loadtxt(file)))
-        pars = np.empty()
+        pars = np.empty(0)
         for file in pars_locs:
             pars = np.concatenate((pars,np.loadtxt(file)))
         self.data = torch.Tensor(self.scaler.transform(data)).float()
