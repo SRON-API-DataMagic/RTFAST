@@ -17,8 +17,8 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,10]
     
-    data_locs = []
-    pars_locs = []
+    data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(250)]
+    pars_locs = [f"data/pars/pars_{i}.txt" for i in range(250)]
     
     pca = load("scalers/pca.bin")
     
