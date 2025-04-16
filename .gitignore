@@ -30,4 +30,9 @@ likelihoods.py
 ndspec/
 images/
 *.pha
+<<<<<<< HEAD
 *.dat
+=======
+test_plot.py
+
+>>>>>>> f5d8e21a4139cfe64beb070f24f9b76064a99610

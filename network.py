@@ -9,6 +9,8 @@ import copy
 from joblib import load
 import numpy as np
 from torch.distributions import Normal
+import os
+emudir = os.path.dirname(__file__)
 
 class Sampling(nn.Module):
     def forward(self, z_mean, z_log_var):
@@ -220,7 +222,7 @@ class RtdistSpec_ensemble(nn.Module):
         super().__init__()
         models = [DynamicNetwork(17,200,12,256).to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
-            model.load_state_dict(torch.load(f"models/{i}_ensemble.pth",
+            model.load_state_dict(torch.load(emudir+f"/models/{i}_ensemble.pth",
                                                  map_location=device))
         
         self.ensemble_params, self.ensemble_buffers = stack_module_state(models)
@@ -252,7 +254,7 @@ class RTFAST(nn.Module):
         super().__init__()
         models = [RtdistSpec().to(device) for _ in range(num_models)]
         for i,model in enumerate(models):
-            model.load_state_dict(torch.load(f"models/{i}_ensemble.pth",
+            model.load_state_dict(torch.load(emudir+f"/models/{i}_ensemble.pth",
                                                  map_location=device))
             model.double()
         
@@ -260,9 +262,9 @@ class RTFAST(nn.Module):
         self.base_model = copy.deepcopy(models[0])
         self.base_model = self.base_model.to('meta')
         
-        self.pca  = load("scalers/PCA_spec.bin")
-        self.comp = load("scalers/comp_spec.bin")
-        self.spec = load("scalers/spec_spec.bin")
+        self.pca  = load(emudir+"/scalers/PCA_spec.bin")
+        self.comp = load(emudir+"/scalers/comp_spec.bin")
+        self.spec = load(emudir+"/scalers/spec_spec.bin")
         
         self.pca_mean       = torch.Tensor(self.pca.mean_).double()
         self.pca_components = torch.Tensor(self.pca.components_).double()

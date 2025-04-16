@@ -207,11 +207,11 @@ def generate_dataset(range_AGN,pars_list,negatives,logged,egrid):
 def main():
     range_AGN = np.asarray(lhc_ranges())
     
-    pars_list = [0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,23]
+    pars_list = [0,1,2,3,4,5,6,7,8,9,10]
     negatives = [3]
     logged = [0,2,3,4,7,8,10,12,13,23]
     
-    egrid = np.logspace(-1,np.log10(3000),num=10000)
+    egrid = np.logspace(-1,2,num=1000)
     
     generate_dataset(range_AGN, pars_list, negatives, logged, egrid)
     

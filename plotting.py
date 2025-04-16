@@ -11,9 +11,9 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap
 from matplotlib.cm import ScalarMappable
 import matplotlib.colors as colors
-import matplotlib
-matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-
+import matplotlib as mpl
+mpl.rcParams.update(mpl.rcParamsDefault)
+mpl.rcParams.update({'font.size': 16})
 import numpy as np
 
 import pandas as pd
@@ -22,8 +22,7 @@ from tqdm import tqdm
 import network
 from dataStructures import PCADataset
 from training import PCALoss
-#from generator import new_set, lhc_AGN
-from sherpa.astro import xspec
+import corner
             
 def inverse(scaler,data):
     """
@@ -120,7 +119,6 @@ def heatmap(df, index, ticks, ticklabels, fname, mode):
     
     cbar.set_label(zlabel, rotation=270, labelpad=15)
     fig.tight_layout()
-    matplotlib.rcParams.update({'font.size': 16})
     plt.savefig(f"heatmaps/{fname}_{index}.pdf")
     plt.close()
     return
@@ -215,6 +213,10 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         c_ticks = [10**(Z_center-1.5), 10**(Z_center-1), 10**(Z_center-0.5), 10**(Z_center),
                     10**(Z_center+0.5),10**(Z_center+1),10**(Z_center+1.5)]
         cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
+        cbar.ax.set_yticklabels([r"$10^{-4}$",r"$3 \times 10^{-4}$",
+                                 r"$10^{-3}$",r"$3 \times 10^{-3}$",
+                                 r"$10^{-2}$",r"$3 \times 10^{-2}$",
+                                 r"$10^{-1}$"])
         plt.yticks(ticks,labels=tick_labels)
         plt.xticks(np.arange(0,recon_resid.shape[1],recon_resid.shape[1]/5), 
                    labels=e_ticks)
@@ -223,7 +225,6 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         
         cbar.set_label(zlabel, rotation=270, labelpad=15)
         fig.tight_layout()
-        matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"heatmaps/PCA_recon_err_{labels[i]}.pdf")
         plt.close()
     
@@ -248,7 +249,6 @@ def PCA_plot(test_data,D,labels,name,pars_list,e_ticks):
         sm.set_array([])
         cbar = fig.colorbar(sm, ax=axs[:,4],format='%.2e')
         fig.suptitle(labels[i])
-        matplotlib.rcParams.update({'font.size': 16})
         plt.savefig(f"samples/corner/{labels[i]}_corner.png")
         plt.close()
 
@@ -288,6 +288,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
                                PCA_loc="scalers/PCA_spec.bin",
                                comp_loc="scalers/comp_spec.bin",
                                spec_scal_loc="scalers/spec_spec.bin")
+
     
     arf_name = wrk_dir+"/ResponseFiles/PN.arf"
     arf = read_arf(arf_name)
@@ -346,6 +347,7 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     residuals_signed[(D==1e-11)] = np.nan
     single_residuals_signed[(D==1e-11)] = np.nan
     
+    mpl.rcParams.update({'font.size': 18})
     fig, axs = plt.subplots(1,2,sharey=True,figsize=(10,5))
     axs[0].hist(single_residuals_signed[np.abs(single_residuals_signed)<0.2]*100,bins=80,density=True)
     fig.supxlabel("Percentage residual")
@@ -361,10 +363,10 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     axs[1].axvline(-3,ls="--",c="red")
     axs[1].axvline(3,ls="--",c="red")
     axs[1].set_title("Ensemble")
-    matplotlib.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(f"loss/resids_compare_{name}.pdf")
     plt.close()
+    mpl.rcParams.update({'font.size': 16})
     
     median_res = np.median(residuals_signed,axis=0)*100
     res_25 = np.quantile(residuals_signed,0.25,axis=0)*100
@@ -374,6 +376,8 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     res_99 = np.quantile(residuals_signed,0.99,axis=0)*100
     res_01 = np.quantile(residuals_signed,0.01,axis=0)*100
     
+    mpl.rcParams.update({'font.size': 18})
+    fig, axs = plt.subplots(figsize=(10,5))
     plt.fill_between(emid, res_01, res_99,color="b",alpha=0.2,label="99%")
     plt.fill_between(emid, res_05, res_95,color="b",alpha=0.25,label="95%")
     plt.fill_between(emid, res_25, res_75,color="b",alpha=0.5,label="50%")
@@ -382,8 +386,10 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
     plt.ylabel("Percentage residuals")
     plt.xscale("log")
     plt.legend()
+    plt.tight_layout()
     plt.savefig(f"loss/energ_resid_{name}.pdf")
     plt.close()
+    mpl.rcParams.update({'font.size': 16})
     
     sign_res = ((test_pred)-D)/D
     sign_res[(D==1e-11)] = np.nan
@@ -472,6 +478,9 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             c_ticks = [10**(-3), 10**(-2.5), 10**(-2), 10**(-1.5),
                         10**(-1)]
             cbar = plt.colorbar(ticks=c_ticks, format='%.0e', norm=norm, extend='max')
+            cbar.ax.set_yticklabels([r"$10^{-3}$",r"$3 \times 10^{-3}$",
+                                     r"$10^{-2}$",r"$3 \times 10^{-2}$",
+                                     r"$10^{-1}$"])
             plt.yticks(ticks,labels=tick_labels)
             plt.xticks(np.arange(0,residuals.shape[1],residuals.shape[1]/5), 
                        labels=e_ticks)
@@ -480,7 +489,6 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             
             cbar.set_label(zlabel, rotation=270, labelpad=15)
             fig.tight_layout()
-            matplotlib.rcParams.update({'font.size': 16})
             plt.savefig(f"heatmaps/{name}_{labels[i]}.pdf")
             plt.close()
         """
@@ -536,22 +544,30 @@ def run_plot(wrk_dir,name,plot_pca = False,plot_loss = False,
             fig, axs = plt.subplots(3,sharex=True,figsize=(10,12))
             axs[0].plot(emid,pred/bin_width,label="RTFAST")
             axs[0].plot(emid,D/bin_width,label="RTDIST", ls = "--")
-            axs[0].set_ylabel("Flux (photons/cm^2/s/keV)")
+            axs[0].set_ylabel(r"Flux (photons/cm$^2$/s/keV)")
             axs[0].legend()
             axs[0].set_yscale("log")
             axs[0].set_xscale("log")
-            axs[1].plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
-            axs[1].plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
-            axs[1].set_ylabel("Flux (keV^2/cm^2/s/KeV)")
+            
+            inset_ax = axs[1].inset_axes(
+                           [0.05, 0.65, 0.3, 0.3],  # [x, y, width, height] w.r.t. axes
+                            xlim=[5.5, 7], ylim=[19,26], # sets viewport & tells relation to main axes
+                            xticklabels=[], yticklabels=[]
+                        )
+            for ax in axs[1],inset_ax:
+                ax.plot(emid,(emid**2)*pred/bin_width,label="RTFAST")
+                ax.plot(emid,(emid**2)*D/bin_width,label="RTDIST", ls = "--")
+                ax.set_ylabel(r"Flux (keV$^2$/cm$^2$/s/keV)")
+            inset_ax.set(xlabel=None,ylabel=None)
             axs[1].legend()
             axs[1].set_yscale("log")
             axs[1].set_xscale("log")
+            axs[1].indicate_inset_zoom(inset_ax, edgecolor="blue")
             axs[2].plot(emid,(pred-D)/D)
             axs[2].fill_between(emid,-0.03,0.03,color="grey",alpha=0.2)
             axs[2].set_ylabel("(RTFAST-RTDIST)/RTDIST")
             fig.supxlabel("Energy (keV)")
             #fig.suptitle("Comparison of PCA emulator output vs expected")
-            matplotlib.rcParams.update({'font.size': 16})
             plt.tight_layout()
             plt.savefig(f"samples/{name}_energy_compare_{i}.pdf")
             plt.close()
@@ -594,8 +610,13 @@ def main():
     new_set(range_AGN, pars_list, negatives, logged, egrid_lo, egrid_hi)
     """
     num_models = 7
+<<<<<<< HEAD
     run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=True,plot_loss=True,
              plot_heatmaps=True,plot_samples=True,
+=======
+    run_plot(wrk_dir,f"ensemble_{num_models}",plot_pca=False,plot_loss=False,
+             plot_heatmaps=False,plot_samples=True,
+>>>>>>> f5d8e21a4139cfe64beb070f24f9b76064a99610
              num_models=num_models)
     
 if __name__ == "__main__":
