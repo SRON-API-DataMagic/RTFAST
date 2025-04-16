@@ -35,7 +35,7 @@ class PCAtrimmedDataset(Dataset):
         pars = np.empty(0)
         for file in pars_locs:
             pars = np.concatenate((pars,np.loadtxt(file)))
-        self.data = torch.Tensor(self.scaler.transform(data)).float()
+        self.data = torch.Tensor(self.scaler.fit_transform(data)).float()
         self.pars = torch.Tensor(self.rtdist_to_nn(pars)).float()
         
     def __len__(self):
