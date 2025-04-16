@@ -9,7 +9,7 @@ from joblib import load
 
 from dataStructures import PCAtrimmedDataset
 from network import DynamicNetwork
-from training import grid_training_loop, train, validate, PCALoss
+from training import training_loop, train, validate, PCALoss
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,8 +38,8 @@ def main():
     model.to(device)
     optimizer = Adam(model.parameters(), lr=1e-4)
     #optimizer = SGD(model.parameters(), lr=1e-4,momentum=0.9)
-    grid_training_loop(model, optimizer, train, validate, tra_loader, 
-                       val_loader, loss_fn, device, "rtfast_2", epochs = 2000)
+    training_loop(model, optimizer, train, validate, tra_loader, 
+                  val_loader, loss_fn, device, "rtfast_2", epochs = 2000)
     
 
 if __name__ == "__main__":
