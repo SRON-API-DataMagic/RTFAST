@@ -30,3 +30,5 @@ likelihoods.py
 ndspec/
 images/
 *.pha
+test_plot.py
+
