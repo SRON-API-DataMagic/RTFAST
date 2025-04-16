@@ -33,13 +33,12 @@ class PCAtrimmedDataset(Dataset):
         data = []
         for file in tqdm(data_locs):
             data.append(np.loadtxt(file))
-        print(data)
         data = np.concatenate(data,axis=0)
-        print(data.shape)
         pars = []
         for file in pars_locs:
             pars.append(np.loadtxt(file))
         pars = np.concatenate(pars,axis=0)
+        pars = pars[:,pars_list]
         self.data = torch.Tensor(self.scaler.fit_transform(data)).float()
         self.pars = torch.Tensor(self.rtdist_to_nn(pars)).float()
         
