@@ -19,7 +19,7 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,10]
     
-    size = 250
+    size = 10
     data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(size)]
     pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
     
@@ -48,10 +48,31 @@ def main():
     train_dataset = PCAtrimmedDataset(val_data,val_pars,
                                       pars_list,negatives,logged)
     
+    height_range = [np.log10(1.5),np.log10(7e2)]
+    spin_range = [0,0.998]
+    inclination_range = [np.log10(1),np.log10(89)]
+    r_inner_range = [np.log10(1),np.log10(200)]
+    r_outer_range = [np.log10(400),np.log10(1e5)]
+    Gamma_range = [1.4,3.4]
+    logxi_range = [0,4.7]
+    Afe_range = [0.5,10]
+    logNe_range = [15,20]
+    kte_range = [np.log10(5),np.log10(500)]
+
+    range_all = [height_range,spin_range,inclination_range,r_inner_range,
+         r_outer_range,Gamma_range,logxi_range,Afe_range,
+         logNe_range,kte_range]
+    range_all = np.asarray(range_all)
+    for i,rang in enumerate(range_all):
+        print(f"pars out of range for parameter {i}:",
+              np.any((pars[:,i]<rang[0])|(pars[:,i]>rang[1])))
+    
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
+    
+    
     
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
