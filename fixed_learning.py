@@ -34,12 +34,12 @@ def main():
     pars = pars[:,pars_list]
     
     indices = np.arange(len(data))
-    shuffled = np.random.shuffle(indices)
+    np.random.shuffle(indices)
     
-    train_data = data[shuffled[:int(0.9*len(shuffled))]]
-    val_data = data[shuffled[int(0.9*len(shuffled)):]]
-    train_pars = pars[shuffled[:int(0.9*len(shuffled))]]
-    val_pars = pars[shuffled[int(0.9*len(shuffled)):]]
+    train_data = data[indices[:int(0.9*len(indices))]]
+    val_data = data[indices[int(0.9*len(indices)):]]
+    train_pars = pars[indices[:int(0.9*len(indices))]]
+    val_pars = pars[indices[int(0.9*len(indices)):]]
     
     pca = load("scalers/pca.bin")
     
