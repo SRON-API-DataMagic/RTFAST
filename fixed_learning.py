@@ -65,7 +65,7 @@ def main():
     range_all = np.asarray(range_all)
     for i,rang in enumerate(range_all):
         print(f"pars out of range for parameter {i}:",
-              np.any((val_dataset.pars[:,i]<rang[0])|(val_dataset.pars[:,i]>rang[1])))
+              np.any((np.array(val_dataset.pars[:,i])<rang[0])|(np.array(val_dataset.pars[:,i])>rang[1])))
     
     val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
