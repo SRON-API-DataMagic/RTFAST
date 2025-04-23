@@ -18,36 +18,35 @@ def main():
     pars_list = [0,1,2,3,4,6,7,8,9,10]
     negatives = [3]
     logged = [0,2,3,4,10]
-    
+
     size = 10
     data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(size)]
     pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
-    
+
     data = []
-    for file in tqdm(data_locs):
-        data.append(np.loadtxt(file))
-    data = np.concatenate(data,axis=0)
     pars = []
-    for file in pars_locs:
-        pars.append(np.loadtxt(file))
+    for data_file,par_file in tqdm(zip(data_locs,pars_locs),total=len(data_locs)):
+        datum = np.loadtxt(data_file)
+        par = np.loadtxt(par_file)
+        if par.shape[0] != datum.shape[0]:
+           par = par[:datum.shape[0]]
+        data.append(datum)
+        pars.append(par)
+    data = np.concatenate(data,axis=0)
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
-    
-    indices = np.arange(len(data))
-    np.random.shuffle(indices)
-    
-    train_data = data[indices[:int(0.9*len(indices))]]
-    val_data = data[indices[int(0.9*len(indices)):]]
-    train_pars = pars[indices[:int(0.9*len(indices))]]
-    val_pars = pars[indices[int(0.9*len(indices)):]]
-    
+
+    train_data = data[:int(0.9*len(pars))]
+    val_data = data[int(0.9*len(pars)):]
+    train_pars = pars[:int(0.9*len(pars))]
+    val_pars = pars[int(0.9*len(pars)):]
+
     pca = load("scalers/pca.bin")
-    
-    val_dataset = PCAtrimmedDataset(train_data,train_pars,
+
+    train_dataset = PCAtrimmedDataset(train_data,train_pars,
                                     pars_list,negatives,logged)
-    train_dataset = PCAtrimmedDataset(val_data,val_pars,
+    val_dataset = PCAtrimmedDataset(val_data,val_pars,
                                       pars_list,negatives,logged)
-    
     height_range = [np.log10(1.5),np.log10(7e2)]
     spin_range = [0,0.998]
     inclination_range = [np.log10(1),np.log10(89)]
@@ -57,7 +56,7 @@ def main():
     logxi_range = [0,4.7]
     Afe_range = [0.5,10]
     logNe_range = [15,20]
-    kte_range = [np.log10(5),np.log10(500)]
+    kte_range = [np.log10(30),np.log10(500)]
 
     range_all = [height_range,spin_range,inclination_range,r_inner_range,
          r_outer_range,Gamma_range,logxi_range,Afe_range,
@@ -71,19 +70,19 @@ def main():
                                   shuffle=True)
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
-    
-    
-    
+
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
-    
-    print("Training model")
-    model = DynamicNetwork(len(pars_list),comps,12,256)
-    model.to(device)
-    optimizer = Adam(model.parameters(), lr=1e-4)
-    #optimizer = SGD(model.parameters(), lr=1e-4,momentum=0.9)
-    training_loop(model, optimizer, train, validate, tra_loader, 
-                  val_loader, loss_fn, device, "rtfast_2", epochs = 2000)
+    nodes = [32,64,128,256]
+    layers = [2,4,6]
+    for node in nodes:
+        for layer in layers:
+            print("Training model")
+            model = DynamicNetwork(len(pars_list),comps,layer,node)
+            model.to(device)
+            optimizer = Adam(model.parameters(), lr=1e-3)
+            training_loop(model, optimizer, train, validate, tra_loader, 
+                  val_loader, loss_fn, device, f"rtfast_{node}_{layer}", epochs = 2000)
     
 
 if __name__ == "__main__":
