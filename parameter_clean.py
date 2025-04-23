@@ -15,6 +15,7 @@ def find_misalignment(parameters,results):
 
     while left < right:
         mid = (left + right) // 2
+        print(mid,":",parameters[mid])
         truth = ib.reltransDCp(egrid, parameters[mid])
         if is_aligned(truth, results[mid]):
             left = mid + 1
