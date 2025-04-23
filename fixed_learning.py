@@ -12,6 +12,7 @@ from network import DynamicNetwork
 from training import training_loop, train, validate, PCALoss
 from tqdm import tqdm
 import numpy as np
+import glob
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -20,16 +21,15 @@ def main():
     logged = [0,2,3,4,10]
 
     size = 10
-    data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(size)]
-    pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
-
+    data_locs = glob.glob("data/pca_comps/pca_comps_*.txt")
+    pars_locs = glob.glob("data/pars/pars_*.txt")
+    print(len(pars_locs))
+    print(len(data_locs))
     data = []
     pars = []
     for data_file,par_file in tqdm(zip(data_locs,pars_locs),total=len(data_locs)):
         datum = np.loadtxt(data_file)
         par = np.loadtxt(par_file)
-        if par.shape[0] != datum.shape[0]:
-           par = par[:datum.shape[0]]
         data.append(datum)
         pars.append(par)
     data = np.concatenate(data,axis=0)
@@ -40,7 +40,10 @@ def main():
     val_data = data[int(0.9*len(pars)):]
     train_pars = pars[:int(0.9*len(pars))]
     val_pars = pars[int(0.9*len(pars)):]
-
+    print(len(train_data))
+    print(len(train_pars))
+    print(len(val_data))
+    print(len(val_pars))
     pca = load("scalers/pca.bin")
 
     train_dataset = PCAtrimmedDataset(train_data,train_pars,

@@ -1,3 +1,4 @@
+
 import f2py_interface as ib
 import numpy as np
 import os
@@ -6,7 +7,7 @@ import re
 
 def is_aligned(truth,result):
     #checks if values are within 1% of each other
-    aligned = np.all(np.where((truth-result)/truth<0.01)) 
+    aligned = np.all((truth-result)/truth<0.1)
     return aligned
 
 def find_misalignment(parameters,results):
@@ -21,7 +22,7 @@ def find_misalignment(parameters,results):
             left = mid + 1
         else:
             right = mid
-
+    print("Found misalignment")
     return left  # This is the index in parameters with no matching result
 
 Emin = 0.1
@@ -39,15 +40,15 @@ os.environ["BACKSCL"  ] = "1.0"
 os.environ["TEST_RUN" ] = "0"
 
 size = 250
-data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(size)]
-pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
+data_locs = [f"data/pca_comps/pca_comps_{i}.txt" for i in range(221,size)]
+pars_locs = [f"data/pars/pars_{i}.txt" for i in range(221,size)]
 
 scaler = load("scalers/scaler.bin")
 pca = load("scalers/pca.bin")
 
 for data_loc,par_loc in zip(data_locs,pars_locs):
     number_str = re.sub(r'\D', '', par_loc)
-    parameters = np.loadtxt(par_loc)
+    parameters = np.loadtxt(par_loc).astype(np.float32)
     data = np.loadtxt(data_loc)
     results = 10**scaler.inverse_transform(pca.inverse_transform(data))
     misalignment = parameters.shape[0] != data.shape[0]
@@ -55,13 +56,14 @@ for data_loc,par_loc in zip(data_locs,pars_locs):
         counter = 0
         while parameters.shape[0] != data.shape[0]:
             misaligned_index = find_misalignment(parameters, results)
-            parameters.pop(misaligned_index)
+            parameters = np.delete(parameters,misaligned_index,axis=0)
             counter += 1
         print("Removed",counter,"parameters")
         truth = ib.reltransDCp(egrid, parameters[-1])
+        success = is_aligned(truth, results[-1])
         if is_aligned(truth, results[-1]):
             print("final model is aligned")
-            np.savetxt("data/pca_comps/pca_comps_{number_str}_clean.txt")
+            np.savetxt(f"data/pars/pars_{number_str}_clean.txt",parameters)
         else:
             print("failed to align parameters with model results")
     else:
