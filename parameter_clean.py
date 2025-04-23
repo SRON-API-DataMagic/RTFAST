@@ -50,16 +50,20 @@ for data_loc,par_loc in zip(data_locs,pars_locs):
     parameters = np.loadtxt(par_loc)
     data = np.loadtxt(data_loc)
     results = 10**scaler.inverse_transform(pca.inverse_transform(data))
-    counter = 0
-    while parameters.shape[0] != data.shape[0]:
-        misaligned_index = find_misalignment(parameters, results)
-        parameters.pop(misaligned_index)
-        counter += 1
-    print("Removed",counter,"parameters")
-    truth = ib.reltransDCp(egrid, parameters[-1])
-    if is_aligned(truth, results[-1]):
-        print("final model is aligned")
-        np.savetxt("data/pca_comps/pca_comps_{i}_clean.txt")
+    misalignment = parameters.shape[0] != data.shape[0]
+    if misalignment:
+        counter = 0
+        while parameters.shape[0] != data.shape[0]:
+            misaligned_index = find_misalignment(parameters, results)
+            parameters.pop(misaligned_index)
+            counter += 1
+        print("Removed",counter,"parameters")
+        truth = ib.reltransDCp(egrid, parameters[-1])
+        if is_aligned(truth, results[-1]):
+            print("final model is aligned")
+            np.savetxt("data/pca_comps/pca_comps_{number_str}_clean.txt")
+        else:
+            print("failed to align parameters with model results")
     else:
-        print("failed to align parameters with model results")
+        print(f"data {number_str} is not misaligned")
         
