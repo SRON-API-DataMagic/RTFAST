@@ -20,7 +20,6 @@ def main():
     negatives = [3]
     logged = [0,2,3,4,10]
 
-    size = 10
     data_locs = glob.glob("data/pca_comps/pca_comps_*.txt")
     pars_locs = glob.glob("data/pars/pars_*.txt")
     print(len(pars_locs))
@@ -40,10 +39,6 @@ def main():
     val_data = data[int(0.9*len(pars)):]
     train_pars = pars[:int(0.9*len(pars))]
     val_pars = pars[int(0.9*len(pars)):]
-    print(len(train_data))
-    print(len(train_pars))
-    print(len(val_data))
-    print(len(val_pars))
     pca = load("scalers/pca.bin")
 
     train_dataset = PCAtrimmedDataset(train_data,train_pars,
