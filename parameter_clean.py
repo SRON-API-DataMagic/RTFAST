@@ -44,7 +44,7 @@ pars_locs = [f"data/pars/pars_{i}.txt" for i in range(size)]
 scaler = load("scalers/scaler.bin")
 pca = load("scalers/pca.bin")
 
-for par_loc,data_loc in zip(data_locs,pars_locs):
+for data_loc,par_loc in zip(data_locs,pars_locs):
     number_str = re.sub(r'\D', '', par_loc)
     parameters = np.loadtxt(par_loc)
     data = np.loadtxt(data_loc)
