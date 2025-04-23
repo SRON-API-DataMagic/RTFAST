@@ -22,7 +22,7 @@ def find_misalignment(parameters,results):
             left = mid + 1
         else:
             right = mid
-    print("Found misalignment")
+    print("Found misalignment",left)
     return left  # This is the index in parameters with no matching result
 
 Emin = 0.1
@@ -51,13 +51,14 @@ for data_loc,par_loc in zip(data_locs,pars_locs):
     data = np.loadtxt(data_loc)
     results = 10**scaler.inverse_transform(pca.inverse_transform(data))
     test = ib.reltransDCp(egrid, parameters[-1])
-    misalignment = is_aligned(test, results[-1])
+    misalignment = is_aligned(ib.reltransDCp(egrid, parameters[-1]), results[-1])
     if ~misalignment:
         counter = 0
-        while parameters.shape[0] != data.shape[0]:
+        while ~misalignment:
             misaligned_index = find_misalignment(parameters, results)
             parameters = np.delete(parameters,misaligned_index,axis=0)
             counter += 1
+            misalignment = is_aligned(ib.reltransDCp(egrid, parameters[-1]), results[-1])
         print("Removed",counter,"parameters")
         truth = ib.reltransDCp(egrid, parameters[-1])
         success = is_aligned(truth, results[-1])
