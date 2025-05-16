@@ -5,7 +5,9 @@ lightweight NNs is a viable alternative to what we've been doing up until now.
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from joblib import load
+from joblib import load, dump
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 from dataStructures import PCAtrimmedDataset
 from network import DynamicNetwork
@@ -19,11 +21,9 @@ def main():
     pars_list = [0,1,2,3,4,6,7,8,9,10]
     negatives = [3]
     logged = [0,2,3,4,10]
-
-    data_locs = glob.glob("data/pca_comps/pca_comps_*.txt")
-    pars_locs = glob.glob("data/pars/pars_*.txt")
-    print(len(pars_locs))
-    print(len(data_locs))
+    
+    data_locs = np.sort(glob.glob("data/pca_comps/pca_comps_*.txt"))
+    pars_locs = np.sort(glob.glob("data/pars/pars_*.txt"))
     data = []
     pars = []
     for data_file,par_file in tqdm(zip(data_locs,pars_locs),total=len(data_locs)):
@@ -34,13 +34,16 @@ def main():
     data = np.concatenate(data,axis=0)
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
+    pca_scaler = StandardScaler()
+    data = pca_scaler.fit_transform(data)
+    dump(pca_scaler,"scalers/pca_scaler.bin")
 
     train_data = data[:int(0.9*len(pars))]
-    val_data = data[int(0.9*len(pars)):]
     train_pars = pars[:int(0.9*len(pars))]
+    val_data = data[int(0.9*len(pars)):]
     val_pars = pars[int(0.9*len(pars)):]
     pca = load("scalers/pca.bin")
-
+    
     train_dataset = PCAtrimmedDataset(train_data,train_pars,
                                     pars_list,negatives,logged)
     val_dataset = PCAtrimmedDataset(val_data,val_pars,
@@ -64,14 +67,15 @@ def main():
         print(f"pars out of range for parameter {i}:",
               np.any((np.array(val_dataset.pars[:,i])<rang[0])|(np.array(val_dataset.pars[:,i])>rang[1])))
     
-    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
-                                  shuffle=True)
+    
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
-
+    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 1, 
+                                  shuffle=True)
+    
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
-    nodes = [32,64,128,256]
+    nodes = [64,128,256]
     layers = [2,4,6]
     for node in nodes:
         for layer in layers:

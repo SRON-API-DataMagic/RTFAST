@@ -7,7 +7,6 @@ from torch import nn, vmap
 from torch.func import stack_module_state, functional_call
 import copy
 from joblib import load
-import numpy as np
 from torch.distributions import Normal
 import os
 emudir = os.path.dirname(__file__)

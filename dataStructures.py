@@ -9,7 +9,6 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import os
-from tqdm import tqdm
 
 class DataStructure(Dataset):
     def __init__(self,pars,data):
