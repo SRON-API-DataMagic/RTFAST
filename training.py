@@ -255,7 +255,7 @@ def train(dataloader, model, optimizer, loss_fn, device, scheduler = None,
         loss_b = loss.detach().item()
         loss_tot += loss_b
         loss_arr.append(loss_b)
-        if batch%int(0.1*size) == 0:
+        if batch%int(0.1*size/batch.shape[0]) == 0:
             current = ((batch+1)*1024)
             print(f"loss: {loss_b:>7f}  [{current:>5d}/{size:>5d}]")
     avg_loss = loss_tot/len(dataloader)
@@ -305,7 +305,7 @@ def training_loop(model, optimizer, train, test, train_dataloader,
     loss_best = 100
     print("Beginning training")
     
-    while epoch < epochs and imp_flag < 100:
+    while epoch < epochs and imp_flag < 25:
         imp_flag += 1
         #time_st = time.time()
         print(f"Epoch {epoch+1} \n -----------------------")
