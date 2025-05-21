@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
 from dataStructures import PCAtrimmedDataset
-from network import DynamicNetwork
+from network import DynamicNetwork, DynamicResNetwork
 from training import training_loop, train, validate, PCALoss
 from tqdm import tqdm
 import numpy as np
@@ -34,9 +34,8 @@ def main():
     data = np.concatenate(data,axis=0)
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
-    pca_scaler = StandardScaler()
+    pca_scaler = load("scalers/pca_scaler.bin")
     data = pca_scaler.fit_transform(data)
-    dump(pca_scaler,"scalers/pca_scaler.bin")
 
     train_data = data[:int(0.9*len(pars))]
     train_pars = pars[:int(0.9*len(pars))]
@@ -70,21 +69,21 @@ def main():
     
     tra_loader = DataLoader(train_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 1, 
+    val_loader = DataLoader(val_dataset, batch_size=1024, num_workers = 4, 
                                   shuffle=True)
     
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
     nodes = [64,128,256]
-    layers = [2,4,6]
+    layers = [2,4,6,8,12]
     for node in nodes:
         for layer in layers:
             print("Training model")
-            model = DynamicNetwork(len(pars_list),comps,layer,node)
+            model = DynamicResNetwork(len(pars_list),comps,layer,node)
             model.to(device)
             optimizer = Adam(model.parameters(), lr=1e-3)
             training_loop(model, optimizer, train, validate, tra_loader, 
-                  val_loader, loss_fn, device, f"rtfast_{node}_{layer}", epochs = 2000)
+                  val_loader, loss_fn, device, f"rtfast_res_{node}_{layer}", epochs = 2000)
     
 
 if __name__ == "__main__":

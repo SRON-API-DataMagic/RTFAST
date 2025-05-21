@@ -211,8 +211,7 @@ class DynamicResNetwork(nn.Module):
     def forward(self, x):
         x = self.input(x)
         for block in self.residual_blocks:
-            x = x + block(x)
-            x = self.activation(x)
+            x = x + self.activation(block(x))
         pred = self.output(x)
         return pred
         
