@@ -5,9 +5,7 @@ lightweight NNs is a viable alternative to what we've been doing up until now.
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-from joblib import load, dump
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+from joblib import dump, load, Parallel, delayed
 
 from dataStructures import PCAtrimmedDataset
 from network import DynamicNetwork, DynamicResNetwork
@@ -15,6 +13,9 @@ from training import training_loop, train, validate, PCALoss
 from tqdm import tqdm
 import numpy as np
 import glob
+
+def file_load(file):
+    return np.loadtxt(file)
 
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -26,11 +27,10 @@ def main():
     pars_locs = np.sort(glob.glob("data/pars/pars_*.txt"))
     data = []
     pars = []
-    for data_file,par_file in tqdm(zip(data_locs,pars_locs),total=len(data_locs)):
-        datum = np.loadtxt(data_file)
-        par = np.loadtxt(par_file)
-        data.append(datum)
-        pars.append(par)
+    
+    data = Parallel(n_jobs=-1,verbose=1)(delayed(np.loadtxt)(file) for file in data_locs)
+    pars = Parallel(n_jobs=-1,verbose=1)(delayed(np.loadtxt)(file) for file in pars_locs)
+    
     data = np.concatenate(data,axis=0)
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
@@ -74,8 +74,8 @@ def main():
     
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
-    nodes = [64,128,256]
-    layers = [2,4,6,8,12]
+    nodes = [128,256,512]
+    layers = [2,4,6,8,10,12]
     for node in nodes:
         for layer in layers:
             print("Training model")
