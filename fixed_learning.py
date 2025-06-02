@@ -27,16 +27,16 @@ def main():
     pars_locs = np.sort(glob.glob("data/pars/pars_*.txt"))
     data = []
     pars = []
-    
-    data = Parallel(n_jobs=-1,verbose=1)(delayed(np.loadtxt)(file) for file in data_locs)
-    pars = Parallel(n_jobs=-1,verbose=1)(delayed(np.loadtxt)(file) for file in pars_locs)
-    
+    with Parallel(n_jobs=-1,verbose=1,backend="multiprocessing",timeout=60*15) as parallel:
+        data = parallel(delayed(np.loadtxt)(file) for file in data_locs)
+        pars = parallel(delayed(np.loadtxt)(file) for file in pars_locs)
+    print("Successful loading")
     data = np.concatenate(data,axis=0)
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
     pca_scaler = load("scalers/pca_scaler.bin")
     data = pca_scaler.fit_transform(data)
-
+    print("Successful transformation")
     train_data = data[:int(0.9*len(pars))]
     train_pars = pars[:int(0.9*len(pars))]
     val_data = data[int(0.9*len(pars)):]
