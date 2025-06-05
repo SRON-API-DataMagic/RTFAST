@@ -25,8 +25,6 @@ def main():
     
     data_locs = np.sort(glob.glob("data/pca_comps/pca_comps_*.txt"))
     pars_locs = np.sort(glob.glob("data/pars/pars_*.txt"))
-    data = []
-    pars = []
     with Parallel(n_jobs=-1,verbose=1,backend="multiprocessing",timeout=60*15) as parallel:
         data = parallel(delayed(np.loadtxt)(file) for file in data_locs)
         pars = parallel(delayed(np.loadtxt)(file) for file in pars_locs)
@@ -35,7 +33,7 @@ def main():
     pars = np.concatenate(pars,axis=0)
     pars = pars[:,pars_list]
     pca_scaler = load("scalers/pca_scaler.bin")
-    data = pca_scaler.fit_transform(data)
+    data = pca_scaler.transform(data)
     print("Successful transformation")
     train_data = data[:int(0.9*len(pars))]
     train_pars = pars[:int(0.9*len(pars))]
@@ -74,16 +72,13 @@ def main():
     
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
-    nodes = [128,256,512]
-    layers = [2,4,6,8,10,12]
-    for node in nodes:
-        for layer in layers:
-            print("Training model")
-            model = DynamicResNetwork(len(pars_list),comps,layer,node)
-            model.to(device)
-            optimizer = Adam(model.parameters(), lr=1e-3)
-            training_loop(model, optimizer, train, validate, tra_loader, 
-                  val_loader, loss_fn, device, f"rtfast_res_{node}_{layer}", epochs = 2000)
+    for i in range(1,10): 
+        print("Training model")
+        model = DynamicResNetwork(len(pars_list),comps,6,512)
+        model.to(device)
+        optimizer = Adam(model.parameters(), lr=1e-3)
+        training_loop(model, optimizer, train, validate, tra_loader, 
+              val_loader, loss_fn, device, f"rtfast_2_{i}", epochs = 2000)
     
 
 if __name__ == "__main__":
