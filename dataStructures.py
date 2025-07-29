@@ -28,7 +28,7 @@ class PCAtrimmedDataset(Dataset):
         self.negatives = negatives
         self.logged = logged
         self.data = torch.Tensor(data).float()
-        self.pars = torch.Tensor(self.rtdist_to_nn(pars)).float()
+        self.pars = self.rtdist_to_nn(pars)
         
     def __len__(self):
         return self.data.shape[0]

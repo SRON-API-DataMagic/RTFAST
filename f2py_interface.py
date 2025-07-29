@@ -5,8 +5,8 @@ This script provides an interface to a fortran library
 which you can import from anywhere in your system
 '''
 import ctypes as ct
-import os.path
 import numpy as np
+import sys
 
 #######################################################################
 # prepare a few pointer types for fortran
@@ -29,7 +29,7 @@ type_int_p    = ct.POINTER(ct.c_int)
 # sys.path.append(path_to_location_of_this_file)
 #######################################################################
 
-lib = ct.cdll.LoadLibrary("/data/storage_hpc/reltrans" + "/lib_reltrans.so")
+lib = ct.cdll.LoadLibrary("/Users/benr/projects/reltrans_all/reltrans/libreltrans.dylib")
 
 #######################################################################
 # now the function(s)
@@ -37,11 +37,11 @@ lib = ct.cdll.LoadLibrary("/data/storage_hpc/reltrans" + "/lib_reltrans.so")
 # to see names of objects in library use: nm -gDC name_of_lib.so
 #######################################################################
 
-# this line is not strictly speaking needed if you are careful in the call, but nice to do
+# this line is not strictly speaking needed if you are carefull in the call, but nice to do
 
-wD = lib.tdreltransd_
-wD.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float_p]
-wD.restype  = None
+#wPL = lib.tdreltranspl_
+#wPL.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float_p]
+#wPL.restype  = None
 
 wDCp = lib.tdreltransdcp_
 wDCp.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float_p]
@@ -61,6 +61,10 @@ wdist.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float
 wdist.restype  = None
 
 wsim_dist = lib.simrtdist_
+wsim_dist.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float_p]
+wsim_dist.restype  = None
+
+wsim_relt = lib.simrelt_
 wsim_dist.argtypes = [type_float_p, type_int_p, type_float_p, type_int_p, type_float_p]
 wsim_dist.restype  = None
 
@@ -94,11 +98,11 @@ def gen_wrap(ear, params, func):
 
     return photar
 
-def reltrans(ear, params):
-    return gen_wrap(ear, params, w)
+# def reltrans(ear, params):
+#     return gen_wrap(ear, params, w)
 
-def reltransD(ear, params):
-    return gen_wrap(ear, params, wD)
+#def reltransPL(ear, params):
+#    return gen_wrap(ear, params, wPL)
 
 def reltransDCp(ear, params):
     return gen_wrap(ear, params, wDCp)
