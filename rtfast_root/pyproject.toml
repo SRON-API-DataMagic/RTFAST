@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rtfast"
+version = "2.0.1"
+description = "RTFAST: a machine learning emulator for the reltrans model"
+authors = [{ name = "Ben Ricketts", email = "b.ricketts@sron.nl"}]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy",
+    "torch",
+    "scikit-learn",
+    "scipy",
+    "matplotlib",
+    "pandas",
+    "tqdm",
+    "joblib"
+]

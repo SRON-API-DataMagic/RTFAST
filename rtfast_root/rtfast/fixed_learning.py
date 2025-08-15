@@ -8,17 +8,10 @@ from torch.optim import Adam
 from joblib import dump, load, Parallel, delayed
 
 from dataStructures import PCAtrimmedDataset
-from network import DynamicNetwork, DynamicResNetwork
+from network import DynamicNetwork
 from training import training_loop, train, validate, PCALoss
-from tqdm import tqdm
 import numpy as np
 import glob
-
-from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
-
-from ray import tune
-from ray.tune.schedulers import ASHAScheduler
-from ray.tune.search.optuna import OptunaSearch
 
 
 
@@ -53,12 +46,14 @@ def main():
                                     pars_list,negatives,logged)
     val_dataset = PCAtrimmedDataset(val_data,val_pars,
                                       pars_list,negatives,logged)
+    
+    par_names = ["h","a","inc","r_in","r_out","gamma","logxi","Afe","logNe","kTe"]
     height_range = [np.log10(1.5),np.log10(7e2)]
     spin_range = [0,0.998]
     inclination_range = [np.log10(1),np.log10(89)]
     r_inner_range = [np.log10(1),np.log10(200)]
     r_outer_range = [np.log10(400),np.log10(1e5)]
-    Gamma_range = [1.4,3.4]
+    Gamma_range = [1.4,2.7]
     logxi_range = [0,4.7]
     Afe_range = [0.5,10]
     logNe_range = [15,20]
@@ -69,7 +64,7 @@ def main():
          logNe_range,kte_range]
     range_all = np.asarray(range_all)
     for i,rang in enumerate(range_all):
-        print(f"pars out of range for parameter {i}:",
+        print(f"pars out of range for {par_names[i]}:",
               np.any((np.array(val_dataset.pars[:,i])<rang[0])|(np.array(val_dataset.pars[:,i])>rang[1])))
     
     
@@ -80,13 +75,13 @@ def main():
     
     loss_fn = PCALoss(pca.explained_variance_ratio_, device)
     comps = pca.n_components
-    for i in range(1,10): 
+    for i in range(1,11): 
         print("Training model")
-        model = DynamicResNetwork(len(pars_list),comps,6,512)
+        model = DynamicNetwork(len(pars_list),comps,8,512)
         model.to(device)
-        optimizer = Adam(model.parameters(), lr=1e-3)
+        optimizer = Adam(model.parameters(), lr=1e-4)
         training_loop(model, optimizer, train, validate, tra_loader, 
-              val_loader, loss_fn, device, f"rtfast_2_{i}", epochs = 2000)
+              val_loader, loss_fn, device, f"rtfast_2.1_{i}", epochs = 2000)
     
 
 if __name__ == "__main__":

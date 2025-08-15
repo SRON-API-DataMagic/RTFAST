@@ -16,6 +16,8 @@ scalers/
 traces/
 dists/
 compare/
+*.so
+*.dylib
 *.rtf
 *.txt
 *.csv
@@ -35,3 +37,5 @@ test_plot.py
 *.mod
 *.o
 lensing/
+.vscode/
+rtfast_root/rtfast.egg-info/

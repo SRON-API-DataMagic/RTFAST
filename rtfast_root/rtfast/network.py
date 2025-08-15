@@ -5,15 +5,32 @@ rtdist emulator.
 import torch
 from torch import nn
 
-import os
 from joblib import load
 from scipy.interpolate import interp1d
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
-import fmodpy
+from importlib.resources import files
 
-lensing = fmodpy.fimport("fortran/lensing.f90",dependencies=["YNOGK.f90","drtbis.f90"],
-                         verbose=True)
+emudir = files("rtfast.models")
+scalerdir = files("rtfast.scalers")
+fortrandir = files("rtfast.fortran")
 
+import ctypes as ct
+import sys
+
+type_double_p = ct.POINTER(ct.c_double)
+
+if sys.platform == "darwin":
+    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
+elif sys.platform == "linux" or sys.platform == "linux2":
+    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.dylib")))
+else:
+    raise RuntimeError("Unsupported platform for Fortran library loading.") 
+
+get_lens = lensing.getlens_
+get_lens.argtypes = [type_double_p, type_double_p, type_double_p, type_double_p]
+get_lens.restype = None
 
 from ndspec.xspec_library import XspecLibrary
 
@@ -28,7 +45,7 @@ lib.initialize_heasoft()
 lib.load_models({"tbabs":tbabs,
                  "nthcomp":nthcomp})
 
-emudir = os.path.dirname(__file__)
+
 
 class RtdistSpec(nn.Module):
     """
@@ -108,15 +125,17 @@ class RTFAST(nn.Module):
         #load ensemble models
         self.models = [RtdistSpec(pars=10).to(device) for _ in range(num_models)]
         for i,model in enumerate(self.models):
-            model.load_state_dict(torch.load(emudir+f"/models/rtfast_2_{i}.pth",
+            model.load_state_dict(torch.load(str(emudir.joinpath(f"rtfast_2_{i}.pth")),
                                                  map_location=device))
             model.double()
         
-        #load scalers
-        self.pca  = load(emudir+"/scalers/pca.bin")
-        self.comp = load(emudir+"/scalers/pca_scaler.bin")
-        self.spec = load(emudir+"/scalers/scaler.bin")
-        
+        #retrieves scalers and PCA file info locations
+        self.pca  = load(str(scalerdir.joinpath("pca.txt")))
+        self.comp = load(str(scalerdir.joinpath("pca_scaler.txt")))
+        self.spec = load(str(scalerdir.joinpath("scaler.txt")))
+        #reconstructs scalers and PCA
+        self.load_scalers()
+
         #define NN parameter lists and scaling
         self.pars_list = [0,1,2,3,4,6,7,8,9,10]
         self.negatives = [3]
@@ -137,16 +156,79 @@ class RTFAST(nn.Module):
         self.define_internal_egrid()
         self.define_normalisation_grid()
     
+    def load_scalers(self):
+        """
+        Loads in the scalers used to scale the input parameters and PCA
+        components. This is required for the neural network to work correctly.
+        """
+        params = {}
+        with open(self.spec) as f:
+            for line in f:
+                key, *values = line.strip().split()
+                if key == "n_features_in":
+                    params[key] = int(values[0])
+                else:
+                    params[key] = np.array([float(v) for v in values])
+
+        self.spec = StandardScaler()
+        self.spec.mean_ = params["mean"]
+        self.spec.scale_ = params["scale"]
+        self.spec.var_ = params["var"]
+        self.spec.n_features_in_ = params["n_features_in"]
+
+        params = {}
+        with open(self.comp) as f:
+            for line in f:
+                key, *values = line.strip().split()
+                if key == "n_features_in":
+                    params[key] = int(values[0])
+                else:
+                    params[key] = np.array([float(v) for v in values])
+
+        self.comp = MinMaxScaler()
+        self.comp.min_ = params["min"]
+        self.comp.scale_ = params["scale"]
+        self.comp.data_min_ = params["data_min"]
+        self.comp.data_max_ = params["data_max"]
+        self.comp.data_range_ = params["data_range"]
+        self.comp.n_features_in_ = params["n_features_in"]
+
+        params = {}
+        with open(self.pca) as f:
+            lines = f.readlines()
+
+        def read_matrix(start_idx, n_rows):
+            return np.array([list(map(float, lines[i].split())) for i in range(start_idx, start_idx + n_rows)])
+
+        i = 0
+        while i < len(lines):
+            key = lines[i].strip()
+            if key == "components":
+                params["components"] = read_matrix(i+1, 200)  # 200 = n_components
+                i += 201
+            elif key == "mean":
+                params["mean"] = np.array(list(map(float, lines[i+1].split())))
+                i += 2
+            elif key == "explained_variance":
+                params["explained_variance"] = np.array(list(map(float, lines[i+1].split())))
+                i += 2
+            elif key == "n_features_in":
+                params["n_features_in"] = int(lines[i+1])
+                i += 2
+            else:
+                i += 1
+
+        self.pca = PCA(n_components=params["components"].shape[0])
+        self.pca.components_ = params["components"]
+        self.pca.mean_ = params["mean"]
+        self.pca.explained_variance_ = params["explained_variance"]
+        self.pca.n_features_in_ = params["n_features_in"]
+
     def define_internal_egrid(self):
         """
         Defines internal energy grid which RTFAST was built on. This is defined
         between 0.1 and 100.0. Extrapolating outside of this range is at the
         user's own peril.
-
-        Returns
-        -------
-        None.
-
         """
         Emin = 0.1
         Emax = 100.0
@@ -199,12 +281,17 @@ class RTFAST(nn.Module):
         return dgsofac
     
     def lensing_factor(self,a,h,muobs):
-        a = np.float64(a)
-        h = np.float64(h)
-        muobs = np.float64(muobs)
-        lens = np.float64(1)
-        lens = lensing.getlens(a,h,muobs,lens)
-        return lens[-1]
+        a = ct.c_double(a)
+        h = ct.c_double(h)
+        muobs = ct.c_double(muobs)
+        lens = ct.c_double(1)
+        # Create ctypes pointers
+        a_p = ct.byref(a)
+        h_p = ct.byref(h)
+        muobs_p = ct.byref(muobs)
+        lens_p = ct.byref(lens)
+        get_lens(a_p, h_p, muobs_p, lens_p)
+        return lens_p._obj.value
     
     def __PCA_inverse_transform(self,data_reduced):
         pca_comps = self.pca.inverse_transform(data_reduced)
@@ -235,12 +322,12 @@ class RTFAST(nn.Module):
         pars = pars[self.pars_list]
         for i, parameter in enumerate(self.pars_list):
             if parameter in self.negatives:
-                if len(pars.shape) > 1:
+                if pars.ndim > 1:
                     pars[:,i] = -pars[:,i]
                 else:
                     pars[i] = -pars[i]
             if parameter in self.logged:
-                if len(pars.shape) > 1:
+                if pars.ndim > 1:
                     pars[:,i] = np.log10(pars[:,i])
                 else:
                     pars[i] = np.log10(pars[i])
@@ -248,7 +335,7 @@ class RTFAST(nn.Module):
     
     def __spectrum_inverse_transform(self,data):
         data = data.detach().numpy()
-        if len(data.shape) == 1:
+        if data.ndim == 1:
             data = data.reshape(1, -1)
         #Transform PCA components to non-mean scaled form
         PCA_comps = self.__comp_inverse_transform(data)

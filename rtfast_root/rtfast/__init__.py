@@ -1,0 +1,1 @@
+from . import networkfrom . import trainingfrom . import fixed_learningfrom . import f2py_interface__version__ = "2.0.0"__all__ = ["network","dataStructures","training",           "fixed_learning","f2py_interface"]
