@@ -1,24 +1,30 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="rtfast_root",
-    version="0.1.0",
-    description="RTFast: Relativistic Transfer Function Training Package",
-    author="Your Name",
+    name="rtfast",
+    version="2.0.1",
+    description="RTFAST: a machine learning emulator for the reltrans model",
+    author="Ben Ricketts",
     packages=find_packages(where="."),
     package_dir={"": "."},
     package_data={
         "rtfast": [
-            "../models/*",
-            "../scalers/*",
-            "../fortran/*",
+            "models/*",
+            "scalers/*",
+            "fortran/*",
         ],
     },
     include_package_data=True,
     install_requires=[
-        # Add your dependencies here, e.g.:
-        # "numpy",
-        # "torch",
+        "numpy",
+        "torch",
+        "scikit-learn",
+        "scipy",
+        "matplotlib",
+        "pandas",
+        "tqdm",
+        "glob",
+        "joblib"
     ],
     python_requires=">=3.7",
 )
