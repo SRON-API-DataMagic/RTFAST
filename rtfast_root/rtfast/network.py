@@ -1,23 +1,38 @@
 """
-This program comprimises the neural network structure used as a base for the
-rtdist emulator.
+This program comprises the neural network structure used as a base for the
+rtfast emulator.
+
+The reflection spectrum is now produced by a FiLM-MLP emulator that
+predicts the spectrum directly on a user-supplied energy grid (built-in
+interpolation) instead of the previous PCA + ensemble-on-fixed-grid
+approach. The surrounding physics in `RTFAST.forward` (lensing, redshift,
+comptonised continuum, tbabs absorption) is unchanged.
+
+Architectural building blocks for the emulator (`RFFFeaturizer`,
+`FiLM`, `FiLMMLPBlock`, `TrendHead`, `FiLM_MLP_Emulator`) are defined in
+this module so that callers can instantiate the network from scratch if
+they wish; the runtime `RTFAST` wrapper itself uses the `torch.export`
+exported program produced by `export_emulator.py`.
 """
+import math
+import sys
+import ctypes as ct
+from typing import Optional, Tuple
+
+import numpy as np
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from joblib import load
 from scipy.interpolate import interp1d
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-import numpy as np
 from importlib.resources import files
 
 emudir = files("rtfast.models")
 scalerdir = files("rtfast.scalers")
 fortrandir = files("rtfast.fortran")
-
-import ctypes as ct
-import sys
 
 type_double_p = ct.POINTER(ct.c_double)
 
@@ -26,204 +41,336 @@ if sys.platform == "darwin":
 elif sys.platform == "linux" or sys.platform == "linux2":
     lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.dylib")))
 else:
-    raise RuntimeError("Unsupported platform for Fortran library loading.") 
+    raise RuntimeError("Unsupported platform for Fortran library loading.")
 
 get_lens = lensing.getlens_
 get_lens.argtypes = [type_double_p, type_double_p, type_double_p, type_double_p]
 get_lens.restype = None
 
-from ndspec.xspec_library import XspecLibrary 
+from ndspec.xspec_library import XspecLibrary
 
-def nthcomp(ear,params):
+def nthcomp(ear, params):
     pass
 
-def tbabs(ear,params):
+def tbabs(ear, params):
     pass
 
 lib = XspecLibrary()
 lib.initialize_heasoft()
-lib.load_models({"tbabs":tbabs,
-                 "nthcomp":nthcomp})
+lib.load_models({"tbabs": tbabs,
+                 "nthcomp": nthcomp})
 
 
+# =============================================================================
+# Constants
+# =============================================================================
 
-class RtdistSpec(nn.Module):
+LN10 = math.log(10.0)
+
+
+# =============================================================================
+# FiLM-MLP architecture
+#
+# These classes mirror the implementation in the training programs. They are
+# kept here so this module fully documents the architecture; the runtime 
+# wrapper below uses an `torch.export`-ed program.
+# =============================================================================
+
+class RFFFeaturizer(nn.Module):
     """
-    Final neural network emulator architecture. Translates parameters into
-    rtdist's time averaged spectrum output. Distinct from the cross-spectrum
-    emulator.
-    
-    Composed of 8 hidden layers, each with 256 nodes. Must be paired with the
-    standard scalers and PCA trained with the network to output rtdist
-    values directly.
+    Random Fourier Features featurizer with frequency annealing.
+    forward(x) -> [B, L, 2*bands + 2]
     """
-    
-    def __init__(self,pars=17,comps=200):
+    def __init__(self, bands: int = 128, f_max: float = 64.0, device=None):
         super().__init__()
-        nodes = 512
-        self.LinearStack = nn.Sequential(nn.Linear(pars, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, nodes),
-                                         nn.GELU(),
-                                         nn.Linear(nodes, comps))
-        
-    def forward(self,pars):
-        return self.LinearStack(pars)
+        self.bands = int(bands)
+        self.f_max = float(f_max)
+        if self.bands > 0:
+            freqs = torch.empty(self.bands, device=device).uniform_(0.0, self.f_max)
+            self.register_buffer("omega_base", (2.0 * math.pi * freqs).view(1, 1, self.bands))
+        else:
+            self.register_buffer("omega_base", None)
+        self.register_buffer("freq_scale", torch.tensor(1.0))
 
-class DynamicNetwork(nn.Module):
-    """
-    Neural network used in hyperparameter sweeps. The number of layers and
-    number of nodes in each layer can be specified at initialisation. It is
-    recommended that any DynamicNetworks that are fully trained have their
-    own fixed class written after a best model is found for the ease of the
-    final user.
-    """
-    
-    def __init__(self,num_pars,output_len,num_layers,nodes,activation="GELU"):
+    @property
+    def out_dim(self) -> int:
+        return 2 * max(self.bands, 0) + 2
+
+    def set_freq_scale(self, s: float):
+        if self.omega_base is None:
+            self.freq_scale = torch.tensor(float(s), device=self.freq_scale.device)
+        else:
+            self.freq_scale = torch.tensor(float(s), device=self.omega_base.device)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if x.dim() == 1:
+            x = x.view(-1, 1)
+        if x.dim() == 2:
+            x = x.unsqueeze(-1)
+        if self.bands > 0 and self.omega_base is not None:
+            omega = self.omega_base * self.freq_scale
+            arg = x * omega
+            cos = torch.cos(arg)
+            sin = torch.sin(arg)
+            feats = torch.cat([cos, sin, x, torch.ones_like(x)], dim=-1)
+        else:
+            feats = torch.cat([x, torch.ones_like(x)], dim=-1)
+        return feats
+
+
+class FiLM(nn.Module):
+    def __init__(self, theta_dim: int, width: int, hidden: int = 256):
         super().__init__()
-        if activation == "GELU":
-            act_type = nn.GELU()
-        modules = []
-        #specify input stack
-        modules.append(nn.Linear(num_pars, nodes))
-        modules.append(act_type)
-        #dynamically add layers
-        for i in range(num_layers):
-            modules.append(nn.Linear(nodes, nodes))
-            modules.append(act_type)
-        #add output stack
-        modules.append(nn.Linear(nodes, output_len))
-        self.LinearStack = nn.Sequential(*modules)
-        
-    def forward(self,pars):
-        return self.LinearStack(pars)
-    
+        self.net = nn.Sequential(nn.Linear(theta_dim, hidden), nn.GELU(),
+                                 nn.Linear(hidden, 2 * width))
+
+    def forward(self, theta):
+        gamma, beta = self.net(theta).chunk(2, dim=-1)
+        return gamma, beta
+
+
+class FiLMMLPBlock(nn.Module):
+    def __init__(self, d_model: int, theta_dim: int, ffn_mult: int = 4, dropout: float = 0.0):
+        super().__init__()
+        self.norm = nn.LayerNorm(d_model)
+        self.cond = FiLM(theta_dim, d_model)
+        self.ff = nn.Sequential(
+            nn.Linear(d_model, ffn_mult * d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(ffn_mult * d_model, d_model),
+            nn.Dropout(dropout),
+        )
+
+    def forward(self, x: torch.Tensor, theta: torch.Tensor):
+        y = self.norm(x)
+        gamma, beta = self.cond(theta)
+        y = y * gamma.unsqueeze(1) + beta.unsqueeze(1)
+        return x + self.ff(y)
+
+
+class TrendHead(nn.Module):
+    """Predicts a*x + b in the (normalized) input x domain."""
+    def __init__(self, theta_dim: int, hidden: int = 64):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(theta_dim, hidden), nn.GELU(),
+                                 nn.Linear(hidden, 2))
+
+    def forward(self, theta):
+        a, b = self.net(theta).chunk(2, dim=-1)
+        return a, b
+
+
+class FiLM_MLP_Emulator(nn.Module):
+    """
+    FiLM-MLP reflection emulator. Output: scaled log10 reflection spectrum
+    of the same length as the input energy grid.
+    """
+    def __init__(self, theta_dim=10, rff_bands=128, rff_fmax=64.0,
+                 d_model=256, n_blocks=6, ffn_mult=4, dropout=0.0,
+                 use_trend_head: bool = False, trend_hidden: int = 64, device=None):
+        super().__init__()
+        self.featurizer = RFFFeaturizer(bands=rff_bands, f_max=rff_fmax, device=device)
+        self.in_proj = nn.Linear(self.featurizer.out_dim, d_model)
+        self.blocks = nn.ModuleList([
+            FiLMMLPBlock(d_model, theta_dim, ffn_mult=ffn_mult, dropout=dropout)
+            for _ in range(n_blocks)
+        ])
+        self.head = nn.Linear(d_model, 1)
+        self.use_trend = bool(use_trend_head)
+        if self.use_trend:
+            self.trend = TrendHead(theta_dim, trend_hidden)
+
+    def set_freq_scale(self, s: float):
+        self.featurizer.set_freq_scale(s)
+
+    def forward(self, theta, x, return_residual: bool = False):
+        feats = self.featurizer(x)
+        h = self.in_proj(feats)
+        for blk in self.blocks:
+            h = blk(h, theta)
+        resid = self.head(h).squeeze(-1)
+
+        if self.use_trend:
+            a, b = self.trend(theta)
+            trend = a * x + b
+            y = resid + trend
+            if return_residual:
+                return y, resid
+            return y
+        return resid
+
+
+# =============================================================================
+# Energy-grid preprocessing
+# =============================================================================
+
+def _transform_x_for_log(x_row: np.ndarray, logx: bool,
+                         x_log_floor: float, x_log_shift: float) -> np.ndarray:
+    xr = x_row.astype(np.float64, copy=False)
+    if not logx:
+        return xr
+    tiny = np.finfo(np.float64).tiny
+    if x_log_shift > 0.0:
+        z = xr + x_log_shift
+        z = np.clip(z, max(x_log_floor, tiny), None)
+        return np.log10(z)
+    z = np.clip(xr, max(x_log_floor, tiny), None)
+    return np.log10(z)
+
+
+def _normalize_x(x_prepared: np.ndarray, mode: str,
+                 global_minmax: Optional[Tuple[float, float]]) -> np.ndarray:
+    if mode == "none":
+        return x_prepared.astype(np.float32, copy=False)
+    if mode == "per_row":
+        xmin = float(np.min(x_prepared))
+        xmax = float(np.max(x_prepared))
+    elif mode == "global":
+        if global_minmax is None:
+            raise ValueError("x_norm='global' requires global_minmax to be set.")
+        xmin, xmax = global_minmax
+    else:
+        raise ValueError(f"Unknown x_norm mode: {mode}")
+    eps = 1e-12
+    a = 2.0 / max(xmax - xmin, eps)
+    return ((x_prepared - xmin) * a - 1.0).astype(np.float32, copy=False)
+
+
+# =============================================================================
+# RTFAST: physics-aware wrapper around the FiLM-MLP reflection emulator
+# =============================================================================
+
 class RTFAST(nn.Module):
     """
-    This can be called to utilise the ensemble emulator automatically and 
-    output only spectra. This will automatically load in scalers and PCA 
-    objects required for computation. Instrumental effects are not included.
-    
-    Input a set of parameters and retrieve the spectrum.
-    """
-    def __init__(self,device=torch.device('cpu'),num_models=10):
-        super().__init__()
-        #load ensemble models
-        self.models = [RtdistSpec(pars=10).to(device) for _ in range(num_models)]
-        for i,model in enumerate(self.models):
-            model.load_state_dict(torch.load(str(emudir.joinpath(f"rtfast_2_{i}.pth")),
-                                                 map_location=device))
-            model.double()
-        
-        #retrieves scalers and PCA file info locations
-        self.pca  = load(str(scalerdir.joinpath("pca.txt")))
-        self.comp = load(str(scalerdir.joinpath("pca_scaler.txt")))
-        self.spec = load(str(scalerdir.joinpath("scaler.txt")))
-        #reconstructs scalers and PCA
-        self.load_scalers()
+    Full rtfast model: FiLM-MLP reflection emulator + analytic comptonised
+    continuum (nthcomp) + tbabs absorption + relativistic lensing.
 
-        #define NN parameter lists and scaling
-        self.pars_list = [0,1,2,3,4,6,7,8,9,10]
+    The reflection emulator predicts the spectrum directly on the user's
+    energy grid via built-in interpolation, so no PCA round-trip or post-hoc
+    `interp1d` is needed.
+
+    Parameters
+    ----------
+    device : torch.device, optional
+        Device on which the emulator runs. Defaults to CPU.
+    exported_name : str, optional
+        Filename of the exported program inside `rtfast.models`. Defaults
+        to `"rtfast_emulator.pt"`.
+    config_name : str, optional
+        Filename of the companion preprocessing config inside
+        `rtfast.scalers`. Defaults to `"rtfast_config.npz"`.
+
+    Companion config file
+    ---------------------
+    The .npz config must contain at minimum:
+      * `scaler_mean`, `scaler_std` : arrays of length M (training spectrum
+        length) used to invert the y-scaling.
+    Optional fields (defaults are used otherwise):
+      * `logx` (0/1), `x_norm` ("none" / "per_row" / "global"),
+        `x_log_floor`, `x_log_shift`, `global_xmin`, `global_xmax`.
+    """
+
+    DEFAULT_EXPORT_NAME = "exported_emulator.pt"
+    DEFAULT_CONFIG_NAME = "exported_emulator_config.npz"
+
+    def __init__(self, device: torch.device = torch.device("cpu"),
+                 exported_name: str = DEFAULT_EXPORT_NAME,
+                 config_name: str = DEFAULT_CONFIG_NAME):
+        super().__init__()
+        self.device = device
+
+        # ---- load the exported FiLM-MLP reflection emulator ----
+        try:
+            from numpy.core.multiarray import _reconstruct
+            torch.serialization.add_safe_globals([_reconstruct, np.ndarray, np.dtype])
+        except Exception:
+            pass
+
+        exp_path = str(emudir.joinpath(exported_name))
+        self.exported_program = torch.load(
+            exp_path, map_location=device, weights_only=False
+        )
+        # `module()` gives a callable nn.Module-like object: forward(theta, x).
+        self.emulator = self.exported_program.module()
+
+        # ---- load the preprocessing / inverse-scaling config ----
+        cfg_path = str(scalerdir.joinpath(config_name))
+        self._load_emulator_config(cfg_path)
+
+        # ---- define NN parameter selection / transform lists ----
+        # These mirror ParamSelector in inference_emulator.py and are also
+        # used to identify which raw rtdist parameters need to be flipped or
+        # logged before the network sees them.
+        self.pars_list = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10]
         self.negatives = [3]
-        self.logged = [0,2,3,4,10]
-        
-        self.powers         = [0,2,3,4,10]
-        
-        #prepare nthcomp
+        self.logged = [0, 2, 3, 4, 10]
+
+        # kept for backward compatibility with any code that read it directly
+        self.powers = [0, 2, 3, 4, 10]
+
+        # ---- prepare nthcomp ----
         self.nthcomp = lib.nthcomp
-        self.nthcomp_reltrans_index = [6,10,5]
-        self.nthcomp_index = [0,1,4]
-        self.nthcomp_par_base = [2,40,0.05,1,0,1]
-        
-        #prepare tbabs
+        self.nthcomp_reltrans_index = [6, 10, 5]
+        self.nthcomp_index = [0, 1, 4]
+        self.nthcomp_par_base = [2, 40, 0.05, 1, 0, 1]
+
+        # ---- prepare tbabs ----
         self.tbabs = lib.tbabs
-        
-        #prepare interal energy grid for interpolation
+
+        # ---- internal energy grids (kept for normalisation / plotting) ----
         self.define_internal_egrid()
         self.define_normalisation_grid()
-    
-    def load_scalers(self):
-        """
-        Loads in the scalers used to scale the input parameters and PCA
-        components. This is required for the neural network to work correctly.
-        """
-        params = {}
-        with open(self.spec) as f:
-            for line in f:
-                key, *values = line.strip().split()
-                if key == "n_features_in":
-                    params[key] = int(values[0])
-                else:
-                    params[key] = np.array([float(v) for v in values])
 
-        self.spec = StandardScaler()
-        self.spec.mean_ = params["mean"]
-        self.spec.scale_ = params["scale"]
-        self.spec.var_ = params["var"]
-        self.spec.n_features_in_ = params["n_features_in"]
+    # ------------------------------------------------------------------
+    # Emulator config loader
+    # ------------------------------------------------------------------
+    def _load_emulator_config(self, cfg_path: str):
+        # defaults match inference_emulator.py
+        self.logx = False
+        self.x_norm = "per_row"
+        self.x_log_floor = 1e-12
+        self.x_log_shift = 0.0
+        self._global_minmax = None
+        scaler_mean = None
+        scaler_std = None
 
-        params = {}
-        with open(self.comp) as f:
-            for line in f:
-                key, *values = line.strip().split()
-                if key == "n_features_in":
-                    params[key] = int(values[0])
-                else:
-                    params[key] = np.array([float(v) for v in values])
+        with np.load(cfg_path, allow_pickle=False) as cfg:
+            if "scaler_mean" in cfg.files:
+                scaler_mean = np.asarray(cfg["scaler_mean"], dtype=np.float64)
+            if "scaler_std" in cfg.files:
+                scaler_std = np.asarray(cfg["scaler_std"], dtype=np.float64)
+            if "logx" in cfg.files:
+                self.logx = bool(cfg["logx"])
+            if "x_norm" in cfg.files:
+                self.x_norm = str(cfg["x_norm"])
+            if "x_log_floor" in cfg.files:
+                self.x_log_floor = float(cfg["x_log_floor"])
+            if "x_log_shift" in cfg.files:
+                self.x_log_shift = float(cfg["x_log_shift"])
+            if self.x_norm == "global":
+                if "global_xmin" not in cfg.files or "global_xmax" not in cfg.files:
+                    raise RuntimeError(
+                        "x_norm='global' requires 'global_xmin' and "
+                        "'global_xmax' in the emulator config file."
+                    )
+                self._global_minmax = (float(cfg["global_xmin"]),
+                                       float(cfg["global_xmax"]))
 
-        self.comp = MinMaxScaler()
-        self.comp.min_ = params["min"]
-        self.comp.scale_ = params["scale"]
-        self.comp.data_min_ = params["data_min"]
-        self.comp.data_max_ = params["data_max"]
-        self.comp.data_range_ = params["data_range"]
-        self.comp.n_features_in_ = params["n_features_in"]
+        if scaler_mean is None or scaler_std is None:
+            raise RuntimeError(
+                f"y-scaler statistics not found in {cfg_path}. The config "
+                f"npz must contain 'scaler_mean' and 'scaler_std'."
+            )
 
-        params = {}
-        with open(self.pca) as f:
-            lines = f.readlines()
+        self.scaler_mean = torch.as_tensor(scaler_mean, dtype=torch.float32,
+                                           device=self.device)
+        self.scaler_std = torch.as_tensor(scaler_std, dtype=torch.float32,
+                                          device=self.device)
 
-        def read_matrix(start_idx, n_rows):
-            return np.array([list(map(float, lines[i].split())) for i in range(start_idx, start_idx + n_rows)])
-
-        i = 0
-        while i < len(lines):
-            key = lines[i].strip()
-            if key == "components":
-                params["components"] = read_matrix(i+1, 200)  # 200 = n_components
-                i += 201
-            elif key == "mean":
-                params["mean"] = np.array(list(map(float, lines[i+1].split())))
-                i += 2
-            elif key == "explained_variance":
-                params["explained_variance"] = np.array(list(map(float, lines[i+1].split())))
-                i += 2
-            elif key == "n_features_in":
-                params["n_features_in"] = int(lines[i+1])
-                i += 2
-            else:
-                i += 1
-
-        self.pca = PCA(n_components=params["components"].shape[0])
-        self.pca.components_ = params["components"]
-        self.pca.mean_ = params["mean"]
-        self.pca.explained_variance_ = params["explained_variance"]
-        self.pca.n_features_in_ = params["n_features_in"]
-
+    # ------------------------------------------------------------------
+    # Internal grids
+    # ------------------------------------------------------------------
     def define_internal_egrid(self):
         """
         Defines internal energy grid which RTFAST was built on. This is defined
@@ -233,33 +380,31 @@ class RTFAST(nn.Module):
         Emin = 0.1
         Emax = 100.0
         ne = 1000
-        egrid = np.zeros(ne, dtype = np.float32)
+        egrid = np.zeros(ne, dtype=np.float32)
         for i in range(ne):
-            egrid[i] = Emin * (Emax/Emin)**(i/ne)
+            egrid[i] = Emin * (Emax / Emin) ** (i / ne)
         self.internal_egrid = egrid[:-1]
         return
 
     def define_normalisation_grid(self):
         """
         Defines energy grid for normalisation of the continuum (illuminating
-        comptonised spectrum nthcomp)
-
-        Returns
-        -------
-        None.
-
+        comptonised spectrum nthcomp).
         """
-        nex = 2**12
+        nex = 2 ** 12
         Emin = 1e-2
         Emax = 3e3
-        self.norm_egrid = np.zeros(nex,dtype=np.float32)
+        self.norm_egrid = np.zeros(nex, dtype=np.float32)
         for i in range(nex):
-           self.norm_egrid[i] = Emin * (Emax/Emin)**(i/nex)
+            self.norm_egrid[i] = Emin * (Emax / Emin) ** (i / nex)
         return
-    
-    def dgsofac(self,a,h):
+
+    # ------------------------------------------------------------------
+    # Lensing / GR helpers
+    # ------------------------------------------------------------------
+    def dgsofac(self, a, h):
         """
-        Calculates the blue shift experienced by a photon travelling from an 
+        Calculates the blue shift experienced by a photon travelling from an
         on-axis point source to a distant, stationary observer (works for both
         prograde and retrograde spins).
 
@@ -269,142 +414,156 @@ class RTFAST(nn.Module):
             spin of the black hole.
         h : float
             height (in Rg) of the source over the black hole.
-
-        Returns
-        -------
-        None.
-
         """
-        Dh      = h**2 - 2*h + a**2
-        dgsofac = Dh / ( h**2 + a**2 )
-        dgsofac = np.sqrt( dgsofac )
+        Dh = h ** 2 - 2 * h + a ** 2
+        dgsofac = Dh / (h ** 2 + a ** 2)
+        dgsofac = np.sqrt(dgsofac)
         return dgsofac
-    
-    def lensing_factor(self,a,h,muobs):
+
+    def lensing_factor(self, a, h, muobs):
         a = ct.c_double(a)
         h = ct.c_double(h)
         muobs = ct.c_double(muobs)
         lens = ct.c_double(1)
-        # Create ctypes pointers
         a_p = ct.byref(a)
         h_p = ct.byref(h)
         muobs_p = ct.byref(muobs)
         lens_p = ct.byref(lens)
         get_lens(a_p, h_p, muobs_p, lens_p)
         return lens_p._obj.value
-    
-    def __PCA_inverse_transform(self,data_reduced):
-        pca_comps = self.pca.inverse_transform(data_reduced)
-        return pca_comps
-    
-    def __comp_inverse_transform(self,data_reduced):
-        components = self.comp.inverse_transform(data_reduced)
-        return components
-    
-    def __spec_inverse_transform(self,data_reduced):
-        spectra = self.spec.inverse_transform(data_reduced)
-        return spectra
-    
-    def __pars_shift(self,pars):
+
+    # ------------------------------------------------------------------
+    # Reflection-emulator preprocessing
+    # ------------------------------------------------------------------
+    def __pars_shift(self, pars):
         """
-        Converts rtdist parameters into neural network friendly form.
-
-        Parameters
-        ----------
-        negatives: list
-            list of indexes of parameters to be turned positive due to being
-            a negative value in rtdist
-        logged: list
-            list of indexes of parameters for their logarithm to be inputted
-            into the network
-
+        Converts rtdist parameters into FiLM-MLP-friendly form: selects the
+        10 indices the network was trained on, negates index 3, and log10s
+        indices {0, 2, 3, 4, 10}. Returns a torch float32 tensor of shape
+        ``[10]`` (or ``[B, 10]`` if a batch is supplied).
         """
         pars = pars[self.pars_list]
         for i, parameter in enumerate(self.pars_list):
             if parameter in self.negatives:
                 if pars.ndim > 1:
-                    pars[:,i] = -pars[:,i]
+                    pars[:, i] = -pars[:, i]
                 else:
                     pars[i] = -pars[i]
             if parameter in self.logged:
                 if pars.ndim > 1:
-                    pars[:,i] = np.log10(pars[:,i])
+                    pars[:, i] = np.log10(pars[:, i])
                 else:
                     pars[i] = np.log10(pars[i])
-        return torch.Tensor(pars).double()
-    
-    def __spectrum_inverse_transform(self,data):
-        data = data.detach().numpy()
-        if data.ndim == 1:
-            data = data.reshape(1, -1)
-        #Transform PCA components to non-mean scaled form
-        PCA_comps = self.__comp_inverse_transform(data)
-        #Inverse transform PCA components to log10(spectrum) style data
-        std_spec = self.__PCA_inverse_transform(PCA_comps)
-        #transform to linear space
-        spectrum = 10**self.__spec_inverse_transform(std_spec)
-        return spectrum[0]
-    
-    def reflection_spectrum_prediction(self,egrid,pars):
-        #predicted PCA components from NN ensemble
-        pred = torch.stack([model(pars) for model in self.models],dim=0)
-        #averaged PCA components from ensemble
-        self.pred = pred
-        data = torch.mean(pred,axis=0)
-        #inverse transformed to spectrum
-        spectrum = self.__spectrum_inverse_transform(data)
-        #interpolate predicted result to inputted energy grid
-        f = interp1d(self.internal_egrid,spectrum,fill_value="extrapolate")
-        spectrum = f(egrid)
+        return torch.as_tensor(pars, dtype=torch.float32, device=self.device)
+
+    def _prepare_x(self, egrid: np.ndarray) -> torch.Tensor:
+        """Apply the log/normalisation transforms used during training."""
+        x_prep = _transform_x_for_log(np.asarray(egrid, dtype=np.float64),
+                                      self.logx, self.x_log_floor, self.x_log_shift)
+        x_normed = _normalize_x(x_prep, self.x_norm, self._global_minmax)
+        return torch.as_tensor(x_normed, dtype=torch.float32,
+                               device=self.device).unsqueeze(0)  # [1, L]
+
+    def _inverse_scale_y(self, y_scaled: torch.Tensor) -> np.ndarray:
+        """Convert scaled log10 output to a linear spectrum (1D numpy)."""
+        ylog = y_scaled * self.scaler_std + self.scaler_mean
+        spectrum = torch.pow(10.0, ylog)
+        spectrum = spectrum.detach().cpu().numpy()
+        if spectrum.ndim == 2 and spectrum.shape[0] == 1:
+            spectrum = spectrum[0]
         return spectrum
-    
-    def calculate_normalisation(self,pars):
+
+    # ------------------------------------------------------------------
+    # Reflection-spectrum prediction
+    # ------------------------------------------------------------------
+    def reflection_spectrum_prediction(self, egrid, NN_pars):
+        """
+        Predict the reflection spectrum on the supplied energy grid.
+
+        Parameters
+        ----------
+        egrid : np.ndarray, shape (M,)
+            User-supplied energy grid.
+        NN_pars : torch.Tensor, shape (10,)
+            Already-processed network parameters (output of
+            ``__pars_shift``).
+
+        Returns
+        -------
+        np.ndarray, shape (M,)
+            Linear-space reflection spectrum on ``egrid``.
+        """
+        if NN_pars.dim() == 1:
+            theta = NN_pars.unsqueeze(0).to(self.device)
+        else:
+            theta = NN_pars.to(self.device)
+
+        x = self._prepare_x(egrid)
+        with torch.no_grad():
+            y_scaled = self.emulator(theta, x)
+        spectrum = self._inverse_scale_y(y_scaled)
+        return spectrum
+
+    # ------------------------------------------------------------------
+    # Continuum
+    # ------------------------------------------------------------------
+    def calculate_normalisation(self, pars):
         earx = self.norm_egrid
-        norm_comp = self.nthcomp(earx,pars)
+        norm_comp = self.nthcomp(earx, pars)
         Icomp = 0
-        for i in range(1,len(norm_comp)):
-           E   = 0.5 * ( earx[i] + earx[i-1] )
-           if (E >= 0.1 and E <= 1e3):
-              Icomp = Icomp + ((earx[i] + earx[i-1]) * 0.5 * norm_comp[i])
+        for i in range(1, len(norm_comp)):
+            E = 0.5 * (earx[i] + earx[i - 1])
+            if (E >= 0.1 and E <= 1e3):
+                Icomp = Icomp + ((earx[i] + earx[i - 1]) * 0.5 * norm_comp[i])
         return Icomp
-    
-    def comptonized_continuum(self,egrid,pars,logxi,logne):
-        egrid,pars = egrid.astype(np.float32),pars.astype(np.float32)
-        comp = self.nthcomp(egrid,pars)
+
+    def comptonized_continuum(self, egrid, pars, logxi, logne):
+        egrid, pars = egrid.astype(np.float32), pars.astype(np.float32)
+        comp = self.nthcomp(egrid, pars)
         Icomp = self.calculate_normalisation(pars)
-        #calculate incident flux in units  [keV/cm^2/s]
-        inc_flux = (10**(logne + logxi)) /(4.0 * np.pi* 1.602197e-9)
-        #renormalise to correct local continuum
-        get_norm_cont_local = inc_flux/Icomp/ 1e20
-        #return renormalised compton spectrum
-        comp = comp * get_norm_cont_local / (10**(logxi + logne - 15))
+        # incident flux in units [keV/cm^2/s]
+        inc_flux = (10 ** (logne + logxi)) / (4.0 * np.pi * 1.602197e-9)
+        # renormalise to correct local continuum
+        get_norm_cont_local = inc_flux / Icomp / 1e20
+        # return renormalised compton spectrum
+        comp = comp * get_norm_cont_local / (10 ** (logxi + logne - 15))
         return comp
-        
-    def forward(self,egrid,theta):
-        #split input parameters into appropriate parameters for each component
-        dgsofac = self.dgsofac(theta[1],theta[0])
+
+    # ------------------------------------------------------------------
+    # Forward pass
+    # ------------------------------------------------------------------
+    def forward(self, egrid, theta):
+        # split input parameters into appropriate parameters for each component
+        dgsofac = self.dgsofac(theta[1], theta[0])
         inc = theta[2]
-        muobs = np.cos(inc*np.pi/180) 
+        muobs = np.cos(inc * np.pi / 180)
         boost = theta[12]
         logxi = theta[7]
         logne = theta[9]
         z = theta[5]
         kTe = theta[10]
         lens = self.lensing_factor(theta[1], theta[0], muobs)
-        theta[10] = (theta[10]*dgsofac)/(1+z) #redefines temperature to be observed electron temperature for NN
+
+        # redefine temperature to be observed electron temperature for the NN
+        theta[10] = (theta[10] * dgsofac) / (1 + z)
         NN_pars = self.__pars_shift(theta)
+
         tbabs_pars = theta[11]
         nthcomp_pars = np.copy(self.nthcomp_par_base)
         nthcomp_pars[self.nthcomp_index] = theta[self.nthcomp_reltrans_index]
         nthcomp_pars[1] = kTe
-        nthcomp_pars[4] = (1.0/ dgsofac) - 1.0
-        #predict reflection spectrum from ensemble NN
-        spectrum = (np.abs(boost)*self.reflection_spectrum_prediction(egrid, NN_pars))[:-1]
-        #add nthcomp component
+        nthcomp_pars[4] = (1.0 / dgsofac) - 1.0
+
+        # predict reflection spectrum from FiLM-MLP emulator (already on egrid)
+        spectrum = (np.abs(boost) * self.reflection_spectrum_prediction(egrid, NN_pars))[:-1]
+
+        # add nthcomp component
         if boost >= 0:
-            comp = self.comptonized_continuum(egrid,nthcomp_pars,logxi,logne)
-            comp = lens * (dgsofac/(1+z)) * comp
+            comp = self.comptonized_continuum(egrid, nthcomp_pars, logxi, logne)
+            comp = lens * (dgsofac / (1 + z)) * comp
             spectrum += comp
-        #convolve with tbabs absorption
-        spectrum *= self.tbabs(egrid.astype(np.float32),np.array([tbabs_pars],dtype=np.float32))
+
+        # convolve with tbabs absorption
+        spectrum *= self.tbabs(egrid.astype(np.float32),
+                               np.array([tbabs_pars], dtype=np.float32))
         return spectrum
