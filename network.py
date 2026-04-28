@@ -20,7 +20,7 @@ class RtdistSpec(nn.Module):
     values directly.
     """
     
-    def __init__(self,pars=17,comps=40):
+    def __init__(self,pars=20,comps=40):
         super().__init__()
         self.LinearStack = nn.Sequential(nn.Linear(pars, 256),
                                          nn.GELU(),
@@ -262,4 +262,5 @@ class RTFAST(nn.Module):
         PCA_comps = self.comp_inverse_transform(data)
         std_spec = self.PCA_inverse_transform(PCA_comps)
         spectrum = 10**self.spec_inverse_transform(std_spec)
+        spectrum = torch.cat([torch.zeros(50),spectrum])
         return spectrum
