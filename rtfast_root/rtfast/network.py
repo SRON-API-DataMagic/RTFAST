@@ -6,7 +6,8 @@ The reflection spectrum is now produced by a FiLM-MLP emulator that
 predicts the spectrum directly on a user-supplied energy grid (built-in
 interpolation) instead of the previous PCA + ensemble-on-fixed-grid
 approach. The surrounding physics in `RTFAST.forward` (lensing, redshift,
-comptonised continuum, tbabs absorption) is unchanged.
+comptonised continuum, tbabs absorption) is unchanged and is identical to
+that of the original fortran model.
 
 Architectural building blocks for the emulator (`RFFFeaturizer`,
 `FiLM`, `FiLMMLPBlock`, `TrendHead`, `FiLM_MLP_Emulator`) are defined in
@@ -47,7 +48,7 @@ get_lens = lensing.getlens_
 get_lens.argtypes = [type_double_p, type_double_p, type_double_p, type_double_p]
 get_lens.restype = None
 
-from ndspec.xspec_library import XspecLibrary
+import ndspec.XspecInterface as XSModels
 
 def nthcomp(ear, params):
     pass
@@ -55,8 +56,8 @@ def nthcomp(ear, params):
 def tbabs(ear, params):
     pass
 
-lib = XspecLibrary()
-lib.initialize_heasoft()
+lib = XSModels.FortranInterface()
+
 lib.load_models({"tbabs": tbabs,
                  "nthcomp": nthcomp})
 
@@ -435,7 +436,7 @@ class RTFAST(nn.Module):
     # ------------------------------------------------------------------
     # Reflection-emulator preprocessing
     # ------------------------------------------------------------------
-    def __pars_shift(self, pars):
+    def pars_shift(self, pars):
         """
         Converts rtdist parameters into FiLM-MLP-friendly form: selects the
         10 indices the network was trained on, negates index 3, and log10s
@@ -486,7 +487,7 @@ class RTFAST(nn.Module):
             User-supplied energy grid.
         NN_pars : torch.Tensor, shape (10,)
             Already-processed network parameters (output of
-            ``__pars_shift``).
+            ``pars_shift``).
 
         Returns
         -------
@@ -546,7 +547,7 @@ class RTFAST(nn.Module):
 
         # redefine temperature to be observed electron temperature for the NN
         theta[10] = (theta[10] * dgsofac) / (1 + z)
-        NN_pars = self.__pars_shift(theta)
+        NN_pars = self.pars_shift(theta)
 
         tbabs_pars = theta[11]
         nthcomp_pars = np.copy(self.nthcomp_par_base)
@@ -554,16 +555,23 @@ class RTFAST(nn.Module):
         nthcomp_pars[1] = kTe
         nthcomp_pars[4] = (1.0 / dgsofac) - 1.0
 
-        # predict reflection spectrum from FiLM-MLP emulator (already on egrid)
-        spectrum = (np.abs(boost) * self.reflection_spectrum_prediction(egrid, NN_pars))[:-1]
+        # reflection: emulator predicts photon flux density (per keV) at
+        # the points of egrid. Convert to per-bin integrated photon flux
+        # via the trapezoidal rule so it can be summed with nthcomp's
+        # bin-integrated output and multiplied by tbabs' similar output.
+        refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # length M
+        bin_widths = np.diff(egrid.astype(np.float64))                       # length M-1
+        refl_per_bin = 0.5 * (refl_density[:-1] + refl_density[1:]) * bin_widths
+        spectrum = np.abs(boost) * refl_per_bin                              # length M-1
+        spectrum = spectrum.astype(np.float32)
 
-        # add nthcomp component
+        # add nthcomp component (already bin-integrated, length M-1)
         if boost >= 0:
             comp = self.comptonized_continuum(egrid, nthcomp_pars, logxi, logne)
             comp = lens * (dgsofac / (1 + z)) * comp
             spectrum += comp
 
-        # convolve with tbabs absorption
+        # multiply by tbabs absorption (per-bin transmission, length M-1)
         spectrum *= self.tbabs(egrid.astype(np.float32),
-                               np.array([tbabs_pars], dtype=np.float32))
+                            np.array([tbabs_pars], dtype=np.float32))
         return spectrum
