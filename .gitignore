@@ -7,11 +7,9 @@ heatmaps/
 bad_pars.txt
 data/
 loss/
-models/
 output.out
 std_scaler.bin
 __pycache__/
-scalers/
 *.out
 traces/
 dists/
