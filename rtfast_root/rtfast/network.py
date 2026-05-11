@@ -17,6 +17,8 @@ exported program produced by `export_emulator.py`.
 """
 import math
 import sys
+from sys import platform
+import os
 import ctypes as ct
 from typing import Optional, Tuple
 
@@ -37,9 +39,9 @@ fortrandir = files("rtfast.fortran")
 
 type_double_p = ct.POINTER(ct.c_double)
 
-if sys.platform == "darwin":
+if platform == "darwin":
     lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
-elif sys.platform == "linux" or sys.platform == "linux2":
+elif platform == "linux" or sys.platform == "linux2":
     lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.dylib")))
 else:
     raise RuntimeError("Unsupported platform for Fortran library loading.")
@@ -58,8 +60,17 @@ def tbabs(ear, params):
 
 lib = XSModels.FortranInterface()
 
-lib.load_models({"tbabs": tbabs,
-                 "nthcomp": nthcomp})
+lib.add_model(nthcomp, symbol="donthcomp_")
+
+headas_path = os.environ.get("HEADAS")
+if platform == "linux" or platform == "linux2":
+    lib_path = headas_path + f"/../Xspec/{os.path.basename(headas_path)}/lib/libXSFunctions.so"
+elif platform == "darwin":
+    lib_path = headas_path + f"/../Xspec/{os.path.basename(headas_path)}/lib/libXSFunctions.dylib"
+pars_path =  headas_path + f"/../Xspec/src/manager/model.dat" 
+
+lib_tbabs = XSModels.CInterface(lib_path, pars_path)
+lib_tbabs.add_model(tbabs)
 
 
 # =============================================================================
@@ -231,6 +242,7 @@ def _normalize_x(x_prepared: np.ndarray, mode: str,
         if global_minmax is None:
             raise ValueError("x_norm='global' requires global_minmax to be set.")
         xmin, xmax = global_minmax
+        xmin, xmax = np.log10(xmin), np.log10(xmax)
     else:
         raise ValueError(f"Unknown x_norm mode: {mode}")
     eps = 1e-12
@@ -272,8 +284,8 @@ class RTFAST(nn.Module):
         `x_log_floor`, `x_log_shift`, `global_xmin`, `global_xmax`.
     """
 
-    DEFAULT_EXPORT_NAME = "exported_emulator.pt"
-    DEFAULT_CONFIG_NAME = "exported_emulator_config.npz"
+    DEFAULT_EXPORT_NAME = "rtfast_emulator.pt2"
+    DEFAULT_CONFIG_NAME = "rtfast_config.npz"
 
     def __init__(self, device: torch.device = torch.device("cpu"),
                  exported_name: str = DEFAULT_EXPORT_NAME,
@@ -289,9 +301,7 @@ class RTFAST(nn.Module):
             pass
 
         exp_path = str(emudir.joinpath(exported_name))
-        self.exported_program = torch.load(
-            exp_path, map_location=device, weights_only=False
-        )
+        self.exported_program = torch.export.load(exp_path)
         # `module()` gives a callable nn.Module-like object: forward(theta, x).
         self.emulator = self.exported_program.module()
 
@@ -317,7 +327,7 @@ class RTFAST(nn.Module):
         self.nthcomp_par_base = [2, 40, 0.05, 1, 0, 1]
 
         # ---- prepare tbabs ----
-        self.tbabs = lib.tbabs
+        self.tbabs = lib_tbabs.tbabs
 
         # ---- internal energy grids (kept for normalisation / plotting) ----
         self.define_internal_egrid()
@@ -364,10 +374,14 @@ class RTFAST(nn.Module):
                 f"npz must contain 'scaler_mean' and 'scaler_std'."
             )
 
-        self.scaler_mean = torch.as_tensor(scaler_mean, dtype=torch.float32,
-                                           device=self.device)
-        self.scaler_std = torch.as_tensor(scaler_std, dtype=torch.float32,
-                                          device=self.device)
+        if (np.all(scaler_mean == 0) & np.all(scaler_std == 1)):
+            self.scaler_flag = False
+        else:
+            self.scaler_flag = True
+            self.scaler_mean = torch.as_tensor(scaler_mean, dtype=torch.float32,
+                                               device=self.device)
+            self.scaler_std = torch.as_tensor(scaler_std, dtype=torch.float32,
+                                            device=self.device)
 
     # ------------------------------------------------------------------
     # Internal grids
@@ -443,7 +457,10 @@ class RTFAST(nn.Module):
         indices {0, 2, 3, 4, 10}. Returns a torch float32 tensor of shape
         ``[10]`` (or ``[B, 10]`` if a batch is supplied).
         """
-        pars = pars[self.pars_list]
+        if pars.ndim > 1:
+            pars = pars[:,self.pars_list]
+        else:
+            pars = pars[self.pars_list]
         for i, parameter in enumerate(self.pars_list):
             if parameter in self.negatives:
                 if pars.ndim > 1:
@@ -452,9 +469,9 @@ class RTFAST(nn.Module):
                     pars[i] = -pars[i]
             if parameter in self.logged:
                 if pars.ndim > 1:
-                    pars[:, i] = np.log10(pars[:, i])
+                    pars[:, i] = np.log10(np.clip(pars[:, i], 1e-30, None))
                 else:
-                    pars[i] = np.log10(pars[i])
+                    pars[i] = np.log10(np.clip(pars[i], 1e-30, None))
         return torch.as_tensor(pars, dtype=torch.float32, device=self.device)
 
     def _prepare_x(self, egrid: np.ndarray) -> torch.Tensor:
@@ -467,7 +484,10 @@ class RTFAST(nn.Module):
 
     def _inverse_scale_y(self, y_scaled: torch.Tensor) -> np.ndarray:
         """Convert scaled log10 output to a linear spectrum (1D numpy)."""
-        ylog = y_scaled * self.scaler_std + self.scaler_mean
+        if self.scaler_flag == True:
+            ylog = y_scaled * self.scaler_std + self.scaler_mean
+        else:
+            ylog = y_scaled
         spectrum = torch.pow(10.0, ylog)
         spectrum = spectrum.detach().cpu().numpy()
         if spectrum.ndim == 2 and spectrum.shape[0] == 1:
@@ -501,21 +521,30 @@ class RTFAST(nn.Module):
 
         x = self._prepare_x(egrid)
         with torch.no_grad():
+            x = torch.tile(x, (theta.shape[0], 1))
             y_scaled = self.emulator(theta, x)
-        spectrum = self._inverse_scale_y(y_scaled)
+        
+        if self.scaler_flag:
+            ylog = y_scaled * self.scaler_std + self.scaler_mean
+        else:
+            ylog = y_scaled
+        
+        spectrum = self._inverse_scale_y(ylog)
         return spectrum
 
     # ------------------------------------------------------------------
     # Continuum
     # ------------------------------------------------------------------
     def calculate_normalisation(self, pars):
-        earx = self.norm_egrid
-        norm_comp = self.nthcomp(earx, pars)
-        Icomp = 0
-        for i in range(1, len(norm_comp)):
-            E = 0.5 * (earx[i] + earx[i - 1])
-            if (E >= 0.1 and E <= 1e3):
-                Icomp = Icomp + ((earx[i] + earx[i - 1]) * 0.5 * norm_comp[i])
+        earx = self.norm_egrid                                # length nex (edges)
+        norm_dens = self.nthcomp(earx, pars)                  # length nex-1 (density at midpoints)
+        bin_widths = np.diff(earx.astype(np.float64))         # length nex-1
+        Icomp = 0.0
+        for i in range(len(norm_dens)):
+            E_mid = 0.5 * (earx[i] + earx[i+1])
+            if 0.1 <= E_mid <= 1e3:
+                N_i = norm_dens[i] * bin_widths[i]            # bin-integrate density → photons
+                Icomp += E_mid * N_i                          # = E_mid × N_i, matches Fortran convention
         return Icomp
 
     def comptonized_continuum(self, egrid, pars, logxi, logne):
@@ -533,45 +562,103 @@ class RTFAST(nn.Module):
     # ------------------------------------------------------------------
     # Forward pass
     # ------------------------------------------------------------------
-    def forward(self, egrid, theta):
-        # split input parameters into appropriate parameters for each component
-        dgsofac = self.dgsofac(theta[1], theta[0])
-        inc = theta[2]
-        muobs = np.cos(inc * np.pi / 180)
-        boost = theta[12]
-        logxi = theta[7]
-        logne = theta[9]
-        z = theta[5]
-        kTe = theta[10]
-        lens = self.lensing_factor(theta[1], theta[0], muobs)
+    def forward(self, egrid, theta, batched=False):
+        if batched == False:
+            # split input parameters into appropriate parameters for each component
+            dgsofac = self.dgsofac(theta[1], theta[0])
+            inc = theta[2]
+            muobs = np.cos(inc * np.pi / 180)
+            boost = theta[12]
+            logxi = theta[7]
+            logne = theta[9]
+            z = theta[5]
+            kTe = theta[10]
+            lens = self.lensing_factor(theta[1], theta[0], muobs)
+            norm = theta[-1]
 
-        # redefine temperature to be observed electron temperature for the NN
-        theta[10] = (theta[10] * dgsofac) / (1 + z)
-        NN_pars = self.pars_shift(theta)
+            # redefine temperature to be observed electron temperature for the NN
+            theta_NN = theta.copy()
+            theta_NN[10] = (theta_NN[10] * dgsofac) / (1 + z)
+            NN_pars = self.pars_shift(theta_NN)
 
-        tbabs_pars = theta[11]
-        nthcomp_pars = np.copy(self.nthcomp_par_base)
-        nthcomp_pars[self.nthcomp_index] = theta[self.nthcomp_reltrans_index]
-        nthcomp_pars[1] = kTe
-        nthcomp_pars[4] = (1.0 / dgsofac) - 1.0
+            tbabs_pars = theta[11]
+            nthcomp_pars = np.copy(self.nthcomp_par_base)
+            nthcomp_pars[self.nthcomp_index] = theta[self.nthcomp_reltrans_index]
+            nthcomp_pars[1] = kTe
+            nthcomp_pars[4] = (1.0 / dgsofac) - 1.0
 
-        # reflection: emulator predicts photon flux density (per keV) at
-        # the points of egrid. Convert to per-bin integrated photon flux
-        # via the trapezoidal rule so it can be summed with nthcomp's
-        # bin-integrated output and multiplied by tbabs' similar output.
-        refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # length M
-        bin_widths = np.diff(egrid.astype(np.float64))                       # length M-1
-        refl_per_bin = 0.5 * (refl_density[:-1] + refl_density[1:]) * bin_widths
-        spectrum = np.abs(boost) * refl_per_bin                              # length M-1
-        spectrum = spectrum.astype(np.float32)
+            # reflection: emulator predicts photon flux density (per keV) at
+            # the points of egrid. Convert to per-bin integrated photon flux
+            # via the trapezoidal rule so it can be summed with nthcomp's
+            # bin-integrated output and multiplied by tbabs' similar output.
+            refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # length M
+            bin_widths = np.diff(egrid.astype(np.float64))                       # length M-1
+            refl_per_bin = 0.5 * (refl_density[:-1] + refl_density[1:])
+            spectrum = np.abs(boost) * refl_per_bin                              # length M-1
+            spectrum = spectrum.astype(np.float32)
 
-        # add nthcomp component (already bin-integrated, length M-1)
-        if boost >= 0:
-            comp = self.comptonized_continuum(egrid, nthcomp_pars, logxi, logne)
-            comp = lens * (dgsofac / (1 + z)) * comp
-            spectrum += comp
+            # add nthcomp component (already bin-integrated, length M-1)
+            if boost >= 0:
+                comp = self.comptonized_continuum(egrid, nthcomp_pars, logxi, logne)
+                comp = lens * (dgsofac / (1 + z)) * comp
+                spectrum += comp
 
-        # multiply by tbabs absorption (per-bin transmission, length M-1)
-        spectrum *= self.tbabs(egrid.astype(np.float32),
-                            np.array([tbabs_pars], dtype=np.float32))
-        return spectrum
+            # multiply by tbabs absorption (per-bin transmission, length M-1)
+            tbabs_res = self.tbabs(egrid.astype(np.float32),
+                                np.array([tbabs_pars.astype(np.float32)], dtype=np.float32))
+            spectrum *= tbabs_res
+            spectrum = spectrum * norm
+            return spectrum
+        else:
+            # thetas: numpy [B, 22]
+            B = theta.shape[0]
+            
+            # ---- scalar-per-walker physics (vectorize over B) ----
+            a    = theta[:, 1]
+            h    = theta[:, 0]
+            inc  = theta[:, 2]
+            z    = theta[:, 5]
+            logxi = theta[:, 7]
+            logne = theta[:, 9]
+            kTe  = theta[:, 10]
+            boost = theta[:, 12]
+            norm  = theta[:, -1]
+
+            muobs = np.cos(inc * np.pi / 180)
+            dgsofac = np.sqrt((h**2 - 2*h + a**2) / (h**2 + a**2))   # [B]
+            
+            # ---- lensing: this is the painful one ----
+            # get_lens is a scalar ctypes call. Loop in Python, or write a 
+            # vectorized Fortran wrapper. For B≈50 the loop is fine.
+            lens = np.array([self.lensing_factor(a[i], h[i], muobs[i]) 
+                            for i in range(B-1)])                     # [B]
+            
+            # ---- emulator: batched ----
+            thetas_NN = theta.copy()
+            thetas_NN[:, 10] = (thetas_NN[:, 10] * dgsofac) / (1 + z)
+            NN_pars = self.pars_shift(thetas_NN)                     # [B, 10] torch
+            with torch.inference_mode():
+                refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # [B, L]
+            
+            # ---- trapezoidal bin integration ----
+            refl_per_bin = 0.5 * (refl_density[:, :-1] + refl_density[:, 1:])  # [B, M-1]
+            spectrum = np.abs(boost)[:, None] * refl_per_bin
+            
+            # ---- nthcomp + tbabs: also scalar Fortran. Loop. ----
+            for i in range(B-1):
+                if boost[i] >= 0:
+                    nthcomp_pars = np.copy(self.nthcomp_par_base)
+                    nthcomp_pars[self.nthcomp_index] = theta[i, self.nthcomp_reltrans_index]
+                    nthcomp_pars[1] = kTe[i]
+                    nthcomp_pars[4] = (1.0 / dgsofac[i]) - 1.0
+
+                    comp = self.comptonized_continuum(egrid, nthcomp_pars, logxi[i], logne[i])
+                    comp = lens[i] * (dgsofac[i] / (1 + z[i])) * comp
+                    spectrum[i] += comp
+
+                tbabs_res = self.tbabs(egrid.astype(np.float32),
+                            np.array([tbabs_pars.astype(np.float32)], dtype=np.float32))
+                spectrum[i] *= tbabs_res
+
+            spectrum *= norm[:, None]
+            return spectrum
