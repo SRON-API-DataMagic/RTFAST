@@ -15,6 +15,7 @@ this module so that callers can instantiate the network from scratch if
 they wish; the runtime `RTFAST` wrapper itself uses the `torch.export`
 exported program produced by `export_emulator.py`.
 """
+from itertools import batched
 import math
 import sys
 from sys import platform
@@ -28,7 +29,7 @@ from torch import nn
 import torch.nn.functional as F
 
 from joblib import load
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, RegularGridInterpolator
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from importlib.resources import files
@@ -40,9 +41,9 @@ fortrandir = files("rtfast.fortran")
 type_double_p = ct.POINTER(ct.c_double)
 
 if platform == "darwin":
-    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
-elif platform == "linux" or sys.platform == "linux2":
     lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.dylib")))
+elif platform == "linux" or sys.platform == "linux2":
+    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
 else:
     raise RuntimeError("Unsupported platform for Fortran library loading.")
 
@@ -399,6 +400,7 @@ class RTFAST(nn.Module):
         for i in range(ne):
             egrid[i] = Emin * (Emax / Emin) ** (i / ne)
         self.internal_egrid = egrid[:-1]
+        self.internal_egrid_edges = egrid
         return
 
     def define_normalisation_grid(self):
@@ -497,7 +499,7 @@ class RTFAST(nn.Module):
     # ------------------------------------------------------------------
     # Reflection-spectrum prediction
     # ------------------------------------------------------------------
-    def reflection_spectrum_prediction(self, egrid, NN_pars):
+    def reflection_spectrum_prediction(self, egrid, NN_pars, batched=False):
         """
         Predict the reflection spectrum on the supplied energy grid.
 
@@ -519,9 +521,10 @@ class RTFAST(nn.Module):
         else:
             theta = NN_pars.to(self.device)
 
-        x = self._prepare_x(egrid)
+        x = self._prepare_x(self.internal_egrid_edges)
         with torch.no_grad():
-            x = torch.tile(x, (theta.shape[0], 1))
+            if batched == True:
+                x = torch.tile(x, (theta.shape[0], 1))
             y_scaled = self.emulator(theta, x)
         
         if self.scaler_flag:
@@ -530,7 +533,19 @@ class RTFAST(nn.Module):
             ylog = y_scaled
         
         spectrum = self._inverse_scale_y(ylog)
-        return spectrum
+
+        if batched == True:
+            f = RegularGridInterpolator(np.tile(self.internal_egrid_edges, (theta.shape[0], 1)), 
+                                        spectrum, bounds_error=False, fill_value="extrapolate")
+            x_new = np.tile(egrid, (theta.shape[0], 1))
+            spectrum = f(x_new)
+        else:
+            f = interp1d(self.internal_egrid_edges, spectrum, bounds_error=False, 
+                         fill_value="extrapolate")
+            spectrum = f(egrid)
+
+        spectrum_binned = 0.5 * (spectrum[:-1] + spectrum[1:])
+        return spectrum_binned
 
     # ------------------------------------------------------------------
     # Continuum
@@ -591,10 +606,8 @@ class RTFAST(nn.Module):
             # the points of egrid. Convert to per-bin integrated photon flux
             # via the trapezoidal rule so it can be summed with nthcomp's
             # bin-integrated output and multiplied by tbabs' similar output.
-            refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # length M
-            bin_widths = np.diff(egrid.astype(np.float64))                       # length M-1
-            refl_per_bin = 0.5 * (refl_density[:-1] + refl_density[1:])
-            spectrum = np.abs(boost) * refl_per_bin                              # length M-1
+            refl_spect = self.reflection_spectrum_prediction(egrid, NN_pars)  # length M
+            spectrum = np.abs(boost) * refl_spect                              # length M-1
             spectrum = spectrum.astype(np.float32)
 
             # add nthcomp component (already bin-integrated, length M-1)
