@@ -4,7 +4,7 @@ setup(
     name="rtfast",
     version="2.0.1",
     description="RTFAST: a machine learning emulator for the reltrans model",
-    author="Ben Ricketts",
+    author="Ben Ricketts, Tin Hadži Veljković",
     packages=find_packages(where="."),
     package_dir={"": "."},
     package_data={

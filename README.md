@@ -14,8 +14,20 @@ Currently, installation is restricted to active use of this repository. This rep
 and is restricted to its particular use case. Feel free to fork this repository for your own project, citing credit for
 the framework to this repository.
 
+Installing rtfast first requires compilation of the fortran code.
+
+Go to rtfast_root/rtfast/fortran and run the following command:
+
+gfortran -c YNOGK.f90 drtbis.f90 lensing.f90
+
+After this, got to rtfast_root and run the command:
+
+pip install .
+
+You should be good to go!
+
 ## Usage
-Used to train neural network emulators for the RTFAST-spectra project.
+
 
 ## Support
 Please feel free to open an issue on this git repository or reach out to b.j.ricketts(at)uva.nl.
