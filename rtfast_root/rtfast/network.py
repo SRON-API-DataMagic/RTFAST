@@ -41,7 +41,7 @@ fortrandir = files("rtfast.fortran")
 type_double_p = ct.POINTER(ct.c_double)
 
 if platform == "darwin":
-    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.dylib")))
+    lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
 elif platform == "linux" or sys.platform == "linux2":
     lensing = ct.cdll.LoadLibrary(str(fortrandir.joinpath("lensing.so")))
 else:
@@ -525,6 +525,7 @@ class RTFAST(nn.Module):
         with torch.no_grad():
             if batched == True:
                 x = torch.tile(x, (theta.shape[0], 1))
+            assert x.shape[0] == theta.shape[0]
             y_scaled = self.emulator(theta, x)
         
         if self.scaler_flag:
@@ -533,18 +534,16 @@ class RTFAST(nn.Module):
             ylog = y_scaled
         
         spectrum = self._inverse_scale_y(ylog)
-
+        if batched and np.ndim(spectrum) == 1:
+            spectrum = spectrum[np.newaxis, :]
+        f = interp1d(self.internal_egrid_edges, spectrum, 
+                        bounds_error=False, fill_value="extrapolate")
+        spectrum = f(egrid)
         if batched == True:
-            f = RegularGridInterpolator(np.tile(self.internal_egrid_edges, (theta.shape[0], 1)), 
-                                        spectrum, bounds_error=False, fill_value="extrapolate")
-            x_new = np.tile(egrid, (theta.shape[0], 1))
-            spectrum = f(x_new)
+            spectrum_binned = 0.5 * (spectrum[:, :-1] + spectrum[:, 1:])
         else:
-            f = interp1d(self.internal_egrid_edges, spectrum, bounds_error=False, 
-                         fill_value="extrapolate")
-            spectrum = f(egrid)
+            spectrum_binned = 0.5 * (spectrum[:-1] + spectrum[1:])
 
-        spectrum_binned = 0.5 * (spectrum[:-1] + spectrum[1:])
         return spectrum_binned
 
     # ------------------------------------------------------------------
@@ -562,16 +561,29 @@ class RTFAST(nn.Module):
                 Icomp += E_mid * N_i                          # = E_mid × N_i, matches Fortran convention
         return Icomp
 
-    def comptonized_continuum(self, egrid, pars, logxi, logne):
+    def comptonized_continuum(self, egrid, pars, logxi, logne, batched=False):
         egrid, pars = egrid.astype(np.float32), pars.astype(np.float32)
-        comp = self.nthcomp(egrid, pars)
-        Icomp = self.calculate_normalisation(pars)
-        # incident flux in units [keV/cm^2/s]
-        inc_flux = (10 ** (logne + logxi)) / (4.0 * np.pi * 1.602197e-9)
-        # renormalise to correct local continuum
-        get_norm_cont_local = inc_flux / Icomp / 1e20
-        # return renormalised compton spectrum
-        comp = comp * get_norm_cont_local / (10 ** (logxi + logne - 15))
+        if batched:
+            egrid = np.tile(egrid, (pars.shape[0], 1))
+            comp = np.zeros((pars.shape[0], egrid.shape[1]-1))
+            Icomp = np.zeros(pars.shape[0])
+            for i in range(pars.shape[0]):
+                comp[i] = self.nthcomp(egrid, pars)
+                Icomp[i] = self.calculate_normalisation(pars)
+                # incident flux in units [keV/cm^2/s]
+            inc_flux = (10 ** (logne + logxi)) / (4.0 * np.pi * 1.602197e-9)
+            # renormalise to correct local continuum
+            get_norm_cont_local = inc_flux / Icomp / 1e20
+            # return renormalised compton spectrum
+            comp = comp * get_norm_cont_local / (10 ** (logxi + logne - 15))
+        else:
+            comp = self.nthcomp(egrid, pars)
+            Icomp = self.calculate_normalisation(pars)
+            # incident flux in units [keV/cm^2/s]
+            inc_flux = (10 ** (logne + logxi)) / (4.0 * np.pi * 1.602197e-9)
+            # renormalise to correct local continuum
+            get_norm_cont_local = inc_flux / Icomp / 1e20
+            comp = comp * get_norm_cont_local / (10 ** (logxi + logne - 15))
         return comp
 
     # ------------------------------------------------------------------
@@ -625,7 +637,7 @@ class RTFAST(nn.Module):
         else:
             # thetas: numpy [B, 22]
             B = theta.shape[0]
-            
+
             # ---- scalar-per-walker physics (vectorize over B) ----
             a    = theta[:, 1]
             h    = theta[:, 0]
@@ -636,6 +648,7 @@ class RTFAST(nn.Module):
             kTe  = theta[:, 10]
             boost = theta[:, 12]
             norm  = theta[:, -1]
+            tbabs_pars = theta[:,11]
 
             muobs = np.cos(inc * np.pi / 180)
             dgsofac = np.sqrt((h**2 - 2*h + a**2) / (h**2 + a**2))   # [B]
@@ -644,21 +657,21 @@ class RTFAST(nn.Module):
             # get_lens is a scalar ctypes call. Loop in Python, or write a 
             # vectorized Fortran wrapper. For B≈50 the loop is fine.
             lens = np.array([self.lensing_factor(a[i], h[i], muobs[i]) 
-                            for i in range(B-1)])                     # [B]
+                            for i in range(B)])                     # [B]
             
             # ---- emulator: batched ----
             thetas_NN = theta.copy()
             thetas_NN[:, 10] = (thetas_NN[:, 10] * dgsofac) / (1 + z)
             NN_pars = self.pars_shift(thetas_NN)                     # [B, 10] torch
             with torch.inference_mode():
-                refl_density = self.reflection_spectrum_prediction(egrid, NN_pars)  # [B, L]
+                refl_density = self.reflection_spectrum_prediction(egrid, NN_pars, 
+                                                                   batched=True)  # [B, L]
+                spectrum = np.abs(boost)[:, None] * refl_density
             
             # ---- trapezoidal bin integration ----
-            refl_per_bin = 0.5 * (refl_density[:, :-1] + refl_density[:, 1:])  # [B, M-1]
-            spectrum = np.abs(boost)[:, None] * refl_per_bin
-            
+
             # ---- nthcomp + tbabs: also scalar Fortran. Loop. ----
-            for i in range(B-1):
+            for i in range(B):
                 if boost[i] >= 0:
                     nthcomp_pars = np.copy(self.nthcomp_par_base)
                     nthcomp_pars[self.nthcomp_index] = theta[i, self.nthcomp_reltrans_index]
@@ -670,7 +683,7 @@ class RTFAST(nn.Module):
                     spectrum[i] += comp
 
                 tbabs_res = self.tbabs(egrid.astype(np.float32),
-                            np.array([tbabs_pars.astype(np.float32)], dtype=np.float32))
+                            np.array([tbabs_pars[i].astype(np.float32)], dtype=np.float32))
                 spectrum[i] *= tbabs_res
 
             spectrum *= norm[:, None]
